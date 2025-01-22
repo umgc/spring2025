@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<quiz>
+  <question type="category">
+    <category>
+    <text>Pythagorean Theorem</text>
+    </category>
+  </question>
+  <question type="multichoice">
+    <name><text>Pythagorean Theorem Question 1</text></name>
+    <questiontext format="html"><text>What is the formula for the Pythagorean theorem?</text></questiontext>
+    <answer fraction="100"><text>a² + b² = c²</text><feedback><text>Correct! This is the standard formula representing the Pythagorean theorem.</text></feedback></answer>
+    <answer fraction="0"><text>a² - b² = c²</text><feedback><text>Incorrect. This formula is not correct for the Pythagorean theorem.</text></feedback></answer>
+    <answer fraction="0"><text>2a + b = c</text><feedback><text>Incorrect. This does not represent the Pythagorean theorem.</text></feedback></answer>
+    <answer fraction="0"><text>a + b = c</text><feedback><text>Incorrect. This is not the correct formula for the theorem.</text></feedback></answer>
+  </question>
+  
+  <question type="multichoice">
+    <name><text>Pythagorean Theorem Question 2</text></name>
+    <questiontext format="html"><text>If one leg of a right triangle is 6 and the other is 8, what is the length of the hypotenuse?</text></questiontext>
+    <answer fraction="100"><text>10</text><feedback><text>Correct! Using the Pythagorean theorem: √(6² + 8²) = √(36 + 64) = √100 = 10.</text></feedback></answer>
+    <answer fraction="0"><text>12</text><feedback><text>Incorrect. The correct calculation gives a hypotenuse of 10.</text></feedback></answer>
+    <answer fraction="0"><text>14</text><feedback><text>Incorrect. This does not follow from the Pythagorean theorem.</text></feedback></answer>
+    <answer fraction="0"><text>8</text><feedback><text>Incorrect. This is one of the leg lengths, not the hypotenuse.</text></feedback></answer>
+  </question>
+
+  <question type="multichoice">
+    <name><text>Pythagorean Theorem Question 3</text></name>
+    <questiontext format="html"><text>What type of triangle does the Pythagorean theorem apply to?</text></questiontext>
+    <answer fraction="100"><text>Right triangle</text><feedback><text>Correct! The Pythagorean theorem is specific to right triangles.</text></feedback></answer>
+    <answer fraction="0"><text>Equilateral triangle</text><feedback><text>Incorrect. The theorem does not apply to equilateral triangles.</text></feedback></answer>
+    <answer fraction="0"><text>Isosceles triangle</text><feedback><text>Incorrect. The theorem is not applicable to isosceles triangles unless they are right triangles.</text></feedback></answer>
+    <answer fraction="0"><text>Scalene triangle</text><feedback><text>Incorrect. The theorem is specifically for right triangles.</text></feedback></answer>
+  </question>
+
+  <question type="multichoice">
+    <name><text>Pythagorean Theorem Question 4</text></name>
+    <questiontext format="html"><text>If the hypotenuse is 13 and one leg is 5, what is the length of the other leg?</text></questiontext>
+    <answer fraction="100"><text>12</text><feedback><text>Correct! Using the theorem: √(13² - 5²) = √(169 - 25) = √144 = 12.</text></feedback></answer>
+    <answer fraction="0"><text>10</text><feedback><text>Incorrect. This does not follow the correct calculation.</text></feedback></answer>
+    <answer fraction="0"><text>8</text><feedback><text>Incorrect. This is not the correct length derived from the theorem.</text></feedback></answer>
+    <answer fraction="0"><text>6</text><feedback><text>Incorrect. This value does not satisfy the Pythagorean theorem.</text></feedback></answer>
+  </question>
+
+  <question type="multichoice">
+    <name><text>Pythagorean Theorem Question 5</text></name>
+    <questiontext format="html"><text>Which of the following is a Pythagorean triple?</text></questiontext>
+    <answer fraction="100"><text>3, 4, 5</text><feedback><text>Correct! 3² + 4² = 5², thus forming a Pythagorean triple.</text></feedback></answer>
+    <answer fraction="0"><text>5, 12, 13</text><feedback><text>Incorrect. This is also a Pythagorean triple, but not the only one.</text></feedback></answer>
+    <answer fraction="0"><text>7, 24, 25</text><feedback><text>Incorrect. This is a valid Pythagorean triple as well.</text></feedback></answer>
+    <answer fraction="0"><text>2, 2, 3</text><feedback><text>Incorrect. This does not form a Pythagorean triple.</text></feedback></answer>
+  </question>
+
+  <question type="multichoice">
+    <name><text>Pythagorean Theorem Question 6</text></name>
+    <questiontext format="html"><text>In a right triangle, if the lengths of the legs are equal, what type of triangle is it?</text></questiontext>
+    <answer fraction="100"><text>Isosceles right triangle</text><feedback><text>Correct! An isosceles right triangle has two equal legs and one right angle.</text></feedback></answer>
+    <answer fraction="0"><text>Equilateral triangle</text><feedback><text>Incorrect. An equilateral triangle has all sides equal, not just the legs.</text></feedback></answer>
+    <answer fraction="0"><text>Scalene triangle</text><feedback><text>Incorrect. A scalene triangle has all sides of different lengths.</text></feedback></answer>
+    <answer fraction="0"><text>Obtuse triangle</text><feedback><text>Incorrect. An obtuse triangle has one angle greater than 90 degrees.</text></feedback></answer>
+  </question>
+
+  <question type="multichoice">
+    <name><text>Pythagorean Theorem Question 7</text></name>
+    <questiontext format="html"><text>If a triangle has sides of lengths 8, 15, and 17, is it a right triangle?</text></questiontext>
+    <answer fraction="100"><text>Yes</text><feedback><text>Correct! 8² + 15² = 17² verifies that it is a right triangle.</text></feedback></answer>
+    <answer fraction="0"><text>No</text><feedback><text>Incorrect. This combination does form a right triangle.</text></feedback></answer>
+  </question>
+
+  <question type="multichoice">
+    <name><text>Pythagorean Theorem Question 8</text></name>
+    <questiontext format="html"><text>What is the relationship of the lengths of the sides in a right triangle?</text></questiontext>
+    <answer fraction="100"><text>The square of the hypotenuse is equal to the sum of the squares of the legs.</text><feedback><text>Correct! This defines the Pythagorean theorem.</text></feedback></answer>
+    <answer fraction="0"><text>The sum of all sides is equal to 180 degrees.</text><feedback><text>Incorrect. This refers to the sum of angles in any triangle, not the Pythagorean theorem.</text></feedback></answer>
+    <answer fraction="0"><text>The legs are always equal in length.</text><feedback><text>Incorrect. This is not true for all right triangles.</text></feedback></answer>
+    <answer fraction="0"><text>Each angle must be acute.</text><feedback><text>Incorrect. A right triangle has one right angle.</text></feedback></answer>
+  </question>
+
+  <question type="multichoice">
+    <name><text>Pythagorean Theorem Question 9</text></name>
+    <questiontext format="html"><text>Can the Pythagorean theorem be used in three-dimensional geometry?</text></questiontext>
+    <answer fraction="0"><text>No, it only applies to two-dimensional triangles.</text><feedback><text>Incorrect. It applies specifically to two-dimensional right triangles.</text></feedback></answer>
+    <answer fraction="100"><text>Yes, but in a modified form.</text><feedback><text>Correct! The theorem can be adapted for three-dimensional cases using the distance formula.</text></feedback></answer>
+  </question>
+
+  <question type="multichoice">
+    <name><text>Pythagorean Theorem Question 10</text></name>
+    <questiontext format="html"><text>What do we call a triangle that satisfies the Pythagorean theorem?</text></questiontext>
+    <answer fraction="100"><text>Pythagorean triangle</text><feedback><text>Correct! Triangles that satisfy this relationship are known as Pythagorean triangles.</text></feedback></answer>
+    <answer fraction="0"><text>Right triangle</text><feedback><text>Incorrect. While all Pythagorean triangles are right triangles, not all right triangles are referred to specifically as Pythagorean triangles.</text></feedback></answer>
+    <answer fraction="0"><text>Acute triangle</text><feedback><text>Incorrect. An acute triangle has all angles less than 90 degrees, which does not satisfy the theorem.</text></feedback></answer>
+    <answer fraction="0"><text>Obtuse triangle</text><feedback><text>Incorrect. An obtuse triangle has one angle greater than 90 degrees, which does not satisfy the theorem.</text></feedback></answer>
+  </question>
+</quiz>

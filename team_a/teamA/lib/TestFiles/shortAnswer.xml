@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<quiz>
+  <question type="category">
+      <category>
+      <text>Pythagorean Theorem</text>
+      </category>
+  </question>
+  <question type="shortanswer">
+    <name><text>Pythagorean Theorem Question 1</text></name>
+    <questiontext><text>What is the length of the hypotenuse of a right triangle if the lengths of the two legs are 9 and 12?</text></questiontext>
+    <answer fraction="100"><text>15</text></answer>
+    <answer fraction="100"><text>√225</text></answer>
+  </question>
+  
+  <question type="shortanswer">
+    <name><text>Pythagorean Theorem Question 2</text></name>
+    <questiontext><text>If the hypotenuse of a right triangle is 10 and one leg is 6, what is the length of the other leg?</text></questiontext>
+    <answer fraction="100"><text>8</text></answer>
+    <answer fraction="100"><text>√(10² - 6²)</text></answer>
+  </question>
+  
+  <question type="shortanswer">
+    <name><text>Pythagorean Theorem Question 3</text></name>
+    <questiontext><text>Provide an example of a Pythagorean triple.</text></questiontext>
+    <answer fraction="100"><text>3, 4, 5</text></answer>
+    <answer fraction="100"><text>5, 12, 13</text></answer>
+    <answer fraction="100"><text>7, 24, 25</text></answer>
+  </question>
+</quiz>
