@@ -2,7 +2,7 @@
 Fall SWEN 670 Cohort
 
 Team A (Learning Lens) - LLM Integrated Software Application for K-12 Education
-
+Testing merge/pull
 
 Members:
 Kevin Watts (Team Lead, Technical Writer)
