@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<quiz>
+  <question type="category">
+      <category>
+      <text>Pythagorean Theorem</text>
+      </category>
+  </question>
+  <question type="truefalse">
+    <name><text>Pythagorean Theorem Question 1</text></name>
+    <questiontext format="html"><text>The Pythagorean theorem states that in a right triangle, the square of the hypotenuse is equal to the sum of the squares of the other two sides.</text></questiontext>
+    <answer fraction="100"><text>True</text><feedback><text>Correct! This is the fundamental statement of the Pythagorean theorem.</text></feedback></answer>
+    <answer fraction="0"><text>False</text><feedback><text>Incorrect. The Pythagorean theorem indeed states that the square of the hypotenuse is equal to the sum of the squares of the other two sides.</text></feedback></answer>
+  </question>
+  
+  <question type="truefalse">
+    <name><text>Pythagorean Theorem Question 2</text></name>
+    <questiontext format="html"><text>For a right triangle with legs of lengths 3 and 4, the length of the hypotenuse is 5.</text></questiontext>
+    <answer fraction="100"><text>True</text><feedback><text>Correct! Using the Pythagorean theorem: 3² + 4² = 9 + 16 = 25, so the hypotenuse is √25 = 5.</text></feedback></answer>
+    <answer fraction="0"><text>False</text><feedback><text>Incorrect. The hypotenuse is indeed 5, as verified by the Pythagorean theorem.</text></feedback></answer>
+  </question>
+
+  <question type="truefalse">
+    <name><text>Pythagorean Theorem Question 3</text></name>
+    <questiontext format="html"><text>The Pythagorean theorem can only be used for triangles with one right angle.</text></questiontext>
+    <answer fraction="100"><text>True</text><feedback><text>Correct! The Pythagorean theorem applies specifically to right triangles.</text></feedback></answer>
+    <answer fraction="0"><text>False</text><feedback><text>Incorrect. The theorem is specifically applicable only to right triangles.</text></feedback></answer>
+  </question>
+
+  <question type="truefalse">
+    <name><text>Pythagorean Theorem Question 4</text></name>
+    <questiontext format="html"><text>The formula a² + b² = c² can be rearranged to find any side of a right triangle.</text></questiontext>
+    <answer fraction="100"><text>True</text><feedback><text>Correct! You can rearrange the formula to solve for a, b, or c as needed.</text></feedback></answer>
+    <answer fraction="0"><text>False</text><feedback><text>Incorrect. The formula can indeed be rearranged to solve for any side of the triangle.</text></feedback></answer>
+  </question>
+
+  <question type="truefalse">
+    <name><text>Pythagorean Theorem Question 5</text></name>
+    <questiontext format="html"><text>The lengths of the sides of a right triangle must always be integers.</text></questiontext>
+    <answer fraction="0"><text>True</text><feedback><text>Incorrect. While there are integer solutions (like 3, 4, 5), sides can also be non-integers.</text></feedback></answer>
+    <answer fraction="100"><text>False</text><feedback><text>Correct! The sides of a right triangle can be any real numbers, not just integers.</text></feedback></answer>
+  </question>
+
+  <question type="truefalse">
+    <name><text>Pythagorean Theorem Question 6</text></name>
+    <questiontext format="html"><text>If a triangle has sides of lengths 5, 12, and 13, it is a right triangle.</text></questiontext>
+    <answer fraction="100"><text>True</text><feedback><text>Correct! 5² + 12² = 25 + 144 = 169, which is 13², confirming it is a right triangle.</text></feedback></answer>
+    <answer fraction="0"><text>False</text><feedback><text>Incorrect. The triangle with these side lengths is indeed a right triangle by the Pythagorean theorem.</text></feedback></answer>
+  </question>
+
+  <question type="truefalse">
+    <name><text>Pythagorean Theorem Question 7</text></name>
+    <questiontext format="html"><text>The hypotenuse is always the longest side in a right triangle.</text></questiontext>
+    <answer fraction="100"><text>True</text><feedback><text>Correct! By definition, the hypotenuse is the longest side of a right triangle.</text></feedback></answer>
+    <answer fraction="0"><text>False</text><feedback><text>Incorrect. The hypotenuse is always the longest side in a right triangle.</text></feedback></answer>
+  </question>
+
+  <question type="truefalse">
+    <name><text>Pythagorean Theorem Question 8</text></name>
+    <questiontext format="html"><text>The Pythagorean theorem can be extended to non-right triangles.</text></questiontext>
+    <answer fraction="0"><text>True</text><feedback><text>Incorrect. The Pythagorean theorem specifically applies to right triangles only.</text></feedback></answer>
+    <answer fraction="100"><text>False</text><feedback><text>Correct! The theorem is not applicable to non-right triangles.</text></feedback></answer>
+  </question>
+
+  <question type="truefalse">
+    <name><text>Pythagorean Theorem Question 9</text></name>
+    <questiontext format="html"><text>The Pythagorean theorem can be used to derive the distance formula in coordinate geometry.</text></questiontext>
+    <answer fraction="100"><text>True</text><feedback><text>Correct! The distance formula is derived from the Pythagorean theorem in the context of the coordinate plane.</text></feedback></answer>
+    <answer fraction="0"><text>False</text><feedback><text>Incorrect. The distance formula is indeed based on the Pythagorean theorem.</text></feedback></answer>
+  </question>
+
+  <question type="truefalse">
+    <name><text>Pythagorean Theorem Question 10</text></name>
+    <questiontext format="html"><text>If one leg of a right triangle is 8 and the hypotenuse is 10, the length of the other leg can be found using the Pythagorean theorem.</text></questiontext>
+    <answer fraction="100"><text>True</text><feedback><text>Correct! You can find the other leg's length by using the formula: 10² - 8² = c².</text></feedback></answer>
+    <answer fraction="0"><text>False</text><feedback><text>Incorrect. The other leg's length can be calculated using the Pythagorean theorem.</text></feedback></answer>
+  </question>
+</quiz>
