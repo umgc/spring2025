@@ -15,3 +15,25 @@ x86/
 *.[Cc]ache
 # but keep track of directories ending in .cache
 !*.[Cc]ache/
+
+# Ignore Flutter/Dart build artifacts
+# Flutter build directories
+**/build/
+**/flutter/GeneratedPluginRegistrant.*
+**/flutter/generated_plugin_registrant.*
+**/flutter/generated_plugins.cmake
+
+# Windows, macOS, Linux platform-specific build files
+flutter_windows.dll.pdb
+flutter_windows.dll
+**/*.so
+**/*.dylib
+**/*.a
+*.flutter-plugins
+*.flutter-plugins-dependencies
+
+# Ignore any temporary or log files
+*.log
+*.tmp
+*.swp
+*.bak
