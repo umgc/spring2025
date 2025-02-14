@@ -12,5 +12,3 @@ Daniel Diep (Software Engineer / Programmer, Testing)
 Andrew Hammes (Business Analyst, Software Developer)
 Dinesh Ghimire (Software Developer, Tester)
 Nathaniel Boyd (Test Server Operator, System Admin)
-
-update
