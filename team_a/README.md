@@ -1,7 +1,7 @@
 # spring2025
 Fall SWEN 670 Cohort
 
-Team A (EduLense) - LLM Integrated Software Application for K-12 Education
+Team A (Learning Lens) - LLM Integrated Software Application for K-12 Education
 
 
 Members:
