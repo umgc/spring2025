@@ -1,8 +1,10 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/Views/assessments_view.dart';
+import 'package:learninglens_app/Views/user_settings.dart';
+import 'package:learninglens_app/notifiers/login_notifier.dart';
+import 'package:learninglens_app/notifiers/theme_notifier.dart';
 import 'package:provider/provider.dart';
 import 'Views/login_page.dart';
 import 'Views/dashboard.dart';
@@ -15,8 +17,11 @@ void main() async{
   await dotenv.load();
   // runApp(MyApp());
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => ThemeNotifier(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeNotifier()), // Theme provider
+        ChangeNotifierProvider(create: (_) => LoginNotifier()), // Login provider
+      ],
       child: MyApp(),
     ),
   );
@@ -40,13 +45,13 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: "Learning Lens",
-      home: LoginApp(),
+      home:  TeacherDashboard(),
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Provider.of<ThemeNotifier>(context).primaryColor),
       ),
       scrollBehavior: CustomScrollBehavior(),
       routes: {
-        'LoginPage': (context) => LoginApp(),
+        // 'LoginPage': (context) => LoginApp(),
         // '/EssayEditPage': (context) => EssayEditPage(jsonData),
         // '/Content': (context) => ViewCourseContents(),
         '/EssayGenerationPage': (context) => EssayGeneration(title: 'Essay Generation'),
@@ -54,6 +59,7 @@ class MyApp extends StatelessWidget {
         '/EditQuestions': (context) => EditQuestions(''),
         // '/create': (context) => const CreatePage(),
         '/dashboard': (context) => TeacherDashboard(),
+        '/user': (context) => UserSettings(),
         //'/send_essay_to_moodle': (context) => EssayAssignmentSettings(''),
         '/assessments': (context) => AssessmentsView(),
         // '/viewExams': (context) => const ViewExamPage(),

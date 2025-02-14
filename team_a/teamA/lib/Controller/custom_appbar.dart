@@ -25,7 +25,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           Flexible(
             child: IconButton(
               icon: Icon(Icons.arrow_back),
-              onPressed: () {
+              onPressed:  isDashboard(context) ? null : () {
                 Navigator.pop(context); // Navigate back
               },
             ),
@@ -33,8 +33,9 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           Flexible(
             child: IconButton(
               icon: Icon(Icons.home),
-              onPressed: () {
-                // Navigate to the TeacherDashboard
+              // if the current page is the dashboard, do nothing
+              onPressed: isDashboard(context) ? null : () {
+                // Navigate to the TeacherDashboardr
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => TeacherDashboard()),
@@ -47,25 +48,26 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       actions: <Widget>[
         IconButton(
           icon: Icon(Icons.settings),
-          onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => UserSettings()),
-        );
+          onPressed: !isDashboard(context) ? null : () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => UserSettings()),
+            );
           },
         ),
         Padding(
           padding: EdgeInsets.only(right: 10.0),
           child: InkWell(
-        onTap: () {
-          MoodleApiSingleton().logout();
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (context) => LoginApp()),
-            (route) => false,
-          );
-          print("Profile image clicked!");
-        },
+        // remove the logout button 
+        // onTap: () {
+        //   MoodleApiSingleton().logout();
+        //   Navigator.pushAndRemoveUntil(
+        //     context,
+        //     MaterialPageRoute(builder: (context) => LoginApp()),
+        //     (route) => false,
+        //   );
+        //   print("Profile image clicked!");
+        // },
         child: Material(
           color: Colors.transparent,
           child: Container(
@@ -90,20 +92,14 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     );
   }
 
+  /**
+   * Check if the current page is the dashboard
+   */
+  bool isDashboard(BuildContext context) {
+    return title == 'Learning Lens';// TODO: there has to be a better reference to the dashboard view...
+  }
+
   // This is required to implement PreferredSizeWidget
   @override
   Size get preferredSize => Size.fromHeight(kToolbarHeight);
-}
-
-
-class ThemeNotifier extends ChangeNotifier {
-  Color _primaryColor = Colors.deepPurple;
-
-  Color get primaryColor => _primaryColor;
-
-  void updateTheme(Color color) {
-    _primaryColor = color;
-    print('Theme updated to: $color');
-    notifyListeners();  // Notify listeners (like the whole app) to rebuild
-  }
 }
