@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'login_page.dart'; // Correct import
+import 'package:yappy/logout.dart';
+import 'package:yappy/home_page.dart';
+import 'package:yappy/login_page.dart';
+// Correct import
 
 void main() {
   runApp(const MyApp());
@@ -12,7 +15,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const LoginPage(), // Correct way to initialize LoginPage
+      //home: const LoginPage() 
+      //home: const HomePage(),
+      // home: const SignUpPage(), 
+      //home: const LogoutPage()
+
     );
   }
 }
