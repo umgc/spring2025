@@ -5,6 +5,7 @@ import 'package:learninglens_app/Views/assessments_view.dart';
 import 'package:learninglens_app/Views/user_settings.dart';
 import 'package:learninglens_app/notifiers/login_notifier.dart';
 import 'package:learninglens_app/notifiers/theme_notifier.dart';
+import 'package:learninglens_app/services/local_storage_service.dart';
 import 'package:provider/provider.dart';
 import 'Views/login_page.dart';
 import 'Views/dashboard.dart';
@@ -16,6 +17,8 @@ import 'Views/edit_questions.dart';
 void main() async{
   await dotenv.load();
   // runApp(MyApp());
+  await LocalStorageService.init(); // Initialize SharedPreferences
+
   runApp(
     MultiProvider(
       providers: [

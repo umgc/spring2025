@@ -1,194 +1,141 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/**
- * This class is responsible for handling all the local storage operations that utilizes the Shared Preferences package and the dotenv package.
- * through the use of the shared_preferences package, the class is able to store and retrieve data from the local storage of the device.
- * The class also uses the dotenv package to access the .env file that contains the environment variables that are used in the application and during development.
- * 
- * TODO: 
- * Encrypt the data stored in the local storage to ensure the security of the user's data.
- * During the save sets we could send a pulse request to the server(moodle, openai, claude,preplexity etc.) to ensure the application can reach the server.
- */
+/// This class manages local storage operations using SharedPreferences and dotenv.
+/// TODO:
+/// - Encrypt sensitive data stored in SharedPreferences.
+/// - Implement periodic server checks for API availability (Moodle, OpenAI, Claude, Perplexity).
 class LocalStorageService {
-  static const String _kCredentialsKey = 'credentials';
-  static const String _kThemeKey = 'theme';
-  static const String _openAIKey = 'openAIKey';
-  static const String _claudeKey = 'claudeKey';
-  static const String _perplexityKey = 'perplexityKey'; 
-  static const String _moodleUrlKey = 'moodleUrl'; 
-  static const String _primaryColorKey = 'primaryColor';
-  static const String _isLoggedInKey = 'isLoggedIn'; 
+  static late SharedPreferences _prefs;
 
-  // TODO: encrypt me please
-  Future<void> saveCredentials(String username, String password) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(_kCredentialsKey, [username, password]);
+  /// Initializes SharedPreferences. MUST be called once at app startup.
+  static Future<void> init() async {
+    _prefs = await SharedPreferences.getInstance();
   }
 
-  Future<List<String>?> getCredentials() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getStringList(_kCredentialsKey);
+  /// Saves user credentials.
+  static void saveCredentials(String username, String password) {
+    _prefs.setStringList('credentials', [username, password]);
   }
 
-  Future<void> saveTheme(String themeName) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_kThemeKey, themeName);
+  /// Retrieves stored username, falling back to dotenv.
+  static String getUsername() {
+    final credentials = _prefs.getStringList('credentials');
+    return credentials != null && credentials.isNotEmpty
+        ? credentials[0]
+        : dotenv.env['MOODLE_USERNAME'] ?? '';
   }
 
-  Future<String?> getTheme() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_kThemeKey);
+  /// Retrieves stored password, falling back to dotenv.
+  static String getPassword() {
+    final credentials = _prefs.getStringList('credentials');
+    return credentials != null && credentials.length > 1
+        ? credentials[1]
+        : dotenv.env['MOODLE_PASSWORD'] ?? '';
   }
 
-  Future<void> clearCredentials() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_kCredentialsKey);
+  /// Clears stored credentials.
+  static void clearCredentials() {
+    _prefs.remove('credentials');
   }
 
-  Future<void> clearTheme() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_kThemeKey);
+  /// Saves theme preference.
+  static void saveTheme(String themeName) {
+    _prefs.setString('theme', themeName);
   }
 
-  Future<void> saveLoginState(bool isLoggedIn) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_isLoggedInKey, isLoggedIn);
+  /// Retrieves stored theme preference.
+  static String getTheme() {
+    return _prefs.getString('theme') ?? 'light'; // Default to 'light' theme
   }
 
-  Future<bool?> getIsLoggedIn() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_isLoggedInKey);
+  /// Clears theme preference.
+  static void clearTheme() {
+    _prefs.remove('theme');
   }
 
-  Future<void> saveMoodleUrl(String moodleUrl) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_moodleUrlKey, moodleUrl);
+  /// Saves login state.
+  static void saveLoginState(bool isLoggedIn) {
+    _prefs.setBool('isLoggedIn', isLoggedIn);
   }
 
-  Future<String?> getMoodleUrl() async {
-    final prefs = await SharedPreferences.getInstance();
-    if(prefs.getString(_moodleUrlKey) != null){
-      //print('returning moodle url from shared preferences');
-      return prefs.getString(_moodleUrlKey);
-    } else if(dotenv.env['MOODLE_URL'] != null){
-      //print('returning moodle url from dotenv');
-      return dotenv.env['MOODLE_URL'];
-    }
-    return '';
+  /// Retrieves login state.
+  static bool getIsLoggedIn() {
+    return _prefs.getBool('isLoggedIn') ?? false;
   }
 
-  Future<void> clearLoginState() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_isLoggedInKey);
+  /// Clears login state.
+  static void clearLoginState() {
+    _prefs.remove('isLoggedIn');
   }
 
-  Future<void> clearMoodleUrl() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_moodleUrlKey);
+  /// Saves Moodle URL.
+  static void saveMoodleUrl(String moodleUrl) {
+    _prefs.setString('moodleUrl', moodleUrl);
   }
 
-  Future<String?> getUsername() async {
-    final prefs = await SharedPreferences.getInstance();
-    final credentials = prefs.getStringList(_kCredentialsKey);
-    if(credentials?[0] != null){
-      //print('returning username from shared preferences');
-      return credentials?[0];
-    } else if(dotenv.env['MOODLE_USERNAME'] != null){
-      //print('returning username from dotenv');
-      return dotenv.env['MOODLE_USERNAME'];
-    } else {
-      return '';
-    }
+  /// Retrieves Moodle URL from storage or dotenv.
+  static String getMoodleUrl() {
+    return _prefs.getString('moodleUrl') ?? dotenv.env['MOODLE_URL'] ?? '';
   }
 
-  Future<String?> getPassword() async {
-    final prefs = await SharedPreferences.getInstance();
-    final credentials = prefs.getStringList(_kCredentialsKey);
-     if(credentials?[1] != null){
-      //print('returning password from shared preferences');
-      return credentials?[1];
-    } else if(dotenv.env['MOODLE_PASSWORD'] != null){
-      //print('returning password from dotenv');
-      return dotenv.env['MOODLE_PASSWORD'];
-    } else {
-      return '';
-    }
+  /// Clears Moodle URL.
+  static void clearMoodleUrl() {
+    _prefs.remove('moodleUrl');
   }
 
-  Future<void> savePrimaryColor(String colorHex) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_primaryColorKey, colorHex);
+  /// Saves primary color.
+  static void savePrimaryColor(String colorHex) {
+    _prefs.setString('primaryColor', colorHex);
   }
 
-  Future<String?> getPrimaryColor() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getString(_primaryColorKey);
+  /// Retrieves primary color.
+  static String getPrimaryColor() {
+    return _prefs.getString('primaryColor') ?? '#FFFFFF'; // Default to white
   }
 
-  Future<void> saveOpenAIKey(String openAIKey) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_openAIKey, openAIKey);
+  /// Saves OpenAI API key.
+  static void saveOpenAIKey(String openAIKey) {
+    _prefs.setString('openAIKey', openAIKey);
   }
 
-  Future<String?> getOpenAIKey() async {
-    final prefs = await SharedPreferences.getInstance();
-    if(prefs.getString(_openAIKey) != null){
-      //print('returning openai key from shared preferences');
-      return prefs.getString(_openAIKey);
-    } else if(dotenv.env['openai_apikey'] != null){
-      //print('returning openai key from dotenv');
-      return dotenv.env['openai_apikey'];
-    }
-    return '';
+  /// Retrieves OpenAI API key from storage or dotenv.
+  static String getOpenAIKey() {
+    return _prefs.getString('openAIKey') ?? dotenv.env['openai_apikey'] ?? '';
   }
 
-  Future<void> saveClaudeKey(String claudeKey) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_claudeKey, claudeKey);
+  /// Clears OpenAI API key.
+  static void clearOpenAIKey() {
+    _prefs.remove('openAIKey');
   }
 
-  Future<String?> getClaudeKey() async {
-    final prefs = await SharedPreferences.getInstance();
-    if(prefs.getString(_claudeKey) != null){
-      //print('returning claude key from shared preferences');
-      return prefs.getString(_claudeKey);
-    } else if(dotenv.env['claudeApiKey'] != null){
-      //print('returning claude key from dotenv');
-      return dotenv.env['claudeApiKey'];
-    }
-    return '';
+  /// Saves Claude API key.
+  static void saveClaudeKey(String claudeKey) {
+    _prefs.setString('claudeKey', claudeKey);
   }
 
-  Future<void> savePreplexityKey(String perplexity) async {  // Corrected method name
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_perplexityKey, perplexity); // Corrected key name
+  /// Retrieves Claude API key from storage or dotenv.
+  static String getClaudeKey() {
+    return _prefs.getString('claudeKey') ?? dotenv.env['claudeApiKey'] ?? '';
   }
 
-  Future<String?> getPreplexityKey() async { // Corrected method name
-    final prefs = await SharedPreferences.getInstance();
-    if (prefs.getString(_perplexityKey) != null) {
-      //print('returning preplexity from shared preferences');
-      return prefs.getString(_perplexityKey); // Corrected key name
-    } else if (dotenv.env['perplexity_apikey'] != null) {
-      //print('returning preplexity from dotenv');
-      return dotenv.env['perplexity_apikey']; // Corrected key name
-    }
-    return '';
+  /// Clears Claude API key.
+  static void clearClaudeKey() {
+    _prefs.remove('claudeKey');
   }
 
-  Future<void> clearPreplexityKey() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_perplexityKey);
+  /// Saves Perplexity API key.
+  static void savePerplexityKey(String perplexityKey) {
+    _prefs.setString('perplexityKey', perplexityKey);
   }
 
-  Future<void> clearOpenAIKey() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_openAIKey);
+  /// Retrieves Perplexity API key from storage or dotenv.
+  static String getPerplexityKey() {
+    return _prefs.getString('perplexityKey') ?? dotenv.env['perplexity_apikey'] ?? '';
   }
 
-  Future<void> clearClaudeKey() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_claudeKey);
+  /// Clears Perplexity API key.
+  static void clearPerplexityKey() {
+    _prefs.remove('perplexityKey');
   }
 }

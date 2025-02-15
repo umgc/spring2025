@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
+import 'package:learninglens_app/services/local_storage_service.dart';
 import '../Api/moodle_api_singleton.dart';
 import 'package:learninglens_app/Controller/beans.dart';
 import 'view_submission_detail.dart';
@@ -38,9 +39,9 @@ class SubmissionListState extends State<SubmissionList> {
   final String defaultLlm = 'Perplexity';
 
   // API keys
-  final perplexityApiKey = dotenv.env['perplexity_apikey'] ?? '';
-  final openApiKey = dotenv.env['openai_apikey'] ?? 'perplexity_apikey';
-  final claudeApiKey = dotenv.env['claudeApiKey'] ?? 'perplexity_apikey';
+  final perplexityApiKey = LocalStorageService.getPerplexityKey();
+  final openApiKey = LocalStorageService.getOpenAIKey();
+  final claudeApiKey =  LocalStorageService.getClaudeKey();
 
   // Filter state
   String filterOption = 'All'; // Options: 'All', 'With Submission', 'Without Submission'

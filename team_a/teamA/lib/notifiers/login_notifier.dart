@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_null_comparison
+
 import 'package:flutter/material.dart';
 import 'package:learninglens_app/Api/moodle_api_singleton.dart'; // Import your Moodle API
 import 'package:learninglens_app/services/local_storage_service.dart';
@@ -26,10 +28,10 @@ class LoginNotifier with ChangeNotifier {
   }
 
   Future<void> _loadLoginState() async {
-    _isLoggedIn = await _localStorageService.getIsLoggedIn() ?? false;
-    _username = await _localStorageService.getUsername();
-    _password = await _localStorageService.getPassword();
-    _moodleUrl = await _localStorageService.getMoodleUrl();
+    _isLoggedIn = LocalStorageService.getIsLoggedIn();
+    _username = LocalStorageService.getUsername();
+    _password = LocalStorageService.getPassword();
+    _moodleUrl = LocalStorageService.getMoodleUrl();
 
 
     _hasLLMKey = await _checkHasLLMKey();
@@ -39,9 +41,9 @@ class LoginNotifier with ChangeNotifier {
   }
 
   Future<bool> _checkHasLLMKey() async {
-    String? openAIKey = await _localStorageService.getOpenAIKey();
-    String? perplexityKey = await _localStorageService.getPreplexityKey();
-    String? claudeKey = await _localStorageService.getClaudeKey();
+    String? openAIKey = LocalStorageService.getOpenAIKey();
+    String? perplexityKey = LocalStorageService.getPerplexityKey();
+    String? claudeKey = LocalStorageService.getClaudeKey();
 
     return openAIKey != null && openAIKey.isNotEmpty ||
         perplexityKey != null && perplexityKey.isNotEmpty ||
@@ -72,9 +74,9 @@ class LoginNotifier with ChangeNotifier {
         _moodleUrl = moodleUrl;
 
         // 2. Save login state and credentials to local storage:
-        await _localStorageService.saveLoginState(_isLoggedIn);
-        await _localStorageService.saveCredentials(username, password);
-        await _localStorageService.saveMoodleUrl(moodleUrl); // Save Moodle URL
+        LocalStorageService.saveLoginState(_isLoggedIn);
+        LocalStorageService.saveCredentials(username, password);
+        LocalStorageService.saveMoodleUrl(moodleUrl); // Save Moodle URL
 
         // check the hasLLMKey state
         notifyListeners(); // Notify listeners (widgets) about the login
@@ -95,9 +97,9 @@ class LoginNotifier with ChangeNotifier {
     _password = null;
     _moodleUrl = null;
 
-    await _localStorageService.clearLoginState();
-    await _localStorageService.clearCredentials();
-    await _localStorageService.clearMoodleUrl();
+    LocalStorageService.clearLoginState();
+    LocalStorageService.clearCredentials();
+    LocalStorageService.clearMoodleUrl();
 
     notifyListeners();
   }
@@ -105,11 +107,11 @@ class LoginNotifier with ChangeNotifier {
   // save the llm key to local storage
   Future<void> saveLLMKey(LLMKey key, String value) async {
     if(key == LLMKey.openAI){
-      await _localStorageService.saveOpenAIKey(value);
+      LocalStorageService.saveOpenAIKey(value);
     } else if(key == LLMKey.perplexity){
-      await _localStorageService.savePreplexityKey(value);
+      LocalStorageService.savePerplexityKey(value);
     } else if(key == LLMKey.claude){
-      await _localStorageService.saveClaudeKey(value);
+      LocalStorageService.saveClaudeKey(value);
     }
     _hasLLMKey = await _checkHasLLMKey();
     notifyListeners();

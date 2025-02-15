@@ -18,7 +18,6 @@ class UserSettingsState extends State<UserSettings> {
   final TextEditingController _claudeKeyController = TextEditingController();
   final TextEditingController _preplexityKeyController = TextEditingController();
 
-  final LocalStorageService _localStorage = LocalStorageService();
 
   @override
   void initState() {
@@ -27,12 +26,12 @@ class UserSettingsState extends State<UserSettings> {
   }
 
   Future<void> _loadStoredValues() async {
-    final username = await _localStorage.getUsername() ?? '';
-    final password = await _localStorage.getPassword() ?? '';
-    final moodleUrl = await _localStorage.getMoodleUrl() ?? '';
-    final apiKey = await _localStorage.getOpenAIKey() ?? '';
-    final claudeKey = await _localStorage.getClaudeKey() ?? '';
-    final preplexityKey = await _localStorage.getPreplexityKey() ?? '';
+    final username = LocalStorageService.getUsername();
+    final password = LocalStorageService.getPassword();
+    final moodleUrl = LocalStorageService.getMoodleUrl() ;
+    final apiKey = LocalStorageService.getOpenAIKey();
+    final claudeKey = LocalStorageService.getClaudeKey();
+    final preplexityKey =  LocalStorageService.getPerplexityKey();
 
     setState(() {
       _usernameController.text = username;

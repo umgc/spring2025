@@ -3,6 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:learninglens_app/Api/moodle_api_singleton.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/Views/essay_edit_page.dart';
+import 'package:learninglens_app/services/local_storage_service.dart';
 import 'dart:convert';
 import '../Api/llm_api.dart';
 import 'package:llm_api_modules/openai_api.dart';
@@ -48,9 +49,9 @@ class _EssayGenerationState extends State<EssayGeneration>
   dynamic rubricasjson;
 
   // api keys
-  final perplexityApiKey = dotenv.env['perplexity_apikey'] ?? '';
-  final openApiKey = dotenv.env['openai_apikey'] ?? 'perplexity_apikey';
-  final claudeApiKey = dotenv.env['claudeApiKey'] ?? 'perplexity_apikey';
+  final perplexityApiKey = LocalStorageService.getPerplexityKey();
+  final openApiKey = LocalStorageService.getOpenAIKey();
+  final claudeApiKey =  LocalStorageService.getClaudeKey();
 
   // event handlers
   void _handlePointScaleChanged(int? newValue) {
