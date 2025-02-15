@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:learninglens_app/Controller/beans.dart';
+import 'package:learninglens_app/services/api_service.dart';
 
 // Singleton class for Moodle API access.
 class MoodleApiSingleton {
@@ -41,7 +42,7 @@ class MoodleApiSingleton {
   // Log in to Moodle and retrieve the user token. Throws HttpException if login failed.
   Future<void> login(String username, String password, String baseURL) async {
     print('Logging in to Moodle...');
-    final response = await http.get(Uri.parse(
+    final response = await ApiService().httpGet(Uri.parse(
         '$baseURL/login/token.php?username=$username&password=$password&service=moodle_mobile_app'));
     Map<String, dynamic> data = jsonDecode(response.body);
     if (response.statusCode != 200) {
@@ -54,7 +55,7 @@ class MoodleApiSingleton {
 
     //get user info
     final userinforesponse =
-        await http.post(Uri.parse(baseURL + serverUrl), body: {
+        await ApiService().httpPost(Uri.parse(baseURL + serverUrl), body: {
       'wstoken': _userToken,
       'wsfunction': 'core_webservice_get_site_info',
       'moodlewsrestformat': 'json',
@@ -82,7 +83,7 @@ Future<bool> isUserTeacher(List<Course> moodleCourses) async {
 
     // Step 2: Check the user's roles in each course
     // final getRolesUrl = Uri.parse('$moodleURL/?wsfunction=core_role_get_roles_in_context&moodlewsrestformat=json');
-    final rolesResponse = await http.post(Uri.parse(moodleURL + serverUrl), body:  {
+    final rolesResponse = await ApiService().httpPost(Uri.parse(moodleURL + serverUrl), body:  {
       'wstoken': _userToken,
       'wsfunction': 'core_enrol_get_enrolled_users',
       'courseid': courseId.toString(),
@@ -122,7 +123,7 @@ Future<bool> isUserTeacher(List<Course> moodleCourses) async {
   Future<List<Course>> getCourses() async {
     if (_userToken == null) throw StateError('User not logged in to Moodle');
 
-    final response = await http.post(Uri.parse(moodleURL + serverUrl), body: {
+    final response = await ApiService().httpPost(Uri.parse(moodleURL + serverUrl), body: {
       'wstoken': _userToken,
       'wsfunction': 'core_course_get_courses',
       'moodlewsrestformat': 'json',
@@ -143,7 +144,7 @@ Future<bool> isUserTeacher(List<Course> moodleCourses) async {
   Future<void> importQuiz(String courseid, String quizXml) async {
     if (_userToken == null) throw StateError('User not logged in to Moodle');
 
-    final http.Response response = await http.post(Uri.parse(
+    final http.Response response = await ApiService().httpPost(Uri.parse(
         '$serverUrl$_userToken$jsonFormat&wsfunction=local_quizgen_import_questions&courseid=$courseid&questionxml=$quizXml'));
     if (response.statusCode != 200) {
       throw HttpException(response.body);
@@ -157,7 +158,7 @@ Future<bool> isUserTeacher(List<Course> moodleCourses) async {
     if (_userToken == null) throw StateError('User not logged in to Moodle');
 
     // URL of the Moodle server
-    final response = await http.post(Uri.parse(moodleURL + serverUrl), body: {
+    final response = await ApiService().httpPost(Uri.parse(moodleURL + serverUrl), body: {
       'wstoken': _userToken,
       'wsfunction': 'mod_quiz_get_quizzes_by_courses',
       'moodlewsrestformat': 'json',
@@ -192,7 +193,7 @@ Future<bool> isUserTeacher(List<Course> moodleCourses) async {
     if (_userToken == null) throw StateError('User not logged in to Moodle');
 
     // URL of the Moodle server
-    final response = await http.post(Uri.parse(moodleURL + serverUrl), body: {
+    final response = await ApiService().httpPost(Uri.parse(moodleURL + serverUrl), body: {
       'wstoken': _userToken,
       'wsfunction': 'mod_assign_get_assignments',
       'moodlewsrestformat': 'json',
@@ -227,7 +228,7 @@ Future<bool> isUserTeacher(List<Course> moodleCourses) async {
     if (_userToken == null) throw StateError('User not logged in to Moodle');
 
     // URL of the Moodle server
-    final response = await http.post(Uri.parse(moodleURL + serverUrl), body: {
+    final response = await ApiService().httpPost(Uri.parse(moodleURL + serverUrl), body: {
       'wstoken': _userToken,
       'wsfunction': 'core_enrol_get_enrolled_users',
       'courseid': courseId,
@@ -257,7 +258,7 @@ Future<bool> isUserTeacher(List<Course> moodleCourses) async {
   Future<List<Course>> getUserCourses() async {
     if (_userToken == null) throw StateError('User not logged in to Moodle');
     // var moodleURL = MoodleApiSingleton().moodleURL;
-    final response = await http.post(Uri.parse(moodleURL + serverUrl), body: {
+    final response = await ApiService().httpPost(Uri.parse(moodleURL + serverUrl), body: {
       'wstoken': _userToken,
       'wsfunction':
           'core_course_get_enrolled_courses_by_timeline_classification',
@@ -292,7 +293,7 @@ Future<bool> isUserTeacher(List<Course> moodleCourses) async {
   Future<SubmissionStatus?> getSubmissionStatus(
       int assignmentId, int userId) async {
     try {
-      final response = await http.post(
+      final response = await ApiService().httpPost(
         Uri.parse(moodleURL + serverUrl),
         body: {
           'wstoken': _userToken,
@@ -331,7 +332,7 @@ Future<bool> isUserTeacher(List<Course> moodleCourses) async {
   Future<List<dynamic>> getRubricGrades(int assignmentId, int userid) async {
     if (_userToken == null) throw StateError('User not logged in to Moodle');
     try {
-      final response = await http.post(
+      final response = await ApiService().httpPost(
         Uri.parse(moodleURL + serverUrl),
         body: {
           'wstoken': _userToken,
@@ -377,7 +378,7 @@ Future<bool> isUserTeacher(List<Course> moodleCourses) async {
       int assignmentId, int userId, String jsonGrades) async {
     if (_userToken == null) throw StateError('User not logged in to Moodle');
     try {
-      final response = await http.post(
+      final response = await ApiService().httpPost(
         Uri.parse(moodleURL + serverUrl),
         body: {
           'wstoken': _userToken,
@@ -409,7 +410,7 @@ Future<bool> isUserTeacher(List<Course> moodleCourses) async {
   Future<List<Grade>> getAssignmentGrades(int assignmentId) async {
     if (_userToken == null) throw StateError('User not logged in to Moodle');
     try {
-      final response = await http.post(
+      final response = await ApiService().httpPost(
         Uri.parse(moodleURL + serverUrl),
         body: {
           'wstoken': _userToken,
@@ -464,7 +465,7 @@ Future<bool> isUserTeacher(List<Course> moodleCourses) async {
   Future<List<Submission>> getAssignmentSubmissions(int assignmentId) async {
     if (_userToken == null) throw StateError('User not logged in to Moodle');
     try {
-      final response = await http.post(
+      final response = await ApiService().httpPost(
         Uri.parse(moodleURL + serverUrl),
         body: {
           'wstoken': _userToken,
@@ -574,7 +575,7 @@ Future<bool> isUserTeacher(List<Course> moodleCourses) async {
 
   Future<MoodleRubric?> getRubric(String assignmentid) async {
     if (_userToken == null) throw StateError('User not logged in to Moodle');
-    final response = await http.post(
+    final response = await ApiService().httpPost(
       Uri.parse(moodleURL + serverUrl),
       body: {
         'wstoken': _userToken,
@@ -606,7 +607,7 @@ Future<bool> isUserTeacher(List<Course> moodleCourses) async {
   Future<String> addRandomQuestions(
       String categoryid, String quizid, String numquestions) async {
     if (_userToken == null) throw StateError('User not logged in to Moodle');
-    final response = await http.post(
+    final response = await ApiService().httpPost(
       Uri.parse(moodleURL + serverUrl),
       body: {
         'wstoken': _userToken,
@@ -646,7 +647,7 @@ Future<bool> isUserTeacher(List<Course> moodleCourses) async {
   Future<int?> importQuizQuestions(String courseid, String quizXml) async {
     if (_userToken == null) throw StateError('User not logged in to Moodle');
     try {
-      final response = await http.post(
+      final response = await ApiService().httpPost(
         Uri.parse(moodleURL + serverUrl),
         body: {
           'wstoken': _userToken,
@@ -679,7 +680,7 @@ Future<bool> isUserTeacher(List<Course> moodleCourses) async {
     if (_userToken == null) throw StateError('User not logged in to Moodle');
     // const String url = 'webservice/rest/server.php';
     try {
-      final response = await http.post(
+      final response = await ApiService().httpPost(
         Uri.parse(moodleURL + serverUrl),
         body: {
           'wstoken': _userToken,
@@ -722,7 +723,7 @@ Future<bool> isUserTeacher(List<Course> moodleCourses) async {
       String description) async {
     if (_userToken == null) throw StateError('User not logged in to Moodle');
     try {
-      final response = await http.post(
+      final response = await ApiService().httpPost(
         Uri.parse(moodleURL + serverUrl),
         body: {
           'wstoken': _userToken,
@@ -759,7 +760,7 @@ Future<bool> isUserTeacher(List<Course> moodleCourses) async {
   Future<int?> getContextId(int assignmentId, String courseId) async {
     if (_userToken == null) throw StateError('User not logged in to Moodle');
     try {
-      final response = await http.post(Uri.parse(moodleURL + serverUrl), body: {
+      final response = await ApiService().httpPost(Uri.parse(moodleURL + serverUrl), body: {
         'wstoken': _userToken,
         'wsfunction': 'core_course_get_contents',
         'moodlewsrestformat': 'json',

@@ -6,10 +6,10 @@ import 'package:learninglens_app/Api/llm_api.dart';
 import 'package:learninglens_app/Api/moodle_api_singleton.dart';
 import 'package:learninglens_app/Controller/beans.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
+import 'package:learninglens_app/llm/claudeai_api.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
 import 'edit_questions.dart';
-import 'package:llm_api_modules/openai_api.dart';
-import 'package:llm_api_modules/claudeai_api.dart';
+import 'package:learninglens_app/llm/openai_api.dart';
 
 
 
