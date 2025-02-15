@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:learninglens_app/notifiers/login_notifier.dart';
 import 'package:learninglens_app/notifiers/theme_notifier.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
@@ -16,9 +15,12 @@ class UserSettingsState extends State<UserSettings> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _moodleUrlController = TextEditingController();
   final TextEditingController _apiKeyController = TextEditingController();
+  final TextEditingController _claudeKeyController = TextEditingController();
+  final TextEditingController _preplexityKeyController = TextEditingController();
+
   final LocalStorageService _localStorage = LocalStorageService();
 
-      @override
+  @override
   void initState() {
     super.initState();
     _loadStoredValues();
@@ -29,12 +31,16 @@ class UserSettingsState extends State<UserSettings> {
     final password = await _localStorage.getPassword() ?? '';
     final moodleUrl = await _localStorage.getMoodleUrl() ?? '';
     final apiKey = await _localStorage.getOpenAIKey() ?? '';
+    final claudeKey = await _localStorage.getClaudeKey() ?? '';
+    final preplexityKey = await _localStorage.getPreplexityKey() ?? '';
 
     setState(() {
       _usernameController.text = username;
       _passwordController.text = password;
       _moodleUrlController.text = moodleUrl;
       _apiKeyController.text = apiKey;
+      _claudeKeyController.text = claudeKey;
+      _preplexityKeyController.text = preplexityKey;
     });
   }
 
@@ -128,8 +134,8 @@ class UserSettingsState extends State<UserSettings> {
                     builder: (BuildContext context) {
                       return AlertDialog(
                         title: Text('Save API Key?'),
-                        content: Text(
-                            'Are you sure you want to save this API key?'),
+                        content:
+                            Text('Are you sure you want to save this API key?'),
                         actions: <Widget>[
                           TextButton(
                             onPressed: () {
@@ -139,7 +145,101 @@ class UserSettingsState extends State<UserSettings> {
                           ),
                           TextButton(
                             onPressed: () {
-                              dotenv.env['openai_apikey'] = _apiKeyController.text;
+                              // set the key local storages
+                              loginNotifier.saveLLMKey(LLMKey.openAI, _apiKeyController.text);
+                              Navigator.of(context).pop();
+                            },
+                            child: Text('Save'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+                child: Text('Save'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+            Divider(),
+
+            TextField(
+              controller: _preplexityKeyController,
+              decoration: InputDecoration(labelText: 'Preplexity AI API Key'),
+              enabled: !loginNotifier.isLoggedIn,
+            ),
+            SizedBox(height: 20),
+
+            // Show login button if NOT logged in
+            if (!loginNotifier.isLoggedIn)
+              ElevatedButton(
+                onPressed: () {
+                  // pop up a dialog to confirm the user wants to save the API key
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text('Save API Key?'),
+                        content:
+                            Text('Are you sure you want to save this API key?'),
+                        actions: <Widget>[
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              // set the key local storages
+                              loginNotifier.saveLLMKey(LLMKey.perplexity, _preplexityKeyController.text);
+                              Navigator.of(context).pop();
+                            },
+                            child: Text('Save'),
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                },
+                child: Text('Save'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+            Divider(),
+            TextField(
+              controller: _claudeKeyController,
+              decoration: InputDecoration(labelText: 'Claude AI API Key'),
+              enabled: !loginNotifier.isLoggedIn,
+            ),
+            SizedBox(height: 20),
+
+            // Show login button if NOT logged in
+            if (!loginNotifier.isLoggedIn)
+              ElevatedButton(
+                onPressed: () {
+                  // pop up a dialog to confirm the user wants to save the API key
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text('Save API Key?'),
+                        content:
+                            Text('Are you sure you want to save this API key?'),
+                        actions: <Widget>[
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              // set the key local storages
+                              loginNotifier.saveLLMKey(LLMKey.claude, _claudeKeyController.text);
                               Navigator.of(context).pop();
                             },
                             child: Text('Save'),

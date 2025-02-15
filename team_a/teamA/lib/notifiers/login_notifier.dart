@@ -2,14 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:learninglens_app/Api/moodle_api_singleton.dart'; // Import your Moodle API
 import 'package:learninglens_app/services/local_storage_service.dart';
 
+enum LLMKey { openAI, perplexity, claude }
+
 class LoginNotifier with ChangeNotifier {
   bool _isLoggedIn = false;
+  bool _hasLLMKey = false;
   String? _username;
   String? _password;
   String? _moodleUrl;
   final LocalStorageService _localStorageService = LocalStorageService();
   final MoodleApiSingleton _moodleApi =
       MoodleApiSingleton(); // Moodle API instance
+
+  bool get hasLLMKey => _hasLLMKey;
 
   bool get isLoggedIn => _isLoggedIn;
   String? get username => _username;
@@ -25,8 +30,26 @@ class LoginNotifier with ChangeNotifier {
     _username = await _localStorageService.getUsername();
     _password = await _localStorageService.getPassword();
     _moodleUrl = await _localStorageService.getMoodleUrl();
-    _autoLogin(); // Attempt to auto-login when the notifier is created
+
+
+    _hasLLMKey = await _checkHasLLMKey();
+
+    _autoLogin();
     notifyListeners();
+  }
+
+  Future<bool> _checkHasLLMKey() async {
+    String? openAIKey = await _localStorageService.getOpenAIKey();
+    String? perplexityKey = await _localStorageService.getPreplexityKey();
+    String? claudeKey = await _localStorageService.getClaudeKey();
+
+    print('openAIKey: $openAIKey');
+    print('perplexityKey: $perplexityKey');
+    print('claudeKey: $claudeKey');
+
+    return openAIKey != null && openAIKey.isNotEmpty ||
+        perplexityKey != null && perplexityKey.isNotEmpty ||
+        claudeKey != null && claudeKey.isNotEmpty;
   }
 
   Future<void> _autoLogin() async {
@@ -57,6 +80,8 @@ class LoginNotifier with ChangeNotifier {
         await _localStorageService.saveCredentials(username, password);
         await _localStorageService.saveMoodleUrl(moodleUrl); // Save Moodle URL
 
+        // check the hasLLMKey state
+         _hasLLMKey = await _checkHasLLMKey();
         notifyListeners(); // Notify listeners (widgets) about the login
       } else {
         // Handle login failure (e.g., show an error message)
@@ -79,6 +104,19 @@ class LoginNotifier with ChangeNotifier {
     await _localStorageService.clearCredentials();
     await _localStorageService.clearMoodleUrl();
 
+    notifyListeners();
+  }
+
+  // save the llm key to local storage
+  Future<void> saveLLMKey(LLMKey key, String value) async {
+    if(key == LLMKey.openAI){
+      await _localStorageService.saveOpenAIKey(value);
+    } else if(key == LLMKey.perplexity){
+      await _localStorageService.savePreplexityKey(value);
+    } else if(key == LLMKey.claude){
+      await _localStorageService.saveClaudeKey(value);
+    }
+    _hasLLMKey = true;
     notifyListeners();
   }
 }

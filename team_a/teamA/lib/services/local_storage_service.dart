@@ -5,17 +5,22 @@ import 'package:shared_preferences/shared_preferences.dart';
  * This class is responsible for handling all the local storage operations that utilizes the Shared Preferences package and the dotenv package.
  * through the use of the shared_preferences package, the class is able to store and retrieve data from the local storage of the device.
  * The class also uses the dotenv package to access the .env file that contains the environment variables that are used in the application and during development.
+ * 
+ * TODO: 
+ * Encrypt the data stored in the local storage to ensure the security of the user's data.
+ * During the save sets we could send a pulse request to the server(moodle, openai, claude,preplexity etc.) to ensure the application can reach the server.
  */
 class LocalStorageService {
   static const String _kCredentialsKey = 'credentials';
   static const String _kThemeKey = 'theme';
   static const String _openAIKey = 'openAIKey';
   static const String _claudeKey = 'claudeKey';
-  static const String _perplexityKey = 'perplexityKey'; // Corrected key name
-  static const String _moodleUrlKey = 'moodleUrl'; // Key for Moodle URL
-  static const String _primaryColorKey = 'primaryColor'; // Key for primary color
-  static const String _isLoggedInKey = 'isLoggedIn'; // Key for login state
+  static const String _perplexityKey = 'perplexityKey'; 
+  static const String _moodleUrlKey = 'moodleUrl'; 
+  static const String _primaryColorKey = 'primaryColor';
+  static const String _isLoggedInKey = 'isLoggedIn'; 
 
+  // TODO: encrypt me please
   Future<void> saveCredentials(String username, String password) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList(_kCredentialsKey, [username, password]);
@@ -155,12 +160,12 @@ class LocalStorageService {
     return '';
   }
 
-  Future<void> savePreplexity(String perplexity) async {  // Corrected method name
+  Future<void> savePreplexityKey(String perplexity) async {  // Corrected method name
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_perplexityKey, perplexity); // Corrected key name
   }
 
-  Future<String?> getPreplexity() async { // Corrected method name
+  Future<String?> getPreplexityKey() async { // Corrected method name
     final prefs = await SharedPreferences.getInstance();
     if (prefs.getString(_perplexityKey) != null) {
       print('returning preplexity from shared preferences');
@@ -172,7 +177,7 @@ class LocalStorageService {
     return '';
   }
 
-  Future<void> clearPreplexity() async {
+  Future<void> clearPreplexityKey() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_perplexityKey);
   }

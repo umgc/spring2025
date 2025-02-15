@@ -150,6 +150,20 @@ class TeacherDashboard extends StatelessWidget {
     );
   }
 
+  // the user must have an LLM key and be logged in to access the application
+  bool canUserAccessApp(BuildContext context) {
+    final loginNotifier = Provider.of<LoginNotifier>(context, listen: true);
+
+    bool isLoggedIn = loginNotifier.isLoggedIn;
+    bool hasLLMKey = loginNotifier.hasLLMKey;
+
+    print('is User Logged in: $isLoggedIn');
+    print('has LLM Key: $hasLLMKey');
+    print('can access app: ${isLoggedIn && hasLLMKey}');
+
+    return isLoggedIn && hasLLMKey;
+  }
+
   Widget _buildGridLayout(BuildContext context, BoxConstraints constraints) {
     final double screenWidth = constraints.maxWidth;
 
@@ -162,34 +176,38 @@ class TeacherDashboard extends StatelessWidget {
     baseButtonSize = baseButtonSize.clamp(80.0, 150.0);
     baseButtonFontSize = baseButtonFontSize.clamp(12.0, 18.0);
     baseDescriptionFontSize = baseDescriptionFontSize.clamp(12.0, 18.0);
-
-    bool isLoggedin = Provider.of<LoginNotifier>(context).isLoggedIn; // Use provider
-
-    print('isLoggedin: $isLoggedin');
+    bool canAccessApp =
+        canUserAccessApp(context); // can the user access the application?
 
     List<Map<String, dynamic>> buttonData = [
       {
         'title': 'Courses',
         'description': 'View available courses.',
-        'onPressed': !isLoggedin ? null : () => Navigator.push(context, MaterialPageRoute(builder: (context) => CourseList())),
+        'onPressed': !canAccessApp
+            ? null
+            : () => Navigator.push(
+                context, MaterialPageRoute(builder: (context) => CourseList())),
         'color': Colors.blue, // Blue
       },
       {
         'title': 'Essays',
         'description': 'View or grade essays.',
-        'onPressed': !isLoggedin ? null : () => Navigator.push(context, MaterialPageRoute(builder: (context) => EssaysView())),
+        'onPressed': !canAccessApp
+            ? null
+            : () => Navigator.push(
+                context, MaterialPageRoute(builder: (context) => EssaysView())),
         'color': Colors.red, // Red
       },
       {
         'title': 'IEP',
         'description': 'Manage Individualized Education Plans.',
-        'onPressed': !isLoggedin ? null : () {}, // Add navigation
+        'onPressed': !canAccessApp ? null : () {}, // Add navigation
         'color': Colors.green, // Green
       },
       {
         'title': 'Analytics',
         'description': 'View performance analytics.',
-        'onPressed': !isLoggedin ? null : () {}, // Add navigation
+        'onPressed': !canAccessApp ? null : () {}, // Add navigation
         'color': Colors.cyan, // Cyan
       },
       {
@@ -197,12 +215,14 @@ class TeacherDashboard extends StatelessWidget {
         'description': 'Create and manage lesson plans.',
         'onPressed': () {}, // Add navigation
         'color': Colors.purple, // Purple
-
       },
       {
         'title': 'Assessments',
         'description': 'Create or view assessments.',
-        'onPressed': !isLoggedin ? null :  () => Navigator.push(context,MaterialPageRoute(builder: (context) => AssessmentsView())),
+        'onPressed': !canAccessApp
+            ? null
+            : () => Navigator.push(context,
+                MaterialPageRoute(builder: (context) => AssessmentsView())),
         'color': Colors.orange, // Orange
       },
     ];
@@ -345,14 +365,8 @@ class TeacherDashboard extends StatelessWidget {
   }
 
   // Widget to build circular buttons
-  Widget _buildDashboardButton(
-    BuildContext context,
-    String title,
-    double size,
-    double fontSize,
-    void Function()? onPressed,
-    Color buttonColor
-  ) {
+  Widget _buildDashboardButton(BuildContext context, String title, double size,
+      double fontSize, void Function()? onPressed, Color buttonColor) {
     return Container(
       height: size,
       width: size,
