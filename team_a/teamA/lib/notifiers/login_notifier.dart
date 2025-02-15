@@ -18,7 +18,6 @@ class LoginNotifier with ChangeNotifier {
 
   LoginNotifier() {
     _loadLoginState(); // Load saved login state when the notifier is created
-    _autoLogin(); // Attempt to auto-login when the notifier is created
   }
 
   Future<void> _loadLoginState() async {
@@ -26,7 +25,7 @@ class LoginNotifier with ChangeNotifier {
     _username = await _localStorageService.getUsername();
     _password = await _localStorageService.getPassword();
     _moodleUrl = await _localStorageService.getMoodleUrl();
-
+    _autoLogin(); // Attempt to auto-login when the notifier is created
     notifyListeners();
   }
 
