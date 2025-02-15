@@ -12,26 +12,67 @@ class TeacherDashboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Check if the user can access the app (logged in + has an LLM key)
+    final bool canAccessApp = canUserAccessApp(context);
+
     return Scaffold(
       appBar: CustomAppBar(
-          title: 'Learning Lens',
-          userprofileurl: MoodleApiSingleton().moodleProfileImage ?? ''),
+        title: 'Learning Lens',
+        userprofileurl: MoodleApiSingleton().moodleProfileImage ?? '',
+      ),
       backgroundColor: Theme.of(context).colorScheme.surface,
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          if (constraints.maxWidth > 600) {
-            // Large screen (desktop or large tablet)
-            return _buildDesktopLayout(context, constraints);
-          } else {
-            // Small screen (mobile)
-            return _buildMobileLayout(context, constraints);
-          }
-        },
+      body: Column(
+        children: [
+          // 1) The Banner:
+          // Show this banner if the user doesn't meet the access requirements
+          if (!canAccessApp)
+            Container(
+              color: Colors.red[700],
+              padding: const EdgeInsets.all(12),
+              margin: const EdgeInsets.only(bottom: 10),
+              child: Row(
+                children: [
+                  const Icon(Icons.warning, color: Colors.white),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      "This application requires an LMS to be logged in and an LLM Key to function properly.",
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+          // 2) The Main Content:
+          // Use Expanded so the LayoutBuilder can fill the rest of the screen.
+          Expanded(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                if (constraints.maxWidth > 600) {
+                  // Large screen (desktop or large tablet)
+                  return _buildDesktopLayout(context, constraints);
+                } else {
+                  // Small screen (mobile)
+                  return _buildMobileLayout(context, constraints);
+                }
+              },
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  // Desktop layout
+  /// Checks if user is logged in and has an LLM key
+  bool canUserAccessApp(BuildContext context) {
+    final loginNotifier = Provider.of<LoginNotifier>(context, listen: true);
+    bool isLoggedIn = loginNotifier.isLoggedIn;
+    bool hasLLMKey = loginNotifier.hasLLMKey;
+    return isLoggedIn && hasLLMKey;
+  }
+
+  // ---------- DESKTOP LAYOUT ----------
   Widget _buildDesktopLayout(BuildContext context, BoxConstraints constraints) {
     final double screenWidth = constraints.maxWidth;
 
@@ -40,12 +81,12 @@ class TeacherDashboard extends StatelessWidget {
     double baseButtonFontSize = screenWidth * 0.015;
     double baseDescriptionFontSize = screenWidth * 0.015;
 
-    // Sizes for the middle button (larger than others)
-    double middleButtonSize = baseButtonSize * 1.2; // 20% larger
+    // Sizes for the middle button (20% larger)
+    double middleButtonSize = baseButtonSize * 1.2;
     double middleButtonFontSize = baseButtonFontSize * 1.2;
     double middleDescriptionFontSize = baseDescriptionFontSize * 1.1;
 
-    // Clamp the sizes to reasonable minimum and maximum values
+    // Clamp the sizes to reasonable min/max
     baseButtonSize = baseButtonSize.clamp(80.0, 150.0);
     baseButtonFontSize = baseButtonFontSize.clamp(12.0, 18.0);
     baseDescriptionFontSize = baseDescriptionFontSize.clamp(12.0, 18.0);
@@ -89,7 +130,7 @@ class TeacherDashboard extends StatelessWidget {
     );
   }
 
-  // Mobile layout
+  // ---------- MOBILE LAYOUT ----------
   Widget _buildMobileLayout(BuildContext context, BoxConstraints constraints) {
     final double screenWidth = constraints.maxWidth;
 
@@ -98,12 +139,12 @@ class TeacherDashboard extends StatelessWidget {
     double baseButtonFontSize = screenWidth * 0.045;
     double baseDescriptionFontSize = screenWidth * 0.04;
 
-    // Sizes for the middle button (larger than others)
-    double middleButtonSize = baseButtonSize * 1.1; // 10% larger
+    // Sizes for the middle button (10% larger)
+    double middleButtonSize = baseButtonSize * 1.1;
     double middleButtonFontSize = baseButtonFontSize * 1.1;
     double middleDescriptionFontSize = baseDescriptionFontSize * 1.05;
 
-    // Clamp the sizes to reasonable minimum and maximum values
+    // Clamp the sizes
     baseButtonSize = baseButtonSize.clamp(80.0, 140.0);
     baseButtonFontSize = baseButtonFontSize.clamp(12.0, 16.0);
     baseDescriptionFontSize = baseDescriptionFontSize.clamp(12.0, 16.0);
@@ -150,35 +191,24 @@ class TeacherDashboard extends StatelessWidget {
     );
   }
 
-  // the user must have an LLM key and be logged in to access the application
-  bool canUserAccessApp(BuildContext context) {
-    final loginNotifier = Provider.of<LoginNotifier>(context, listen: true);
-
-    bool isLoggedIn = loginNotifier.isLoggedIn;
-    bool hasLLMKey = loginNotifier.hasLLMKey;
-
-    print('is User Logged in: $isLoggedIn');
-    print('has LLM Key: $hasLLMKey');
-    print('can access app: ${isLoggedIn && hasLLMKey}');
-
-    return isLoggedIn && hasLLMKey;
-  }
-
+  // ---------- GRID LAYOUT (Shared by Desktop & Mobile) ----------
   Widget _buildGridLayout(BuildContext context, BoxConstraints constraints) {
     final double screenWidth = constraints.maxWidth;
 
-    // Base sizes for buttons
+    // Base sizes
     double baseButtonSize = screenWidth * 0.15;
     double baseButtonFontSize = screenWidth * 0.015;
     double baseDescriptionFontSize = screenWidth * 0.015;
 
-    // Clamp the sizes to reasonable minimum and maximum values
+    // Clamp the sizes
     baseButtonSize = baseButtonSize.clamp(80.0, 150.0);
     baseButtonFontSize = baseButtonFontSize.clamp(12.0, 18.0);
     baseDescriptionFontSize = baseDescriptionFontSize.clamp(12.0, 18.0);
-    bool canAccessApp =
-        canUserAccessApp(context); // can the user access the application?
 
+    // Determine if user can access the app
+    bool canAccessApp = canUserAccessApp(context);
+
+    // Original button data (6 items)
     List<Map<String, dynamic>> buttonData = [
       {
         'title': 'Courses',
@@ -187,7 +217,7 @@ class TeacherDashboard extends StatelessWidget {
             ? null
             : () => Navigator.push(
                 context, MaterialPageRoute(builder: (context) => CourseList())),
-        'color': Colors.blue, // Blue
+        'color': Colors.blue,
       },
       {
         'title': 'Essays',
@@ -196,42 +226,43 @@ class TeacherDashboard extends StatelessWidget {
             ? null
             : () => Navigator.push(
                 context, MaterialPageRoute(builder: (context) => EssaysView())),
-        'color': Colors.red, // Red
+        'color': Colors.red,
       },
       {
         'title': 'IEP',
         'description': 'Manage Individualized Education Plans.',
         'onPressed': !canAccessApp ? null : () {}, // Add navigation
-        'color': Colors.green, // Green
+        'color': Colors.green,
       },
       {
         'title': 'Analytics',
         'description': 'View performance analytics.',
         'onPressed': !canAccessApp ? null : () {}, // Add navigation
-        'color': Colors.cyan, // Cyan
+        'color': Colors.cyan,
       },
       {
         'title': 'Lesson Plan',
         'description': 'Create and manage lesson plans.',
-        'onPressed': () {}, // Add navigation
-        'color': Colors.purple, // Purple
+        'onPressed': !canAccessApp ? null : () {}, // Add navigation
+        'color': Colors.purple,
       },
       {
         'title': 'Assessments',
         'description': 'Create or view assessments.',
         'onPressed': !canAccessApp
             ? null
-            : () => Navigator.push(context,
-                MaterialPageRoute(builder: (context) => AssessmentsView())),
-        'color': Colors.orange, // Orange
+            : () => Navigator.push(
+                context, MaterialPageRoute(builder: (context) => AssessmentsView())),
+        'color': Colors.orange,
       },
     ];
 
+    // The 3x2 grid
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         children: [
-          // First row (2 buttons)
+          // Row 1: (Courses, Essays)
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -264,7 +295,7 @@ class TeacherDashboard extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
-          // Second row (2 buttons)
+          // Row 2: (IEP, Analytics)
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -297,7 +328,7 @@ class TeacherDashboard extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
-          // Third row (2 buttons)
+          // Row 3: (Lesson Plan, Assessments)
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -333,7 +364,7 @@ class TeacherDashboard extends StatelessWidget {
     );
   }
 
-  // Responsive Column for both layouts
+  // Helper widget to build a text description + circular button
   Widget _buildResponsiveColumn(
     BuildContext context,
     String description,
@@ -347,7 +378,7 @@ class TeacherDashboard extends StatelessWidget {
     return Column(
       children: [
         SizedBox(
-          width: buttonSize * 1.5, // Ensure text doesn't overflow
+          width: buttonSize * 1.5, // Ensures text doesn't overflow
           child: Text(
             description,
             textAlign: TextAlign.center,
@@ -359,20 +390,32 @@ class TeacherDashboard extends StatelessWidget {
         ),
         const SizedBox(height: 10),
         _buildDashboardButton(
-            context, title, buttonSize, buttonFontSize, onPressed, buttonColor),
+          context,
+          title,
+          buttonSize,
+          buttonFontSize,
+          onPressed,
+          buttonColor,
+        ),
       ],
     );
   }
 
-  // Widget to build circular buttons
-  Widget _buildDashboardButton(BuildContext context, String title, double size,
-      double fontSize, void Function()? onPressed, Color buttonColor) {
+  // Circular button builder
+  Widget _buildDashboardButton(
+    BuildContext context,
+    String title,
+    double size,
+    double fontSize,
+    void Function()? onPressed,
+    Color buttonColor,
+  ) {
     return Container(
       height: size,
       width: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: buttonColor, // Outer white border color
+        color: buttonColor, // Outer color
         boxShadow: [
           BoxShadow(
             color: Colors.grey[500]!,
@@ -383,10 +426,10 @@ class TeacherDashboard extends StatelessWidget {
         ],
       ),
       child: Container(
-        margin: EdgeInsets.all(size * 0.1), // Adjusted for responsive border
+        margin: EdgeInsets.all(size * 0.1), // Outer ring
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: Colors.white, // Inner white color
+          color: Colors.white, // Inner color
           boxShadow: [
             BoxShadow(
               color: Colors.grey[600]!,
@@ -401,7 +444,7 @@ class TeacherDashboard extends StatelessWidget {
           style: ElevatedButton.styleFrom(
             shape: const CircleBorder(),
             backgroundColor: Colors.transparent,
-            padding: EdgeInsets.all(size * 0.15), // Responsive padding
+            padding: EdgeInsets.all(size * 0.15),
             shadowColor: Colors.transparent,
           ),
           child: FittedBox(

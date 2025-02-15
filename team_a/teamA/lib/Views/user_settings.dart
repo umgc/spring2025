@@ -46,8 +46,7 @@ class UserSettingsState extends State<UserSettings> {
 
   @override
   Widget build(BuildContext context) {
-    final loginNotifier =
-        Provider.of<LoginNotifier>(context); // Use provider for login state
+    final loginNotifier = Provider.of<LoginNotifier>(context);
     Color themeColor = Provider.of<ThemeNotifier>(context).primaryColor;
 
     return Scaffold(
@@ -62,7 +61,6 @@ class UserSettingsState extends State<UserSettings> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            // Label saying Moodle API Login:
             Text(
               'Moodle API Login:',
               style: TextStyle(fontSize: 20),
@@ -81,12 +79,10 @@ class UserSettingsState extends State<UserSettings> {
             TextField(
               controller: _moodleUrlController,
               decoration: InputDecoration(labelText: 'Moodle URL'),
-              // disabled text field if logged in
               enabled: !loginNotifier.isLoggedIn,
             ),
             SizedBox(height: 20),
 
-            // Show login button if NOT logged in
             if (!loginNotifier.isLoggedIn)
               ElevatedButton(
                 onPressed: () {
@@ -103,7 +99,6 @@ class UserSettingsState extends State<UserSettings> {
                 ),
               ),
 
-            // Show logout button if logged in
             if (loginNotifier.isLoggedIn)
               ElevatedButton(
                 onPressed: loginNotifier.logout,
@@ -117,151 +112,24 @@ class UserSettingsState extends State<UserSettings> {
             SizedBox(height: 20),
             Divider(),
 
-            TextField(
-              controller: _apiKeyController,
-              decoration: InputDecoration(labelText: 'Open AI API Key'),
-              enabled: !loginNotifier.isLoggedIn,
-            ),
-            SizedBox(height: 20),
+            _buildApiKeyField(
+                label: 'Open AI API Key',
+                controller: _apiKeyController,
+                loginNotifier: loginNotifier,
+                keyType: LLMKey.openAI),
 
-            // Show login button if NOT logged in
-            if (!loginNotifier.isLoggedIn)
-              ElevatedButton(
-                onPressed: () {
-                  // pop up a dialog to confirm the user wants to save the API key
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: Text('Save API Key?'),
-                        content:
-                            Text('Are you sure you want to save this API key?'),
-                        actions: <Widget>[
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: Text('Cancel'),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              // set the key local storages
-                              loginNotifier.saveLLMKey(LLMKey.openAI, _apiKeyController.text);
-                              Navigator.of(context).pop();
-                            },
-                            child: Text('Save'),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                },
-                child: Text('Save'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                ),
-              ),
-            Divider(),
+            _buildApiKeyField(
+                label: 'Preplexity AI API Key',
+                controller: _preplexityKeyController,
+                loginNotifier: loginNotifier,
+                keyType: LLMKey.perplexity),
 
-            TextField(
-              controller: _preplexityKeyController,
-              decoration: InputDecoration(labelText: 'Preplexity AI API Key'),
-              enabled: !loginNotifier.isLoggedIn,
-            ),
-            SizedBox(height: 20),
+            _buildApiKeyField(
+                label: 'Claude AI API Key',
+                controller: _claudeKeyController,
+                loginNotifier: loginNotifier,
+                keyType: LLMKey.claude),
 
-            // Show login button if NOT logged in
-            if (!loginNotifier.isLoggedIn)
-              ElevatedButton(
-                onPressed: () {
-                  // pop up a dialog to confirm the user wants to save the API key
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: Text('Save API Key?'),
-                        content:
-                            Text('Are you sure you want to save this API key?'),
-                        actions: <Widget>[
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: Text('Cancel'),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              // set the key local storages
-                              loginNotifier.saveLLMKey(LLMKey.perplexity, _preplexityKeyController.text);
-                              Navigator.of(context).pop();
-                            },
-                            child: Text('Save'),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                },
-                child: Text('Save'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                ),
-              ),
-            Divider(),
-            TextField(
-              controller: _claudeKeyController,
-              decoration: InputDecoration(labelText: 'Claude AI API Key'),
-              enabled: !loginNotifier.isLoggedIn,
-            ),
-            SizedBox(height: 20),
-
-            // Show login button if NOT logged in
-            if (!loginNotifier.isLoggedIn)
-              ElevatedButton(
-                onPressed: () {
-                  // pop up a dialog to confirm the user wants to save the API key
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: Text('Save API Key?'),
-                        content:
-                            Text('Are you sure you want to save this API key?'),
-                        actions: <Widget>[
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: Text('Cancel'),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              // set the key local storages
-                              loginNotifier.saveLLMKey(LLMKey.claude, _claudeKeyController.text);
-                              Navigator.of(context).pop();
-                            },
-                            child: Text('Save'),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                },
-                child: Text('Save'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                ),
-              ),
-            Divider(),
-
-            // loop through a list of enumerated keys and values to display the key and value in a text field
-            // make this flexible to support adding new llms
-            // Divider(),
-
-            // Label saying Theme Color Picker:
             Text(
               'Theme Color Picker:',
               style: TextStyle(fontSize: 20),
@@ -277,6 +145,34 @@ class UserSettingsState extends State<UserSettings> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildApiKeyField({
+    required String label,
+    required TextEditingController controller,
+    required LoginNotifier loginNotifier,
+    required LLMKey keyType,
+  }) {
+    return Column(
+      children: [
+        TextField(
+          controller: controller,
+          decoration: InputDecoration(labelText: label),
+        ),
+        SizedBox(height: 10),
+        ElevatedButton(
+            onPressed: () {
+              loginNotifier.saveLLMKey(keyType, controller.text);
+            },
+            child: Text('Save'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.blue,
+              foregroundColor: Colors.white,
+            ),
+          ),
+        Divider(),
+      ],
     );
   }
 

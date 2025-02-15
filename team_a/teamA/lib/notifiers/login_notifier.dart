@@ -43,10 +43,6 @@ class LoginNotifier with ChangeNotifier {
     String? perplexityKey = await _localStorageService.getPreplexityKey();
     String? claudeKey = await _localStorageService.getClaudeKey();
 
-    print('openAIKey: $openAIKey');
-    print('perplexityKey: $perplexityKey');
-    print('claudeKey: $claudeKey');
-
     return openAIKey != null && openAIKey.isNotEmpty ||
         perplexityKey != null && perplexityKey.isNotEmpty ||
         claudeKey != null && claudeKey.isNotEmpty;
@@ -81,7 +77,6 @@ class LoginNotifier with ChangeNotifier {
         await _localStorageService.saveMoodleUrl(moodleUrl); // Save Moodle URL
 
         // check the hasLLMKey state
-         _hasLLMKey = await _checkHasLLMKey();
         notifyListeners(); // Notify listeners (widgets) about the login
       } else {
         // Handle login failure (e.g., show an error message)
@@ -116,7 +111,7 @@ class LoginNotifier with ChangeNotifier {
     } else if(key == LLMKey.claude){
       await _localStorageService.saveClaudeKey(value);
     }
-    _hasLLMKey = true;
+    _hasLLMKey = await _checkHasLLMKey();
     notifyListeners();
   }
 }

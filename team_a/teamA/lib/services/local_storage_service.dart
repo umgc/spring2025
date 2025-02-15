@@ -69,10 +69,10 @@ class LocalStorageService {
   Future<String?> getMoodleUrl() async {
     final prefs = await SharedPreferences.getInstance();
     if(prefs.getString(_moodleUrlKey) != null){
-      print('returning moodle url from shared preferences');
+      //print('returning moodle url from shared preferences');
       return prefs.getString(_moodleUrlKey);
     } else if(dotenv.env['MOODLE_URL'] != null){
-      print('returning moodle url from dotenv');
+      //print('returning moodle url from dotenv');
       return dotenv.env['MOODLE_URL'];
     }
     return '';
@@ -92,10 +92,10 @@ class LocalStorageService {
     final prefs = await SharedPreferences.getInstance();
     final credentials = prefs.getStringList(_kCredentialsKey);
     if(credentials?[0] != null){
-      print('returning username from shared preferences');
+      //print('returning username from shared preferences');
       return credentials?[0];
     } else if(dotenv.env['MOODLE_USERNAME'] != null){
-      print('returning username from dotenv');
+      //print('returning username from dotenv');
       return dotenv.env['MOODLE_USERNAME'];
     } else {
       return '';
@@ -106,10 +106,10 @@ class LocalStorageService {
     final prefs = await SharedPreferences.getInstance();
     final credentials = prefs.getStringList(_kCredentialsKey);
      if(credentials?[1] != null){
-      print('returning password from shared preferences');
+      //print('returning password from shared preferences');
       return credentials?[1];
     } else if(dotenv.env['MOODLE_PASSWORD'] != null){
-      print('returning password from dotenv');
+      //print('returning password from dotenv');
       return dotenv.env['MOODLE_PASSWORD'];
     } else {
       return '';
@@ -134,10 +134,10 @@ class LocalStorageService {
   Future<String?> getOpenAIKey() async {
     final prefs = await SharedPreferences.getInstance();
     if(prefs.getString(_openAIKey) != null){
-      print('returning openai key from shared preferences');
+      //print('returning openai key from shared preferences');
       return prefs.getString(_openAIKey);
     } else if(dotenv.env['openai_apikey'] != null){
-      print('returning openai key from dotenv');
+      //print('returning openai key from dotenv');
       return dotenv.env['openai_apikey'];
     }
     return '';
@@ -151,10 +151,10 @@ class LocalStorageService {
   Future<String?> getClaudeKey() async {
     final prefs = await SharedPreferences.getInstance();
     if(prefs.getString(_claudeKey) != null){
-      print('returning claude key from shared preferences');
+      //print('returning claude key from shared preferences');
       return prefs.getString(_claudeKey);
     } else if(dotenv.env['claudeApiKey'] != null){
-      print('returning claude key from dotenv');
+      //print('returning claude key from dotenv');
       return dotenv.env['claudeApiKey'];
     }
     return '';
@@ -168,10 +168,10 @@ class LocalStorageService {
   Future<String?> getPreplexityKey() async { // Corrected method name
     final prefs = await SharedPreferences.getInstance();
     if (prefs.getString(_perplexityKey) != null) {
-      print('returning preplexity from shared preferences');
+      //print('returning preplexity from shared preferences');
       return prefs.getString(_perplexityKey); // Corrected key name
     } else if (dotenv.env['perplexity_apikey'] != null) {
-      print('returning preplexity from dotenv');
+      //print('returning preplexity from dotenv');
       return dotenv.env['perplexity_apikey']; // Corrected key name
     }
     return '';
