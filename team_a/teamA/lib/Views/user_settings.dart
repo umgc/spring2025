@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/notifiers/login_notifier.dart';
 import 'package:learninglens_app/notifiers/theme_notifier.dart';
-import 'package:llm_api_modules/openai_api.dart';
+import 'package:learninglens_app/services/local_storage_service.dart';
 import 'package:provider/provider.dart';
-import '../Api/moodle_api_singleton.dart';
 
 class UserSettings extends StatefulWidget {
   @override
@@ -14,14 +12,31 @@ class UserSettings extends StatefulWidget {
 }
 
 class UserSettingsState extends State<UserSettings> {
-  final TextEditingController _usernameController =
-      TextEditingController(text: dotenv.env['MOODLE_USERNAME']);
-  final TextEditingController _passwordController =
-      TextEditingController(text: dotenv.env['MOODLE_PASSWORD']);
-  final TextEditingController _moodleUrlController =
-      TextEditingController(text: dotenv.env['MOODLE_URL']);
-  final TextEditingController _apiKeyController =
-      TextEditingController(text: dotenv.env['openai_apikey']);
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _moodleUrlController = TextEditingController();
+  final TextEditingController _apiKeyController = TextEditingController();
+  final LocalStorageService _localStorage = LocalStorageService();
+
+      @override
+  void initState() {
+    super.initState();
+    _loadStoredValues();
+  }
+
+  Future<void> _loadStoredValues() async {
+    final username = await _localStorage.getUsername() ?? '';
+    final password = await _localStorage.getPassword() ?? '';
+    final moodleUrl = await _localStorage.getMoodleUrl() ?? '';
+    final apiKey = await _localStorage.getOpenAIKey() ?? '';
+
+    setState(() {
+      _usernameController.text = username;
+      _passwordController.text = password;
+      _moodleUrlController.text = moodleUrl;
+      _apiKeyController.text = apiKey;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,15 +64,19 @@ class UserSettingsState extends State<UserSettings> {
             TextField(
               controller: _usernameController,
               decoration: InputDecoration(labelText: 'Username'),
+              enabled: !loginNotifier.isLoggedIn,
             ),
             TextField(
               controller: _passwordController,
               decoration: InputDecoration(labelText: 'Password'),
               obscureText: true,
+              enabled: !loginNotifier.isLoggedIn,
             ),
             TextField(
               controller: _moodleUrlController,
               decoration: InputDecoration(labelText: 'Moodle URL'),
+              // disabled text field if logged in
+              enabled: !loginNotifier.isLoggedIn,
             ),
             SizedBox(height: 20),
 
@@ -95,6 +114,7 @@ class UserSettingsState extends State<UserSettings> {
             TextField(
               controller: _apiKeyController,
               decoration: InputDecoration(labelText: 'Open AI API Key'),
+              enabled: !loginNotifier.isLoggedIn,
             ),
             SizedBox(height: 20),
 
