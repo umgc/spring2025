@@ -100,6 +100,7 @@ class LoginNotifier with ChangeNotifier {
     LocalStorageService.clearLoginState();
     LocalStorageService.clearCredentials();
     LocalStorageService.clearMoodleUrl();
+    MoodleApiSingleton().resetMoodle();
 
     notifyListeners();
   }
