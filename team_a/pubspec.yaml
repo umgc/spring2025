@@ -13,7 +13,6 @@ dependencies:
     path: LLM-API-Modules
   flutter:
     sdk: flutter
-
   flutter_dotenv: ^5.1.0
   xml: ^6.2.2
   http: ^1.2.1 
@@ -21,6 +20,8 @@ dependencies:
 
   english_words: ^4.0.0
   provider: ^6.0.0
+  shared_preferences: ^2.2.0
+
 
 dev_dependencies:
   flutter_test:

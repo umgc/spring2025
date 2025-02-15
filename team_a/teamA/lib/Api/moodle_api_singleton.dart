@@ -40,6 +40,7 @@ class MoodleApiSingleton {
 
   // Log in to Moodle and retrieve the user token. Throws HttpException if login failed.
   Future<void> login(String username, String password, String baseURL) async {
+    print('Logging in to Moodle...');
     final response = await http.get(Uri.parse(
         '$baseURL/login/token.php?username=$username&password=$password&service=moodle_mobile_app'));
     Map<String, dynamic> data = jsonDecode(response.body);
@@ -113,6 +114,7 @@ Future<bool> isUserTeacher(List<Course> moodleCourses) async {
 
   // Log out of Moodle by deleting the stored user token.
   void logout() {
+    print('Logging out of Moodle...');
     _userToken = null;
   }
 

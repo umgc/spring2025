@@ -54,6 +54,8 @@ class OpenAiLLM {
     if (httpPackageResponse.statusCode != 200) {
       print('Failed to retrieve the http package!');
       print('statusCode :  ${httpPackageResponse.statusCode}');
+      print('Reason: ${httpPackageResponse.body}');
+
       return "";
     }
 

@@ -4,7 +4,8 @@ import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/Views/assessments_view.dart';
 import 'package:learninglens_app/Views/course_list.dart';
 import 'package:learninglens_app/Views/essays_view.dart';
-
+import 'package:learninglens_app/notifiers/login_notifier.dart';
+import 'package:provider/provider.dart';
 
 class TeacherDashboard extends StatelessWidget {
   const TeacherDashboard({super.key});
@@ -12,7 +13,9 @@ class TeacherDashboard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(title: 'Learning Lens', userprofileurl: MoodleApiSingleton().moodleProfileImage ?? ''),
+      appBar: CustomAppBar(
+          title: 'Learning Lens',
+          userprofileurl: MoodleApiSingleton().moodleProfileImage ?? ''),
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: LayoutBuilder(
         builder: (context, constraints) {
@@ -73,48 +76,13 @@ class TeacherDashboard extends StatelessWidget {
             Text(
               'Welcome, ${MoodleApiSingleton().moodleFirstName ?? 'User'}',
               style: TextStyle(
-              fontSize: titleFontSize * 0.7,
-              fontWeight: FontWeight.normal,
-              color: Theme.of(context).colorScheme.onSurface,
+                fontSize: titleFontSize * 0.7,
+                fontWeight: FontWeight.normal,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             const SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                // Left button
-                _buildResponsiveColumn(
-                  context,
-                  'Teacher can view available courses here.',
-                  'Courses',
-                  baseDescriptionFontSize,
-                  baseButtonSize,
-                  baseButtonFontSize,
-                ),
-                SizedBox(width: screenWidth * 0.02), // 2% of screen width
-
-                // Middle button (larger)
-                _buildResponsiveColumn(
-                  context,
-                  'Teacher creates assessments.',
-                  'Assessments',
-                  middleDescriptionFontSize,
-                  middleButtonSize,
-                  middleButtonFontSize,
-                ),
-                SizedBox(width: screenWidth * 0.02),
-
-                // Right button
-                _buildResponsiveColumn(
-                  context,
-                  'Teacher can view, grade, and create essays.',
-                  'Essays',
-                  baseDescriptionFontSize,
-                  baseButtonSize,
-                  baseButtonFontSize,
-                ),
-              ],
-            ),
+            _buildGridLayout(context, constraints),
           ],
         ),
       ),
@@ -166,53 +134,181 @@ class TeacherDashboard extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Text(
-              'Welcome, ${MoodleApiSingleton().moodleFirstName ?? 'User'}',
-              style: TextStyle(
-              fontSize: titleFontSize * 0.7,
-              fontWeight: FontWeight.normal,
-              color: Theme.of(context).colorScheme.onSurface,
+                'Welcome, ${MoodleApiSingleton().moodleFirstName ?? 'User'}',
+                style: TextStyle(
+                  fontSize: titleFontSize * 0.7,
+                  fontWeight: FontWeight.normal,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
               ),
-            ),
               const SizedBox(height: 20),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // First button
-                  _buildResponsiveColumn(
-                    context,
-                    'View available courses.',
-                    'Courses',
-                    baseDescriptionFontSize,
-                    baseButtonSize,
-                    baseButtonFontSize,
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Middle button (larger)
-                  _buildResponsiveColumn(
-                    context,
-                    'Create or view assessments.',
-                    'Assessments',
-                    middleDescriptionFontSize,
-                    middleButtonSize,
-                    middleButtonFontSize,
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Third button
-                  _buildResponsiveColumn(
-                    context,
-                    'View or grade essays.',
-                    'Essays',
-                    baseDescriptionFontSize,
-                    baseButtonSize,
-                    baseButtonFontSize,
-                  ),
-                ],
-              ),
+              _buildGridLayout(context, constraints),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildGridLayout(BuildContext context, BoxConstraints constraints) {
+    final double screenWidth = constraints.maxWidth;
+
+    // Base sizes for buttons
+    double baseButtonSize = screenWidth * 0.15;
+    double baseButtonFontSize = screenWidth * 0.015;
+    double baseDescriptionFontSize = screenWidth * 0.015;
+
+    // Clamp the sizes to reasonable minimum and maximum values
+    baseButtonSize = baseButtonSize.clamp(80.0, 150.0);
+    baseButtonFontSize = baseButtonFontSize.clamp(12.0, 18.0);
+    baseDescriptionFontSize = baseDescriptionFontSize.clamp(12.0, 18.0);
+
+    bool isLoggedin = Provider.of<LoginNotifier>(context).isLoggedIn; // Use provider
+
+    print('isLoggedin: $isLoggedin');
+
+    List<Map<String, dynamic>> buttonData = [
+      {
+        'title': 'Courses',
+        'description': 'View available courses.',
+        'onPressed': !isLoggedin ? null : () => Navigator.push(context, MaterialPageRoute(builder: (context) => CourseList())),
+        'color': Colors.blue, // Blue
+      },
+      {
+        'title': 'Essays',
+        'description': 'View or grade essays.',
+        'onPressed': !isLoggedin ? null : () => Navigator.push(context, MaterialPageRoute(builder: (context) => EssaysView())),
+        'color': Colors.red, // Red
+      },
+      {
+        'title': 'IEP',
+        'description': 'Manage Individualized Education Plans.',
+        'onPressed': !isLoggedin ? null : () {}, // Add navigation
+        'color': Colors.green, // Green
+      },
+      {
+        'title': 'Analytics',
+        'description': 'View performance analytics.',
+        'onPressed': !isLoggedin ? null : () {}, // Add navigation
+        'color': Colors.cyan, // Cyan
+      },
+      {
+        'title': 'Lesson Plan',
+        'description': 'Create and manage lesson plans.',
+        'onPressed': () {}, // Add navigation
+        'color': Colors.purple, // Purple
+
+      },
+      {
+        'title': 'Assessments',
+        'description': 'Create or view assessments.',
+        'onPressed': !isLoggedin ? null :  () => Navigator.push(context,MaterialPageRoute(builder: (context) => AssessmentsView())),
+        'color': Colors.orange, // Orange
+      },
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          // First row (2 buttons)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(
+                child: _buildResponsiveColumn(
+                  context,
+                  buttonData[0]['description'],
+                  buttonData[0]['title'],
+                  baseDescriptionFontSize,
+                  baseButtonSize,
+                  baseButtonFontSize,
+                  buttonData[0]['onPressed'],
+                  buttonData[0]['color'],
+                ),
+              ),
+              const SizedBox(width: 20),
+              Expanded(
+                child: _buildResponsiveColumn(
+                  context,
+                  buttonData[1]['description'],
+                  buttonData[1]['title'],
+                  baseDescriptionFontSize,
+                  baseButtonSize,
+                  baseButtonFontSize,
+                  buttonData[1]['onPressed'],
+                  buttonData[1]['color'],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // Second row (2 buttons)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(
+                child: _buildResponsiveColumn(
+                  context,
+                  buttonData[2]['description'],
+                  buttonData[2]['title'],
+                  baseDescriptionFontSize,
+                  baseButtonSize,
+                  baseButtonFontSize,
+                  buttonData[2]['onPressed'],
+                  buttonData[2]['color'],
+                ),
+              ),
+              const SizedBox(width: 20),
+              Expanded(
+                child: _buildResponsiveColumn(
+                  context,
+                  buttonData[3]['description'],
+                  buttonData[3]['title'],
+                  baseDescriptionFontSize,
+                  baseButtonSize,
+                  baseButtonFontSize,
+                  buttonData[3]['onPressed'],
+                  buttonData[3]['color'],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+
+          // Third row (2 buttons)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(
+                child: _buildResponsiveColumn(
+                  context,
+                  buttonData[4]['description'],
+                  buttonData[4]['title'],
+                  baseDescriptionFontSize,
+                  baseButtonSize,
+                  baseButtonFontSize,
+                  buttonData[4]['onPressed'],
+                  buttonData[4]['color'],
+                ),
+              ),
+              const SizedBox(width: 20),
+              Expanded(
+                child: _buildResponsiveColumn(
+                  context,
+                  buttonData[5]['description'],
+                  buttonData[5]['title'],
+                  baseDescriptionFontSize,
+                  baseButtonSize,
+                  baseButtonFontSize,
+                  buttonData[5]['onPressed'],
+                  buttonData[5]['color'],
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -225,6 +321,8 @@ class TeacherDashboard extends StatelessWidget {
     double descriptionFontSize,
     double buttonSize,
     double buttonFontSize,
+    void Function()? onPressed,
+    Color buttonColor,
   ) {
     return Column(
       children: [
@@ -235,17 +333,13 @@ class TeacherDashboard extends StatelessWidget {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: descriptionFontSize,
-              color: Theme.of(context).colorScheme.onSurface,
+              color: Colors.black,
             ),
           ),
         ),
         const SizedBox(height: 10),
         _buildDashboardButton(
-          context,
-          title,
-          buttonSize,
-          buttonFontSize,
-        ),
+            context, title, buttonSize, buttonFontSize, onPressed, buttonColor),
       ],
     );
   }
@@ -256,13 +350,15 @@ class TeacherDashboard extends StatelessWidget {
     String title,
     double size,
     double fontSize,
+    void Function()? onPressed,
+    Color buttonColor
   ) {
     return Container(
       height: size,
       width: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: Colors.white, // Outer white border color
+        color: buttonColor, // Outer white border color
         boxShadow: [
           BoxShadow(
             color: Colors.grey[500]!,
@@ -276,7 +372,7 @@ class TeacherDashboard extends StatelessWidget {
         margin: EdgeInsets.all(size * 0.1), // Adjusted for responsive border
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: Theme.of(context).colorScheme.primary,
+          color: Colors.white, // Inner white color
           boxShadow: [
             BoxShadow(
               color: Colors.grey[600]!,
@@ -287,33 +383,7 @@ class TeacherDashboard extends StatelessWidget {
           ],
         ),
         child: ElevatedButton(
-          onPressed: () {
-            // Button functionality based on title
-            if (title == 'Courses') {
-               Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => CourseList(), // Navigate to Courses page (once created)
-              ),
-            );
-            } else if (title == 'Assessments') {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      AssessmentsView(),  // Navigate to the Assessments page
-                ),
-              );
-            } else if (title == 'Essays') {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) =>
-                      EssaysView(), // Navigate to the Assignments page
-                ),
-              );
-            }
-          },
+          onPressed: onPressed,
           style: ElevatedButton.styleFrom(
             shape: const CircleBorder(),
             backgroundColor: Colors.transparent,
@@ -327,7 +397,7 @@ class TeacherDashboard extends StatelessWidget {
               style: TextStyle(
                 fontSize: fontSize,
                 fontWeight: FontWeight.bold,
-                color: Theme.of(context).colorScheme.onPrimary,
+                color: Colors.black,
               ),
             ),
           ),
