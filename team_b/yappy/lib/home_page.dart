@@ -10,17 +10,17 @@ class HomePage extends StatelessWidget {
       backgroundColor: Colors.black,
       appBar: AppBar(
         backgroundColor: Colors.black,
-        leading: IconButton(
-          icon: const Icon(Icons.menu, color: Colors.white),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => LoginPage()
-              ), // Navigate to SignUpPage
+        leading: Builder(
+          builder: (context) {
+            return IconButton(
+              icon: const Icon(Icons.menu),
+              onPressed: () {
+                Scaffold.of(context).openDrawer();
+              },
             );
           },        
         ),
-        toolbarHeight: 200,
+        toolbarHeight: 140,
         title: Center(
           child: CircleAvatar(
             backgroundColor: const Color.fromARGB(255, 0, 0, 0),
@@ -45,6 +45,22 @@ class HomePage extends StatelessWidget {
           ),
         ],
       ),
+            // Hamburger Menu (Drawer)
+      drawer: Drawer(
+        width: 150,
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            _buildDrawerItem('Restaurant'),
+            _buildDrawerItem('Mechanic'),
+            _buildDrawerItem('Medical'),
+            _buildDrawerItem('Help'),
+            _buildDrawerItem('Contact'),
+            _buildDrawerItem('Log Out'),
+          ],
+        ),
+      ),
+
       body: Padding(
         padding: const EdgeInsets.all(30.0),
         child: Column(
@@ -94,6 +110,18 @@ class HomePage extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildDrawerItem(String title) {
+    return ListTile(
+      contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+      textColor: Colors.white,
+      tileColor: const Color.fromARGB(255, 54, 54, 54),
+      title: Text(title),
+      onTap: () {
+        // TODO Navigate to the corresponding screen
+      },
     );
   }
 }
