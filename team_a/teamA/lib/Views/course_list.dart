@@ -67,7 +67,7 @@ class _CourseListState extends State<CourseList> {
                                 ],
                               ),
                               tileColor: selectedCourse == course 
-                                  ? Theme.of(context).colorScheme.primary 
+                                  ? Theme.of(context).colorScheme.primary.withOpacity(0.1) 
                                   : null,
                               onTap: () {
                                 setState(() {
@@ -86,6 +86,7 @@ class _CourseListState extends State<CourseList> {
                       child: selectedCourse == null
                           ? Center(child: Text('Select a course to view details'))
                           : Column(
+                              key: ValueKey(selectedCourse!.id), // Force rebuild on course change
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 // Essays section
