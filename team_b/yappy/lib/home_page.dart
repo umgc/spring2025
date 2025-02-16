@@ -13,9 +13,9 @@ class HomePage extends StatelessWidget {
         leading: Builder(
           builder: (context) {
             return IconButton(
-              icon: const Icon(Icons.menu),
+              icon: const Icon(Icons.menu, color: Colors.white),
               onPressed: () {
-                Scaffold.of(context).openDrawer();
+              Scaffold.of(context).openDrawer();
               },
             );
           },        
@@ -56,7 +56,7 @@ class HomePage extends StatelessWidget {
             _buildDrawerItem('Medical'),
             _buildDrawerItem('Help'),
             _buildDrawerItem('Contact'),
-            _buildDrawerItem('Log Out'),
+            //_buildDrawerItem('Log Out'),
           ],
         ),
       ),
