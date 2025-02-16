@@ -38,16 +38,154 @@ class _LessonPlanState extends State{
     return Scaffold(
       appBar: CustomAppBar(title: 'Lesson Plans', userprofileurl: MoodleApiSingleton().moodleProfileImage ?? ''),
       body: SingleChildScrollView(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children:[
-            // Add Content here
-            Text(
-              'Place content here',
-              style: TextStyle(fontSize: 20),
+        child: Row(
+          children: [
+            // Left side - Add New Lesson Plan
+            Expanded(
+              flex: 1,
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Add New Lesson Plan',
+                      style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 10),
+
+                    // Lesson Plan Name
+                    TextField(
+                      decoration: InputDecoration(
+                        labelText: 'Lesson Plan Name',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+
+                    // Course Combo Box
+                    DropdownButtonFormField<String>(
+                      value: null, //should be selectedCourse
+                      items: List.empty(), //should be a list of courses
+                      onChanged: (value) {
+                        setState(() {
+                          null; //when user changes combo box change selectedcourse
+                        });
+                      },
+                      decoration: InputDecoration(
+                        labelText: 'Course',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    SizedBox(height: 10),
+
+                    // File Upload Section
+                    ElevatedButton(
+                      onPressed: () {
+                        // NEED TO ADD LOGIC!
+                      },
+                      child: Text('Upload Lesson Plan File'),
+                    ),
+
+                    // OR Label
+                    Center(
+                      child: Text(
+                        '- OR -',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    SizedBox(height: 20),
+
+                    // Enter Lesson Plan Manually
+                    TextField(
+                      maxLines: 8,
+                      decoration: InputDecoration(
+                        labelText: 'Enter Lesson Plan Manually',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    SizedBox(height: 20),
+
+                    // Submit Button
+                    ElevatedButton(
+                      onPressed: () {
+                        // Submit logic here
+                      },
+                      child: Text('SUBMIT'),
+                    ),
+                  ],
+                ),
+              ),
             ),
-          ]
-        )
+
+            SizedBox(width: 20),
+
+            // Right side - Existing Lesson Plans
+            Expanded(
+              flex: 1,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Existing Lesson Plans',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(height: 10),
+
+                  // Table Frame
+                  Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    child: DataTable(
+                      columns: [
+                        DataColumn(label: Text('Lesson Plan Name')),
+                        DataColumn(label: Text('Course')),
+                        DataColumn(label: Text('Attached File?')),
+                        DataColumn(label: Text('Select')),
+                      ],
+                      rows: [
+                        // Example row data
+                        DataRow(cells: [
+                          DataCell(Text('Plan 1')),
+                          DataCell(Text('Course 1')),
+                          DataCell(Text('Yes')),
+                          DataCell(Checkbox(value: false, onChanged: (bool? value) {})),
+                        ]),
+                        DataRow(cells: [
+                          DataCell(Text('Plan 2')),
+                          DataCell(Text('Course 2')),
+                          DataCell(Text('No')),
+                          DataCell(Checkbox(value: false, onChanged: (bool? value) {})),
+                        ]),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 20),
+
+                  // DELETE and SHOW buttons
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {
+                          // Delete selected logic
+                        },
+                        child: Text('DELETE SELECTED'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          // Show selected logic
+                        },
+                        child: Text('SHOW SELECTED'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       )
     );
   }
