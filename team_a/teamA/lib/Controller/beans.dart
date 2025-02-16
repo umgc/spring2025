@@ -428,25 +428,32 @@ class Course {
   int id;
   String shortName;
   String fullName;
+  DateTime startdate;
+  DateTime enddate;
+  String courseId;
 
   List<Quiz>? quizzes;
   List<Assignment>? essays;
 
   // Barebones constructor.
-  Course(this.id, this.shortName, this.fullName, [this.quizzes, this.essays]);
+  Course(this.id, this.shortName, this.courseId, this.fullName, this.startdate, this.enddate, [this.quizzes, this.essays]);
+
+  static String dateFormatted(DateTime date) {
+    return '${date.month}/${date.day}/${date.year}';
+  }
 
   // Json factory constructor.
   factory Course.fromJson(Map<String, dynamic> json) {
-    return switch (json) {
-      {
-        'id': int id,
-        'shortname': String shortName,
-        'fullname': String fullName,
-      } =>
-        Course(id, shortName, fullName),
-      _ => throw const FormatException('Failed to load course from json.'),
-    };
-  }
+  return Course(
+    json['id'],
+    json['shortname'],
+    json['idnumber'],
+    json['fullname'],
+    DateTime.fromMillisecondsSinceEpoch(json['startdate'] * 1000),
+    DateTime.fromMillisecondsSinceEpoch(json['enddate'] * 1000), 
+  );
+
+}
 
   @override
   String toString(){
