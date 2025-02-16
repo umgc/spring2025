@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:learninglens_app/Api/moodle_api_singleton.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
+import 'package:learninglens_app/Views/analytics_page.dart';
 import 'package:learninglens_app/Views/assessments_view.dart';
 import 'package:learninglens_app/Views/course_list.dart';
 import 'package:learninglens_app/Views/essays_view.dart';
+import 'package:learninglens_app/Views/iep_page.dart';
+import 'package:learninglens_app/Views/lesson_plans.dart';
 import 'package:learninglens_app/notifiers/login_notifier.dart';
 import 'package:provider/provider.dart';
 
@@ -231,19 +234,28 @@ class TeacherDashboard extends StatelessWidget {
       {
         'title': 'IEP',
         'description': 'Manage Individualized Education Plans.',
-        'onPressed': !canAccessApp ? null : () {}, // Add navigation
+        'onPressed': !canAccessApp 
+            ? null 
+            : () => Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => IepPage())), // Add navigation
         'color': Colors.green,
       },
       {
         'title': 'Analytics',
         'description': 'View performance analytics.',
-        'onPressed': !canAccessApp ? null : () {}, // Add navigation
+        'onPressed': !canAccessApp 
+            ? null 
+            : () => Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => AnalyticsPage())), // Add navigation
         'color': Colors.cyan,
       },
       {
         'title': 'Lesson Plan',
         'description': 'Create and manage lesson plans.',
-        'onPressed': !canAccessApp ? null : () {}, // Add navigation
+        'onPressed': !canAccessApp 
+            ? null 
+            : () => Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => LessonPlans())), // Add navigation
         'color': Colors.purple,
       },
       {
