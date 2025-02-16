@@ -1,3 +1,5 @@
+//WE NO LONGER NEED THIS FILE (content combined into course_list) -Kevin
+
 import 'package:flutter/material.dart';
 import 'package:learninglens_app/Api/moodle_api_singleton.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
