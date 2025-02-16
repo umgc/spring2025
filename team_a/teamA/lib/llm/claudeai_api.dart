@@ -1,63 +1,50 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:learninglens_app/services/api_service.dart';
 
-class OpenAiLLM {
-  final String openAiKey;
-  OpenAiLLM(this.openAiKey);
+class ClaudeAiAPI {
+  final String claudeAiKey;
+  ClaudeAiAPI(this.claudeAiKey);
 
   Map<String, dynamic> convertHttpRespToJson(String httpResponseString) {
     return (json.decode(httpResponseString) as Map<String, dynamic>);
   }
 
-  ///
-  ///
-  ///
   String getPostBody(String queryMessage) {
     return jsonEncode({
-      'model': 'gpt-4o-mini',
+      'model': 'claude-3-5-sonnet-20240620',
+      'max_tokens': 1024,
+      'system': 'Be precise and concise',
       'messages': [
-        {'role': 'system', 'content': 'Be precise and concise'},
         {'role': 'user', 'content': queryMessage}
       ]
     });
   }
 
-  ///
-  ///
-  ///
   Map<String, String> getPostHeaders() {
     return ({
-      'accept': 'application/json',
+      'anthropic-version': '2023-06-01',
       'content-type': 'application/json',
-      'authorization': 'Bearer $openAiKey',
+      'anthropic-dangerous-direct-browser-access': 'true',
+      'x-api-key': claudeAiKey,
     });
   }
 
-  ///
-  ///
-  ///
-  Uri getPostUrl() => Uri.https('api.openai.com', '/v1/chat/completions');
+  Uri getPostUrl() => Uri.https('api.anthropic.com', '/v1/messages');
 
-  ///
-  ///
-  ///
   Future<String> postMessage(
       Uri url, Map<String, String> postHeaders, Object postBody) async {
     final httpPackageResponse =
-        await http.post(url, headers: postHeaders, body: postBody);
-
-    print(url);
-    print(postHeaders);
-    print(postBody);
+        await ApiService().httpPost(url, headers: postHeaders, body: postBody);
 
     if (httpPackageResponse.statusCode != 200) {
       print('Failed to retrieve the http package!');
       print('statusCode :  ${httpPackageResponse.statusCode}');
+      print('Reason: ${httpPackageResponse.body}');
+
       return "";
     }
 
-    print("In postmessage : ${httpPackageResponse.body}");
     return httpPackageResponse.body;
   }
 
@@ -87,9 +74,6 @@ class OpenAiLLM {
     return parsedResp;
   }
 
-  ///
-  ///
-  ///
   Future<String> postToLlm(String queryPrompt) async {
     var resp = "";
 
@@ -101,9 +85,6 @@ class OpenAiLLM {
     return resp;
   }
 
-  ///
-  ///
-  ///
   Future<String> queryAI(String query) async {
     final postHeaders = getPostHeaders();
     final postBody = getPostBody(query);
@@ -116,10 +97,10 @@ class OpenAiLLM {
         convertHttpRespToJson(httpPackageRespString);
 
     var retResponse = "";
-    for (var respChoice in httpPackageResponseJson['choices']) {
-      retResponse += respChoice['message']['content'];
+    for (var respChoice in httpPackageResponseJson['content']) {
+      retResponse += respChoice['text'];
     }
-    print("In queryAI - content :  $retResponse");
+    // print("In queryAI - content :  $retResponse");
     return retResponse;
   }
 }

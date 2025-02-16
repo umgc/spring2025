@@ -1,10 +1,10 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/Views/send_quiz_to_moodle.dart';
+import 'package:learninglens_app/llm/openai_api.dart';
+import 'package:learninglens_app/services/local_storage_service.dart';
 import '../Api/moodle_api_singleton.dart';
 import 'package:learninglens_app/Controller/beans.dart';
 import 'package:flutter/material.dart';
-import 'package:llm_api_modules/openai_api.dart';
 import 'quiz_generator.dart';
 
 class EditQuestions extends StatefulWidget {
@@ -19,7 +19,7 @@ class EditQuestions extends StatefulWidget {
 class EditQuestionsState extends State<EditQuestions> {
   late Quiz myQuiz;
   // final TextEditingController _textController = TextEditingController();
-  var apikey = dotenv.env['openai_apikey'];
+  var apikey = LocalStorageService.getOpenAIKey();
   late OpenAiLLM openai;
   bool _isLoading = false;
 
