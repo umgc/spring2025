@@ -63,7 +63,8 @@ class _CourseListState extends State<CourseList> {
                               subtitle: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(course.shortName),
+                                  Text('${course.shortName}${course.courseId}'),
+                                  Text('${Course.dateFormatted(course.startdate)} - ${Course.dateFormatted(course.enddate)}'),                 
                                 ],
                               ),
                               tileColor: selectedCourse == course 
