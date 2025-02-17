@@ -89,6 +89,7 @@ class _GoogleClassAssignmentsState extends State<GoogleClassAssignments> {
             jsonDecode(assignmentsResponse.body)['courseWork']
                 as List<dynamic>?;
         if (assignmentsData != null) {
+          print('Assignments for course $courseId: $assignmentsData');
           setState(() {
             _allAssignments
                 .addAll(assignmentsData); // Add to all assignments list

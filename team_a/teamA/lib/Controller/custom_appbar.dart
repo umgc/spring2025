@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:learninglens_app/Api/moodle_api_singleton.dart';
 import 'package:learninglens_app/Views/dashboard.dart';
 import 'package:learninglens_app/Views/g_courses.dart';
+import 'package:learninglens_app/Views/g_dashboard.dart';
 import 'package:learninglens_app/Views/login_page.dart';
 import 'package:learninglens_app/Views/user_settings.dart';
-// TODO: Import GoogleCourses widget if it doesn't exist
-// import 'package:learninglens_app/Views/google_courses.dart';
+
+class ClassroomSelection {
+  static String selectedClassroom = 'Google Classroom';
+}
 
 class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
   final String title;
@@ -21,7 +24,7 @@ class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
 }
 
 class _CustomAppBarState extends State<CustomAppBar> {
-  String _selectedClassroom = 'Moodle Classroom'; // Default selection
+  String _selectedClassroom = 'Google Classroom'; // Default selection
 
   @override
   Widget build(BuildContext context) {
@@ -51,37 +54,22 @@ class _CustomAppBarState extends State<CustomAppBar> {
               onPressed: isDashboard(context)
                   ? null
                   : () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => TeacherDashboard()),
-                      );
+                      navigateToSelectedDashboard(context);
                     },
             ),
           ),
         ],
       ),
       actions: <Widget>[
-        // Added: Dropdown menu for classroom selection
         DropdownButton<String>(
-          value: _selectedClassroom,
+          //value: _selectedClassroom,
+          value: ClassroomSelection.selectedClassroom,
           onChanged: (String? newValue) {
             if (newValue != null) {
               setState(() {
                 _selectedClassroom = newValue;
               });
-              if (newValue == 'Google Classroom') {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => GoogleCourses()),
-                );
-              } else if (newValue == 'Moodle Classroom') {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => TeacherDashboard()),
-                );
-                print('Navigate to Moodle Classroom');
-              }
+              navigateToSelectedDashboard(context);
             }
           },
           items: <String>['Moodle Classroom', 'Google Classroom']
@@ -106,16 +94,6 @@ class _CustomAppBarState extends State<CustomAppBar> {
         Padding(
           padding: EdgeInsets.only(right: 10.0),
           child: InkWell(
-            // Commented: Removed logout functionality
-            // onTap: () {
-            //   MoodleApiSingleton().logout();
-            //   Navigator.pushAndRemoveUntil(
-            //     context,
-            //     MaterialPageRoute(builder: (context) => LoginApp()),
-            //     (route) => false,
-            //   );
-            //   print("Profile image clicked!");
-            // },
             child: Material(
               color: Colors.transparent,
               child: Container(
@@ -142,5 +120,19 @@ class _CustomAppBarState extends State<CustomAppBar> {
 
   bool isDashboard(BuildContext context) {
     return widget.title == 'Learning Lens';
+  }
+
+  void navigateToSelectedDashboard(BuildContext context) {
+    if (_selectedClassroom == 'Google Classroom') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => GoogleTeacherDashboard()),
+      );
+    } else {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => TeacherDashboard()),
+      );
+    }
   }
 }

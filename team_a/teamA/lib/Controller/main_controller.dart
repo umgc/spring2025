@@ -65,12 +65,14 @@ class MainController {
       username = googleUser.displayName;
 
       MoodleApiSingleton().moodleFirstName ??= username;
+      // MoodleApiSingleton().setLoggedIn(true);
 
       print('Welcome, ${MoodleApiSingleton().moodleFirstName ?? 'User'}');
 
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
       final String? accessToken = googleAuth.accessToken;
+      isLoggedIn = true;
 
       if (accessToken == null) {
         throw Exception("Failed to obtain access token.");

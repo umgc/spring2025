@@ -1,15 +1,18 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:learninglens_app/Api/moodle_api_singleton.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/Views/assessments_view.dart';
 import 'package:learninglens_app/Views/course_list.dart';
 import 'package:learninglens_app/Views/essays_view.dart';
+import 'package:learninglens_app/Views/g_assignment_home.dart';
 import 'package:learninglens_app/Views/g_courses.dart';
 import 'package:learninglens_app/notifiers/login_notifier.dart';
 import 'package:provider/provider.dart';
 
-class TeacherDashboard extends StatelessWidget {
-  const TeacherDashboard({super.key});
+class GoogleTeacherDashboard extends StatelessWidget {
+  const GoogleTeacherDashboard({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -67,9 +70,20 @@ class TeacherDashboard extends StatelessWidget {
 
   /// Checks if user is logged in and has an LLM key
   bool canUserAccessApp(BuildContext context) {
-    final loginNotifier = Provider.of<LoginNotifier>(context, listen: true);
-    bool isLoggedIn = loginNotifier.isLoggedIn;
-    bool hasLLMKey = loginNotifier.hasLLMKey;
+    bool isLoggedIn = true;
+    bool hasLLMKey = true;
+    // final loginNotifier = Provider.of<LoginNotifier>(context, listen: true);
+    var loginNotifier = Provider.of<LoginNotifier>(context, listen: true);
+    print('Login Notifier: ${loginNotifier.isLoggedIn}');
+    var user = MoodleApiSingleton().moodleFirstName;
+    if (user == null || user.isEmpty) {
+      isLoggedIn = false;
+      hasLLMKey = false;
+    } else {
+      isLoggedIn = true;
+      hasLLMKey = true;
+    }
+
     return isLoggedIn && hasLLMKey;
   }
 
@@ -252,8 +266,10 @@ class TeacherDashboard extends StatelessWidget {
         'description': 'Create or view assessments.',
         'onPressed': !canAccessApp
             ? null
-            : () => Navigator.push(context,
-                MaterialPageRoute(builder: (context) => AssessmentsView())),
+            : () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => GoogleClassAssignments())),
         'color': Colors.orange,
       },
     ];

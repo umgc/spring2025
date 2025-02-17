@@ -5,6 +5,7 @@ import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/Controller/main_controller.dart';
 import 'package:learninglens_app/Views/dashboard.dart';
 import 'package:learninglens_app/Views/g_courses.dart';
+import 'package:learninglens_app/Views/g_dashboard.dart';
 import 'package:learninglens_app/notifiers/login_notifier.dart';
 import 'package:learninglens_app/notifiers/theme_notifier.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
@@ -209,7 +210,7 @@ class UserSettingsState extends State<UserSettings> {
       await _controller.signInWithGoogle(context);
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => GoogleCourses()),
+        MaterialPageRoute(builder: (context) => GoogleTeacherDashboard()),
       );
     } catch (error) {
       print("Google Sign-In Error: $error");
