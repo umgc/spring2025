@@ -20,6 +20,7 @@ class MainController {
   // final llm = LlmApi(dotenv.env['PERPLEXITY_API_KEY']!);
   final ValueNotifier<bool> isUserLoggedInNotifier = ValueNotifier(false);
   Course? selectedCourse;
+  String? username;
 
   //Added for the purpose of the Google Login
 
@@ -60,6 +61,12 @@ class MainController {
       if (googleUser == null) {
         throw Exception("Google Sign-In was cancelled by the user.");
       }
+      // Get the user's name
+      username = googleUser.displayName;
+
+      MoodleApiSingleton().moodleFirstName ??= username;
+
+      print('Welcome, ${MoodleApiSingleton().moodleFirstName ?? 'User'}');
 
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;

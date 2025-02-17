@@ -9,6 +9,7 @@ import 'package:learninglens_app/Views/g_courses.dart';
 import 'package:learninglens_app/controller/main_controller.dart';
 import '../Api/moodle_api_singleton.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart'; // Import the intl package for date formatting
 
 class QuizSendToGoogle extends StatefulWidget {
   final Quiz quiz;
@@ -133,7 +134,7 @@ class QuizSendToGoogleState extends State<QuizSendToGoogle> {
   // Checkbox states
   bool isSubmissionEnabled = true;
   bool isDueDateEnabled = true;
-
+  // Lists for dropdowns
   List<String> days =
       List.generate(31, (index) => (index + 1).toString().padLeft(2, '0'));
   List<String> months = [
@@ -202,15 +203,14 @@ class QuizSendToGoogleState extends State<QuizSendToGoogle> {
                 padding: const EdgeInsets.only(top: 15.0),
                 child: Text(
                   'Send Quiz to Google Classroom',
-                  textDirection: TextDirection.ltr,
+                  textAlign: TextAlign
+                      .center, // Changed from textDirection: TextDirection.ltr,
                   style: TextStyle(fontSize: 25, fontWeight: FontWeight.normal),
-                  textAlign: TextAlign.center,
                 ),
               ),
             ),
             SizedBox(height: 30),
 
-            // Assuming 'courses' is now a regular list of Course objects, not a Future.
             sectionTitle(title: 'Course Name'),
             _buildCourseDropdown(),
 
@@ -252,156 +252,161 @@ class QuizSendToGoogleState extends State<QuizSendToGoogle> {
 
             sectionTitle(title: 'Availability'),
             SizedBox(height: 15),
+
             // Submission Date
-            Directionality(
-              textDirection: TextDirection.ltr,
-              child: Row(
-                children: [
-                  Checkbox(
-                      value: isSubmissionEnabled,
-                      onChanged: (value) {
-                        setState(() {
-                          isSubmissionEnabled = value!;
-                        });
-                      }),
-                  Text('Enable'),
-                  SizedBox(width: 10),
-                  _buildDropdown(
-                      'Allow Submissions From Date:',
-                      selectedDaySubmission,
-                      selectedMonthSubmission,
-                      selectedYearSubmission,
-                      selectedHourSubmission,
-                      selectedMinuteSubmission,
-                      isSubmissionEnabled, (String? newValue) {
+            Row(
+              children: [
+                Checkbox(
+                  value: isSubmissionEnabled,
+                  onChanged: (value) {
+                    setState(() {
+                      isSubmissionEnabled = value!;
+                    });
+                  },
+                ),
+                Text('Enable'),
+                SizedBox(width: 10),
+                _buildDropdown(
+                  'Allow Submissions From Date:',
+                  selectedDaySubmission,
+                  selectedMonthSubmission,
+                  selectedYearSubmission,
+                  selectedHourSubmission,
+                  selectedMinuteSubmission,
+                  isSubmissionEnabled,
+                  (String? newValue) {
                     setState(() {
                       selectedDaySubmission = newValue!;
                     });
-                  }, (String? newValue) {
+                  },
+                  (String? newValue) {
                     setState(() {
                       selectedMonthSubmission = newValue!;
                     });
-                  }, (String? newValue) {
+                  },
+                  (String? newValue) {
                     setState(() {
                       selectedYearSubmission = newValue!;
                     });
-                  }, (String? newValue) {
+                  },
+                  (String? newValue) {
                     setState(() {
                       selectedHourSubmission = newValue!;
                     });
-                  }, (String? newValue) {
+                  },
+                  (String? newValue) {
                     setState(() {
                       selectedMinuteSubmission = newValue!;
                     });
-                  }),
-                ],
-              ),
+                  },
+                ),
+              ],
             ),
             SizedBox(height: 16),
+
             // Due Date
-            Directionality(
-              textDirection: TextDirection.ltr,
-              child: Row(
-                children: [
-                  Checkbox(
-                    value: isDueDateEnabled,
-                    onChanged: (value) {
-                      setState(() {
-                        isDueDateEnabled = value!;
-                      });
-                    },
-                  ),
-                  Text('Enable'),
-                  SizedBox(width: 10),
-                  _buildDropdown(
-                      'Due Date:',
-                      selectedDayDue,
-                      selectedMonthDue,
-                      selectedYearDue,
-                      selectedHourDue,
-                      selectedMinuteDue,
-                      isDueDateEnabled, (String? newValue) {
+            Row(
+              children: [
+                Checkbox(
+                  value: isDueDateEnabled,
+                  onChanged: (value) {
+                    setState(() {
+                      isDueDateEnabled = value!;
+                    });
+                  },
+                ),
+                Text('Enable'),
+                SizedBox(width: 10),
+                _buildDropdown(
+                  'Due Date:',
+                  selectedDayDue,
+                  selectedMonthDue,
+                  selectedYearDue,
+                  selectedHourDue,
+                  selectedMinuteDue,
+                  isDueDateEnabled,
+                  (String? newValue) {
                     setState(() {
                       selectedDayDue = newValue!;
                     });
-                  }, (String? newValue) {
+                  },
+                  (String? newValue) {
                     setState(() {
                       selectedMonthDue = newValue!;
                     });
-                  }, (String? newValue) {
+                  },
+                  (String? newValue) {
                     setState(() {
                       selectedYearDue = newValue!;
                     });
-                  }, (String? newValue) {
+                  },
+                  (String? newValue) {
                     setState(() {
                       selectedHourDue = newValue!;
                     });
-                  }, (String? newValue) {
+                  },
+                  (String? newValue) {
                     setState(() {
                       selectedMinuteDue = newValue!;
                     });
-                  }),
-                ],
-              ),
+                  },
+                ),
+              ],
             ),
             SizedBox(height: 16),
 
-            Directionality(
-              textDirection: TextDirection.ltr,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  ElevatedButton(
-                    onPressed: () async {
-                      // 1. Convert month to integer
-                      int monthNumber = months.indexOf(selectedMonthDue) + 1;
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                ElevatedButton(
+                  onPressed: () async {
+                    // 1. Convert month to integer
+                    int monthNumber = months.indexOf(selectedMonthDue) + 1;
 
-                      // 2. Format the due date
-                      String dueDate =
-                          '$selectedYearDue-$monthNumber-${selectedDayDue.padLeft(2, '0')}-$selectedHourDue-$selectedMinuteDue';
+                    // 2. Format the due date
+                    String dueDate =
+                        '$selectedYearDue-$monthNumber-${selectedDayDue.padLeft(2, '0')}-$selectedHourDue-$selectedMinuteDue';
 
-                      // 3. Call GoogleApiService.createAndAssignQuizFromXml
-                      GoogleApiService googleApiService = GoogleApiService();
-                      bool success =
-                          await googleApiService.createAndAssignQuizFromXml(
-                        selectedCourse, // courseId
-                        quizNameController.text, // quizName
-                        'Quiz Description', // quizDescription (You might want to get this from the UI)
-                        quizasxml, // quizAsXml (Your XML quiz data)
-                        dueDate, // dueDate
+                    // 3. Call GoogleApiService.createAndAssignQuizFromXml
+                    GoogleApiService googleApiService = GoogleApiService();
+                    bool success =
+                        await googleApiService.createAndAssignQuizFromXml(
+                      selectedCourse, // courseId
+                      quizNameController.text, // quizName
+                      'Quiz Description', // quizDescription (You might want to get this from the UI)
+                      quizasxml, // quizAsXml (Your XML quiz data)
+                      dueDate, // dueDate
+                    );
+
+                    if (success) {
+                      // Display success message
+                      print("Quiz created and assigned successfully!");
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Quiz submitted successfully!')),
                       );
 
-                      if (success) {
-                        // Display success message
-                        print("Quiz created and assigned successfully!");
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content: Text('Quiz submitted successfully!')),
-                        );
-
-                        // Navigate to GoogleCourses or another screen as needed
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => GoogleCourses()),
-                        );
-                      } else {
-                        // Display error message
-                        print("Failed to create and assign quiz.");
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                              content:
-                                  Text('Failed to create and assign quiz.')),
-                        );
-                      }
-                    },
-                    child: Text(
-                      'Send to Google Classroom',
-                      textDirection: TextDirection.ltr,
-                    ),
+                      // Navigate to GoogleCourses or another screen as needed
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => GoogleCourses()),
+                      );
+                    } else {
+                      // Display error message
+                      print("Failed to create and assign quiz.");
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                            content: Text('Failed to create and assign quiz.')),
+                      );
+                    }
+                  },
+                  child: Text(
+                    'Send to Google Classroom',
+                    textAlign: TextAlign
+                        .center, // Changed from textDirection: TextDirection.ltr,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ],
         ),
@@ -466,9 +471,15 @@ class QuizSendToGoogleState extends State<QuizSendToGoogle> {
   }
 
   Widget sectionTitle({required String title}) {
-    return Text(
-      title,
-      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
     );
   }
 }

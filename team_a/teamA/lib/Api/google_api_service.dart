@@ -22,13 +22,31 @@ class GoogleApiService {
       final questions = document.findAllElements('question').toList();
 
       // 2. Create the Google Form
-      String? formId = await _classroomApi.createForm(quizName);
-      if (formId == null) {
+      Map<String, dynamic>? formResponse =
+          await _classroomApi.createForm(quizName);
+      if (formResponse == null) {
         print('Error: Failed to create Google Form.');
         return false;
       }
 
-      // 3. Add questions to the form based on XML data
+      final String formId = formResponse['formId'];
+      final String responderUri = formResponse['responderUri'];
+
+      // 3. Prepare the batch request for settings updates and question addition
+      List<Map<String, dynamic>> requests = [];
+
+      // Add request to update the form settings
+      requests.add({
+        'updateSettings': {
+          'settings': {
+            'emailCollectionType': 'DO_NOT_COLLECT',
+            'quizSettings': {'isQuiz': true}
+          },
+          'updateMask': 'email_collection_type,quiz_settings',
+        }
+      });
+
+      // 4. Add requests for adding questions to the form
       for (var questionElement in questions) {
         String questionType = questionElement.getAttribute('type') ?? 'unknown';
         String questionText = questionElement
@@ -36,6 +54,13 @@ class GoogleApiService {
                 ?.getElement('text')
                 ?.text ??
             '';
+
+        // skip category questions
+        if (questionType == 'category') {
+          print(
+              'Warning: Unsupported question type: $questionType. Skipping question.');
+          continue; // Skip to the next question
+        }
 
         switch (questionType) {
           case 'multichoice':
@@ -45,40 +70,34 @@ class GoogleApiService {
             for (var answerElement in answerElements) {
               options.add(answerElement.getElement('text')?.text ?? '');
             }
-            bool added =
-                await _classroomApi.addQuestion(formId, questionText, options);
-            if (!added) {
-              print('Error: Failed to add multiple choice question.');
-              return false;
-            }
+            requests.add(
+                _createMultipleChoiceQuestionRequest(questionText, options));
             break;
           case 'truefalse':
-            bool added = await _classroomApi
-                .addQuestion(formId, questionText, ["True", "False"]);
-            if (!added) {
-              print('Error: Failed to add true/false question.');
-              return false;
-            }
+            requests.add(_createTrueFalseQuestionRequest(questionText));
             break;
           case 'shortanswer':
-            bool added = await _classroomApi.addShortAnswerQuestion(
-                formId, questionText);
-            if (!added) {
-              print('Error: Failed to add short answer question.');
-              return false;
-            }
+            requests.add(_createShortAnswerQuestionRequest(questionText));
             break;
           default:
             print('Warning: Unsupported question type: $questionType');
         }
       }
 
-      // 4. Create the Classroom assignment and link the form
+      // 5. Send the batch update request
+      Map<String, dynamic>? batchResponse =
+          await _classroomApi.batchUpdateForm(formId, requests);
+      if (batchResponse == null) {
+        print('Error: Failed to update Google Form.');
+        return false;
+      }
+
+      // 6. Create the Classroom assignment and link the form
       String? assignmentId = await _classroomApi.createAssignment(
         courseId,
         quizName,
         quizDescription,
-        formId,
+        responderUri, // Pass the responderUri
         dueDate,
       );
 
@@ -94,5 +113,58 @@ class GoogleApiService {
       print('Error during quiz creation and assignment: $e');
       return false;
     }
+  }
+
+  // Helper function to create a multiple choice question request
+  Map<String, dynamic> _createMultipleChoiceQuestionRequest(
+      String questionText, List<String> options) {
+    List<Map<String, dynamic>> choices = [];
+    for (String option in options) {
+      choices.add({
+        'value': option,
+      });
+    }
+
+    return {
+      'createItem': {
+        'item': {
+          'title': questionText,
+          'questionItem': {
+            'question': {
+              'required': true,
+              'choiceQuestion': {
+                'type': 'RADIO',
+                'options': choices,
+              }
+            }
+          }
+        },
+        'location': {'index': 0}
+      }
+    };
+  }
+
+  // Helper function to create a true/false question request
+  Map<String, dynamic> _createTrueFalseQuestionRequest(String questionText) {
+    return _createMultipleChoiceQuestionRequest(
+        questionText, ["True", "False"]);
+  }
+
+  // Helper function to create a short answer question request
+  Map<String, dynamic> _createShortAnswerQuestionRequest(String questionText) {
+    return {
+      'createItem': {
+        'item': {
+          'title': questionText,
+          'questionItem': {
+            'question': {
+              'required': true,
+              'textQuestion': {},
+            }
+          }
+        },
+        'location': {'index': 0}
+      }
+    };
   }
 }

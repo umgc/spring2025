@@ -5,7 +5,10 @@ import 'package:learninglens_app/Controller/main_controller.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:learninglens_app/Views/g_assignment_create.dart';
+import 'package:learninglens_app/Views/g_assignment_home.dart';
+import 'package:learninglens_app/Views/g_assignment_list.dart';
 import 'package:learninglens_app/Views/g_quiz_generator.dart';
+import 'package:intl/intl.dart'; // Import intl package for date formatting
 
 class GoogleCourses extends StatefulWidget {
   @override
@@ -95,15 +98,29 @@ class _GoogleCoursesState extends State<GoogleCourses> {
     print('Navigating to Create Assignment page');
   }
 
+  void _navigateToAssignmentHome() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => GoogleClassAssignments()),
+    );
+    print('Navigating to Create Assignment page');
+  }
+
+  // Function to navigate to the assignment display page
+  void _navigateToAssignment(dynamic assignment) {
+    // You can pass the assignment details to the new page
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AssignmentDisplayPage(
+            assignment: assignment), // Create AssignmentDisplayPage
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(
-      //   title: Text(
-      //     'Google Classroom',
-      //   ),
-      //   backgroundColor: Colors.blue,
-      // ),
       appBar: CustomAppBar(
           title: 'Google Classroom',
           userprofileurl: MoodleApiSingleton().moodleProfileImage ?? ''),
@@ -149,7 +166,7 @@ class _GoogleCoursesState extends State<GoogleCourses> {
                                             Text(
                                                 'Section: ${course['section'] ?? 'N/A'}'),
                                             Text(
-                                                'Status: ${course['status'] ?? 'N/A'}'),
+                                                'Status: ${course['courseState'] ?? 'N/A'}'),
                                             Text(
                                                 'Room: ${course['room'] ?? 'N/A'}'),
                                             Text(
@@ -208,6 +225,16 @@ class _GoogleCoursesState extends State<GoogleCourses> {
                                   backgroundColor: Colors.orange,
                                 ),
                               ),
+                              SizedBox(width: 10),
+                              ElevatedButton.icon(
+                                onPressed: _navigateToAssignmentHome,
+                                icon: Icon(Icons.remove_red_eye),
+                                label: Text('View All Assignment'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor:
+                                      const Color.fromARGB(255, 88, 194, 67),
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -230,13 +257,44 @@ class _GoogleCoursesState extends State<GoogleCourses> {
                               itemCount: _assignments.length,
                               itemBuilder: (context, index) {
                                 final assignment = _assignments[index];
+                                // Extract due date from assignment if available
+                                DateTime? dueDate;
+                                if (assignment['dueDate'] != null) {
+                                  dueDate = DateTime(
+                                    assignment['dueDate']['year'],
+                                    assignment['dueDate']['month'],
+                                    assignment['dueDate']['day'],
+                                  );
+                                }
+
+                                // Format the due date
+                                final String formattedDueDate = dueDate != null
+                                    ? DateFormat('MMM d, yyyy').format(dueDate)
+                                    : 'No due date';
+
                                 return Card(
                                   child: ListTile(
                                     leading: Icon(Icons.assignment),
                                     title:
                                         Text(assignment['title'] ?? 'No title'),
-                                    subtitle: Text(assignment['description'] ??
-                                        'No description'),
+                                    subtitle: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(assignment['description'] ??
+                                            'No description'),
+                                        Text(
+                                            'Due Date: $formattedDueDate'), // Display the formatted due date
+                                        Text(
+                                            'State: ${assignment['state'] ?? 'N/A'}'),
+                                        Text(
+                                            'Max Points: ${assignment['maxPoints'] ?? 'N/A'}'),
+                                        Text(
+                                            'Work Type: ${assignment['workType'] ?? 'N/A'}'),
+                                      ],
+                                    ),
+                                    onTap: () =>
+                                        _navigateToAssignment(assignment),
                                   ),
                                 );
                               },
