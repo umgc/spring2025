@@ -1,19 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:yappy/hamburger_menu.dart';
 import 'package:yappy/login_page.dart';
 
-class IndustryPage extends StatelessWidget {
-  final String title;
-
-  const IndustryPage({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold (
-      appBar: AppBar(title: Text(title)),
-      body: Center(child: Text('$title Page')),
-    );
-  }
-}
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -85,22 +73,8 @@ class HomePage extends StatelessWidget {
           ),
         ],
             ),
-            // Hamburger Menu (Drawer)
-      drawer: Drawer(
-        width: 175,
-        backgroundColor: Colors.black,
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            _buildDrawerItem('Restaurant', context, IndustryPage(title: 'Restaurant')),
-            _buildDrawerItem('Mechanical Aid', context, IndustryPage(title: 'Mechanical Aid')),
-            _buildDrawerItem('Medical Doctor', context, IndustryPage(title: 'Medical Doctor')),
-            _buildDrawerItem('Medical Patient', context, IndustryPage(title: 'Medical Patient')),
-            _buildDrawerItem('Help', context, IndustryPage(title: 'Help')),
-            _buildDrawerItem('Contact', context, IndustryPage(title: 'Contact')),
-          ],
-        ),
-      ),
+        // Hamburger Menu (Drawer)
+        drawer: HamburgerMenu(),
 
       body: Padding(
         padding: const EdgeInsets.all(30.0),
