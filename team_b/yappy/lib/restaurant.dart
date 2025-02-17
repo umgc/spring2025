@@ -14,27 +14,19 @@ class RestaurantPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
-        title: Text('Restaurant'),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'Welcome to our Restaurant!',
-              style: TextStyle(fontSize: 24),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
+        backgroundColor: Colors.black,
+        leading: Builder(
+          builder: (context) {
+
+            //I would like to figure out how to change the drawer size
+            return IconButton(
+              icon: const Icon(Icons.menu, color: Colors.white),
               onPressed: () {
-                // Add your onPressed code here!
+              Scaffold.of(context).openDrawer();
               },
-              child: Text('View Menu'),
-            ),
-          ],
+            );
+          },        
         ),
-      ),
-    );
-  }
 }

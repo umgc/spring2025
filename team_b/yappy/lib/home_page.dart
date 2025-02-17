@@ -1,62 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:yappy/login_page.dart';
 
-class RestaurantPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Restaurant')),
-      body: Center(child: Text('Restaurant Page')),
-    );
-  }
-}
+class IndustryPage extends StatelessWidget {
+  final String title;
 
-class MechanicalAidPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Mechanical Aid')),
-      body: Center(child: Text('Mechanical Aid Page')),
-    );
-  }
-}
+  const IndustryPage({required this.title});
 
-class MedicalDoctorPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Medical Doctor')),
-      body: Center(child: Text('Medical Doctor Page')),
-    );
-  }
-}
-
-class MedicalPatientPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Medical Patient')),
-      body: Center(child: Text('Medical Patient Page')),
-    );
-  }
-}
-
-class HelpPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Help')),
-      body: Center(child: Text('Help Page')),
-    );
-  }
-}
-
-class ContactPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Contact')),
-      body: Center(child: Text('Contact Page')),
+    return Scaffold (
+      appBar: AppBar(title: Text(title)),
+      body: Center(child: Text('$title Page')),
     );
   }
 }
@@ -138,12 +92,12 @@ class HomePage extends StatelessWidget {
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            _buildDrawerItem('Restaurant', context, RestaurantPage()),
-            _buildDrawerItem('Mechanical Aid', context, MechanicalAidPage()),
-            _buildDrawerItem('Medical Doctor', context, MedicalDoctorPage()),
-            _buildDrawerItem('Medical Patient', context, MedicalPatientPage()),
-            _buildDrawerItem('Help', context, HelpPage()),
-            _buildDrawerItem('Contact', context, ContactPage()),
+            _buildDrawerItem('Restaurant', context, IndustryPage(title: 'Restaurant')),
+            _buildDrawerItem('Mechanical Aid', context, IndustryPage(title: 'Mechanical Aid')),
+            _buildDrawerItem('Medical Doctor', context, IndustryPage(title: 'Medical Doctor')),
+            _buildDrawerItem('Medical Patient', context, IndustryPage(title: 'Medical Patient')),
+            _buildDrawerItem('Help', context, IndustryPage(title: 'Help')),
+            _buildDrawerItem('Contact', context, IndustryPage(title: 'Contact')),
           ],
         ),
       ),
@@ -169,12 +123,12 @@ class HomePage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            _buildButton('Restaurant', context, RestaurantPage()),
-            _buildButton('Mechanicial Aid', context, MechanicalAidPage()),
-            _buildButton('Medical Doctor', context, MedicalDoctorPage()),
-            _buildButton('Medical Patient', context, MedicalPatientPage()),
-            _buildButton('Help', context, HelpPage()),
-            _buildButton('Contact', context, ContactPage()),
+            _buildButton('Restaurant', context, IndustryPage(title: 'Restaurant')),
+            _buildButton('Mechanicial Aid', context, IndustryPage(title: 'Mechanical Aid')),
+            _buildButton('Medical Doctor', context, IndustryPage(title: 'Medical Doctor')),
+            _buildButton('Medical Patient', context, IndustryPage(title: 'Medical Patient')),
+            _buildButton('Help', context, IndustryPage(title: 'Help')),
+            _buildButton('Contact', context, IndustryPage(title: 'Contact')),
           ],
         ),
       ),
