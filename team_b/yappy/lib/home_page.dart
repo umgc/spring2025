@@ -1,6 +1,66 @@
 import 'package:flutter/material.dart';
 import 'package:yappy/login_page.dart';
 
+class RestaurantPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Restaurant')),
+      body: Center(child: Text('Restaurant Page')),
+    );
+  }
+}
+
+class MechanicalAidPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Mechanical Aid')),
+      body: Center(child: Text('Mechanical Aid Page')),
+    );
+  }
+}
+
+class MedicalDoctorPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Medical Doctor')),
+      body: Center(child: Text('Medical Doctor Page')),
+    );
+  }
+}
+
+class MedicalPatientPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Medical Patient')),
+      body: Center(child: Text('Medical Patient Page')),
+    );
+  }
+}
+
+class HelpPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Help')),
+      body: Center(child: Text('Help Page')),
+    );
+  }
+}
+
+class ContactPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Contact')),
+      body: Center(child: Text('Contact Page')),
+    );
+  }
+}
+
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
@@ -12,6 +72,8 @@ class HomePage extends StatelessWidget {
         backgroundColor: Colors.black,
         leading: Builder(
           builder: (context) {
+
+            //I would like to figure out how to change the drawer size
             return IconButton(
               icon: const Icon(Icons.menu, color: Colors.white),
               onPressed: () {
@@ -21,6 +83,8 @@ class HomePage extends StatelessWidget {
           },        
         ),
         toolbarHeight: 140,
+
+        //This is the Yappy Icon
         title: Center(
           child: CircleAvatar(
             backgroundColor: const Color.fromARGB(255, 0, 0, 0),
@@ -33,6 +97,8 @@ class HomePage extends StatelessWidget {
           ),
         ),
 
+        
+        //This is the Info button on the right
         actions: [
           IconButton(
             icon: const Icon(Icons.info, color: Colors.white),
@@ -67,16 +133,17 @@ class HomePage extends StatelessWidget {
             ),
             // Hamburger Menu (Drawer)
       drawer: Drawer(
-        width: 150,
+        width: 175,
+        backgroundColor: Colors.black,
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
-            _buildDrawerItem('Restaurant'),
-            _buildDrawerItem('Mechanic'),
-            _buildDrawerItem('Medical'),
-            _buildDrawerItem('Help'),
-            _buildDrawerItem('Contact'),
-            //_buildDrawerItem('Log Out'),
+            _buildDrawerItem('Restaurant', context, RestaurantPage()),
+            _buildDrawerItem('Mechanical Aid', context, MechanicalAidPage()),
+            _buildDrawerItem('Medical Doctor', context, MedicalDoctorPage()),
+            _buildDrawerItem('Medical Patient', context, MedicalPatientPage()),
+            _buildDrawerItem('Help', context, HelpPage()),
+            _buildDrawerItem('Contact', context, ContactPage()),
           ],
         ),
       ),
@@ -102,24 +169,30 @@ class HomePage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 20),
-            
-            // Buttons
-            _buildButton('Restaurant'),
-            _buildButton('Mechanic'),
-            _buildButton('Medical'),
+            _buildButton('Restaurant', context, RestaurantPage()),
+            _buildButton('Mechanicial Aid', context, MechanicalAidPage()),
+            _buildButton('Medical Doctor', context, MedicalDoctorPage()),
+            _buildButton('Medical Patient', context, MedicalPatientPage()),
+            _buildButton('Help', context, HelpPage()),
+            _buildButton('Contact', context, ContactPage()),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildButton(String text) {
+  Widget _buildButton(String text, BuildContext context, Widget page) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: SizedBox(
         width: double.infinity,
         child: ElevatedButton(
-          onPressed: () {},
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => page),
+            );
+          },
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.grey[900],
             padding: const EdgeInsets.symmetric(vertical: 15),
@@ -133,14 +206,17 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  Widget _buildDrawerItem(String title) {
+  Widget _buildDrawerItem(String title, BuildContext context, Widget page) {
     return ListTile(
       contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
       textColor: Colors.white,
       tileColor: const Color.fromARGB(255, 54, 54, 54),
       title: Text(title),
       onTap: () {
-        // TODO Navigate to the corresponding screen
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => page),
+        );
       },
     );
   }
