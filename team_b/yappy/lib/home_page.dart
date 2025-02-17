@@ -37,14 +37,34 @@ class HomePage extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.info, color: Colors.white),
             onPressed: () {
-              Navigator.push(
-                 context,
-                 MaterialPageRoute(builder: (context) => LoginPage()), // Navigate to Login  
+              showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text('Information'),
+              content: const Text('Yappy Terms & Conditions\n''By using Yappy,\n'
+                                  'you agree to Use the app responsibly and comply\n'
+                                  'with all applicable laws. Respect user privacy\n'
+                                  'and refrain from harmful or abusive behavior.\n\n'
+                                  'Understand that Yappy is not liable for \n'
+                                  'any misuse or legal consequences arising from its use.\n'
+                                  'We may update these terms as needed.\n'
+                                  'Continued use of Yappy means acceptance of any changes..'),
+              actions: [
+                TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: const Text('OK'),
+                ),
+              ],
+            );
+          },
               );
             },
           ),
         ],
-      ),
+            ),
             // Hamburger Menu (Drawer)
       drawer: Drawer(
         width: 150,
