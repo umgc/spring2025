@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:yappy/tool_bar.dart';
 
 class RestaurantApp extends StatelessWidget {
   @override
@@ -11,5 +11,18 @@ class RestaurantApp extends StatelessWidget {
 }
 
 class RestaurantPage extends StatelessWidget {
-    
+  const RestaurantPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(140), 
+        child: ToolBar()
+      ),
+      drawer: HamburgerDrawer(),
+    );
+  }
 }

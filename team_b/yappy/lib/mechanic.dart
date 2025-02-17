@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:yappy/tool_bar.dart';
 
 
 class Mechanical_AidApp extends StatelessWidget {
@@ -14,27 +15,13 @@ class Mechanical_AidPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Mechanical_Aid'),
+      backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(140), 
+        child: ToolBar()
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              'Welcome to our Mechanical_Aid app!',
-              style: TextStyle(fontSize: 24),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                // Add your onPressed code here!
-              },
-              child: Text('View Menu'),
-            ),
-          ],
-        ),
-      ),
+      drawer: HamburgerDrawer(),
     );
   }
 }
