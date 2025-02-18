@@ -1,7 +1,15 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
-import 'package:learninglens_app/Controller/beans.dart';
+import 'package:learninglens_app/beans/course.dart';
+import 'package:learninglens_app/beans/quiz.dart';
+import 'package:learninglens_app/beans/assignment.dart';
+import 'package:learninglens_app/beans/participant.dart';
+import 'package:learninglens_app/beans/submission_status.dart';
+import 'package:learninglens_app/beans/grade.dart';
+import 'package:learninglens_app/beans/submission.dart';
+import 'package:learninglens_app/beans/submission_with_grade.dart';
+import 'package:learninglens_app/beans/moodle_rubric.dart';
 import 'package:learninglens_app/services/api_service.dart';
 
 // Singleton class for Moodle API access.

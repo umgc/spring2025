@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:learninglens_app/Api/google_api_service.dart'; // Import GoogleApiService
-import 'package:learninglens_app/Controller/beans.dart';
+import 'package:learninglens_app/beans/quiz.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/Controller/g_bean.dart';
 import 'package:learninglens_app/Views/dashboard.dart';

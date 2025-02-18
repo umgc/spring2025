@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../Api/moodle_api_singleton.dart';
-import 'package:learninglens_app/Controller/beans.dart';
+import 'package:learninglens_app/beans/course.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:js' as js; // Import the dart:js library

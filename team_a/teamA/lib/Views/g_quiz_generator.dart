@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:learninglens_app/Api/llm/prompt_engine.dart';
 import 'package:learninglens_app/Api/llm_api.dart';
 import 'package:learninglens_app/Api/moodle_api_singleton.dart';
-import 'package:learninglens_app/Controller/beans.dart';
+import 'package:learninglens_app/beans/assignment_form.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/Views/g_edit_questions.dart';
 import 'package:learninglens_app/llm/claudeai_api.dart';

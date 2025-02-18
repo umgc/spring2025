@@ -2,7 +2,9 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/Views/view_submissions.dart';
-import 'package:learninglens_app/Controller/beans.dart';
+import 'package:learninglens_app/beans/participant.dart';
+import 'package:learninglens_app/beans/submission.dart';
+import 'package:learninglens_app/beans/moodle_rubric.dart';
 import '../Api/moodle_api_singleton.dart';
 import 'dart:math';
 
