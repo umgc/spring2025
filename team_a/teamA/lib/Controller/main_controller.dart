@@ -215,6 +215,7 @@ class MainController {
   void logoutFromMoodle() {
     var moodleApi = MoodleApiSingleton();
     moodleApi.logout();
+
     isLoggedIn = false;
   }
 

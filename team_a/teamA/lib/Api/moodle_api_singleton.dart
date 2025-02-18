@@ -73,57 +73,66 @@ class MoodleApiSingleton {
     moodleProfileImage = userData['userpictureurl'];
   }
 
+  Future<bool> isUserTeacher(List<Course> moodleCourses) async {
+    // Step 1: Iterate over each course in moodleCourses
+    for (var course in moodleCourses) {
+      final courseId = course.id;
 
+      // Step 2: Check the user's roles in each course
+      // final getRolesUrl = Uri.parse('$moodleURL/?wsfunction=core_role_get_roles_in_context&moodlewsrestformat=json');
+      final rolesResponse =
+          await ApiService().httpPost(Uri.parse(moodleURL + serverUrl), body: {
+        'wstoken': _userToken,
+        'wsfunction': 'core_enrol_get_enrolled_users',
+        'courseid': courseId.toString(),
+        'moodlewsrestformat': 'json',
+      });
 
-Future<bool> isUserTeacher(List<Course> moodleCourses) async {
+      if (rolesResponse.statusCode == 200) {
+        List<dynamic> users = json.decode(rolesResponse.body);
 
-  // Step 1: Iterate over each course in moodleCourses
-  for (var course in moodleCourses) {
-    final courseId = course.id;
-
-    // Step 2: Check the user's roles in each course
-    // final getRolesUrl = Uri.parse('$moodleURL/?wsfunction=core_role_get_roles_in_context&moodlewsrestformat=json');
-    final rolesResponse = await ApiService().httpPost(Uri.parse(moodleURL + serverUrl), body:  {
-      'wstoken': _userToken,
-      'wsfunction': 'core_enrol_get_enrolled_users',
-      'courseid': courseId.toString(),
-      'moodlewsrestformat': 'json',
-    });
-
-    if (rolesResponse.statusCode == 200) {
-      List<dynamic> users = json.decode(rolesResponse.body);
-
- // Check if the specified user is in the list and has teacher roles
-      for (var user in users) {
-        if (user['username'].toString() == moodleUserName) {
-          for (var role in user['roles']) {
-            if (role['roleid'] == 3 || role['roleid'] == 4) {
-              return true; // User is a teacher in this course
+        // Check if the specified user is in the list and has teacher roles
+        for (var user in users) {
+          if (user['username'].toString() == moodleUserName) {
+            for (var role in user['roles']) {
+              if (role['roleid'] == 3 || role['roleid'] == 4) {
+                return true; // User is a teacher in this course
+              }
             }
           }
         }
+      } else {
+        throw Exception('Failed to load roles for course $courseId');
       }
-    } else {
-      throw Exception('Failed to load roles for course $courseId');
     }
+
+    return false; // User is not a teacher in any course
   }
-
-  return false; // User is not a teacher in any course
-}
-
-
 
   // Log out of Moodle by deleting the stored user token.
   void logout() {
     print('Logging out of Moodle...');
+    resetMoodle();
+  }
+
+  void resetMoodle() {
     _userToken = null;
+    moodleURL = '';
+    moodleUserName = '';
+    moodleFirstName = null;
+    moodleLastName = null;
+    moodleSiteName = null;
+    moodleFullName = null;
+    moodleProfileImage = null;
+    moodleCourses = [];
   }
 
   // Get list of courses.
   Future<List<Course>> getCourses() async {
     if (_userToken == null) throw StateError('User not logged in to Moodle');
 
-    final response = await ApiService().httpPost(Uri.parse(moodleURL + serverUrl), body: {
+    final response =
+        await ApiService().httpPost(Uri.parse(moodleURL + serverUrl), body: {
       'wstoken': _userToken,
       'wsfunction': 'core_course_get_courses',
       'moodlewsrestformat': 'json',
@@ -158,7 +167,8 @@ Future<bool> isUserTeacher(List<Course> moodleCourses) async {
     if (_userToken == null) throw StateError('User not logged in to Moodle');
 
     // URL of the Moodle server
-    final response = await ApiService().httpPost(Uri.parse(moodleURL + serverUrl), body: {
+    final response =
+        await ApiService().httpPost(Uri.parse(moodleURL + serverUrl), body: {
       'wstoken': _userToken,
       'wsfunction': 'mod_quiz_get_quizzes_by_courses',
       'moodlewsrestformat': 'json',
@@ -193,7 +203,8 @@ Future<bool> isUserTeacher(List<Course> moodleCourses) async {
     if (_userToken == null) throw StateError('User not logged in to Moodle');
 
     // URL of the Moodle server
-    final response = await ApiService().httpPost(Uri.parse(moodleURL + serverUrl), body: {
+    final response =
+        await ApiService().httpPost(Uri.parse(moodleURL + serverUrl), body: {
       'wstoken': _userToken,
       'wsfunction': 'mod_assign_get_assignments',
       'moodlewsrestformat': 'json',
@@ -228,7 +239,8 @@ Future<bool> isUserTeacher(List<Course> moodleCourses) async {
     if (_userToken == null) throw StateError('User not logged in to Moodle');
 
     // URL of the Moodle server
-    final response = await ApiService().httpPost(Uri.parse(moodleURL + serverUrl), body: {
+    final response =
+        await ApiService().httpPost(Uri.parse(moodleURL + serverUrl), body: {
       'wstoken': _userToken,
       'wsfunction': 'core_enrol_get_enrolled_users',
       'courseid': courseId,
@@ -258,7 +270,8 @@ Future<bool> isUserTeacher(List<Course> moodleCourses) async {
   Future<List<Course>> getUserCourses() async {
     if (_userToken == null) throw StateError('User not logged in to Moodle');
     // var moodleURL = MoodleApiSingleton().moodleURL;
-    final response = await ApiService().httpPost(Uri.parse(moodleURL + serverUrl), body: {
+    final response =
+        await ApiService().httpPost(Uri.parse(moodleURL + serverUrl), body: {
       'wstoken': _userToken,
       'wsfunction':
           'core_course_get_enrolled_courses_by_timeline_classification',
@@ -675,8 +688,8 @@ Future<bool> isUserTeacher(List<Course> moodleCourses) async {
   // Create a new quiz in the specified course using learninglens plugin.
   // ********************************************************************************************************************
 
-  Future<int?> createQuiz(
-      String courseid, String quizname, String quizintro, String sectionid, String timeopen, String timeclose) async {
+  Future<int?> createQuiz(String courseid, String quizname, String quizintro,
+      String sectionid, String timeopen, String timeclose) async {
     if (_userToken == null) throw StateError('User not logged in to Moodle');
     // const String url = 'webservice/rest/server.php';
     try {
@@ -760,7 +773,8 @@ Future<bool> isUserTeacher(List<Course> moodleCourses) async {
   Future<int?> getContextId(int assignmentId, String courseId) async {
     if (_userToken == null) throw StateError('User not logged in to Moodle');
     try {
-      final response = await ApiService().httpPost(Uri.parse(moodleURL + serverUrl), body: {
+      final response =
+          await ApiService().httpPost(Uri.parse(moodleURL + serverUrl), body: {
         'wstoken': _userToken,
         'wsfunction': 'core_course_get_contents',
         'moodlewsrestformat': 'json',
