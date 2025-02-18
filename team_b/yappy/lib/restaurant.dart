@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yappy/tool_bar.dart';
+import 'package:yappy/industry_menu.dart';
 
 class RestaurantApp extends StatelessWidget {
   @override
@@ -23,6 +24,11 @@ class RestaurantPage extends StatelessWidget {
         child: ToolBar()
       ),
       drawer: HamburgerDrawer(),
+
+      body: 
+        IndustryMenu(title: "Restaurant", icon: Icons.restaurant_menu),
     );
   }
+
+
 }

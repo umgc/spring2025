@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:yappy/industry_menu.dart';
 import 'package:yappy/tool_bar.dart';
 
 
@@ -22,6 +23,9 @@ class Mechanical_AidPage extends StatelessWidget {
         child: ToolBar()
       ),
       drawer: HamburgerDrawer(),
+
+      body: 
+        IndustryMenu(title: "Mechanical Aid", icon: Icons.directions_car),
     );
   }
 }

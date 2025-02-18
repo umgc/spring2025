@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:yappy/tool_bar.dart';
+import 'package:yappy/industry_menu.dart';
+
 
 class Medical_PatientApp extends StatelessWidget {
   @override
@@ -21,6 +23,10 @@ class Medical_PatientPage extends StatelessWidget {
         child: ToolBar()
       ),
       drawer: HamburgerDrawer(),
+
+      body: 
+        IndustryMenu(title: "Medical Patient", icon: Icons.local_pharmacy),
+
     );
   }
 }

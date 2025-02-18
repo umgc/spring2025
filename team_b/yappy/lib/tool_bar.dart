@@ -62,21 +62,6 @@ class ToolBar extends StatelessWidget {
         );
   }
 }
-
-class IndustryPage extends StatelessWidget {
-  final String title;
-
-  const IndustryPage({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: Center(child: Text('$title Page')),
-    );
-  }
-}
-
   // Separate Drawer Widget
 class HamburgerDrawer extends StatelessWidget {
   @override
