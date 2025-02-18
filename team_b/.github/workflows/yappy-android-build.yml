@@ -1,0 +1,50 @@
+name: Yappy! Android Build
+
+on:
+  push:
+    branches: [ "developer" ]
+    paths:
+      - 'team_b/yappy/**'          # Only trigger on changes in yappy directory
+      - 'team_b/.github/workflows/**' # Include workflow file changes
+  pull_request:
+    branches: [ "developer" ]
+    paths:
+      - 'team_b/yappy/**'          # Only trigger on changes in yappy directory
+      - 'team_b/.github/workflows/**' # Include workflow file changes
+
+defaults:
+  run:
+    working-directory: team_b/yappy
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+      
+      - name: Install dependencies
+        run: flutter pub get
+      
+      - name: Analyze project source
+        run: flutter analyze
+      
+      - name: Run tests
+        run: flutter test
+      
+      - name: Build Android APK
+        run: flutter build apk
+
+      - name: Build Android appbundle
+        run: flutter build appbundle
+      
+      - name: Upload Android Build
+        uses: actions/upload-artifact@v4
+        with:
+          name: yappy-android-build
+          path: team_b/yappy/build/app/outputs/flutter-apk/app-release.apk
