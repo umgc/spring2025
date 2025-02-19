@@ -57,5 +57,17 @@ class HomePage extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildDrawerItem(String title) {
+    return ListTile(
+      contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+      textColor: Colors.white,
+      tileColor: const Color.fromARGB(255, 54, 54, 54),
+      title: Text(title),
+      onTap: () {
+        // TODO Navigate to the corresponding screen
+      },
+    );
+  }
 }
 
