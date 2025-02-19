@@ -14,14 +14,21 @@ class IndustryMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+      // Gets the width of the current screen
       double screenWidth = MediaQuery.of(context).size.width;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+
+      // Creates a column for the items within the menu
       child: Column (
         children: [
+
+          // Adds padding between the navigation menu and the industry menu
           SizedBox(height: 25),
           
           Center(
+            // Creates the text box above the icons
             child: Container(
             width: screenWidth * .75,
             decoration: BoxDecoration(
@@ -44,9 +51,13 @@ class IndustryMenu extends StatelessWidget {
             ),
           ),
           SizedBox(height: 25),
+          
+          // Creates a row of clickable menu icons
           Row (
-            mainAxisAlignment: MainAxisAlignment.center, // Center the row's children
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
+
+              // Creates the chat button for each menu
               Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
@@ -66,6 +77,7 @@ class IndustryMenu extends StatelessWidget {
               ),
               SizedBox(width: 40),
 
+              // Creates a industry specific icon based on user input
               Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
@@ -86,6 +98,7 @@ class IndustryMenu extends StatelessWidget {
               ),
               SizedBox(width: 40),
 
+              // Creates a transcript button
               Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
