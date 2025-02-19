@@ -12,6 +12,7 @@ class ToolBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
       return AppBar(
+          // Creates the hamburger icon for the menu
           backgroundColor: Colors.black,
           leading: Builder(
             builder: (context) {
@@ -24,6 +25,7 @@ class ToolBar extends StatelessWidget {
             },
           ),
           toolbarHeight: 140,
+          // Contains the Yappy! icon
           title: Center(
             child: CircleAvatar(
               backgroundColor: const Color.fromARGB(255, 0, 0, 0),
@@ -36,12 +38,14 @@ class ToolBar extends StatelessWidget {
             ),
           ),
           actions: [
+            // Contains the information button
             IconButton(
               icon: const Icon(Icons.info, color: Colors.white),
               onPressed: () {
                 showDialog(
                   context: context,
                   builder: (BuildContext context) {
+                    // Creates a pop up when the button is pressed
                     return AlertDialog(
                       title: const Text('Information'),
                       content: const Text('Your Terms & Conditions info goes here.'),
@@ -62,7 +66,7 @@ class ToolBar extends StatelessWidget {
         );
   }
 }
-  // Separate Drawer Widget
+  // creates the hamburger menu
 class HamburgerDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -84,6 +88,7 @@ class HamburgerDrawer extends StatelessWidget {
     );
   }
 
+  // Creates the individual drawer items for the hamburger menu
   Widget _buildDrawerItem(String title, BuildContext context, Widget page) {
     return ListTile(
       contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
@@ -93,6 +98,7 @@ class HamburgerDrawer extends StatelessWidget {
       onTap: () {
         Navigator.push(
           context,
+          // Navigates to the page once the button is clicked
           MaterialPageRoute(builder: (context) => page),
         );
       },
