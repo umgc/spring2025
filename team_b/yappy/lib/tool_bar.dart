@@ -66,20 +66,22 @@ class ToolBar extends StatelessWidget {
 class HamburgerDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return Drawer(
-      width: 175,
-      backgroundColor: Colors.black,
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          _buildDrawerItem('Home', context, HomePage()),
-          _buildDrawerItem('Restaurant', context, RestaurantPage()),
-          _buildDrawerItem('Mechanical Aid', context, Mechanical_AidPage()),
-          _buildDrawerItem('Medical Doctor', context, Medical_DoctorPage()),
-          _buildDrawerItem('Medical Patient', context, Medical_PatientPage()),
-          _buildDrawerItem('Help', context, HelpPage()),
-          _buildDrawerItem('Contact', context, ContactPage()),
-        ],
+    return SafeArea(
+      child: Drawer(
+        width: 175,
+        backgroundColor: Colors.black,
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            _buildDrawerItem('Home', context, HomePage()),
+            _buildDrawerItem('Restaurant', context, RestaurantPage()),
+            _buildDrawerItem('Mechanical Aid', context, Mechanical_AidPage()),
+            _buildDrawerItem('Medical Doctor', context, Medical_DoctorPage()),
+            _buildDrawerItem('Medical Patient', context, Medical_PatientPage()),
+            _buildDrawerItem('Help', context, HelpPage()),
+            _buildDrawerItem('Contact', context, ContactPage()),
+          ],
+        ),
       ),
     );
   }
