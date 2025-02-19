@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:learninglens_app/services/api_service.dart';
 
 class LlmApi {
   final String apiKey;
@@ -46,7 +47,7 @@ class LlmApi {
   Future<String> postMessage(
       Uri url, Map<String, String> postHeaders, Object postBody) async {
     final httpPackageResponse =
-        await http.post(url, headers: postHeaders, body: postBody);
+        await ApiService().httpPost(url, headers: postHeaders, body: postBody);
 
     if (httpPackageResponse.statusCode != 200) {
       print('Failed to retrieve the http package!');
