@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
-import 'package:learninglens_app/Controller/beans.dart';
+import 'package:learninglens_app/beans/course.dart';
 import 'package:learninglens_app/Views/dashboard.dart';
 import 'dart:convert';
 import '../Api/moodle_api_singleton.dart';

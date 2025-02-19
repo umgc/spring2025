@@ -26,6 +26,8 @@ dependencies:
   flutter_colorpicker: ^1.1.0
   shared_preferences: ^2.0.8
   logger: ^1.4.0
+  google_sign_in: ^6.2.2
+  flutter_secure_storage: ^9.2.4
 
 dev_dependencies:
   flutter_test:

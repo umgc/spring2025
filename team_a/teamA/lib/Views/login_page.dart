@@ -23,13 +23,15 @@ class LoginApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Login', style: Theme.of(context).textTheme.bodyMedium), // Use the theme from MyApp
+        title: Text('Login',
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium), // Use the theme from MyApp
       ),
       body: const LoginScreen(), // Keep the rest of your widget tree
     );
   }
 }
-
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -164,9 +166,8 @@ class _LoginScreenState extends State<LoginScreen> {
                                 setState(() {
                                   _isLoading = true; // Start loading
                                 });
-                                var wasSuccessful = await LoginScreen
-                                    .controller
-                                    .loginToMoodle(
+                                var wasSuccessful =
+                                    await LoginScreen.controller.loginToMoodle(
                                   _usernameController.text,
                                   _passwordController.text,
                                   _moodleURLController.text,

@@ -1,5 +1,6 @@
 import 'package:learninglens_app/Controller/custom_appbar.dart';
-import 'package:learninglens_app/Views/send_quiz_to_moodle.dart';
+import 'package:learninglens_app/Views/g_quiz_generator.dart';
+import 'package:learninglens_app/Views/g_send_quiz_to_moodle.dart';
 import 'package:learninglens_app/llm/openai_api.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
 import '../Api/moodle_api_singleton.dart';
@@ -8,24 +9,24 @@ import 'package:learninglens_app/beans/question.dart';
 import 'package:flutter/material.dart';
 import 'quiz_generator.dart';
 
-class EditQuestions extends StatefulWidget {
+class EditQuestionsGoogle extends StatefulWidget {
   final String questionXML;
 
-  EditQuestions(this.questionXML);
+  EditQuestionsGoogle(this.questionXML);
 
   @override
-  EditQuestionsState createState() => EditQuestionsState();
+  EditQuestionsGoogleState createState() => EditQuestionsGoogleState();
 }
 
-class EditQuestionsState extends State<EditQuestions> {
+class EditQuestionsGoogleState extends State<EditQuestionsGoogle> {
   late Quiz myQuiz;
   // final TextEditingController _textController = TextEditingController();
   var apikey = LocalStorageService.getOpenAIKey();
   late OpenAiLLM openai;
   bool _isLoading = false;
 
-  String subject = CreateAssessment.descriptionController.text;
-  String topic = CreateAssessment.topicController.text;
+  String subject = CreateAssessmentGoogle.descriptionController.text;
+  String topic = CreateAssessmentGoogle.topicController.text;
   late String promptstart;
 
   @override
@@ -38,8 +39,8 @@ class EditQuestionsState extends State<EditQuestions> {
       // Handle the case where the API key is null
       throw Exception('API key is not set in the environment variables');
     }
-    myQuiz.name = CreateAssessment.nameController.text;
-    myQuiz.description = CreateAssessment.descriptionController.text;
+    myQuiz.name = CreateAssessmentGoogle.nameController.text;
+    myQuiz.description = CreateAssessmentGoogle.descriptionController.text;
 
     promptstart =
         'Create a question that is compatible with Moodle XML import. Be a bit creative in how you design the question and answers, making sure it is engaging but still on the subject of $subject and related to $topic. Make sure the XML specification is included, and the question is wrapped in the quiz XML element required by Moodle. Each answer should have feedback that fits the Moodle XML format, and avoid using HTML elements within a CDATA field. The quiz should be challenging and thought-provoking, but appropriate for high school students who speak English. The Moodle question type should be  ';
@@ -48,10 +49,10 @@ class EditQuestionsState extends State<EditQuestions> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-  appBar: CustomAppBar(
-    title: 'Edit Questions',
-    userprofileurl: MoodleApiSingleton().moodleProfileImage ?? '',
-  ),
+      appBar: CustomAppBar(
+        title: 'Edit Questions',
+        userprofileurl: MoodleApiSingleton().moodleProfileImage ?? '',
+      ),
       body: Column(
         children: [
           Expanded(
@@ -67,7 +68,7 @@ class EditQuestionsState extends State<EditQuestions> {
                         color: Theme.of(context).colorScheme.scrim,
                         child: Align(
                           alignment: Alignment.centerLeft,
-                            child: Padding(
+                          child: Padding(
                             padding: const EdgeInsets.only(left: 16),
                             child: Icon(
                               Icons.refresh,
@@ -78,11 +79,11 @@ class EditQuestionsState extends State<EditQuestions> {
                       ),
                       if (_isLoading)
                         Center(
-                            child: CircularProgressIndicator(
+                          child: CircularProgressIndicator(
                             valueColor: AlwaysStoppedAnimation<Color>(
                               Theme.of(context).colorScheme.surface,
                             ),
-                            ), // Spinner behind the item
+                          ), // Spinner behind the item
                         ),
                     ],
                   ),
@@ -159,13 +160,11 @@ class EditQuestionsState extends State<EditQuestions> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => QuizMoodle(quiz: myQuiz)
-                    ),
+                        builder: (context) => QuizSendToGoogle(quiz: myQuiz)),
                   );
                 },
-                child: const Text('Send to Moodle Set up'),
+                child: const Text('Send to Classroom Set up'),
               ),
-              
             ],
           )
         ],
