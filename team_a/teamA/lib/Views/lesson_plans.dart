@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:learninglens_app/Api/moodle_api_singleton.dart";
 import "package:learninglens_app/Controller/custom_appbar.dart";
+import "package:learninglens_app/beans/lesson_plan.dart";
 
 ///
 /// Template for views
@@ -33,6 +34,17 @@ class LessonPlans extends StatefulWidget{
 class _LessonPlanState extends State{
   List<dynamic> courses = []; // To store the courses list
   String? selectedCourse; // To track the selected course
+
+  final TextEditingController lessonPlanNameController = TextEditingController();
+  final TextEditingController manualEntryController = TextEditingController();
+
+  @override
+  void dispose() {
+    // Clean up the controllers when the widget is disposed
+    lessonPlanNameController.dispose();
+    manualEntryController.dispose();
+    super.dispose();
+  }
 
   @override
   void initState() {
@@ -71,6 +83,7 @@ class _LessonPlanState extends State{
 
                     // Lesson Plan Name
                     TextField(
+                      controller: lessonPlanNameController,
                       decoration: InputDecoration(
                         labelText: 'Lesson Plan Name',
                         border: OutlineInputBorder(),
@@ -118,6 +131,7 @@ class _LessonPlanState extends State{
 
                     // Enter Lesson Plan Manually
                     TextField(
+                      controller: manualEntryController,
                       maxLines: 8,
                       decoration: InputDecoration(
                         labelText: 'Enter Lesson Plan Manually',
@@ -130,6 +144,15 @@ class _LessonPlanState extends State{
                     ElevatedButton(
                       onPressed: () {
                         // Submit logic here
+                        if(selectedCourse != null) {
+                          LessonPlan newLp = LessonPlan(
+                          lessonPlanName: lessonPlanNameController.text,
+                          courseId: selectedCourse!,
+                          manualEntry: manualEntryController.text,
+                          filePath: null);
+
+                          newLp.saveLessonPlanLocally();
+                        }
                       },
                       child: Text('SUBMIT'),
                     ),
