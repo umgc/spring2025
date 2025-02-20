@@ -31,6 +31,23 @@ class LessonPlans extends StatefulWidget{
 }
 
 class _LessonPlanState extends State{
+  List<dynamic> courses = []; // To store the courses list
+  String? selectedCourse; // To track the selected course
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCourses();
+  }
+
+  Future<void> _loadCourses() async {
+    // Fetch courses from the API
+    var userCourses = await MoodleApiSingleton().getUserCourses();
+    setState(() {
+      courses = userCourses;
+    });
+  }
+
 
   @override
   Widget build(BuildContext context){
@@ -63,11 +80,16 @@ class _LessonPlanState extends State{
 
                     // Course Combo Box
                     DropdownButtonFormField<String>(
-                      value: null, //should be selectedCourse
-                      items: List.empty(), //should be a list of courses
+                      value: selectedCourse,
+                      items: courses.map<DropdownMenuItem<String>>((course) {
+                        return DropdownMenuItem<String>(
+                          value: course.id.toString(), // Use 'id' for selection value
+                          child: Text(course.fullName), // Use 'fullName' for display text
+                        );
+                      }).toList(),
                       onChanged: (value) {
                         setState(() {
-                          null; //when user changes combo box change selectedcourse
+                          selectedCourse = value;
                         });
                       },
                       decoration: InputDecoration(
