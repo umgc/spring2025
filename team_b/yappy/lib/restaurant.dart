@@ -3,6 +3,8 @@ import 'package:yappy/tool_bar.dart';
 import 'package:yappy/industry_menu.dart';
 
 class RestaurantApp extends StatelessWidget {
+  const RestaurantApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -29,6 +31,4 @@ class RestaurantPage extends StatelessWidget {
         IndustryMenu(title: "Restaurant", icon: Icons.restaurant_menu),
     );
   }
-
-
 }

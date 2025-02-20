@@ -9,6 +9,8 @@ import 'package:yappy/mechanic.dart';
 
 // Defines a reusable Hamburger Menu Widget (AppBar + Drawer)
 class ToolBar extends StatelessWidget {
+  const ToolBar({super.key});
+
   @override
   Widget build(BuildContext context) {
       return AppBar(
@@ -75,6 +77,8 @@ class ToolBar extends StatelessWidget {
 }
   // creates the hamburger menu
 class HamburgerDrawer extends StatelessWidget {
+  const HamburgerDrawer({super.key});
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -86,9 +90,9 @@ class HamburgerDrawer extends StatelessWidget {
           children: [
             _buildDrawerItem('Home', context, HomePage()),
             _buildDrawerItem('Restaurant', context, RestaurantPage()),
-            _buildDrawerItem('Mechanical Aid', context, Mechanical_AidPage()),
-            _buildDrawerItem('Medical Doctor', context, Medical_DoctorPage()),
-            _buildDrawerItem('Medical Patient', context, Medical_PatientPage()),
+            _buildDrawerItem('Mechanical Aid', context, MechanicalAidPage()),
+            _buildDrawerItem('Medical Doctor', context, MedicalDoctorPage()),
+            _buildDrawerItem('Medical Patient', context, MedicalPatientPage()),
             _buildDrawerItem('Help', context, HelpPage()),
             _buildDrawerItem('Contact', context, ContactPage()),
           ],
