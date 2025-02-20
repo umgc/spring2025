@@ -1,8 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'dart:io';
-import 'dart:typed_data';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
@@ -35,7 +35,9 @@ class DatabaseHelper {
         await File(path).writeAsBytes(bytes);
       } catch (e) {
         // Can create logging function in later task if wanted
-        print('Error copying database: $e');
+        if (kDebugMode) {
+          print('Error copying database: $e');
+        }
       }
     }
 

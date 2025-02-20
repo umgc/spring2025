@@ -3,6 +3,8 @@ import 'package:yappy/tool_bar.dart';
 
 
 class HelpApp extends StatelessWidget {
+  const HelpApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -12,6 +14,8 @@ class HelpApp extends StatelessWidget {
 }
 
 class HelpPage extends StatelessWidget {
+  const HelpPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
