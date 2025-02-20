@@ -48,7 +48,14 @@ class ToolBar extends StatelessWidget {
                     // Creates a pop up when the button is pressed
                     return AlertDialog(
                       title: const Text('Information'),
-                      content: const Text('Your Terms & Conditions info goes here.'),
+                      content: const Text('Yappy Terms & Conditions\n\n''By using Yappy,'
+                                  'you agree to Use the app responsibly and comply '
+                                  'with all applicable laws. Respect user privacy '
+                                  'and refrain from harmful or abusive behavior.\n\n'
+                                  'Understand that Yappy is not liable for '
+                                  'any misuse or legal consequences arising from its use. '
+                                  'We may update these terms as needed.\n\n'
+                                  'Continued use of Yappy means acceptance of any changes..'),
                       actions: [
                         TextButton(
                           onPressed: () {
