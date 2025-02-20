@@ -25,7 +25,7 @@ class Mechanical_AidPage extends StatelessWidget {
       drawer: HamburgerDrawer(),
 
       body: 
-        IndustryMenu(title: "Mechanical Aid", icon: Icons.directions_car),
+        IndustryMenu(title: "Vehicle Maintenance", icon: Icons.directions_car),
     );
   }
 }

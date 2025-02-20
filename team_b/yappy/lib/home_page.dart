@@ -22,7 +22,7 @@ class HomePage extends StatelessWidget {
       body: Column(
         children: [
           _buildButton('Restaurant', context, RestaurantPage()),
-          _buildButton('Mechanical Aid', context, Mechanical_AidPage()),
+          _buildButton('Vehicle Maintenance', context, Mechanical_AidPage()),
           _buildButton('Medical Doctor', context, Medical_DoctorPage()),
           _buildButton('Medical Patient', context, Medical_PatientPage()),
           _buildButton('Help', context, HelpPage()),
@@ -55,18 +55,6 @@ class HomePage extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildDrawerItem(String title) {
-    return ListTile(
-      contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-      textColor: Colors.white,
-      tileColor: const Color.fromARGB(255, 54, 54, 54),
-      title: Text(title),
-      onTap: () {
-        // TODO Navigate to the corresponding screen
-      },
     );
   }
 }
