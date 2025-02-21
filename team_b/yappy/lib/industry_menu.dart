@@ -12,7 +12,45 @@ class IndustryMenu extends StatelessWidget {
 
   const IndustryMenu({required this.title, required this.icon, Key? key}) : super(key: key); 
 
-// if resturant load the correct code. 
+  Widget generateTranscript(BuildContext context, String title, String content) {
+      return Center(
+        child: Column(
+          children: [
+            GestureDetector(
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text(title),
+                      content: SingleChildScrollView(
+                        child: Text(content),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                          child: Text('Close'),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              },
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: 24,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
 
   @override
   Widget build(BuildContext context) {
@@ -95,17 +133,12 @@ class IndustryMenu extends StatelessWidget {
                   
                   onPressed: () {
 
-                    //on pressed the code needs to refresh and recognize what industry is selected. 
-
-                    //get cookie 
-                    //when the page reopens the coockie will load the correct information. 
-
                   }, 
                 ),
               ),
               SizedBox(width: 40),
 
-              // Creates a transcript button
+              // Creates a transcript history button
               Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
@@ -119,86 +152,48 @@ class IndustryMenu extends StatelessWidget {
                     size: 40,
                   ),
                     onPressed: () {
-                      showModalBottomSheet(
-                      context: context,
-                      builder: (BuildContext context) {
-                        return Container(
-                        padding: EdgeInsets.all(16.0),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          color: const Color.fromARGB(255, 67, 67, 67),
-                        ),
-                        child: Center(
-                            child: Column(
-                            children: [
-                                GestureDetector(
-                                onTap: () {
-                                  showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return AlertDialog(
-                                    title: Text('20 Feb 2025 - Transcript 1'),
-                                    content: Text('This is the content of Transcript 1.\nHere is the second line.'),
-                                    actions: [
-                                      //add the export things
-                                      TextButton(
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
+
+                    // Creates a database query to get all of the inquiries for the industry.
+                      FutureBuilder<int>(
+                      future: Future.value(2), // Simulating a database query returning 2 transcripts
+                      //add the correct database query here.
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return CircularProgressIndicator();
+                        } else if (snapshot.hasError) {
+                          return Text('Error: ${snapshot.error}');
+                        } else {
+                          int transcriptCount = snapshot.data ?? 0;
+                          List<Widget> transcriptWidgets = List.generate(transcriptCount, (index) {
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.grey,
+                                ),
+                                child: GestureDetector(
+                                  onTap: () {
+                                    showModalBottomSheet(
+                                      context: context,
+                                      builder: (BuildContext context) {
+                                        return generateTranscript(context, 'Transcript $index', 'Content of transcript $index');
                                       },
-                                      child: Text('Close'),
-                                      ),
-                                    ],
                                     );
                                   },
-                                  );
-                                },
-                                child: Text(
-                                  'Transcript 1',
-                                  style: TextStyle(
-                                  fontSize: 24,
-                                  color: Colors.white,
+                                  child: Icon(
+                                    Icons.description,
+                                    color: Colors.white,
+                                    size: 40,
                                   ),
                                 ),
-                                ),  
-                                SizedBox(height: 20),
-                                GestureDetector(
-                                onTap: () {
-                                    showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                    return AlertDialog(
-                                    title: Text('20 Feb 2025 - Transcript 2'),
-                                    content: SingleChildScrollView(
-                                      child: Text(
-                                      'Waiter: Good afternoon! Welcome to Bella Bistro. My name is Jake, and I\'ll be your server today. Can I start you off with something to drink?\n\nCustomer: Hi, Jake. Yeah, I’ll have an iced tea, please.\n\nWaiter: Absolutely. Sweetened or unsweetened?\n\nCustomer: Unsweetened, please.\n\nWaiter: Got it. I’ll be right back with that. (Leaves and returns with the drink) Here you go. Have you had a chance to look over the menu?\n\nCustomer: Yeah, I think so. I’m trying to decide between the grilled salmon and the chicken parmesan.\n\nWaiter: Both are great choices! If you’re in the mood for something lighter, the salmon is served with roasted veggies and a lemon butter sauce. The chicken parmesan is heartier, with a side of pasta and garlic bread.\n\nCustomer: Hmm… that lemon butter sauce sounds amazing. Let’s go with the salmon.\n\nWaiter: Excellent choice! Would you like a soup or salad with that?\n\nCustomer: A salad, please. Ranch dressing on the side.\n\nWaiter: Perfect. Would you like to add anything else?\n\nCustomer: No, I think I’m good for now.\n\nWaiter: Sounds good! I’ll get that started for you. Let me know if you need anything else in the meantime.\n\nCustomer: Will do. Thanks!\n\n[Time passes, and the waiter returns with the food.]\n\nWaiter: Here’s your grilled salmon and salad. Can I get you anything else?\n\nCustomer: This looks great! No, I’m all set.\n\nWaiter: Enjoy your meal! Let me know if you need anything.\n\nCustomer: Will do, thanks!',
-                                      ),
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                      },
-                                      child: Text('Close'),
-                                      ),
-                                    ],
-                                    );
-                                  },
-                                  );
-                                },
-                                child: Text(
-                                  'Transcript 2',
-                                  style: TextStyle(
-                                  fontSize: 24,
-                                  color: Colors.white,
-                                  ),
-                                ),
-                                ),
-                            ],
-                            ),
-                        ),
-                        );
+                              ),
+                            );
+                          });
+                          return Row(children: transcriptWidgets);
+                        }
                       },
-                      );
+                    );
                     },
                 ),
               ),
