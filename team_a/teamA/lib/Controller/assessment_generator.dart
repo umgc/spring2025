@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:learninglens_app/Controller/beans.dart';
+import 'package:learninglens_app/services/api_service.dart';
 
 class AssessmentGenerator 
 {
@@ -9,7 +10,7 @@ class AssessmentGenerator
   AssessmentGenerator({required this.serverUrl});
 
   Future<Quiz> generateAssessment(String queryPrompt) async {
-    final response = await http.post(
+    final response = await ApiService().httpPost(
       Uri.parse('$serverUrl/generateAssessment'),
       headers: {'Content-Type': 'application/x-www-form-urlencoded'},
       body: {'QueryPrompt': queryPrompt},

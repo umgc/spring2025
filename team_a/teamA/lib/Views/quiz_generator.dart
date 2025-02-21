@@ -6,9 +6,10 @@ import 'package:learninglens_app/Api/llm_api.dart';
 import 'package:learninglens_app/Api/moodle_api_singleton.dart';
 import 'package:learninglens_app/Controller/beans.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
+import 'package:learninglens_app/llm/claudeai_api.dart';
+import 'package:learninglens_app/services/local_storage_service.dart';
 import 'edit_questions.dart';
-import 'package:llm_api_modules/openai_api.dart';
-import 'package:llm_api_modules/claudeai_api.dart';
+import 'package:learninglens_app/llm/openai_api.dart';
 
 
 
@@ -59,9 +60,9 @@ class _AssessmentState extends State<CreateAssessment> {
   }
 
   Future<void> generateQuestions(AssignmentForm af) async {
-    final openApiKey = dotenv.env['openai_apikey']?? 'default_openai_api_key';
-    final claudApiKey = dotenv.env['claudeApiKey']?? 'default_claude_api_key';
-    final String perplexityApiKey = dotenv.env['perplexity_apikey']?? 'default_perplexity_api_key';
+    final perplexityApiKey = LocalStorageService.getPerplexityKey();
+    final openApiKey = LocalStorageService.getOpenAIKey();
+    final claudApiKey =  LocalStorageService.getClaudeKey();
     try {
       setState((){_isLoading=true;});
       final aiModel;
