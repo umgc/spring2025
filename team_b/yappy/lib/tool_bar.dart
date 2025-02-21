@@ -9,6 +9,8 @@ import 'package:yappy/mechanic.dart';
 
 // Defines a reusable Hamburger Menu Widget (AppBar + Drawer)
 class ToolBar extends StatelessWidget {
+  const ToolBar({super.key});
+
   @override
   Widget build(BuildContext context) {
       return AppBar(
@@ -48,7 +50,14 @@ class ToolBar extends StatelessWidget {
                     // Creates a pop up when the button is pressed
                     return AlertDialog(
                       title: const Text('Information'),
-                      content: const Text('Your Terms & Conditions info goes here.'),
+                      content: const Text('Yappy Terms & Conditions\n\n''By using Yappy,'
+                                  'you agree to Use the app responsibly and comply '
+                                  'with all applicable laws. Respect user privacy '
+                                  'and refrain from harmful or abusive behavior.\n\n'
+                                  'Understand that Yappy is not liable for '
+                                  'any misuse or legal consequences arising from its use. '
+                                  'We may update these terms as needed.\n\n'
+                                  'Continued use of Yappy means acceptance of any changes..'),
                       actions: [
                         TextButton(
                           onPressed: () {
@@ -68,6 +77,8 @@ class ToolBar extends StatelessWidget {
 }
   // creates the hamburger menu
 class HamburgerDrawer extends StatelessWidget {
+  const HamburgerDrawer({super.key});
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -79,9 +90,9 @@ class HamburgerDrawer extends StatelessWidget {
           children: [
             _buildDrawerItem('Home', context, HomePage()),
             _buildDrawerItem('Restaurant', context, RestaurantPage()),
-            _buildDrawerItem('Mechanical Aid', context, Mechanical_AidPage()),
-            _buildDrawerItem('Medical Doctor', context, Medical_DoctorPage()),
-            _buildDrawerItem('Medical Patient', context, Medical_PatientPage()),
+            _buildDrawerItem('Mechanical Aid', context, MechanicalAidPage()),
+            _buildDrawerItem('Medical Doctor', context, MedicalDoctorPage()),
+            _buildDrawerItem('Medical Patient', context, MedicalPatientPage()),
             _buildDrawerItem('Help', context, HelpPage()),
             _buildDrawerItem('Contact', context, ContactPage()),
           ],
