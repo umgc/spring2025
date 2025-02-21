@@ -3,6 +3,7 @@ import 'package:path/path.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:path_provider/path_provider.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
@@ -20,10 +21,18 @@ class DatabaseHelper {
     return _database!;
   }
 
+  Future<String> get _localPath async {
+    final directory = await getApplicationDocumentsDirectory();
+    return directory.path;
+  }
+
+  Future<String> getLocalPath() async {
+    return await _localPath;
+  }
+
   Future<Database> _initDatabase() async {
     String databasesPath = await getDatabasesPath();
     String path = join(databasesPath, 'yappy_database.db');
-
     // Check if the database already exists
     bool exists = await databaseExists(path);
 
@@ -85,7 +94,8 @@ class DatabaseHelper {
         user_id INTEGER,
         transcript_text_data TEXT,
         transcript_timestamp DATETIME,
-        transcript_ai_response TEXT,  -- Added transcript_ai_response column
+        transcript_ai_response TEXT,
+        transcript_document BLOB,
         FOREIGN KEY (user_id) REFERENCES Users(user_id)
       )
     ''');
@@ -431,6 +441,7 @@ class DatabaseHelper {
     );
     return results.map((result) => result['vehicle_id'] as int).toList();
   }
+
   // Get all transcript_id with given user_id
   Future<List<int>> getTranscriptIdsByUserId(int userId) async {
     final db = await database;
