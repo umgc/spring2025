@@ -33,6 +33,7 @@ class DatabaseHelper {
   Future<Database> _initDatabase() async {
     String databasesPath = await getDatabasesPath();
     String path = join(databasesPath, 'yappy_database.db');
+
     // Check if the database already exists
     bool exists = await databaseExists(path);
 
@@ -43,7 +44,7 @@ class DatabaseHelper {
         List<int> bytes = data.buffer.asUint8List();
         await File(path).writeAsBytes(bytes);
       } catch (e) {
-        // Can create logging function in later task if wanted
+// Can create logging function in later task if wanted
         print('Error copying database: $e');
       }
     }
@@ -53,19 +54,16 @@ class DatabaseHelper {
       version: 1,
       onCreate: _onCreate,
       onOpen: (db) async {
-        // Check if the tables exist and create them if they don't
         await _createTablesIfNotExists(db);
       },
     );
   }
 
   Future<void> _onCreate(Database db, int version) async {
-    // Create tables if needed
     await _createTablesIfNotExists(db);
   }
 
   Future<void> _createTablesIfNotExists(Database db) async {
-    // Create Users table if it doesn't exist
     await db.execute('''
       CREATE TABLE IF NOT EXISTS Users (
         user_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -75,7 +73,6 @@ class DatabaseHelper {
       )
     ''');
 
-    // Create Vehicle table if it doesn't exist
     await db.execute('''
       CREATE TABLE IF NOT EXISTS Vehicle (
         vehicle_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -87,7 +84,6 @@ class DatabaseHelper {
       )
     ''');
 
-    // Create Transcript table if it doesn't exist
     await db.execute('''
       CREATE TABLE IF NOT EXISTS Transcript (
         transcript_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -100,7 +96,6 @@ class DatabaseHelper {
       )
     ''');
 
-    // Create VehicleMaintenance table if it doesn't exist
     await db.execute('''
       CREATE TABLE IF NOT EXISTS VehicleMaintenance (
         maintenance_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -115,7 +110,6 @@ class DatabaseHelper {
       )
     ''');
 
-    // Create SpecialRequest table if it doesn't exist
     await db.execute('''
       CREATE TABLE IF NOT EXISTS SpecialRequest (
         special_request_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -123,7 +117,6 @@ class DatabaseHelper {
       )
     ''');
 
-    // Create MenuItem table if it doesn't exist
     await db.execute('''
       CREATE TABLE IF NOT EXISTS MenuItem (
         item_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -136,7 +129,6 @@ class DatabaseHelper {
       )
     ''');
 
-    // Create RestaurantOrder table if it doesn't exist
     await db.execute('''
       CREATE TABLE IF NOT EXISTS RestaurantOrder (
         order_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -147,7 +139,6 @@ class DatabaseHelper {
       )
     ''');
 
-    // Create OrderItems table if it doesn't exist
     await db.execute('''
       CREATE TABLE IF NOT EXISTS OrderItems (
         order_item_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -159,7 +150,6 @@ class DatabaseHelper {
       )
     ''');
 
-    // Create Patient table if it doesn't exist
     await db.execute('''
       CREATE TABLE IF NOT EXISTS Patient (
         patient_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -171,7 +161,6 @@ class DatabaseHelper {
       )
     ''');
 
-    // Create DoctorVisit table if it doesn't exist
     await db.execute('''
       CREATE TABLE IF NOT EXISTS DoctorVisit (
         visit_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -200,8 +189,7 @@ class DatabaseHelper {
 
   Future<int> updateUser(Map<String, dynamic> user) async {
     final db = await database;
-    int id = user['user_id'];
-    return await db.update('Users', user, where: 'user_id = ?', whereArgs: [id]);
+    return await db.update('Users', user, where: 'user_id = ?', whereArgs: [user['user_id']]);
   }
 
   Future<int> deleteUser(int id) async {
@@ -476,5 +464,34 @@ class DatabaseHelper {
       whereArgs: [orderId],
     );
     return results.map((result) => result['item_id'] as int).toList();
+  }
+
+  // Insert document into the Transcript table
+  Future<void> insertDocument(int transcriptId, String fileName, Uint8List fileBytes) async {
+    final db = await database;
+    await db.update(
+      'Transcript',
+      {'transcript_document': fileBytes},
+      where: 'transcript_id = ?',
+      whereArgs: [transcriptId],
+    );
+  }
+
+  // Retrieve document from the Transcript table
+  Future<String?> getDocument(int transcriptId) async {
+    final db = await database;
+    List<Map<String, dynamic>> results = await db.query(
+      'Transcript',
+      columns: ['transcript_document'],
+      where: 'transcript_id = ?',
+      whereArgs: [transcriptId],
+    );
+    if (results.isNotEmpty) {
+      Uint8List? documentBytes = results.first['transcript_document'] as Uint8List?;
+      if (documentBytes != null) {
+        return String.fromCharCodes(documentBytes);
+      }
+    }
+    return null;
   }
 }

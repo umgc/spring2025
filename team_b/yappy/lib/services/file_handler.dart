@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
@@ -55,6 +56,17 @@ class FileHandler {
       }
     } catch (e) {
       print('Error deleting file: $e');
+    }
+  }
+
+  Future<void> copyAssetToLocalStorage(String assetPath, String fileName) async {
+    try {
+      final byteData = await rootBundle.load(assetPath);
+      final file = File(join(await localStoragePath, fileName));
+      await file.writeAsBytes(byteData.buffer.asUint8List());
+      print('File copied from assets to local storage: $fileName');
+    } catch (e) {
+      print('Error copying file from assets to local storage: $e');
     }
   }
 }
