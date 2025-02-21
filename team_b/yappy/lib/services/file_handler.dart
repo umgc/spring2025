@@ -21,7 +21,6 @@ class FileHandler {
       final path = await localStoragePath;
       final newFile = File(join(path, basename(file.path)));
       await file.copy(newFile.path);
-      print('File added to local storage: ${newFile.path}');
     } catch (e) {
       print('Error adding document: $e');
     }
@@ -35,7 +34,6 @@ class FileHandler {
         final bytes = await file.readAsBytes();
         await dbHelper.insertDocument(transcriptId, fileName, bytes);
         await file.delete();
-        print('File moved to database and deleted from local storage: $fileName');
       } else {
         print('File not found in local storage: $fileName');
       }
@@ -50,7 +48,6 @@ class FileHandler {
       final file = File(join(path, fileName));
       if (await file.exists()) {
         await file.delete();
-        print('File deleted from local storage: $fileName');
       } else {
         print('File not found in local storage: $fileName');
       }
@@ -64,7 +61,6 @@ class FileHandler {
       final byteData = await rootBundle.load(assetPath);
       final file = File(join(await localStoragePath, fileName));
       await file.writeAsBytes(byteData.buffer.asUint8List());
-      print('File copied from assets to local storage: $fileName');
     } catch (e) {
       print('Error copying file from assets to local storage: $e');
     }
