@@ -1,0 +1,60 @@
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
+import 'package:yappy/services/database_helper.dart';
+
+class FileHandler {
+  Future<String> get localStoragePath async {
+    final directory = await getApplicationDocumentsDirectory();
+    return directory.path;
+  }
+
+  Future<String> get databasePath async {
+    final databasesPath = await getDatabasesPath();
+    return join(databasesPath, 'yappy_database.db');
+  }
+
+  Future<void> addDocument(File file) async {
+    try {
+      final path = await localStoragePath;
+      final newFile = File(join(path, basename(file.path)));
+      await file.copy(newFile.path);
+      print('File added to local storage: ${newFile.path}');
+    } catch (e) {
+      print('Error adding document: $e');
+    }
+  }
+
+  Future<void> moveFileToDatabase(DatabaseHelper dbHelper, String fileName, int transcriptId) async {
+    try {
+      final path = await localStoragePath;
+      final file = File(join(path, fileName));
+      if (await file.exists()) {
+        final bytes = await file.readAsBytes();
+        await dbHelper.insertDocument(transcriptId, fileName, bytes);
+        await file.delete();
+        print('File moved to database and deleted from local storage: $fileName');
+      } else {
+        print('File not found in local storage: $fileName');
+      }
+    } catch (e) {
+      print('Error moving file to database: $e');
+    }
+  }
+
+  Future<void> deleteFile(String fileName) async {
+    try {
+      final path = await localStoragePath;
+      final file = File(join(path, fileName));
+      if (await file.exists()) {
+        await file.delete();
+        print('File deleted from local storage: $fileName');
+      } else {
+        print('File not found in local storage: $fileName');
+      }
+    } catch (e) {
+      print('Error deleting file: $e');
+    }
+  }
+}
