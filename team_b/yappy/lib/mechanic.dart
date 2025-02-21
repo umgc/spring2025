@@ -3,16 +3,20 @@ import 'package:yappy/industry_menu.dart';
 import 'package:yappy/tool_bar.dart';
 
 
-class Mechanical_AidApp extends StatelessWidget {
+class MechanicalAidApp extends StatelessWidget {
+  const MechanicalAidApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Mechanical_AidPage(),
+      home: MechanicalAidPage(),
     );
   }
 }
 
-class Mechanical_AidPage extends StatelessWidget {
+class MechanicalAidPage extends StatelessWidget {
+  const MechanicalAidPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
