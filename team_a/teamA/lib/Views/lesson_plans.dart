@@ -142,16 +142,23 @@ class _LessonPlanState extends State{
 
                     // Submit Button
                     ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async {
                         // Submit logic here
                         if(selectedCourse != null) {
                           LessonPlan newLp = LessonPlan(
                           lessonPlanName: lessonPlanNameController.text,
                           courseId: selectedCourse!,
                           manualEntry: manualEntryController.text,
-                          filePath: null);
+                          //filePath: null
+                          );
 
                           newLp.saveLessonPlanLocally();
+                          bool success = await newLp.submitLessonPlan();
+                          if(success){
+                            print('lesson plan sent successfully');
+                          } else {
+                            print('lesson plan send fail');
+                          }
                         }
                       },
                       child: Text('SUBMIT'),
