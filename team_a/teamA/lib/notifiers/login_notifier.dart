@@ -1,7 +1,8 @@
 // ignore_for_file: unnecessary_null_comparison
 
 import 'package:flutter/material.dart';
-import 'package:learninglens_app/Api/moodle_api_singleton.dart'; // Import your Moodle API
+import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
+import 'package:learninglens_app/Api/lms/lms_interface.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
 
 enum LLMKey { openAI, perplexity, claude }
@@ -13,8 +14,8 @@ class LoginNotifier with ChangeNotifier {
   String? _password;
   String? _moodleUrl;
   final LocalStorageService _localStorageService = LocalStorageService();
-  final MoodleApiSingleton _moodleApi =
-      MoodleApiSingleton(); // Moodle API instance
+  final LmsInterface _api =
+      LmsFactory.getLmsService(); // Moodle API instance
 
   bool get hasLLMKey => _hasLLMKey;
 
@@ -65,9 +66,9 @@ class LoginNotifier with ChangeNotifier {
   Future<void> login(String username, String password, String moodleUrl) async {
     try {
       // 1. Authenticate with Moodle API:
-      await _moodleApi.login(username, password, moodleUrl);
+      await _api.login(username, password, moodleUrl);
 
-      if (_moodleApi.isLoggedIn()) {
+      if (_api.isLoggedIn()) {
         _isLoggedIn = true;
         _username = username;
         _password = password;
@@ -100,7 +101,7 @@ class LoginNotifier with ChangeNotifier {
     LocalStorageService.clearLoginState();
     LocalStorageService.clearCredentials();
     LocalStorageService.clearMoodleUrl();
-    MoodleApiSingleton().resetMoodle();
+    LmsFactory.getLmsService().resetLMSUserInfo();
 
     notifyListeners();
   }

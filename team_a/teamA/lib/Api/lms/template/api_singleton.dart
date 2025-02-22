@@ -11,10 +11,10 @@ import 'package:learninglens_app/beans/submission.dart';
 import 'package:learninglens_app/beans/submission_with_grade.dart';
 import 'package:learninglens_app/beans/moodle_rubric.dart';
 import 'package:learninglens_app/services/api_service.dart';
-import 'package:learninglens_app/Api/singleton_interface.dart';
+import 'package:learninglens_app/Api/lms/lms_interface.dart';
 
 
-class ApiSingleton implements ApiSingletonInterface {
+class ApiSingleton implements LmsInterface {
   static final ApiSingleton _instance = ApiSingleton._internal();
 
   ApiSingleton._internal();

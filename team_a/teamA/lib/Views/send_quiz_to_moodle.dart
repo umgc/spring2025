@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
 import 'package:learninglens_app/beans/quiz.dart';
 import 'package:learninglens_app/beans/course.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/Views/dashboard.dart';
-import '../Api/moodle_api_singleton.dart';
+import '../Api/lms/moodle/moodle_lms_service.dart';
 
 class QuizMoodle extends StatefulWidget {
   final Quiz quiz;
@@ -21,7 +22,7 @@ class QuizMoodleState extends State<QuizMoodle> {
   String selectedHourSubmission = '00';
   String selectedMinuteSubmission = '00';
   late String quizasxml;
-  late MoodleApiSingleton api;
+  late MoodleLmsService api;
   List<Course> courses = [];
   String selectedCourse = 'Select a course';
 
@@ -37,7 +38,7 @@ class QuizMoodleState extends State<QuizMoodle> {
 // Fetch courses from the controller
   Future<void> fetchCourses() async {
     try {
-      List<Course>? courseList = MoodleApiSingleton().moodleCourses;
+      List<Course>? courseList = LmsFactory.getLmsService().courses;
       setState(() {
         courses = courseList ?? [];
         // Don't auto-select any course here, leave it to the user to select.
@@ -158,7 +159,7 @@ class QuizMoodleState extends State<QuizMoodle> {
     return Scaffold(
       appBar: CustomAppBar(
           title: 'Assign Assessment',
-          userprofileurl: MoodleApiSingleton().moodleProfileImage ?? ''),
+          userprofileurl: LmsFactory.getLmsService().profileImage ?? ''),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(15.0),
         child: Column(
@@ -389,7 +390,7 @@ class QuizMoodleState extends State<QuizMoodle> {
                 children: [
                   ElevatedButton(
                     onPressed: () async {
-                      var quizid = await MoodleApiSingleton().createQuiz(
+                      var quizid = await LmsFactory.getLmsService().createQuiz(
                         selectedCourse,
                         widget.quiz.name ?? 'Quiz Name',
                         widget.quiz.description ?? 'Quiz Description',
@@ -398,10 +399,10 @@ class QuizMoodleState extends State<QuizMoodle> {
                         '$selectedDayDue $selectedMonthDue $selectedYearDue $selectedHourDue:$selectedMinuteDue',
                       );
                       print('Quiz ID: $quizid');
-                      var categoryid = await MoodleApiSingleton()
+                      var categoryid = await LmsFactory.getLmsService()
                           .importQuizQuestions(selectedCourse, quizasxml);
                       print('Category ID: $categoryid');
-                      var randomresult = await MoodleApiSingleton()
+                      var randomresult = await LmsFactory.getLmsService()
                           .addRandomQuestions(categoryid.toString(),
                               quizid.toString(), quizQuestionsController.text);
                       print('Random Result: $randomresult');

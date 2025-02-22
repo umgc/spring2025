@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
-import "package:learninglens_app/Api/moodle_api_singleton.dart";
+import "package:learninglens_app/Api/lms/factory/lms_factory.dart";
+import "package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart";
 import "package:learninglens_app/Controller/custom_appbar.dart";
 
 class IepPage extends StatefulWidget{
@@ -16,7 +17,7 @@ class _IepPageState extends State{
   @override
   Widget build(BuildContext context){
     return Scaffold(
-      appBar: CustomAppBar(title: 'Individual Education Plans', userprofileurl: MoodleApiSingleton().moodleProfileImage ?? ''),
+      appBar: CustomAppBar(title: 'Individual Education Plans', userprofileurl: LmsFactory.getLmsService().profileImage ?? ''),
       body: SingleChildScrollView(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceAround,

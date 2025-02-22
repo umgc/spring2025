@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:learninglens_app/Api/moodle_api_singleton.dart';
+import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
+import 'package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/Controller/main_controller.dart';
 import 'package:http/http.dart' as http;
@@ -125,7 +126,7 @@ class _GoogleClassAssignmentsState extends State<GoogleClassAssignments> {
     return Scaffold(
       appBar: CustomAppBar(
           title: 'Google Classroom',
-          userprofileurl: MoodleApiSingleton().moodleProfileImage ?? ''),
+          userprofileurl: LmsFactory.getLmsService().profileImage ?? ''),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
           : Row(

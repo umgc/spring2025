@@ -1,13 +1,14 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:learninglens_app/Api/google_api_service.dart'; // Import GoogleApiService
+import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
+import 'package:learninglens_app/Api/lms/google_classroom/google_lms_service.dart'; // Import GoogleApiService
 import 'package:learninglens_app/beans/quiz.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/Controller/g_bean.dart';
 import 'package:learninglens_app/Views/dashboard.dart';
 import 'package:learninglens_app/Views/g_courses.dart';
 import 'package:learninglens_app/controller/main_controller.dart';
-import '../Api/moodle_api_singleton.dart';
+import '../Api/lms/moodle/moodle_lms_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart'; // Import the intl package for date formatting
 
@@ -27,7 +28,7 @@ class QuizSendToGoogleState extends State<QuizSendToGoogle> {
   String selectedHourSubmission = '00';
   String selectedMinuteSubmission = '00';
   late String quizasxml;
-  late MoodleApiSingleton api;
+  late MoodleLmsService api;
   //List<Course> courses = [];
   String selectedCourse = 'Select a course';
 
@@ -192,7 +193,7 @@ class QuizSendToGoogleState extends State<QuizSendToGoogle> {
     return Scaffold(
       appBar: CustomAppBar(
           title: 'Assign Assessment',
-          userprofileurl: MoodleApiSingleton().moodleProfileImage ?? ''),
+          userprofileurl: LmsFactory.getLmsService().profileImage ?? ''),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(15.0),
         child: Column(
@@ -368,7 +369,7 @@ class QuizSendToGoogleState extends State<QuizSendToGoogle> {
                         '$selectedYearDue-$monthNumber-${selectedDayDue.padLeft(2, '0')}-$selectedHourDue-$selectedMinuteDue';
 
                     // 3. Call GoogleApiService.createAndAssignQuizFromXml
-                    GoogleApiService googleApiService = GoogleApiService();
+                    GoogleLmsService googleApiService = GoogleLmsService();
                     bool success =
                         await googleApiService.createAndAssignQuizFromXml(
                       selectedCourse, // courseId

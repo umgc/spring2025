@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:xml/xml.dart' as xml;
-import 'package:learninglens_app/Api/google_classroom_api.dart'; // Import the updated API
+import 'package:learninglens_app/Api/lms/google_classroom/google_classroom_api.dart'; // Import the updated API
 
-class GoogleApiService {
+class GoogleLmsService {
   final GoogleClassroomApi _classroomApi = GoogleClassroomApi();
 
 // -----------------------------------------------------------------------

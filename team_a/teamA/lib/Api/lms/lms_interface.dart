@@ -9,12 +9,12 @@ import 'package:learninglens_app/beans/submission_with_grade.dart';
 import 'package:learninglens_app/beans/moodle_rubric.dart';
 
 // Singleton interface class for API access.
-abstract class ApiSingletonInterface {
+abstract class LmsInterface {
   
-  String serverUrl = '';
+  late String serverUrl;
 
   // User info
-  String apiURL = '';
+  late String apiURL;
   String? userName;
   String? firstName;
   String? lastName;
@@ -24,7 +24,7 @@ abstract class ApiSingletonInterface {
   List<Course>? courses;
 
   // Singleton accessor.
-  factory ApiSingletonInterface() {
+  factory LmsInterface() {
     throw UnimplementedError("Api Interface cannot be instantiated.");
   }
 

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:learninglens_app/Api/moodle_api_singleton.dart';
+import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
+import 'package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/Views/essay_edit_page.dart';
 import 'package:learninglens_app/llm/claudeai_api.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
 import 'dart:convert';
-import '../Api/llm_api.dart';
+import '../Api/llm/llm_api.dart';
 import 'package:learninglens_app/llm/openai_api.dart';
 
 
@@ -178,7 +179,7 @@ class _EssayGenerationState extends State<EssayGeneration>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(title: 'Create Essay Rubric', userprofileurl: MoodleApiSingleton().moodleProfileImage ?? ''),
+      appBar: CustomAppBar(title: 'Create Essay Rubric', userprofileurl: LmsFactory.getLmsService().profileImage ?? ''),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Row(

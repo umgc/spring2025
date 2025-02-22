@@ -1,7 +1,8 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:learninglens_app/Api/moodle_api_singleton.dart';
+import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
+import 'package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/Views/assessments_view.dart';
 import 'package:learninglens_app/Views/course_list.dart';
@@ -22,7 +23,7 @@ class GoogleTeacherDashboard extends StatelessWidget {
     return Scaffold(
       appBar: CustomAppBar(
         title: 'Learning Lens',
-        userprofileurl: MoodleApiSingleton().moodleProfileImage ?? '',
+        userprofileurl: LmsFactory.getLmsService().profileImage ?? '',
       ),
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: Column(
@@ -75,7 +76,7 @@ class GoogleTeacherDashboard extends StatelessWidget {
     // final loginNotifier = Provider.of<LoginNotifier>(context, listen: true);
     var loginNotifier = Provider.of<LoginNotifier>(context, listen: true);
     print('Login Notifier: ${loginNotifier.isLoggedIn}');
-    var user = MoodleApiSingleton().moodleFirstName;
+    var user = LmsFactory.getLmsService().firstName;
     if (user == null || user.isEmpty) {
       isLoggedIn = false;
       hasLLMKey = false;
@@ -130,7 +131,7 @@ class GoogleTeacherDashboard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              'Welcome, ${MoodleApiSingleton().moodleFirstName ?? 'User'}',
+              'Welcome, ${LmsFactory.getLmsService().firstName ?? 'User'}',
               style: TextStyle(
                 fontSize: titleFontSize * 0.7,
                 fontWeight: FontWeight.normal,
@@ -190,7 +191,7 @@ class GoogleTeacherDashboard extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Text(
-                'Welcome, ${MoodleApiSingleton().moodleFirstName ?? 'User'}',
+                'Welcome, ${LmsFactory.getLmsService().firstName ?? 'User'}',
                 style: TextStyle(
                   fontSize: titleFontSize * 0.7,
                   fontWeight: FontWeight.normal,

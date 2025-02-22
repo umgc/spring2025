@@ -1,7 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import '../Api/moodle_api_singleton.dart';
+import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
+import 'package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart';
 import 'package:learninglens_app/beans/course.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -64,10 +65,10 @@ class MainController {
       // Get the user's name
       username = googleUser.displayName;
 
-      MoodleApiSingleton().moodleFirstName ??= username;
+      LmsFactory.getLmsService().firstName ??= username;
       // MoodleApiSingleton().setLoggedIn(true);
 
-      print('Welcome, ${MoodleApiSingleton().moodleFirstName ?? 'User'}');
+      print('Welcome, ${LmsFactory.getLmsService().firstName ?? 'User'}');
 
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
@@ -185,7 +186,7 @@ class MainController {
 
   Future<bool> loginToMoodle(
       String username, String password, String moodleURL) async {
-    var moodleApi = MoodleApiSingleton();
+    var moodleApi = LmsFactory.getLmsService();
     try {
       await moodleApi.login(username, password, moodleURL);
       isLoggedIn = true;
@@ -201,8 +202,8 @@ class MainController {
   }
 
   Future<bool> checkIfTeacher() async {
-    Future<bool> isTeacher = MoodleApiSingleton()
-        .isUserTeacher(MoodleApiSingleton().moodleCourses ?? []);
+    Future<bool> isTeacher = LmsFactory.getLmsService()
+        .isUserTeacher(LmsFactory.getLmsService().courses ?? []);
     if (await isTeacher) {
       print('The user is a teacher in at least one course.');
       return true;
@@ -213,7 +214,7 @@ class MainController {
   }
 
   void logoutFromMoodle() {
-    var moodleApi = MoodleApiSingleton();
+    var moodleApi = LmsFactory.getLmsService();
     moodleApi.logout();
 
     isLoggedIn = false;
@@ -224,9 +225,9 @@ class MainController {
   }
 
   void selectCourse(int index) {
-    var api = MoodleApiSingleton();
-    if (index < (api.moodleCourses?.length ?? 0)) {
-      selectedCourse = api.moodleCourses?[index];
+    var api = LmsFactory.getLmsService();
+    if (index < (api.courses?.length ?? 0)) {
+      selectedCourse = api.courses?[index];
     }
   }
 }

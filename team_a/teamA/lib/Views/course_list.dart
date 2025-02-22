@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:learninglens_app/Api/moodle_api_singleton.dart';
+import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
+import 'package:learninglens_app/Api/lms/lms_interface.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/beans/course.dart';
 import '../content_carousel.dart';
@@ -12,7 +13,7 @@ class CourseList extends StatefulWidget {
 }
 
 class _CourseListState extends State<CourseList> {
-  final MoodleApiSingleton api = MoodleApiSingleton();
+  final LmsInterface api = LmsFactory.getLmsService();
   late Future<List<Course>> courses;
   Course? selectedCourse;
 
@@ -27,7 +28,7 @@ class _CourseListState extends State<CourseList> {
     return Scaffold(
       appBar: CustomAppBar(
         title: 'Courses',
-        userprofileurl: MoodleApiSingleton().moodleProfileImage ?? '',
+        userprofileurl: LmsFactory.getLmsService().profileImage ?? '',
       ),
       body: FutureBuilder<List<Course>>(
         future: courses,

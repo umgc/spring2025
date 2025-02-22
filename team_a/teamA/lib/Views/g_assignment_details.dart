@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:learninglens_app/Api/moodle_api_singleton.dart';
+import 'package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/gestures.dart'; // Import url_launcher
@@ -36,7 +36,7 @@ class AssignmentDetailsPage extends StatelessWidget {
     return Scaffold(
       // appBar: CustomAppBar(
       //   title: assignment['title'] ?? 'Assignment Details',
-      //   userprofileurl: MoodleApiSingleton().moodleProfileImage ?? '',
+      //   userprofileurl: MoodleApiSingleton().profileImage ?? '',
       // ),
       body: Container(
         decoration: BoxDecoration(

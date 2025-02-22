@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
-import 'package:learninglens_app/Api/moodle_api_singleton.dart';
+import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
+import 'package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/Controller/main_controller.dart';
 import 'package:learninglens_app/Views/dashboard.dart';
@@ -74,7 +75,7 @@ class UserSettingsState extends State<UserSettings> {
       // ),
       appBar: CustomAppBar(
           title: 'User Settings',
-          userprofileurl: MoodleApiSingleton().moodleProfileImage ?? ''),
+          userprofileurl: LmsFactory.getLmsService().profileImage ?? ''),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
