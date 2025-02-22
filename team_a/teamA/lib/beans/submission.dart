@@ -25,7 +25,7 @@ class Submission {
     required this.assignmentId,
   });
 
-  factory Submission.fromJson(Map<String, dynamic> json) {
+  factory Submission.fromMoodleJson(Map<String, dynamic> json) {
     String onlineText = '';
     String comments = '';
 

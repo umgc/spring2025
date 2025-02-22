@@ -16,7 +16,7 @@ class Grade {
   });
 
   // Parse grade JSON
-  factory Grade.fromJson(Map<String, dynamic> json) {
+  factory Grade.fromMoodleJson(Map<String, dynamic> json) {
     return Grade(
       id: json['id'] ?? 0,
       userid: json['userid'] ?? 0,

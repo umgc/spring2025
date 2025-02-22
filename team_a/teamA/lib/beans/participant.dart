@@ -16,7 +16,7 @@ class Participant {
   });
 
   // Factory constructor for creating a new Participant instance from a JSON map
-  factory Participant.fromJson(Map<String, dynamic> json) {
+  factory Participant.fromMoodleJson(Map<String, dynamic> json) {
     // Convert roles if they exist, and map them from the 'roles' field in the JSON
     List<String> rolesList = [];
     if (json['roles'] != null) {

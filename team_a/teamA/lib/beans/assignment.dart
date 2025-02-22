@@ -29,7 +29,7 @@ class Assignment {
   });
 
   // Factory method to create an Assignment object from a JSON response
-  factory Assignment.fromJson(Map<String, dynamic> json) {
+  factory Assignment.fromMoodleJson(Map<String, dynamic> json) {
     return Assignment(
       id: json['id'] ?? 0,
       name: json['name'] ?? 'Untitled',

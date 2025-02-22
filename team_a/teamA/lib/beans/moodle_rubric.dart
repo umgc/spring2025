@@ -6,9 +6,9 @@ class MoodleRubric {
 
   MoodleRubric({required this.title, required this.criteria});
 
-  factory MoodleRubric.fromJson(Map<String, dynamic> json) {
+  factory MoodleRubric.fromMoodleJson(Map<String, dynamic> json) {
     var criteriaList = (json['rubric_criteria'] as List)
-        .map((c) => MoodleRubricCriteria.fromJson(c))
+        .map((c) => MoodleRubricCriteria.fromMoodleJson(c))
         .toList();
 
     return MoodleRubric(

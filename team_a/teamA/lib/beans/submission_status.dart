@@ -18,7 +18,7 @@ class SubmissionStatus {
   });
 
   // Factory method to create a SubmissionStatus object from a JSON response
-  factory SubmissionStatus.fromJson(Map<String, dynamic> json) {
+  factory SubmissionStatus.fromMoodleJson(Map<String, dynamic> json) {
     return SubmissionStatus(
       assignmentId: json['assignid'] ?? 0,
       userId: json['userid'] ?? 0,

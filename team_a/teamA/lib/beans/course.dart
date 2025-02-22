@@ -21,7 +21,7 @@ class Course {
   }
 
   // Json factory constructor.
-  factory Course.fromJson(Map<String, dynamic> json) {
+  factory Course.fromMoodleJson(Map<String, dynamic> json) {
   return Course(
     json['id'],
     json['shortname'],

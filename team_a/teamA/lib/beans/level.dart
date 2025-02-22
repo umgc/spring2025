@@ -5,7 +5,7 @@ class Level {
 
   Level({required this.id, required this.description, required this.score});
 
-  factory Level.fromJson(Map<String, dynamic> json) 
+  factory Level.fromMoodleJson(Map<String, dynamic> json) 
   {
     return Level(
       id: json['id'] ?? 0,
