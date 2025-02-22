@@ -122,38 +122,51 @@ class _IepPageState extends State{
                 )
               ]
             ),
-            Container(
-              margin: EdgeInsets.only(left: 50),
-              decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey),
-                borderRadius: BorderRadius.circular(8.0),
-              ),
-              child: DataTable(
-                columns: [
-                  DataColumn(label: Text('Student Name')),
-                  DataColumn(label: Text('Course')),
-                  DataColumn(label: Text('Extra Time For Essays')),
-                  DataColumn(label: Text('Extra Time For Quizzes')),
-                  DataColumn(label: Text('Visual Aids')),
-                  DataColumn(label: Text('Additional Comments')),
-                  DataColumn(label: Text('Select')),
-                ],
-                rows: [
-                  DataRow(
-                    cells: [
-                      DataCell(Text('Andrew Hammes')),
-                      DataCell(Text('BIO 547')),
-                      DataCell(Text('Yes')),
-                      DataCell(Text('No')),
-                      DataCell(Text('Yes')),
-                      DataCell(Text('Student is not very smart.')),
-                      DataCell(Text('Select')),
-                    ]  
+            Column(
+              children: [
+                Text('Existing IEPs', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                Container(
+                  margin: EdgeInsets.only(left: 50),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  child: DataTable(
+                    columns: [
+                      DataColumn(label: Text('Student Name')),
+                      DataColumn(label: Text('Course')),
+                      DataColumn(label: Text('Extra Time For Essays')),
+                      DataColumn(label: Text('Extra Time For Quizzes')),
+                      DataColumn(label: Text('Visual Aids')),
+                      DataColumn(label: Text('Additional Comments')),
+                      DataColumn(label: Text('Select')),
+                    ],
+                    rows: [
+                      DataRow(
+                        cells: [
+                          DataCell(Text('Andrew Hammes')),
+                          DataCell(Text('BIO 547')),
+                          DataCell(Text('Yes')),
+                          DataCell(Text('No')),
+                          DataCell(Text('Yes')),
+                          DataCell(Text('Student is not very smart.')),
+                          DataCell(Text('Select')),
+                        ]
+                      ),
+                    ]
                   )
-                ]
-              )
+                ),
+                Container(
+                  padding: EdgeInsets.only(top: 10, left: 1050),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      print('Deleted');
+                    },
+                    child: Text('Delete IEP')  
+                  )
+                )
+              ]
             )
-
           ]
         )
       )
