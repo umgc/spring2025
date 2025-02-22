@@ -3,6 +3,8 @@ import 'package:yappy/tool_bar.dart';
 
 
 class ContactApp extends StatelessWidget {
+  const ContactApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -15,6 +17,8 @@ class ContactPage extends StatelessWidget {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController messageController = TextEditingController();
+
+  ContactPage({super.key});
   @override
   Widget build(BuildContext context) {
     return Scaffold(

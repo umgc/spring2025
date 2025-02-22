@@ -5,7 +5,6 @@ class IndustryMenu extends StatelessWidget {
   final IconData icon;
 
   const IndustryMenu({required this.title, required this.icon, super.key}); 
-
     Widget generateTranscript(BuildContext context, String title, String content) {
       return AlertDialog(
         title: Text(title),
