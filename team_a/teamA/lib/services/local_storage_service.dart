@@ -138,4 +138,28 @@ class LocalStorageService {
   static void clearPerplexityKey() {
     _prefs.remove('perplexityKey');
   }
+
+  static String? getGoogleClientId() {
+    return _prefs.getString('GOOGLE_CLIENT_ID') ?? dotenv.env['GOOGLE_CLIENT_ID'] ?? '';
+  }
+
+  static void saveGoogleClientId(String clientId) {
+    _prefs.setString('GOOGLE_CLIENT_ID', clientId);
+  }
+
+  static void clearGoogleClientId() {
+    _prefs.remove('GOOGLE_CLIENT_ID');
+  }
+
+  static saveGoogleAccessToken(String accessToken) {
+    _prefs.setString('GOOGLE_ACCESS_TOKEN', accessToken);
+  }
+
+  static String? getGoogleAccessToken() {
+    return _prefs.getString('GOOGLE_ACCESS_TOKEN');
+  }
+
+  static clearGoogleAccessToken() {
+    _prefs.remove('GOOGLE_ACCESS_TOKEN');
+  }  
 }

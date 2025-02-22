@@ -7,7 +7,6 @@ import 'package:learninglens_app/notifiers/login_notifier.dart';
 import 'package:learninglens_app/notifiers/theme_notifier.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
 import 'package:provider/provider.dart';
-import 'Views/login_page.dart';
 import 'Views/dashboard.dart';
 import 'Views/essay_generation.dart';
 import 'Views/quiz_generator.dart';
@@ -54,7 +53,6 @@ class MyApp extends StatelessWidget {
       ),
       scrollBehavior: CustomScrollBehavior(),
       routes: {
-        // 'LoginPage': (context) => LoginApp(),
         // '/EssayEditPage': (context) => EssayEditPage(jsonData),
         // '/Content': (context) => ViewCourseContents(),
         '/EssayGenerationPage': (context) => EssayGeneration(title: 'Essay Generation'),
@@ -86,11 +84,11 @@ class _DevLaunch extends State {
         appBar: AppBar(title: Text('Dev Launch Page')),
         body: Column(children: [
           ElevatedButton(
-              child: const Text('Login'),
+              child: const Text('dashboard'),
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => LoginApp()),
+                  MaterialPageRoute(builder: (context) => TeacherDashboard()),
                 );
               }),
           // ElevatedButton(

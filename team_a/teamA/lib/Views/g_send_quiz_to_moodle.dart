@@ -8,6 +8,7 @@ import 'package:learninglens_app/Controller/g_bean.dart';
 import 'package:learninglens_app/Views/dashboard.dart';
 import 'package:learninglens_app/Views/g_courses.dart';
 import 'package:learninglens_app/controller/main_controller.dart';
+import 'package:learninglens_app/services/local_storage_service.dart';
 import '../Api/lms/moodle/moodle_lms_service.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart'; // Import the intl package for date formatting
@@ -46,13 +47,7 @@ class QuizSendToGoogleState extends State<QuizSendToGoogle> {
   }
 
   Future<String?> _getToken() async {
-    final token = await _controller.getAccessToken(scopes: [
-      'https://www.googleapis.com/auth/classroom.courses.readonly',
-      'https://www.googleapis.com/auth/classroom.coursework.me',
-      'https://www.googleapis.com/auth/classroom.coursework.students',
-      'https://www.googleapis.com/auth/forms.body', // Add the Forms API scope
-      'https://www.googleapis.com/auth/forms.responses.readonly'
-    ]);
+    final token = LocalStorageService.getGoogleAccessToken();
     if (token == null) {
       print(
           'Error: No valid OAuth token. Ensure the required scopes are enabled.');

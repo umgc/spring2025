@@ -1,6 +1,7 @@
 // ignore_for_file: unnecessary_null_comparison
 
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
 import 'package:learninglens_app/Api/lms/lms_interface.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
@@ -14,8 +15,7 @@ class LoginNotifier with ChangeNotifier {
   String? _password;
   String? _moodleUrl;
   final LocalStorageService _localStorageService = LocalStorageService();
-  final LmsInterface _api =
-      LmsFactory.getLmsService(); // Moodle API instance
+  final LmsInterface _api = LmsFactory.getLmsService(); // Moodle API instance
 
   bool get hasLLMKey => _hasLLMKey;
 
@@ -23,6 +23,8 @@ class LoginNotifier with ChangeNotifier {
   String? get username => _username;
   String? get password => _password;
   String? get moodleUrl => _moodleUrl;
+
+  late GoogleSignIn _googleSignIn;
 
   LoginNotifier() {
     _loadLoginState(); // Load saved login state when the notifier is created
@@ -33,7 +35,6 @@ class LoginNotifier with ChangeNotifier {
     _username = LocalStorageService.getUsername();
     _password = LocalStorageService.getPassword();
     _moodleUrl = LocalStorageService.getMoodleUrl();
-
 
     _hasLLMKey = await _checkHasLLMKey();
 
@@ -108,14 +109,112 @@ class LoginNotifier with ChangeNotifier {
 
   // save the llm key to local storage
   Future<void> saveLLMKey(LLMKey key, String value) async {
-    if(key == LLMKey.openAI){
+    if (key == LLMKey.openAI) {
       LocalStorageService.saveOpenAIKey(value);
-    } else if(key == LLMKey.perplexity){
+    } else if (key == LLMKey.perplexity) {
       LocalStorageService.savePerplexityKey(value);
-    } else if(key == LLMKey.claude){
+    } else if (key == LLMKey.claude) {
       LocalStorageService.saveClaudeKey(value);
     }
     _hasLLMKey = await _checkHasLLMKey();
     notifyListeners();
+  }
+
+  /**
+   * Google classroom login steps 
+   */
+  Future<void> initializeGoogleSignIn() async {
+    String? clientId = LocalStorageService.getGoogleClientId();
+
+    print('clientId: $clientId');
+
+    if (clientId == null) {
+      throw Exception("GOOGLE_CLIENT_ID not found in .env file.");
+    }
+
+    _googleSignIn = GoogleSignIn(
+      clientId: clientId,
+      scopes: <String>[
+        'email',
+        'profile',
+        'https://www.googleapis.com/auth/classroom.courses',
+        'https://www.googleapis.com/auth/classroom.rosters',
+        'https://www.googleapis.com/auth/classroom.coursework.students',
+        'https://www.googleapis.com/auth/classroom.coursework.me',
+        'https://www.googleapis.com/auth/classroom.courses.readonly',
+        'https://www.googleapis.com/auth/forms.body',
+        'https://www.googleapis.com/auth/forms.responses.readonly'
+      ],
+    );
+  }
+
+  Future<void> signInWithGoogle() async {
+    await initializeGoogleSignIn();
+
+    try {
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) {
+        throw Exception("Google Sign-In was cancelled by the user.");
+      }
+      // Get the user's name
+      String? username = googleUser.displayName;
+
+      LmsFactory.getLmsService().firstName ??= username;
+      // MoodleApiSingleton().setLoggedIn(true);
+
+      print('Welcome, ${LmsFactory.getLmsService().firstName ?? 'User'}');
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+      final String? accessToken = googleAuth.accessToken;
+
+      if (accessToken == null) {
+        throw Exception("Failed to obtain access token.");
+      }
+
+      LocalStorageService.saveGoogleAccessToken(accessToken);
+    } catch (error) {
+      print("Google Sign-In Error: $error");
+      throw Exception("Google Sign-In failed: $error");
+    }
+  }
+
+  Future<void> signOutFromGoogle() async {
+    try {
+      await _googleSignIn.signOut();
+      LocalStorageService.clearGoogleAccessToken();
+    } catch (error) {
+      print("Google Sign-Out Error: $error");
+      throw Exception("Google Sign-Out failed: $error");
+    }
+
+    Future<void> makeClassroomApiRequest(
+        String apiEndpoint, dynamic http) async {
+      String? accessToken = LocalStorageService.getGoogleAccessToken();
+
+      if (accessToken != null) {
+        try {
+          final response = await http.get(
+            Uri.parse(apiEndpoint),
+            headers: {'Authorization': 'Bearer $accessToken'},
+          );
+
+          if (response.statusCode == 200) {
+            print('Classroom API Response: ${response.body}');
+          } else {
+            print(
+                'Classroom API Error: ${response.statusCode} - ${response.body}');
+            throw Exception(
+                "Classroom API request failed: ${response.statusCode}");
+          }
+        } catch (e) {
+          print('Error making Classroom API request: $e');
+          throw Exception("Failed to make Classroom API request: $e");
+        }
+      } else {
+        print('No Google access token available. User needs to sign in.');
+        throw Exception("No access token available. Please sign in again.");
+      }
+    }
   }
 }

@@ -3,7 +3,6 @@ import 'package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart';
 import 'package:learninglens_app/Views/dashboard.dart';
 import 'package:learninglens_app/Views/g_courses.dart';
 import 'package:learninglens_app/Views/g_dashboard.dart';
-import 'package:learninglens_app/Views/login_page.dart';
 import 'package:learninglens_app/Views/user_settings.dart';
 
 class ClassroomSelection {
