@@ -126,7 +126,6 @@ class DatabaseHelper {
         item_name TEXT,
         item_description TEXT,
         item_price REAL,
-        seat_position INTEGER,
         FOREIGN KEY (special_request_id) REFERENCES SpecialRequest(special_request_id)
       )
     ''');
@@ -147,6 +146,7 @@ class DatabaseHelper {
         order_id INTEGER,
         item_id INTEGER,
         order_item_qty INTEGER,
+        seat_position INTEGER,
         FOREIGN KEY (order_id) REFERENCES RestaurantOrder(order_id),
         FOREIGN KEY (item_id) REFERENCES MenuItem(item_id)
       )
