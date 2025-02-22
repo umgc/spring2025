@@ -53,16 +53,20 @@ class LoginNotifier with ChangeNotifier {
   }
 
   Future<void> _autoLogin() async {
-    if (_username != null && _password != null && _moodleUrl != null) {
-      try {
-        // Attempt to auto-login with saved credentials
-        await login(_username!, _password!, _moodleUrl!);
-      } catch (e) {
-        // Handle any exceptions during auto-login
-        print('Auto-login Error: $e');
-      }
+  if (_username != null && _username!.isNotEmpty &&
+      _password != null && _password!.isNotEmpty &&
+      _moodleUrl != null && _moodleUrl!.isNotEmpty) {
+    try {
+      // Attempt to auto-login with saved credentials
+      await login(_username!, _password!, _moodleUrl!);
+    } catch (e) {
+      // Handle any exceptions during auto-login
+      print('Auto-login Error: $e');
     }
+  } else {
+    print('Auto-login skipped: Missing or empty credentials.');
   }
+}
 
   Future<void> login(String username, String password, String moodleUrl) async {
     try {
