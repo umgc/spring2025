@@ -24,8 +24,13 @@ class MoodleRubric implements LearningLensInterface {
     );
   }
 
-  Map<String, dynamic> toJson() 
-  {
+  @override
+  MoodleRubric fromGoogleJson(Map<String, dynamic> json) {
+    // TODO: Dinesh, try to map the Google JSON to the MoodleRubric object and maybe change this class to be more generic
+    throw UnimplementedError();
+  }
+
+  Map<String, dynamic> toJson() {
     return {
       'title': title,
       'criteria': criteria.map((c) => c.toJson()).toList(),

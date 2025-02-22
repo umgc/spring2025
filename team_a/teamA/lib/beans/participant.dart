@@ -46,4 +46,10 @@ class Participant implements LearningLensInterface {
       roles: rolesList,
     );
   }
+
+  @override
+  Participant fromGoogleJson(Map<String, dynamic> json) {
+    // TODO: Dinesh, try to map the Google JSON to the Participant object
+    throw UnimplementedError();
+  }
 }

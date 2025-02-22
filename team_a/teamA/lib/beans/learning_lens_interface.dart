@@ -3,6 +3,6 @@ abstract class LearningLensInterface {
   LearningLensInterface fromMoodleJson(Map<String, dynamic> json);
 
   // TODO: Implement this method
-  // LearningLensInterface fromGoogleJson(Map<String, dynamic> json);
+  LearningLensInterface fromGoogleJson(Map<String, dynamic> json);
 
 }

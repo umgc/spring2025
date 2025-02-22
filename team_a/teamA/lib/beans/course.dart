@@ -15,7 +15,9 @@ class Course implements LearningLensInterface {
   List<Assignment>? essays;
 
   // Barebones constructor.
-  Course(this.id, this.shortName, this.courseId, this.fullName, this.startdate, this.enddate, [this.quizzes, this.essays]);
+  Course(this.id, this.shortName, this.courseId, this.fullName, this.startdate,
+      this.enddate,
+      [this.quizzes, this.essays]);
 
   // Empty constructor.
   Course.empty()
@@ -35,19 +37,24 @@ class Course implements LearningLensInterface {
   // Json factory constructor.
   @override
   Course fromMoodleJson(Map<String, dynamic> json) {
-  return Course(
-    json['id'],
-    json['shortname'],
-    json['idnumber'],
-    json['fullname'],
-    DateTime.fromMillisecondsSinceEpoch(json['startdate'] * 1000),
-    DateTime.fromMillisecondsSinceEpoch(json['enddate'] * 1000), 
-  );
-
-}
+    return Course(
+      json['id'],
+      json['shortname'],
+      json['idnumber'],
+      json['fullname'],
+      DateTime.fromMillisecondsSinceEpoch(json['startdate'] * 1000),
+      DateTime.fromMillisecondsSinceEpoch(json['enddate'] * 1000),
+    );
+  }
 
   @override
-  String toString(){
+  Course fromGoogleJson(Map<String, dynamic> json) {
+    // TODO: Dinesh, try to map the Google JSON to the Course object
+    throw UnimplementedError();
+  }
+
+  @override
+  String toString() {
     return "$shortName ($fullName) $id";
   }
 }

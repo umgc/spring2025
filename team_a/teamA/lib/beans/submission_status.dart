@@ -29,7 +29,6 @@ class SubmissionStatus implements LearningLensInterface {
         grade = null,
         needsGrading = false;
 
-
   // Factory method to create a SubmissionStatus object from a JSON response
   @override
   SubmissionStatus fromMoodleJson(Map<String, dynamic> json) {
@@ -52,6 +51,12 @@ class SubmissionStatus implements LearningLensInterface {
           : null,
       needsGrading: json['lastattempt']['gradingstatus'] == 'notgraded',
     );
+  }
+
+  @override
+  SubmissionStatus fromGoogleJson(Map<String, dynamic> json) {
+    // TODO: Dinesh, try to map the Google JSON to the SubmissionStatus object
+    throw UnimplementedError();
   }
 
   // Convert the SubmissionStatus object back to JSON if necessary

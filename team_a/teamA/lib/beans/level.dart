@@ -14,8 +14,7 @@ class Level implements LearningLensInterface {
         score = 0;
 
   @override
-  Level fromMoodleJson(Map<String, dynamic> json) 
-  {
+  Level fromMoodleJson(Map<String, dynamic> json) {
     return Level(
       id: json['id'] ?? 0,
       description: json['definition'] ?? '',
@@ -23,12 +22,17 @@ class Level implements LearningLensInterface {
     );
   }
 
-   Map<String, dynamic> toJson() 
-   {
+  @override
+  Level fromGoogleJson(Map<String, dynamic> json) {
+    // TODO: Dinesh, try to map the Google JSON to the Level object
+    throw UnimplementedError();
+  }
+
+  Map<String, dynamic> toJson() {
     return {
       'id': id,
       'description': description,
       'score': score,
     };
-   }
+  }
 }

@@ -50,7 +50,7 @@ class Submission implements LearningLensInterface {
     // ignore: avoid_print
     print('Processing submission: ${json.toString()}');
     int assignmentId = json['assignmentid'] ?? 0;
-     Map<String, dynamic> submission = json['submission'] ?? {};
+    Map<String, dynamic> submission = json['submission'] ?? {};
 
     if (submission['plugins'] != null && submission['plugins'] is List) {
       for (var plugin in submission['plugins']) {
@@ -95,21 +95,28 @@ class Submission implements LearningLensInterface {
     }
 
     return Submission(
-      id: submission['id'] ?? 0,
-      userid: submission['userid'] ?? 0,
-      status: submission['status'] ?? '',
-      submissionTime: submission['timecreated'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(submission['timecreated'] * 1000)
-          : DateTime.fromMillisecondsSinceEpoch(0),
-      modificationTime: submission['timemodified'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(submission['timemodified'] * 1000)
-          : null,
-      attemptNumber: submission['attemptnumber'] ?? 0,
-      groupId: submission['groupid'] ?? 0,
-      gradingStatus: submission['gradingstatus'] ?? '',
-      onlineText: onlineText,
-      comments: comments,
-      assignmentId: assignmentId
-    );
+        id: submission['id'] ?? 0,
+        userid: submission['userid'] ?? 0,
+        status: submission['status'] ?? '',
+        submissionTime: submission['timecreated'] != null
+            ? DateTime.fromMillisecondsSinceEpoch(
+                submission['timecreated'] * 1000)
+            : DateTime.fromMillisecondsSinceEpoch(0),
+        modificationTime: submission['timemodified'] != null
+            ? DateTime.fromMillisecondsSinceEpoch(
+                submission['timemodified'] * 1000)
+            : null,
+        attemptNumber: submission['attemptnumber'] ?? 0,
+        groupId: submission['groupid'] ?? 0,
+        gradingStatus: submission['gradingstatus'] ?? '',
+        onlineText: onlineText,
+        comments: comments,
+        assignmentId: assignmentId);
+  }
+
+  @override
+  Submission fromGoogleJson(Map<String, dynamic> json) {
+    // TODO: Dinesh, try to map the Google JSON to the Submission object
+    throw UnimplementedError();
   }
 }

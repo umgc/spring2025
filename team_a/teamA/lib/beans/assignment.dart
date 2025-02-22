@@ -10,7 +10,8 @@ class Assignment implements LearningLensInterface {
   final DateTime? cutoffDate;
   final bool isDraft;
   final int maxAttempts;
-  final int gradingStatus; // Can use an enum to represent status like "graded", "notgraded"
+  final int
+      gradingStatus; // Can use an enum to represent status like "graded", "notgraded"
   final int courseId;
 
   final List<SubmissionWithGrade>? submissionsWithGrades;
@@ -54,7 +55,8 @@ class Assignment implements LearningLensInterface {
           ? DateTime.fromMillisecondsSinceEpoch(json['duedate'] * 1000)
           : null,
       allowsubmissionsfromdate: json['allowsubmissionsfromdate'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(json['allowsubmissionsfromdate'] * 1000)
+          ? DateTime.fromMillisecondsSinceEpoch(
+              json['allowsubmissionsfromdate'] * 1000)
           : null,
       cutoffDate: json['cutoffdate'] != null
           ? DateTime.fromMillisecondsSinceEpoch(json['cutoffdate'] * 1000)
@@ -63,11 +65,10 @@ class Assignment implements LearningLensInterface {
       maxAttempts: json['maxattempts'] ?? 0,
       gradingStatus: json['gradingstatus'] ?? 0,
       courseId: json['course'] ?? 0,
-
     );
   }
 
-  bool isNew(){
+  bool isNew() {
     return id == null;
   }
 
@@ -78,13 +79,19 @@ class Assignment implements LearningLensInterface {
       'name': name,
       'description': description,
       'duedate': dueDate?.millisecondsSinceEpoch,
-      'allowsubmissionsfromdate': allowsubmissionsfromdate?.millisecondsSinceEpoch,
+      'allowsubmissionsfromdate':
+          allowsubmissionsfromdate?.millisecondsSinceEpoch,
       'cutoffdate': cutoffDate?.millisecondsSinceEpoch,
       'submissiondrafts': isDraft ? 1 : 0,
       'maxattempts': maxAttempts,
       'gradingstatus': gradingStatus,
       'course': courseId,
-
     };
+  }
+
+  @override
+  Assignment fromGoogleJson(Map<String, dynamic> json) {
+    // TODO: Dinesh, try to map the Google JSON to the Assignment object
+    throw UnimplementedError();
   }
 }
