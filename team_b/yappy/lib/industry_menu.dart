@@ -49,17 +49,16 @@ class IndustryMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
 
-      // Gets the width of the current screen
-      double screenWidth = MediaQuery.of(context).size.width;
+    // Gets the width and height of the current screen
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
 
       // Creates a column for the items within the menu
       child: Column (
         children: [
-
-          // Adds padding between the navigation menu and the industry menu
-          SizedBox(height: 25),
           
           Center(
             // Creates the text box above the icons
@@ -76,7 +75,7 @@ class IndustryMenu extends StatelessWidget {
                   child: Text(
                     title,
                     style: TextStyle(
-                      fontSize: 32,
+                      fontSize: 24,
                       color: Colors.white
                     ), 
                   ),
@@ -84,7 +83,7 @@ class IndustryMenu extends StatelessWidget {
 
             ),
           ),
-          SizedBox(height: 25),
+          SizedBox(height: screenHeight * .03),
           
           // Creates a row of clickable menu icons
           Row (
@@ -102,14 +101,14 @@ class IndustryMenu extends StatelessWidget {
                   icon: Icon(
                     Icons.chat,
                     color: Colors.white,
-                    size: 40,
+                    size: screenHeight * .05,
                   ),
                   onPressed: () {
 
                   }, 
                 ),
               ),
-              SizedBox(width: 40),
+              SizedBox(width: screenWidth * .06),
 
               // Creates a industry specific icon based on user input
               Container(
@@ -122,7 +121,7 @@ class IndustryMenu extends StatelessWidget {
                   icon: Icon(
                     icon,
                     color: Colors.white,
-                    size: 40,
+                    size: screenHeight * .05,
                   ),
                   
                   onPressed: () {
@@ -130,7 +129,7 @@ class IndustryMenu extends StatelessWidget {
                   }, 
                 ),
               ),
-              SizedBox(width: 40),
+              SizedBox(width: screenWidth * .06),
 
               // Creates a transcript history button
               Container(
@@ -143,7 +142,7 @@ class IndustryMenu extends StatelessWidget {
                   icon: Icon(
                     Icons.file_copy,
                     color: Colors.white,
-                    size: 40,
+                    size: screenHeight * .05,
                   ),
                     onPressed: () async {
 

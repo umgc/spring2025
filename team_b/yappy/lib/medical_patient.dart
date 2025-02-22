@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:yappy/tool_bar.dart';
 import 'package:yappy/industry_menu.dart';
+import 'package:yappy/transcription_box.dart';
 
 
 class MedicalPatientApp extends StatelessWidget {
@@ -27,10 +28,17 @@ class MedicalPatientPage extends StatelessWidget {
         child: ToolBar()
       ),
       drawer: HamburgerDrawer(),
-
-      body: 
+      body: Column(
+        children: [
         IndustryMenu(title: "Medical Patient", icon: Icons.local_pharmacy),
-
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: TranscriptionBox(),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

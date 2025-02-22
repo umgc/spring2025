@@ -16,13 +16,12 @@ class HomePage extends StatelessWidget {
       backgroundColor: const Color.fromARGB(255, 0, 0, 0),
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(140),
-        child: ToolBar(), // Using the ToolBar widget
+        child: ToolBar(showHamburger: false), // Using the ToolBar widget
       ),
-      drawer: HamburgerDrawer(), // Add the HamburgerDrawer for navigation
       body: Column(
         children: [
           _buildButton('Restaurant', context, RestaurantPage()),
-          _buildButton('Mechanical Aid', context, MechanicalAidPage()),
+          _buildButton('Vehicle Maintenance', context, MechanicalAidPage()),
           _buildButton('Medical Doctor', context, MedicalDoctorPage()),
           _buildButton('Medical Patient', context, MedicalPatientPage()),
           _buildButton('Help', context, HelpPage()),
@@ -57,17 +56,5 @@ class HomePage extends StatelessWidget {
       ),
     );
   }
-
-  // Widget _buildDrawerItem(String title) {
-  //   return ListTile(
-  //     contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-  //     textColor: Colors.white,
-  //     tileColor: const Color.fromARGB(255, 54, 54, 54),
-  //     title: Text(title),
-  //     onTap: () {
-  //       // TODO Navigate to the corresponding screen
-  //     },
-  //   );
-  // }
 }
 

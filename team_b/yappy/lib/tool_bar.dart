@@ -9,14 +9,20 @@ import 'package:yappy/mechanic.dart';
 
 // Defines a reusable Hamburger Menu Widget (AppBar + Drawer)
 class ToolBar extends StatelessWidget {
-  const ToolBar({super.key});
+  final bool showHamburger;
 
+  ToolBar({this.showHamburger = true});
+  
   @override
   Widget build(BuildContext context) {
-      return AppBar(
-          // Creates the hamburger icon for the menu
-          backgroundColor: Colors.black,
-          leading: Builder(
+    double screenWidth = MediaQuery.of(context).size.width;
+    double screenHeight = MediaQuery.of(context).size.height;
+
+    return AppBar(
+        // Creates the hamburger icon for the menu
+        backgroundColor: Colors.black,
+        leading: showHamburger 
+          ? Builder(
             builder: (context) {
               return IconButton(
                 icon: const Icon(Icons.menu, color: Colors.white),
@@ -25,54 +31,54 @@ class ToolBar extends StatelessWidget {
                 },
               );
             },
-          ),
-          toolbarHeight: 140,
-          // Contains the Yappy! icon
-          title: Center(
-            child: CircleAvatar(
-              backgroundColor: const Color.fromARGB(255, 0, 0, 0),
-              radius: 140,
-              child: Image.asset(
-                'assets/icon/app_icon.png',
-                width: 140,
-                height: 140,
-              ),
+          ): SizedBox(width: screenHeight * 0.08),
+        toolbarHeight: screenHeight * 0.11,
+        // Contains the Yappy! icon
+        title: Center(
+          child: CircleAvatar(
+            backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+            radius: screenWidth * 0.2,
+            child: Image.asset(
+              'assets/icon/app_icon.png',
+              width: screenWidth * 0.22,
+              height: screenWidth * 0.22,
             ),
           ),
-          actions: [
-            // Contains the information button
-            IconButton(
-              icon: const Icon(Icons.info, color: Colors.white),
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (BuildContext context) {
-                    // Creates a pop up when the button is pressed
-                    return AlertDialog(
-                      title: const Text('Information'),
-                      content: const Text('Yappy Terms & Conditions\n\n''By using Yappy,'
-                                  'you agree to Use the app responsibly and comply '
-                                  'with all applicable laws. Respect user privacy '
-                                  'and refrain from harmful or abusive behavior.\n\n'
-                                  'Understand that Yappy is not liable for '
-                                  'any misuse or legal consequences arising from its use. '
-                                  'We may update these terms as needed.\n\n'
-                                  'Continued use of Yappy means acceptance of any changes..'),
-                      actions: [
-                        TextButton(
-                          onPressed: () {
-                            Navigator.of(context).pop();
-                          },
-                          child: const Text('OK'),
-                        ),
-                      ],
-                    );
-                  },
-                );
-              },
-            ),
-          ],
-        );
+        ),
+        actions: [
+          // Contains the information button
+          IconButton(
+            icon: const Icon(Icons.info, color: Colors.white),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  // Creates a pop up when the button is pressed
+                  return AlertDialog(
+                    title: const Text('Information'),
+                    content: const Text('Yappy Terms & Conditions\n\n''By using Yappy,'
+                                'you agree to Use the app responsibly and comply '
+                                'with all applicable laws. Respect user privacy '
+                                'and refrain from harmful or abusive behavior.\n\n'
+                                'Understand that Yappy is not liable for '
+                                'any misuse or legal consequences arising from its use. '
+                                'We may update these terms as needed.\n\n'
+                                'Continued use of Yappy means acceptance of any changes..'),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text('OK'),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
+        ],
+      );
   }
 }
   // creates the hamburger menu
@@ -81,16 +87,17 @@ class HamburgerDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
     return SafeArea(
       child: Drawer(
-        width: 175,
+        width: screenWidth * .45,
         backgroundColor: Colors.black,
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
             _buildDrawerItem('Home', context, HomePage()),
             _buildDrawerItem('Restaurant', context, RestaurantPage()),
-            _buildDrawerItem('Mechanical Aid', context, MechanicalAidPage()),
+            _buildDrawerItem('Vehicle Maintenance', context, MechanicalAidPage()),
             _buildDrawerItem('Medical Doctor', context, MedicalDoctorPage()),
             _buildDrawerItem('Medical Patient', context, MedicalPatientPage()),
             _buildDrawerItem('Help', context, HelpPage()),
