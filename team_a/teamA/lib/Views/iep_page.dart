@@ -162,7 +162,7 @@ class _IepPageState extends State{
                     onPressed: () {
                       print('Deleted');
                     },
-                    child: Text('Delete IEP')  
+                    child: Text('Delete Selected IEP')  
                   )
                 )
               ]
