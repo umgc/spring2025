@@ -16,9 +16,8 @@ class HomePage extends StatelessWidget {
       backgroundColor: const Color.fromARGB(255, 0, 0, 0),
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(140),
-        child: ToolBar(), // Using the ToolBar widget
+        child: ToolBar(showHamburger: false), // Using the ToolBar widget
       ),
-      drawer: HamburgerDrawer(), // Add the HamburgerDrawer for navigation
       body: Column(
         children: [
           _buildButton('Restaurant', context, RestaurantPage()),

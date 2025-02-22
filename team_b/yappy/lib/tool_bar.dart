@@ -9,6 +9,10 @@ import 'package:yappy/mechanic.dart';
 
 // Defines a reusable Hamburger Menu Widget (AppBar + Drawer)
 class ToolBar extends StatelessWidget {
+  final bool showHamburger;
+
+  ToolBar({this.showHamburger = true}); 
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -17,16 +21,17 @@ class ToolBar extends StatelessWidget {
     return AppBar(
         // Creates the hamburger icon for the menu
         backgroundColor: Colors.black,
-        leading: Builder(
-          builder: (context) {
-            return IconButton(
-              icon: const Icon(Icons.menu, color: Colors.white),
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
-            );
-          },
-        ),
+        leading: showHamburger 
+          ? Builder(
+            builder: (context) {
+              return IconButton(
+                icon: const Icon(Icons.menu, color: Colors.white),
+                onPressed: () {
+                  Scaffold.of(context).openDrawer();
+                },
+              );
+            },
+          ): SizedBox(width: screenHeight * 0.08),
         toolbarHeight: screenHeight * 0.11,
         // Contains the Yappy! icon
         title: Center(

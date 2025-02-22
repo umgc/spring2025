@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:yappy/tool_bar.dart';
 import 'package:yappy/industry_menu.dart';
+import 'package:yappy/transcription_box.dart';
 
 class RestaurantApp extends StatelessWidget {
   @override
@@ -25,8 +26,17 @@ class RestaurantPage extends StatelessWidget {
       ),
       drawer: HamburgerDrawer(),
 
-      body: 
+      body: Column(
+        children: [
         IndustryMenu(title: "Restaurant", icon: Icons.restaurant_menu),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: TranscriptionBox(),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
