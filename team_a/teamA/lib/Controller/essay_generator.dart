@@ -53,7 +53,7 @@ Future<List<dynamic>> fetchJsonCriteria() async
   final String jsonString = await rootBundle.loadString('assets/Criteria.json');
   final Map<String, dynamic> jsonData = json.decode(jsonString);
   List<dynamic> critList = jsonData['Criteria']; // Access the 'users' key
-  return critList.map((critJson) => Criterion.fromMoodleJson(critJson)).toList();
+  return critList.map((critJson) => Criterion.fromJson(critJson)).toList();
 }
 
 // Take the default descriptions from the JSON and build full list of critieria based on scale
