@@ -46,3 +46,9 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 /android/app/.cxx
+
+# Ignore native build artifacts
+*.cc
+*.h
+*.cmake
+*.swift

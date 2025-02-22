@@ -4,16 +4,20 @@ import 'package:yappy/industry_menu.dart';
 import 'package:yappy/transcription_box.dart';
 
 
-class Medical_PatientApp extends StatelessWidget {
+class MedicalPatientApp extends StatelessWidget {
+  const MedicalPatientApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Medical_PatientPage(),
+      home: MedicalPatientPage(),
     );
   }
 }
 
-class Medical_PatientPage extends StatelessWidget {
+class MedicalPatientPage extends StatelessWidget {
+  const MedicalPatientPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

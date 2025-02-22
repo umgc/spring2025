@@ -4,6 +4,8 @@ import 'package:yappy/industry_menu.dart';
 import 'package:yappy/transcription_box.dart';
 
 class RestaurantApp extends StatelessWidget {
+  const RestaurantApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -39,6 +41,4 @@ class RestaurantPage extends StatelessWidget {
       ),
     );
   }
-
-
 }

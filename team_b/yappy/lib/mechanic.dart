@@ -4,19 +4,23 @@ import 'package:yappy/tool_bar.dart';
 import 'package:yappy/transcription_box.dart';
 
 void main() {
-  runApp(Mechanical_AidApp());
+  runApp(MechanicalAidApp());
 }
 
-class Mechanical_AidApp extends StatelessWidget {
+class MechanicalAidApp extends StatelessWidget {
+  const MechanicalAidApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Mechanical_AidPage(),
+      home: MechanicalAidPage(),
     );
   }
 }
 
-class Mechanical_AidPage extends StatelessWidget {
+class MechanicalAidPage extends StatelessWidget {
+  const MechanicalAidPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

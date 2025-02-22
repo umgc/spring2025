@@ -21,9 +21,9 @@ class HomePage extends StatelessWidget {
       body: Column(
         children: [
           _buildButton('Restaurant', context, RestaurantPage()),
-          _buildButton('Vehicle Maintenance', context, Mechanical_AidPage()),
-          _buildButton('Medical Doctor', context, Medical_DoctorPage()),
-          _buildButton('Medical Patient', context, Medical_PatientPage()),
+          _buildButton('Vehicle Maintenance', context, MechanicalAidPage()),
+          _buildButton('Medical Doctor', context, MedicalDoctorPage()),
+          _buildButton('Medical Patient', context, MedicalPatientPage()),
           _buildButton('Help', context, HelpPage()),
           _buildButton('Contact', context, ContactPage()),
         ],

@@ -11,8 +11,8 @@ import 'package:yappy/mechanic.dart';
 class ToolBar extends StatelessWidget {
   final bool showHamburger;
 
-  ToolBar({this.showHamburger = true}); 
-
+  ToolBar({this.showHamburger = true});
+  
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -83,6 +83,8 @@ class ToolBar extends StatelessWidget {
 }
   // creates the hamburger menu
 class HamburgerDrawer extends StatelessWidget {
+  const HamburgerDrawer({super.key});
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
@@ -95,9 +97,9 @@ class HamburgerDrawer extends StatelessWidget {
           children: [
             _buildDrawerItem('Home', context, HomePage()),
             _buildDrawerItem('Restaurant', context, RestaurantPage()),
-            _buildDrawerItem('Vehicle Maintenance', context, Mechanical_AidPage()),
-            _buildDrawerItem('Medical Doctor', context, Medical_DoctorPage()),
-            _buildDrawerItem('Medical Patient', context, Medical_PatientPage()),
+            _buildDrawerItem('Vehicle Maintenance', context, MechanicalAidPage()),
+            _buildDrawerItem('Medical Doctor', context, MedicalDoctorPage()),
+            _buildDrawerItem('Medical Patient', context, MedicalPatientPage()),
             _buildDrawerItem('Help', context, HelpPage()),
             _buildDrawerItem('Contact', context, ContactPage()),
           ],

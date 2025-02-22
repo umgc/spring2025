@@ -10,7 +10,7 @@ class IndustryMenu extends StatelessWidget {
   final String title;
   final IconData icon;
 
-  const IndustryMenu({required this.title, required this.icon, Key? key}) : super(key: key); 
+  const IndustryMenu({required this.title, required this.icon, super.key}); 
 
   @override
   Widget build(BuildContext context) {

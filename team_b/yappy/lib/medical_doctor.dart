@@ -4,16 +4,20 @@ import 'package:yappy/tool_bar.dart';
 import 'package:yappy/transcription_box.dart';
 
 
-class Medical_DoctorApp extends StatelessWidget {
+class MedicalDoctorApp extends StatelessWidget {
+  const MedicalDoctorApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Medical_DoctorPage(),
+      home: MedicalDoctorPage(),
     );
   }
 }
 
-class Medical_DoctorPage extends StatelessWidget {
+class MedicalDoctorPage extends StatelessWidget {
+  const MedicalDoctorPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
