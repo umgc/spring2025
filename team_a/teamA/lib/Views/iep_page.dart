@@ -154,7 +154,7 @@ class _IepPageState extends State{
                             DataCell(Text('Yes')),
                             DataCell(Text('No')),
                             DataCell(Text('Yes')),
-                            DataCell(Text('Student is not very smart.')),
+                            DataCell(ConstrainedBox(constraints: BoxConstraints(maxWidth:225,), child: Text('Student is not very smart. This is what wrapped text would look like. Still need to work out all the bugs.', softWrap: true, maxLines: null, overflow: TextOverflow.visible))),
                             DataCell(Text('Select')),
                           ]
                         ),
@@ -334,7 +334,8 @@ class _IepPageState extends State{
                             DataCell(Text('Select')),
                           ]
                         ),
-                      ]
+                      ],
+                      dataRowHeight: 200,
                     )
                   ),
                 ),
