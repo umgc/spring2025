@@ -5,11 +5,14 @@ void main() {
 }
 
 class TranscriptionBox extends StatelessWidget {
+  const TranscriptionBox({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
+        backgroundColor: Colors.black,
         body: Column(
           children: [
             Expanded(
@@ -23,6 +26,8 @@ class TranscriptionBox extends StatelessWidget {
 }
 
 class ChatBox extends StatelessWidget {
+  const ChatBox({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Container(

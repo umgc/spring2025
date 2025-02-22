@@ -11,7 +11,7 @@ import 'package:yappy/mechanic.dart';
 class ToolBar extends StatelessWidget {
   final bool showHamburger;
 
-  ToolBar({this.showHamburger = true});
+  const ToolBar({super.key, this.showHamburger = true});
   
   @override
   Widget build(BuildContext context) {
@@ -91,7 +91,7 @@ class HamburgerDrawer extends StatelessWidget {
     return SafeArea(
       child: Drawer(
         width: screenWidth * .45,
-        backgroundColor: Colors.black,
+        backgroundColor: const Color.fromARGB(255, 54, 54, 54),
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
