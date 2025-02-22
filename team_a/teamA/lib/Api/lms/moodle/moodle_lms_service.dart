@@ -180,7 +180,7 @@ class MoodleLmsService implements LmsInterface {
     }
 
     final listData = jsonDecode(response.body) as List<dynamic>;
-    return listData.map((i) => Course.fromMoodleJson(i)).toList();
+    return listData.map((i) => Course.empty().fromMoodleJson(i)).toList();
   }
 
   @override
@@ -206,10 +206,10 @@ class MoodleLmsService implements LmsInterface {
 
     // The response can be either a List or a Map with a 'courses' key
     if (decodedJson is List) {
-      userCourses = decodedJson.map((i) => Course.fromMoodleJson(i)).toList();
+      userCourses = decodedJson.map((i) => Course.empty().fromMoodleJson(i)).toList();
     } else if (decodedJson is Map<String, dynamic>) {
       final courseList = decodedJson['courses'] as List<dynamic>;
-      userCourses = courseList.map((i) => Course.fromMoodleJson(i)).toList();
+      userCourses = courseList.map((i) => Course.empty().fromMoodleJson(i)).toList();
     } else {
       throw StateError('Unexpected response format from Moodle');
     }
@@ -240,7 +240,7 @@ class MoodleLmsService implements LmsInterface {
 
     final decodedJson = jsonDecode(response.body);
     if (decodedJson is List) {
-      return decodedJson.map((i) => Participant.fromMoodleJson(i)).toList();
+      return decodedJson.map((i) => Participant.empty().fromMoodleJson(i)).toList();
     } else {
       throw StateError('Unexpected response format (expected a List)');
     }
@@ -464,7 +464,7 @@ class MoodleLmsService implements LmsInterface {
       if (courseID == null || cItem['id'] == courseID) {
         final assignmentList = cItem['assignments'] as List<dynamic>;
         for (var a in assignmentList) {
-          results.add(Assignment.fromMoodleJson(a));
+          results.add(Assignment.empty().fromMoodleJson(a));
         }
       }
     }
@@ -610,7 +610,7 @@ class MoodleLmsService implements LmsInterface {
       }
 
       return submissionsData
-          .map((jsonMap) => Submission.fromMoodleJson(jsonMap))
+          .map((jsonMap) => Submission.empty().fromMoodleJson(jsonMap))
           .toList();
     } catch (e, st) {
       print('Error fetching submissions: $e');
@@ -661,7 +661,7 @@ class MoodleLmsService implements LmsInterface {
         throw Exception('Moodle API Error: ${data['message']}');
       }
 
-      return SubmissionStatus.fromMoodleJson(data);
+      return SubmissionStatus.empty().fromMoodleJson(data);
     } catch (e, st) {
       print('Error fetching submission status: $e');
       print('StackTrace: $st');
@@ -701,7 +701,7 @@ class MoodleLmsService implements LmsInterface {
       for (var assignment in assignmentsList) {
         final gList = assignment['grades'] as List<dynamic>? ?? [];
         for (var g in gList) {
-          grades.add(Grade.fromMoodleJson(g));
+          grades.add(Grade.empty().fromMoodleJson(g));
         }
       }
       return grades;
@@ -813,6 +813,6 @@ class MoodleLmsService implements LmsInterface {
     }
 
     print('Rubric JSON Response: $responseData');
-    return MoodleRubric.fromMoodleJson(responseData.first);
+    return MoodleRubric.empty().fromMoodleJson(responseData.first);
   }
 }

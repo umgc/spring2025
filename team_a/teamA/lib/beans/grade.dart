@@ -1,4 +1,6 @@
-class Grade {
+import 'package:learninglens_app/beans/learning_lens_interface.dart';
+
+class Grade implements LearningLensInterface {
   final int id;
   final int userid;
   final double grade;  // Convert from string in the JSON
@@ -15,8 +17,18 @@ class Grade {
     required this.timemodified,
   });
 
+  // Empty constructor
+  Grade.empty()
+      : id = 0,
+        userid = 0,
+        grade = 0.0,
+        grader = 0,
+        timecreated = DateTime.now(),
+        timemodified = DateTime.now();
+
   // Parse grade JSON
-  factory Grade.fromMoodleJson(Map<String, dynamic> json) {
+  @override
+  Grade fromMoodleJson(Map<String, dynamic> json) {
     return Grade(
       id: json['id'] ?? 0,
       userid: json['userid'] ?? 0,

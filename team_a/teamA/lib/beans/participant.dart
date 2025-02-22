@@ -1,4 +1,6 @@
-class Participant {
+import 'package:learninglens_app/beans/learning_lens_interface.dart';
+
+class Participant implements LearningLensInterface {
   final int id;
   // final String username;
   final String fullname;
@@ -15,8 +17,18 @@ class Participant {
     required this.roles,
   });
 
+  // Empty constructor
+  Participant.empty()
+      : id = 0,
+        // username = '',
+        fullname = '',
+        firstname = '',
+        lastname = '',
+        roles = [];
+
   // Factory constructor for creating a new Participant instance from a JSON map
-  factory Participant.fromMoodleJson(Map<String, dynamic> json) {
+  @override
+  Participant fromMoodleJson(Map<String, dynamic> json) {
     // Convert roles if they exist, and map them from the 'roles' field in the JSON
     List<String> rolesList = [];
     if (json['roles'] != null) {

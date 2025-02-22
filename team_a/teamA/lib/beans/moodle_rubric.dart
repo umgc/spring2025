@@ -1,12 +1,19 @@
+import 'package:learninglens_app/beans/learning_lens_interface.dart';
 import 'package:learninglens_app/beans/moodle_rubric_criteria.dart';
 
-class MoodleRubric {
+class MoodleRubric implements LearningLensInterface {
   final String title;
   final List<MoodleRubricCriteria> criteria;
 
   MoodleRubric({required this.title, required this.criteria});
 
-  factory MoodleRubric.fromMoodleJson(Map<String, dynamic> json) {
+  // Empty constructor
+  MoodleRubric.empty()
+      : title = 'Rubric',
+        criteria = [];
+
+  @override
+  MoodleRubric fromMoodleJson(Map<String, dynamic> json) {
     var criteriaList = (json['rubric_criteria'] as List)
         .map((c) => MoodleRubricCriteria.fromMoodleJson(c))
         .toList();

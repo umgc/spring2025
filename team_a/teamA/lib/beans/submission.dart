@@ -1,4 +1,6 @@
-class Submission {
+import 'package:learninglens_app/beans/learning_lens_interface.dart';
+
+class Submission implements LearningLensInterface {
   final int id;
   final int userid;
   final String status;
@@ -25,7 +27,22 @@ class Submission {
     required this.assignmentId,
   });
 
-  factory Submission.fromMoodleJson(Map<String, dynamic> json) {
+  // empty constructor
+  Submission.empty()
+      : id = 0,
+        userid = 0,
+        status = '',
+        submissionTime = DateTime.fromMillisecondsSinceEpoch(0),
+        modificationTime = DateTime.fromMillisecondsSinceEpoch(0),
+        attemptNumber = 0,
+        groupId = 0,
+        gradingStatus = '',
+        onlineText = '',
+        comments = '',
+        assignmentId = 0;
+
+  @override
+  Submission fromMoodleJson(Map<String, dynamic> json) {
     String onlineText = '';
     String comments = '';
 

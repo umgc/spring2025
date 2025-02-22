@@ -1,6 +1,7 @@
+import 'package:learninglens_app/beans/learning_lens_interface.dart';
 import 'package:learninglens_app/beans/submission_with_grade.dart';
 
-class Assignment {
+class Assignment implements LearningLensInterface {
   final int? id;
   final String name;
   final String description;
@@ -28,8 +29,23 @@ class Assignment {
     this.submissionsWithGrades,
   });
 
+  // empty constructor
+  Assignment.empty()
+      : id = null,
+        name = '',
+        description = '',
+        dueDate = null,
+        allowsubmissionsfromdate = null,
+        cutoffDate = null,
+        isDraft = false,
+        maxAttempts = 0,
+        gradingStatus = 0,
+        courseId = 0,
+        submissionsWithGrades = null;
+
   // Factory method to create an Assignment object from a JSON response
-  factory Assignment.fromMoodleJson(Map<String, dynamic> json) {
+  @override
+  Assignment fromMoodleJson(Map<String, dynamic> json) {
     return Assignment(
       id: json['id'] ?? 0,
       name: json['name'] ?? 'Untitled',
