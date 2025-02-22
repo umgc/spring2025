@@ -22,6 +22,7 @@ class _IepPageState extends State{
       body: SingleChildScrollView(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children:[
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -127,37 +128,218 @@ class _IepPageState extends State{
                 Text('Existing IEPs', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                 Container(
                   margin: EdgeInsets.only(left: 50),
+                  height: 830,
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.grey),
-                    borderRadius: BorderRadius.circular(8.0),
+                    borderRadius: BorderRadius.circular(0.0),
                   ),
-                  child: DataTable(
-                    columns: [
-                      DataColumn(label: Text('Student Name')),
-                      DataColumn(label: Text('Course')),
-                      DataColumn(label: Text('Extra Time For Essays')),
-                      DataColumn(label: Text('Extra Time For Quizzes')),
-                      DataColumn(label: Text('Visual Aids')),
-                      DataColumn(label: Text('Additional Comments')),
-                      DataColumn(label: Text('Select')),
-                    ],
-                    rows: [
-                      DataRow(
-                        cells: [
-                          DataCell(Text('Andrew Hammes')),
-                          DataCell(Text('BIO 547')),
-                          DataCell(Text('Yes')),
-                          DataCell(Text('No')),
-                          DataCell(Text('Yes')),
-                          DataCell(Text('Student is not very smart.')),
-                          DataCell(Text('Select')),
-                        ]
-                      ),
-                    ]
-                  )
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
+                    child: DataTable(
+                      headingRowColor: MaterialStateProperty.all(Colors.grey),
+                      columns: [
+                        DataColumn(label: Text('Student Name')),
+                        DataColumn(label: Text('Course')),
+                        DataColumn(label: Text('Extra Time For Essays')),
+                        DataColumn(label: Text('Extra Time For Quizzes')),
+                        DataColumn(label: Text('Visual Aids')),
+                        DataColumn(label: Text('Additional Comments')),
+                        DataColumn(label: Text('Select')),
+                      ],
+                      rows: [
+                        DataRow(
+                          cells: [
+                            DataCell(Text('Andrew Hammes')),
+                            DataCell(Text('BIO 547')),
+                            DataCell(Text('Yes')),
+                            DataCell(Text('No')),
+                            DataCell(Text('Yes')),
+                            DataCell(Text('Student is not very smart.')),
+                            DataCell(Text('Select')),
+                          ]
+                        ),
+                                                DataRow(
+                          cells: [
+                            DataCell(Text('Andrew Hammes')),
+                            DataCell(Text('BIO 547')),
+                            DataCell(Text('Yes')),
+                            DataCell(Text('No')),
+                            DataCell(Text('Yes')),
+                            DataCell(Text('Student is not very smart.')),
+                            DataCell(Text('Select')),
+                          ]
+                        ),
+                                                DataRow(
+                          cells: [
+                            DataCell(Text('Andrew Hammes')),
+                            DataCell(Text('BIO 547')),
+                            DataCell(Text('Yes')),
+                            DataCell(Text('No')),
+                            DataCell(Text('Yes')),
+                            DataCell(Text('Student is not very smart.')),
+                            DataCell(Text('Select')),
+                          ]
+                        ),
+                                                DataRow(
+                          cells: [
+                            DataCell(Text('Andrew Hammes')),
+                            DataCell(Text('BIO 547')),
+                            DataCell(Text('Yes')),
+                            DataCell(Text('No')),
+                            DataCell(Text('Yes')),
+                            DataCell(Text('Student is not very smart.')),
+                            DataCell(Text('Select')),
+                          ]
+                        ),
+                                                DataRow(
+                          cells: [
+                            DataCell(Text('Andrew Hammes')),
+                            DataCell(Text('BIO 547')),
+                            DataCell(Text('Yes')),
+                            DataCell(Text('No')),
+                            DataCell(Text('Yes')),
+                            DataCell(Text('Student is not very smart.')),
+                            DataCell(Text('Select')),
+                          ]
+                        ),
+                                                DataRow(
+                          cells: [
+                            DataCell(Text('Andrew Hammes')),
+                            DataCell(Text('BIO 547')),
+                            DataCell(Text('Yes')),
+                            DataCell(Text('No')),
+                            DataCell(Text('Yes')),
+                            DataCell(Text('Student is not very smart.')),
+                            DataCell(Text('Select')),
+                          ]
+                        ),
+                                                DataRow(
+                          cells: [
+                            DataCell(Text('Andrew Hammes')),
+                            DataCell(Text('BIO 547')),
+                            DataCell(Text('Yes')),
+                            DataCell(Text('No')),
+                            DataCell(Text('Yes')),
+                            DataCell(Text('Student is not very smart.')),
+                            DataCell(Text('Select')),
+                          ]
+                        ),
+                                                DataRow(
+                          cells: [
+                            DataCell(Text('Andrew Hammes')),
+                            DataCell(Text('BIO 547')),
+                            DataCell(Text('Yes')),
+                            DataCell(Text('No')),
+                            DataCell(Text('Yes')),
+                            DataCell(Text('Student is not very smart.')),
+                            DataCell(Text('Select')),
+                          ]
+                        ),
+                                                DataRow(
+                          cells: [
+                            DataCell(Text('Andrew Hammes')),
+                            DataCell(Text('BIO 547')),
+                            DataCell(Text('Yes')),
+                            DataCell(Text('No')),
+                            DataCell(Text('Yes')),
+                            DataCell(Text('Student is not very smart.')),
+                            DataCell(Text('Select')),
+                          ]
+                        ),
+                                                DataRow(
+                          cells: [
+                            DataCell(Text('Andrew Hammes')),
+                            DataCell(Text('BIO 547')),
+                            DataCell(Text('Yes')),
+                            DataCell(Text('No')),
+                            DataCell(Text('Yes')),
+                            DataCell(Text('Student is not very smart.')),
+                            DataCell(Text('Select')),
+                          ]
+                        ),
+                                                DataRow(
+                          cells: [
+                            DataCell(Text('Andrew Hammes')),
+                            DataCell(Text('BIO 547')),
+                            DataCell(Text('Yes')),
+                            DataCell(Text('No')),
+                            DataCell(Text('Yes')),
+                            DataCell(Text('Student is not very smart.')),
+                            DataCell(Text('Select')),
+                          ]
+                        ),
+                                                DataRow(
+                          cells: [
+                            DataCell(Text('Andrew Hammes')),
+                            DataCell(Text('BIO 547')),
+                            DataCell(Text('Yes')),
+                            DataCell(Text('No')),
+                            DataCell(Text('Yes')),
+                            DataCell(Text('Student is not very smart.')),
+                            DataCell(Text('Select')),
+                          ]
+                        ),
+                                                DataRow(
+                          cells: [
+                            DataCell(Text('Andrew Hammes')),
+                            DataCell(Text('BIO 547')),
+                            DataCell(Text('Yes')),
+                            DataCell(Text('No')),
+                            DataCell(Text('Yes')),
+                            DataCell(Text('Student is not very smart.')),
+                            DataCell(Text('Select')),
+                          ]
+                        ),
+                                                DataRow(
+                          cells: [
+                            DataCell(Text('Andrew Hammes')),
+                            DataCell(Text('BIO 547')),
+                            DataCell(Text('Yes')),
+                            DataCell(Text('No')),
+                            DataCell(Text('Yes')),
+                            DataCell(Text('Student is not very smart.')),
+                            DataCell(Text('Select')),
+                          ]
+                        ),
+                                                DataRow(
+                          cells: [
+                            DataCell(Text('Andrew Hammes')),
+                            DataCell(Text('BIO 547')),
+                            DataCell(Text('Yes')),
+                            DataCell(Text('No')),
+                            DataCell(Text('Yes')),
+                            DataCell(Text('Student is not very smart.')),
+                            DataCell(Text('Select')),
+                          ]
+                        ),
+                                                DataRow(
+                          cells: [
+                            DataCell(Text('Andrew Hammes')),
+                            DataCell(Text('BIO 547')),
+                            DataCell(Text('Yes')),
+                            DataCell(Text('No')),
+                            DataCell(Text('Yes')),
+                            DataCell(Text('Student is not very smart.')),
+                            DataCell(Text('Select')),
+                          ]
+                        ),
+                                                DataRow(
+                          cells: [
+                            DataCell(Text('Andrew Hammes')),
+                            DataCell(Text('BIO 547')),
+                            DataCell(Text('Yes')),
+                            DataCell(Text('No')),
+                            DataCell(Text('Yes')),
+                            DataCell(Text('Student is not very smart.')),
+                            DataCell(Text('Select')),
+                          ]
+                        ),
+                      ]
+                    )
+                  ),
                 ),
                 Container(
-                  padding: EdgeInsets.only(top: 10, left: 1050),
+                  padding: EdgeInsets.only(top: 10, left: 1000),
                   child: ElevatedButton(
                     onPressed: () {
                       print('Deleted');
