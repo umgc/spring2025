@@ -4,6 +4,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:yappy/services/database_helper.dart';
+import 'package:flutter/foundation.dart';
 
 class FileHandler {
   Future<String> get localStoragePath async {
@@ -21,8 +22,13 @@ class FileHandler {
       final path = await localStoragePath;
       final newFile = File(join(path, basename(file.path)));
       await file.copy(newFile.path);
+      if (kDebugMode) {
+        print('File added to local storage: ${newFile.path}');
+      }
     } catch (e) {
-      print('Error adding document: $e');
+      if (kDebugMode) {
+        print('Error adding document: $e');
+      }
     }
   }
 
@@ -34,11 +40,18 @@ class FileHandler {
         final bytes = await file.readAsBytes();
         await dbHelper.insertDocument(transcriptId, fileName, bytes);
         await file.delete();
+        if (kDebugMode) {
+          print('File moved to database and deleted from local storage: $fileName');
+        }
       } else {
-        print('File not found in local storage: $fileName');
+        if (kDebugMode) {
+          print('File not found in local storage: $fileName');
+        }
       }
     } catch (e) {
-      print('Error moving file to database: $e');
+      if (kDebugMode) {
+        print('Error moving file to database: $e');
+      }
     }
   }
 
@@ -48,11 +61,18 @@ class FileHandler {
       final file = File(join(path, fileName));
       if (await file.exists()) {
         await file.delete();
+        if (kDebugMode) {
+          print('File deleted from local storage: $fileName');
+        }
       } else {
-        print('File not found in local storage: $fileName');
+        if (kDebugMode) {
+          print('File not found in local storage: $fileName');
+        }
       }
     } catch (e) {
-      print('Error deleting file: $e');
+      if (kDebugMode) {
+        print('Error deleting file: $e');
+      }
     }
   }
 
@@ -61,8 +81,13 @@ class FileHandler {
       final byteData = await rootBundle.load(assetPath);
       final file = File(join(await localStoragePath, fileName));
       await file.writeAsBytes(byteData.buffer.asUint8List());
+      if (kDebugMode) {
+        print('File copied from assets to local storage: $fileName');
+      }
     } catch (e) {
-      print('Error copying file from assets to local storage: $e');
+      if (kDebugMode) {
+        print('Error copying file from assets to local storage: $e');
+      }
     }
   }
 }
