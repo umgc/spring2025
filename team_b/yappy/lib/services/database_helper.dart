@@ -3,6 +3,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
@@ -18,6 +19,15 @@ class DatabaseHelper {
     if (_database != null) return _database!;
     _database = await _initDatabase();
     return _database!;
+  }
+
+  Future<String> get _localPath async {
+    final directory = await getApplicationDocumentsDirectory();
+    return directory.path;
+  }
+
+  Future<String> getLocalPath() async {
+    return await _localPath;
   }
 
   Future<Database> _initDatabase() async {
@@ -46,19 +56,16 @@ class DatabaseHelper {
       version: 1,
       onCreate: _onCreate,
       onOpen: (db) async {
-        // Check if the tables exist and create them if they don't
         await _createTablesIfNotExists(db);
       },
     );
   }
 
   Future<void> _onCreate(Database db, int version) async {
-    // Create tables if needed
     await _createTablesIfNotExists(db);
   }
 
   Future<void> _createTablesIfNotExists(Database db) async {
-    // Create Users table if it doesn't exist
     await db.execute('''
       CREATE TABLE IF NOT EXISTS Users (
         user_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -68,7 +75,6 @@ class DatabaseHelper {
       )
     ''');
 
-    // Create Vehicle table if it doesn't exist
     await db.execute('''
       CREATE TABLE IF NOT EXISTS Vehicle (
         vehicle_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -80,19 +86,18 @@ class DatabaseHelper {
       )
     ''');
 
-    // Create Transcript table if it doesn't exist
     await db.execute('''
       CREATE TABLE IF NOT EXISTS Transcript (
         transcript_id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id INTEGER,
         transcript_text_data TEXT,
         transcript_timestamp DATETIME,
-        transcript_ai_response TEXT,  -- Added transcript_ai_response column
+        transcript_ai_response TEXT,
+        transcript_document BLOB,
         FOREIGN KEY (user_id) REFERENCES Users(user_id)
       )
     ''');
 
-    // Create VehicleMaintenance table if it doesn't exist
     await db.execute('''
       CREATE TABLE IF NOT EXISTS VehicleMaintenance (
         maintenance_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -107,7 +112,6 @@ class DatabaseHelper {
       )
     ''');
 
-    // Create SpecialRequest table if it doesn't exist
     await db.execute('''
       CREATE TABLE IF NOT EXISTS SpecialRequest (
         special_request_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -115,7 +119,6 @@ class DatabaseHelper {
       )
     ''');
 
-    // Create MenuItem table if it doesn't exist
     await db.execute('''
       CREATE TABLE IF NOT EXISTS MenuItem (
         item_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -123,12 +126,10 @@ class DatabaseHelper {
         item_name TEXT,
         item_description TEXT,
         item_price REAL,
-        seat_position INTEGER,
         FOREIGN KEY (special_request_id) REFERENCES SpecialRequest(special_request_id)
       )
     ''');
 
-    // Create RestaurantOrder table if it doesn't exist
     await db.execute('''
       CREATE TABLE IF NOT EXISTS RestaurantOrder (
         order_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -139,19 +140,18 @@ class DatabaseHelper {
       )
     ''');
 
-    // Create OrderItems table if it doesn't exist
     await db.execute('''
       CREATE TABLE IF NOT EXISTS OrderItems (
         order_item_id INTEGER PRIMARY KEY AUTOINCREMENT,
         order_id INTEGER,
         item_id INTEGER,
         order_item_qty INTEGER,
+        seat_position INTEGER,
         FOREIGN KEY (order_id) REFERENCES RestaurantOrder(order_id),
         FOREIGN KEY (item_id) REFERENCES MenuItem(item_id)
       )
     ''');
 
-    // Create Patient table if it doesn't exist
     await db.execute('''
       CREATE TABLE IF NOT EXISTS Patient (
         patient_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -163,7 +163,6 @@ class DatabaseHelper {
       )
     ''');
 
-    // Create DoctorVisit table if it doesn't exist
     await db.execute('''
       CREATE TABLE IF NOT EXISTS DoctorVisit (
         visit_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -192,8 +191,7 @@ class DatabaseHelper {
 
   Future<int> updateUser(Map<String, dynamic> user) async {
     final db = await database;
-    int id = user['user_id'];
-    return await db.update('Users', user, where: 'user_id = ?', whereArgs: [id]);
+    return await db.update('Users', user, where: 'user_id = ?', whereArgs: [user['user_id']]);
   }
 
   Future<int> deleteUser(int id) async {
@@ -433,6 +431,7 @@ class DatabaseHelper {
     );
     return results.map((result) => result['vehicle_id'] as int).toList();
   }
+
   // Get all transcript_id with given user_id
   Future<List<int>> getTranscriptIdsByUserId(int userId) async {
     final db = await database;
@@ -467,5 +466,34 @@ class DatabaseHelper {
       whereArgs: [orderId],
     );
     return results.map((result) => result['item_id'] as int).toList();
+  }
+
+  // Insert document into the Transcript table
+  Future<void> insertDocument(int transcriptId, String fileName, Uint8List fileBytes) async {
+    final db = await database;
+    await db.update(
+      'Transcript',
+      {'transcript_document': fileBytes},
+      where: 'transcript_id = ?',
+      whereArgs: [transcriptId],
+    );
+  }
+
+  // Retrieve document from the Transcript table
+  Future<String?> getDocument(int transcriptId) async {
+    final db = await database;
+    List<Map<String, dynamic>> results = await db.query(
+      'Transcript',
+      columns: ['transcript_document'],
+      where: 'transcript_id = ?',
+      whereArgs: [transcriptId],
+    );
+    if (results.isNotEmpty) {
+      Uint8List? documentBytes = results.first['transcript_document'] as Uint8List?;
+      if (documentBytes != null) {
+        return String.fromCharCodes(documentBytes);
+      }
+    }
+    return null;
   }
 }
