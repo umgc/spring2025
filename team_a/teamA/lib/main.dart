@@ -1,7 +1,9 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:learninglens_app/Api/lms/enum/lms_enum.dart';
 import 'package:learninglens_app/Views/assessments_view.dart';
+import 'package:learninglens_app/Views/g_dashboard.dart';
 import 'package:learninglens_app/Views/user_settings.dart';
 import 'package:learninglens_app/notifiers/login_notifier.dart';
 import 'package:learninglens_app/notifiers/theme_notifier.dart';
@@ -44,10 +46,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // used to determine which dashboard to show based on the local storage system
+    var selectedClassroom = LocalStorageService.getSelectedClassroom();
+    var home = selectedClassroom == LmsType.MOODLE ? TeacherDashboard() : GoogleTeacherDashboard(); 
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: "Learning Lens",
-      home:  TeacherDashboard(),
+      home:  home,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Provider.of<ThemeNotifier>(context).primaryColor),
       ),

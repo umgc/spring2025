@@ -2,6 +2,7 @@ import 'package:learninglens_app/Api/lms/enum/lms_enum.dart';
 import 'package:learninglens_app/Api/lms/lms_interface.dart';
 import 'package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart';
 import 'package:learninglens_app/Api/lms/google_classroom/google_lms_service.dart';
+import 'package:learninglens_app/services/local_storage_service.dart';
 
 class LmsFactory {
 
@@ -9,13 +10,13 @@ class LmsFactory {
   static GoogleLmsService _lmsServiceGoogle = GoogleLmsService();
 
   static LmsInterface getLmsService() {
-    LmsType lmsType = LmsType.MOODLE;
+    LmsType lmsType = LocalStorageService.getSelectedClassroom();
 
     switch (lmsType) {
       case LmsType.MOODLE:
         return getLmsServiceMoodle();
       case LmsType.GOOGLE:
-        return getLmsServiceGoogle();
+        // return getLmsServiceGoogle();
       default:
         print('LMS type not found, defaulting to Moodle');
         return getLmsServiceMoodle();

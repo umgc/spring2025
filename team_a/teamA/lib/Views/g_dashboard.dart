@@ -122,7 +122,7 @@ class GoogleTeacherDashboard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Teacher Dashboard',
+              'Teacher Google Dashboard',
               style: TextStyle(
                 fontSize: titleFontSize,
                 fontWeight: FontWeight.normal,

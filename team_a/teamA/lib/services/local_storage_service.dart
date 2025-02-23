@@ -1,4 +1,5 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:learninglens_app/Api/lms/enum/lms_enum.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// This class manages local storage operations using SharedPreferences and dotenv.
@@ -55,18 +56,34 @@ class LocalStorageService {
   }
 
   /// Saves login state.
-  static void saveLoginState(bool isLoggedIn) {
-    _prefs.setBool('isLoggedIn', isLoggedIn);
+  static void saveMoodleLoginState(bool isLoggedIn) {
+    _prefs.setBool('isLoggedIntoMoodle', isLoggedIn);
   }
 
   /// Retrieves login state.
-  static bool getIsLoggedIn() {
-    return _prefs.getBool('isLoggedIn') ?? false;
+  static bool isLoggedIntoMoodle() {
+    return _prefs.getBool('isLoggedIntoMoodle') ?? false;
   }
 
   /// Clears login state.
-  static void clearLoginState() {
-    _prefs.remove('isLoggedIn');
+  static void clearMoodleLoginState() {
+    _prefs.remove('isLoggedIntoMoodle');
+  }
+
+
+    /// Saves login state.
+  static void saveGoogleLoginState(bool isLoggedIn) {
+    _prefs.setBool('isLoggedIntoGoogle', isLoggedIn);
+  }
+
+  /// Retrieves login state.
+  static bool isLoggedIntoGoogle() {
+    return _prefs.getBool('isLoggedIntoGoogle') ?? false;
+  }
+
+  /// Clears login state.
+  static void clearGoogleLoginState() {
+    _prefs.remove('isLoggedIntoGoogle');
   }
 
   /// Saves Moodle URL.
@@ -162,4 +179,19 @@ class LocalStorageService {
   static clearGoogleAccessToken() {
     _prefs.remove('GOOGLE_ACCESS_TOKEN');
   }  
+  // Save LmsType as an INTEGER
+  static void saveSelectedClassroom(LmsType type) {
+    _prefs.setInt('selectedClassroom', type.index);
+  }
+
+  // Get LmsType from stored INTEGER
+  static LmsType getSelectedClassroom() {
+    int? storedValue = _prefs.getInt('selectedClassroom');
+    return storedValue != null ? LmsType.values[storedValue] : LmsType.MOODLE;
+  }
+
+  // Clear stored selection
+  static void clearSelectedClassroom() {
+    _prefs.remove('selectedClassroom');
+  }
 }

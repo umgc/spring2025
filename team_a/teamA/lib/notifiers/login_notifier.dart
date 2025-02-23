@@ -31,7 +31,7 @@ class LoginNotifier with ChangeNotifier {
   }
 
   Future<void> _loadLoginState() async {
-    _isLoggedIn = LocalStorageService.getIsLoggedIn();
+    _isLoggedIn = LocalStorageService.isLoggedIntoMoodle();
     _username = LocalStorageService.getUsername();
     _password = LocalStorageService.getPassword();
     _moodleUrl = LocalStorageService.getMoodleUrl();
@@ -80,7 +80,7 @@ class LoginNotifier with ChangeNotifier {
         _moodleUrl = moodleUrl;
 
         // 2. Save login state and credentials to local storage:
-        LocalStorageService.saveLoginState(_isLoggedIn);
+        LocalStorageService.saveMoodleLoginState(_isLoggedIn);
         LocalStorageService.saveCredentials(username, password);
         LocalStorageService.saveMoodleUrl(moodleUrl); // Save Moodle URL
 
@@ -103,7 +103,7 @@ class LoginNotifier with ChangeNotifier {
     _password = null;
     _moodleUrl = null;
 
-    LocalStorageService.clearLoginState();
+    LocalStorageService.clearMoodleLoginState();
     LocalStorageService.clearCredentials();
     LocalStorageService.clearMoodleUrl();
     LmsFactory.getLmsService().resetLMSUserInfo();
@@ -176,6 +176,7 @@ class LoginNotifier with ChangeNotifier {
         throw Exception("Failed to obtain access token.");
       }
 
+      LocalStorageService.saveGoogleLoginState(true);
       LocalStorageService.saveGoogleAccessToken(accessToken);
     } catch (error) {
       print("Google Sign-In Error: $error");
@@ -186,6 +187,7 @@ class LoginNotifier with ChangeNotifier {
   Future<void> signOutFromGoogle() async {
     try {
       await _googleSignIn.signOut();
+      LocalStorageService.clearGoogleLoginState();
       LocalStorageService.clearGoogleAccessToken();
     } catch (error) {
       print("Google Sign-Out Error: $error");
