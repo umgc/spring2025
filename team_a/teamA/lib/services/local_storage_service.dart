@@ -196,6 +196,6 @@ class LocalStorageService {
   }
 
   static hasLLMKey() {
-    return getOpenAIKey().isNotEmpty && getClaudeKey().isNotEmpty && getPerplexityKey().isNotEmpty;
+    return getOpenAIKey().isNotEmpty || getClaudeKey().isNotEmpty || getPerplexityKey().isNotEmpty;
   }
 }
