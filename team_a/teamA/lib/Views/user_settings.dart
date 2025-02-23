@@ -189,7 +189,8 @@ class UserSettingsState extends State<UserSettings> {
         SizedBox(height: 10),
         ElevatedButton(
           onPressed: () {
-            _handleSignIn(loginNotifier);
+            // _handleSignIn(loginNotifier);
+            loginNotifier.signInWithGoogle();
           },
           child: Text('Login to Google Classroom'),
           style: ElevatedButton.styleFrom(

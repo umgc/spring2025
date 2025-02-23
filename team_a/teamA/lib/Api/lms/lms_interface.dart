@@ -24,9 +24,9 @@ abstract class LmsInterface {
   List<Course>? courses;
 
   // Singleton accessor.
-  factory LmsInterface() {
-    throw UnimplementedError("Api Interface cannot be instantiated.");
-  }
+  // factory LmsInterface() {
+  //   throw UnimplementedError("Api Interface cannot be instantiated.");
+  // }
 
   // Authentication/Login methods
   Future<void> login(String username, String password, String baseURL);

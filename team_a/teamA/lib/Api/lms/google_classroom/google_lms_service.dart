@@ -1,10 +1,336 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:xml/xml.dart' as xml;
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:learninglens_app/Api/lms/lms_interface.dart';
+import 'package:learninglens_app/beans/course.dart';
+import 'package:learninglens_app/beans/quiz.dart';
+import 'package:learninglens_app/beans/assignment.dart';
+import 'package:learninglens_app/beans/participant.dart';
+import 'package:learninglens_app/beans/submission_status.dart';
+import 'package:learninglens_app/beans/grade.dart';
+import 'package:learninglens_app/beans/submission.dart';
+import 'package:learninglens_app/beans/submission_with_grade.dart';
+import 'package:learninglens_app/beans/moodle_rubric.dart';
+import 'package:learninglens_app/services/api_service.dart';
+import 'package:learninglens_app/services/local_storage_service.dart';
 import 'package:learninglens_app/Api/lms/google_classroom/google_classroom_api.dart'; // Import the updated API
 
-class GoogleLmsService {
+/// A Singleton class for Moodle API access implementing [LmsInterface].
+class GoogleLmsService extends LmsInterface {
+  // Needed??
   final GoogleClassroomApi _classroomApi = GoogleClassroomApi();
+
+  // ****************************************************************************************
+  // Static / Singleton internals
+  // ****************************************************************************************
+
+  static final GoogleLmsService _instance = GoogleLmsService._internal();
+
+  /// The singleton accessor.
+  factory GoogleLmsService() => _instance;
+
+  /// Private named constructor.
+  GoogleLmsService._internal();
+
+  // ****************************************************************************************
+  // Fields implementing LmsInterface
+  // ****************************************************************************************
+
+  @override
+  String serverUrl = ''; // The Google REST endpoint
+
+  // The user token is kept private (not in the interface).
+  String? _userToken;
+
+  @override
+  String apiURL = ''; // Base URL for your Moodle instance, e.g. "https://yourmoodle.com"
+  @override
+  String? userName;
+  @override
+  String? firstName;
+  @override
+  String? lastName;
+  @override
+  String? siteName;
+  @override
+  String? fullName;
+  @override
+  String? profileImage;
+  @override
+  List<Course>? courses;
+
+  late GoogleSignIn _googleSignIn;
+
+  // ****************************************************************************************
+  // Auth / Login
+  // ****************************************************************************************
+
+  @override
+  Future<void> login(String username, String password, String baseURL) {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+  Future<void> loginOath(String clientID) async {
+    print('Logging in to Google Classroom...');
+
+    _googleSignIn = GoogleSignIn(
+      clientId: clientID,
+      scopes: <String>[
+        'email',
+        'profile',
+        'https://www.googleapis.com/auth/classroom.courses',
+        'https://www.googleapis.com/auth/classroom.rosters',
+        'https://www.googleapis.com/auth/classroom.coursework.students',
+        'https://www.googleapis.com/auth/classroom.coursework.me',
+        'https://www.googleapis.com/auth/classroom.courses.readonly',
+        'https://www.googleapis.com/auth/forms.body',
+        'https://www.googleapis.com/auth/forms.responses.readonly'
+      ],
+    );
+
+    try {
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) {
+        throw Exception("Google Sign-In was cancelled by the user.");
+      }
+      // Get the user's name
+      userName = googleUser.displayName;
+
+      firstName ??= userName;
+
+      print('Welcome, ${firstName ?? 'User'}');
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+      _userToken = googleAuth.accessToken;
+
+      if (_userToken == null) {
+        throw Exception("Failed to obtain access token.");
+      }
+
+      // LocalStorageService.saveGoogleAccessToken(_userToken);
+    } catch (error) {
+      print("Google Sign-In Error: $error");
+      throw Exception("Google Sign-In failed: $error");
+    }
+  }
+
+  @override
+  bool isLoggedIn() {
+    return _userToken != null;
+  }
+
+  String getGoogleAccessToken() {
+    return _userToken!;
+  }
+
+  @override
+  Future<bool> isUserTeacher(List<Course> moodleCourses) async {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+  @override
+  void logout() {
+    print('Logging out of Google...');
+    _googleSignIn.signOut();
+    resetLMSUserInfo();
+  }
+
+  @override
+  void resetLMSUserInfo() {
+    // Clear all user-related fields
+    _userToken = null;
+    apiURL = '';
+    userName = null;
+    firstName = null;
+    lastName = null;
+    siteName = null;
+    fullName = null;
+    profileImage = null;
+    courses = [];
+  }
+
+  // ****************************************************************************************
+  // Course-related methods
+  // ****************************************************************************************
+
+  @override
+  Future<List<Course>> getCourses() async {
+    if (_userToken == null) throw StateError('User not logged in to Google');
+
+    final response = await ApiService().httpGet(
+      Uri.parse('https://classroom.googleapis.com/v1/courses'),
+      headers: {'Authorization': 'Bearer $_userToken'},
+    );
+
+    print(response.body);
+
+    if (response.statusCode != 200) {
+      throw HttpException(response.body);
+    }
+
+    final listData = jsonDecode(response.body) as List<dynamic>;
+    return listData.map((i) => Course.empty().fromGoogleJson(i)).toList();
+
+
+    // if (response.statusCode == 200) {
+    //   setState(() => _courses = jsonDecode(response.body)['courses'] ?? []);
+    // } else {
+    //   print('Courses fetch error: ${response.statusCode}');
+    // }
+    // setState(() => _isLoading = false);
+  }
+
+  @override
+  Future<List<Course>> getUserCourses() async {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<Participant>> getCourseParticipants(String courseId) async {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+  // ****************************************************************************************
+  // Quiz methods
+  // ****************************************************************************************
+
+  @override
+  Future<void> importQuiz(String courseid, String quizXml) async {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<Quiz>> getQuizzes(int? courseID) async {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<int?> createQuiz(
+      String courseid,
+      String quizname,
+      String quizintro,
+      String sectionid,
+      String timeopen,
+      String timeclose) async {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<String> addRandomQuestions(
+      String categoryid, String quizid, String numquestions) async {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<int?> importQuizQuestions(String courseid, String quizXml) async {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+  // ****************************************************************************************
+  // Assignment methods
+  // ****************************************************************************************
+
+  @override
+  Future<List<Assignment>> getEssays(int? courseID) async {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Map<String, dynamic>?> createAssignment(
+    String courseid,
+    String sectionid,
+    String assignmentName,
+    String startdate,
+    String enddate,
+    String rubricJson,
+    String description,
+  ) async {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<int?> getContextId(int assignmentId, String courseId) async {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+  // ****************************************************************************************
+  // Submissions and grading
+  // ****************************************************************************************
+
+  @override
+  Future<List<Submission>> getAssignmentSubmissions(int assignmentId) async {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<SubmissionWithGrade>> getSubmissionsWithGrades(
+      int assignmentId) async {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<SubmissionStatus?> getSubmissionStatus(
+      int assignmentId, int userId) async {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<Grade>> getAssignmentGrades(int assignmentId) async {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<bool> setRubricGrades(int assignmentId, int userId, String jsonGrades) async {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<dynamic>> getRubricGrades(int assignmentId, int userid) async {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+  @override
+  Grade? findGradeForUser(List<Grade> grades, int userId) {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+  // ****************************************************************************************
+  // Rubric retrieval
+  // ****************************************************************************************
+
+  @override
+  Future<MoodleRubric?> getRubric(String assignmentid) async {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+
+
+
+
+
 
 // -----------------------------------------------------------------------
 // Parses XML quiz data and creates/assigns the quiz
