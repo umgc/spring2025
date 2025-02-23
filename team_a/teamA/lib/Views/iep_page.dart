@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:learninglens_app/Api/moodle_api_singleton.dart";
 import "package:learninglens_app/Controller/custom_appbar.dart";
+import 'package:learninglens_app/beans/course.dart';
 
 class IepPage extends StatefulWidget{
   IepPage();
@@ -58,10 +59,12 @@ class _IepPageState extends State{
                 DropdownMenu(
                   helperText: 'Course',
                   width: 500,
-                  dropdownMenuEntries: <DropdownMenuEntry<Color>>[
-                    DropdownMenuEntry(value: Colors.red, label: 'red'),
-                    DropdownMenuEntry(value: Colors.blue, label: 'blue')
-                  ]
+                  dropdownMenuEntries: (getAllCourses() ?? []).map((Course course) {
+                    return DropdownMenuEntry<String>(
+                      value: course.fullName,
+                      label: course.fullName,
+                    );
+                  }).toList(),
                 ),
                 Row(
                   children: [
@@ -355,4 +358,11 @@ class _IepPageState extends State{
       )
     );
   }
+}
+
+List<Course>? getAllCourses() {
+  List<Course>? result;
+  result = MoodleApiSingleton().moodleCourses;
+  print(result);
+  return result;
 }
