@@ -150,6 +150,8 @@ class _IepPageState extends State{
                         DataColumn(label: Text('Select')),
                       ],
                       rows: [
+
+                        // call the getUserByCourse method and loop over the results to display the data in the table. 
                         DataRow(
                           cells: [
                             DataCell(Text('Andrew Hammes')),

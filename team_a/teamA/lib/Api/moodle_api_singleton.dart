@@ -10,6 +10,7 @@ import 'package:learninglens_app/beans/grade.dart';
 import 'package:learninglens_app/beans/submission.dart';
 import 'package:learninglens_app/beans/submission_with_grade.dart';
 import 'package:learninglens_app/beans/moodle_rubric.dart';
+import 'package:learninglens_app/beans/user.dart';
 import 'package:learninglens_app/services/api_service.dart';
 
 // Singleton class for Moodle API access.
@@ -310,21 +311,39 @@ class MoodleApiSingleton {
     }
     return courses;
   }
-Future<void> getUserByCourse(int courseID) async {
+
+  /**
+   * get User for a course by course ID
+   */
+  Future<List<User>> getUserByCourse(int courseID) async {
     if (_userToken == null) throw StateError('User not logged in to Moodle');
-    // var moodleURL = MoodleApiSingleton().moodleURL;
-    final response =
-        await ApiService().httpPost(Uri.parse(moodleURL + serverUrl), body: {
-      'wstoken': _userToken,
-      'wsfunction':
-          'core_enrol_get_enrolled_users',
-      'moodlewsrestformat': 'json',
-      'courseid': courseID,
-    });
+
+    // Construct URL with query parameters for GET request
+    final Uri uri = Uri.parse(moodleURL + MoodleApiSingleton.serverUrl).replace(
+      queryParameters: {
+        'wstoken': _userToken!,
+        'wsfunction': 'core_enrol_get_enrolled_users',
+        'moodlewsrestformat': 'json',
+        'courseid': courseID.toString(), // Convert courseID to string
+      },
+    );
+
+    // Perform GET request using your existing httpGet method
+    final response = await ApiService().httpGet(uri);
+
     if (response.statusCode != 200) {
-      throw HttpException(response.body);
+      throw HttpException(
+          "Failed to fetch users for course $courseID: ${response.body}");
     }
-    print(response.body);
+
+    try {
+      var users = jsonDecode(response.body);
+      List<User> usersList = users.map((i) => User.fromJson(i)).toList();
+      return usersList;
+    } catch (e) {
+      throw StateError(
+          'Invalid JSON response from getUserByCourse: ${response.body}');
+    }
   }
 
   Future<SubmissionStatus?> getSubmissionStatus(
@@ -837,22 +856,22 @@ Future<void> getUserByCourse(int courseID) async {
   // ********************************************************************************************************************
   Future<bool> sendLessonPlanData(Map<String, dynamic> lessonPlanData) async {
     try {
-    final response = await ApiService().httpPost(
-      Uri.parse(moodleURL + serverUrl),
-      body: {
-        'wstoken': _userToken,
-        'wsfunction': 'mod_lesson_create_lessons', // Correct function name
-        'moodlewsrestformat': 'json',
-        'lessons': jsonEncode([
-          {
-            'courseid': lessonPlanData['courseId'], // Course ID
-            'name': lessonPlanData['lessonPlanName'], // Lesson Name
-            'intro': lessonPlanData['content'], // Lesson Description
-            'introformat': 1, // 1 for HTML format
-          }
-        ]),
-      },
-    );
+      final response = await ApiService().httpPost(
+        Uri.parse(moodleURL + serverUrl),
+        body: {
+          'wstoken': _userToken,
+          'wsfunction': 'mod_lesson_create_lessons', // Correct function name
+          'moodlewsrestformat': 'json',
+          'lessons': jsonEncode([
+            {
+              'courseid': lessonPlanData['courseId'], // Course ID
+              'name': lessonPlanData['lessonPlanName'], // Lesson Name
+              'intro': lessonPlanData['content'], // Lesson Description
+              'introformat': 1, // 1 for HTML format
+            }
+          ]),
+        },
+      );
 
       if (response.statusCode == 200) {
         final Map<String, dynamic> responseData = json.decode(response.body);
@@ -912,5 +931,4 @@ Future<void> getUserByCourse(int courseID) async {
     print("Lesson created successfully: ${jsonResponse}");
     return true;
   }
-
 }
