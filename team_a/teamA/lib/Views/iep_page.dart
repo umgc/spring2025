@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "package:learninglens_app/Api/moodle_api_singleton.dart";
 import "package:learninglens_app/Controller/custom_appbar.dart";
 import 'package:learninglens_app/beans/course.dart';
+import 'package:learninglens_app/beans/participant.dart';
 
 class IepPage extends StatefulWidget{
   IepPage();
@@ -65,6 +66,30 @@ class _IepPageState extends State{
                       label: course.fullName,
                     );
                   }).toList(),
+                ),
+                FutureBuilder<List<Participant>>(
+                  future: getAllParticipants(),
+                  builder: (BuildContext context, AsyncSnapshot<List<Participant>> snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return CircularProgressIndicator(); // Show a loading spinner while fetching
+                      } else if (snapshot.hasError) {
+                      return Text('Error: ${snapshot.error}'); // Handle error
+                      } else if (snapshot.hasData) {
+                        List<DropdownMenuEntry<String>> dropdownEntries = snapshot.data!.map((Participant participant){
+                          return DropdownMenuEntry<String>(
+                            value: participant.fullname,
+                            label: participant.fullname,
+                          );
+                        }).toList();
+                      return DropdownMenu(
+                        helperText: 'Participants',
+                        width: 500,
+                        dropdownMenuEntries: dropdownEntries,
+                      );
+                      } else {
+                        return Text('No Participants Found');
+                      }
+                  },
                 ),
                 Row(
                   children: [
@@ -367,4 +392,11 @@ List<Course>? getAllCourses() {
   List<Course>? result;
   result = MoodleApiSingleton().moodleCourses;
   return result;
+}
+
+Future<List<Participant>>? getAllParticipants() async {
+  List<Participant>? participants;
+  participants = await MoodleApiSingleton().getCourseParticipants('4');
+  print(participants);
+  return participants;
 }
