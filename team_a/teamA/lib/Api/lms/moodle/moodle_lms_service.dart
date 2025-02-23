@@ -37,7 +37,8 @@ class MoodleLmsService implements LmsInterface {
   String? _userToken;
 
   @override
-  String apiURL = ''; // Base URL for your Moodle instance, e.g. "https://yourmoodle.com"
+  String apiURL =
+      ''; // Base URL for your Moodle instance, e.g. "https://yourmoodle.com"
   @override
   String? userName;
   @override
@@ -206,10 +207,12 @@ class MoodleLmsService implements LmsInterface {
 
     // The response can be either a List or a Map with a 'courses' key
     if (decodedJson is List) {
-      userCourses = decodedJson.map((i) => Course.empty().fromMoodleJson(i)).toList();
+      userCourses =
+          decodedJson.map((i) => Course.empty().fromMoodleJson(i)).toList();
     } else if (decodedJson is Map<String, dynamic>) {
       final courseList = decodedJson['courses'] as List<dynamic>;
-      userCourses = courseList.map((i) => Course.empty().fromMoodleJson(i)).toList();
+      userCourses =
+          courseList.map((i) => Course.empty().fromMoodleJson(i)).toList();
     } else {
       throw StateError('Unexpected response format from Moodle');
     }
@@ -240,7 +243,9 @@ class MoodleLmsService implements LmsInterface {
 
     final decodedJson = jsonDecode(response.body);
     if (decodedJson is List) {
-      return decodedJson.map((i) => Participant.empty().fromMoodleJson(i)).toList();
+      return decodedJson
+          .map((i) => Participant.empty().fromMoodleJson(i))
+          .toList();
     } else {
       throw StateError('Unexpected response format (expected a List)');
     }
@@ -303,24 +308,22 @@ class MoodleLmsService implements LmsInterface {
       // If courseID is null, return all quizzes; otherwise filter by course
       if (courseID == null || item['course'] == courseID) {
         quizList.add(Quiz(
-          name: item['name'],
-          coursedId: item['course'],
-          description: item['intro'],
-          id: item['id'],
-        ));
+            name: item['name'],
+            coursedId: item['course'],
+            description: item['intro'],
+            id: item['id'],
+            timeOpen: item['timeopen'] =
+                DateTime.fromMillisecondsSinceEpoch(item['timeopen'] * 1000),
+            timeClose: item['timeclose'] =
+                DateTime.fromMillisecondsSinceEpoch(item['timeclose'] * 1000)));
       }
     }
     return quizList;
   }
 
   @override
-  Future<int?> createQuiz(
-      String courseid,
-      String quizname,
-      String quizintro,
-      String sectionid,
-      String timeopen,
-      String timeclose) async {
+  Future<int?> createQuiz(String courseid, String quizname, String quizintro,
+      String sectionid, String timeopen, String timeclose) async {
     if (_userToken == null) throw StateError('User not logged in to Moodle');
 
     try {
@@ -578,7 +581,8 @@ class MoodleLmsService implements LmsInterface {
       );
 
       if (response.statusCode != 200) {
-        print('Failed to load submissions. Status code: ${response.statusCode}');
+        print(
+            'Failed to load submissions. Status code: ${response.statusCode}');
         return [];
       }
 
@@ -652,7 +656,8 @@ class MoodleLmsService implements LmsInterface {
       );
 
       if (response.statusCode != 200) {
-        print('Failed to load submission status. Status code: ${response.statusCode}');
+        print(
+            'Failed to load submission status. Status code: ${response.statusCode}');
         return null;
       }
 
@@ -685,7 +690,8 @@ class MoodleLmsService implements LmsInterface {
       );
 
       if (response.statusCode != 200) {
-        print('Failed to load assignment grades. Status code: ${response.statusCode}');
+        print(
+            'Failed to load assignment grades. Status code: ${response.statusCode}');
         return [];
       }
 
@@ -713,7 +719,8 @@ class MoodleLmsService implements LmsInterface {
   }
 
   @override
-  Future<bool> setRubricGrades(int assignmentId, int userId, String jsonGrades) async {
+  Future<bool> setRubricGrades(
+      int assignmentId, int userId, String jsonGrades) async {
     if (_userToken == null) throw StateError('User not logged in to Moodle');
 
     try {
@@ -730,7 +737,8 @@ class MoodleLmsService implements LmsInterface {
       );
 
       if (response.statusCode != 200) {
-        print('Failed to set rubric grades. Status code: ${response.statusCode}');
+        print(
+            'Failed to set rubric grades. Status code: ${response.statusCode}');
         return false;
       }
       return true;

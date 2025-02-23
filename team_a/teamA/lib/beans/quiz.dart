@@ -10,8 +10,17 @@ class Quiz {
   String? promptUsed;
   int? id; // quiz id, null if the quiz doesn't exist in Moodle yet
   int? coursedId;
+  DateTime? timeOpen;
+  DateTime? timeClose;
   // Constructor with all optional params.
-  Quiz({this.name, this.coursedId, this.description, this.id, List<Question>? questionList})
+  Quiz(
+      {this.name,
+      this.coursedId,
+      this.description,
+      this.id,
+      this.timeOpen,
+      this.timeClose,
+      List<Question>? questionList})
       : questionList = questionList ?? [];
 
   // XML factory constructor using XML string
@@ -39,8 +48,6 @@ class Quiz {
     return quiz;
   }
 
-
-
   String toXmlString() {
     final builder = XmlBuilder();
     builder.element(XmlConsts.quiz, nest: () {
@@ -56,11 +63,13 @@ class Quiz {
         builder.element(XmlConsts.description, nest: description);
       }
 
-            // Insert a "category" type question using the description as the category name
+      // Insert a "category" type question using the description as the category name
       if (description != null) {
-        builder.element(XmlConsts.question, attributes: {XmlConsts.type: 'category'}, nest: () {
+        builder.element(XmlConsts.question,
+            attributes: {XmlConsts.type: 'category'}, nest: () {
           builder.element(XmlConsts.category, nest: () {
-            builder.element(XmlConsts.text, nest: '\$course\$/Top/$description');
+            builder.element(XmlConsts.text,
+                nest: '\$course\$/Top/$description');
           });
         });
       }
@@ -79,10 +88,7 @@ class Quiz {
     return builder.buildDocument().toXmlString(pretty: true);
   }
 
-
-
-
-  bool isNew(){
+  bool isNew() {
     return id == null;
   }
 
