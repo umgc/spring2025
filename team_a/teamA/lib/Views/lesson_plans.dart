@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
-import "package:learninglens_app/Api/moodle_api_singleton.dart";
+import "package:learninglens_app/Api/lms/factory/lms_factory.dart";
+import "package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart";
 import "package:learninglens_app/Controller/custom_appbar.dart";
 import "package:learninglens_app/beans/lesson_plan.dart";
 
@@ -54,7 +55,7 @@ class _LessonPlanState extends State{
 
   Future<void> _loadCourses() async {
     // Fetch courses from the API
-    var userCourses = await MoodleApiSingleton().getUserCourses();
+    var userCourses = await LmsFactory.getLmsService().getUserCourses();
     setState(() {
       courses = userCourses;
     });
@@ -64,7 +65,7 @@ class _LessonPlanState extends State{
   @override
   Widget build(BuildContext context){
     return Scaffold(
-      appBar: CustomAppBar(title: 'Lesson Plans', userprofileurl: MoodleApiSingleton().moodleProfileImage ?? ''),
+      appBar: CustomAppBar(title: 'Lesson Plans', userprofileurl: LmsFactory.getLmsService().profileImage ?? ''),
       body: SingleChildScrollView(
         child: Row(
           children: [

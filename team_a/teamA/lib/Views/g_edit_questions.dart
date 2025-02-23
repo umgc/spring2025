@@ -1,9 +1,10 @@
+import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/Views/g_quiz_generator.dart';
 import 'package:learninglens_app/Views/g_send_quiz_to_moodle.dart';
 import 'package:learninglens_app/llm/openai_api.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
-import '../Api/moodle_api_singleton.dart';
+import '../Api/lms/moodle/moodle_lms_service.dart';
 import 'package:learninglens_app/beans/quiz.dart';
 import 'package:learninglens_app/beans/question.dart';
 import 'package:flutter/material.dart';
@@ -51,7 +52,7 @@ class EditQuestionsGoogleState extends State<EditQuestionsGoogle> {
     return Scaffold(
       appBar: CustomAppBar(
         title: 'Edit Questions',
-        userprofileurl: MoodleApiSingleton().moodleProfileImage ?? '',
+        userprofileurl: LmsFactory.getLmsService().profileImage ?? '',
       ),
       body: Column(
         children: [

@@ -3,8 +3,9 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:learninglens_app/Api/llm/prompt_engine.dart';
-import 'package:learninglens_app/Api/llm_api.dart';
-import 'package:learninglens_app/Api/moodle_api_singleton.dart';
+import 'package:learninglens_app/Api/llm/llm_api.dart';
+import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
+import 'package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart';
 import 'package:learninglens_app/beans/assignment_form.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/Views/g_edit_questions.dart';
@@ -106,7 +107,7 @@ class _AssessmentState extends State<CreateAssessmentGoogle> {
     return Scaffold(
         appBar: CustomAppBar(
             title: 'Create Assessment',
-            userprofileurl: MoodleApiSingleton().moodleProfileImage ?? ''),
+            userprofileurl: LmsFactory.getLmsService().profileImage ?? ''),
         body: Form(
           key: _formKey,
           child: Padding(

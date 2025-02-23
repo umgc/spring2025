@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:learninglens_app/Api/moodle_api_singleton.dart';
+import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
+import 'package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/Controller/main_controller.dart';
 import 'package:http/http.dart' as http;
@@ -8,7 +9,8 @@ import 'package:learninglens_app/Views/g_assignment_create.dart';
 import 'package:learninglens_app/Views/g_assignment_home.dart';
 import 'package:learninglens_app/Views/g_assignment_list.dart';
 import 'package:learninglens_app/Views/g_quiz_generator.dart';
-import 'package:intl/intl.dart'; // Import intl package for date formatting
+import 'package:intl/intl.dart';
+import 'package:learninglens_app/services/local_storage_service.dart'; // Import intl package for date formatting
 
 class GoogleCourses extends StatefulWidget {
   @override
@@ -19,7 +21,6 @@ class _GoogleCoursesState extends State<GoogleCourses> {
   List<dynamic> _courses = [];
   List<dynamic> _assignments = [];
   bool _isLoading = false;
-  final MainController _controller = MainController();
   String selectedCourseId = '';
 
   @override
@@ -29,13 +30,7 @@ class _GoogleCoursesState extends State<GoogleCourses> {
   }
 
   Future<String?> _getToken() async {
-    final token = await _controller.getAccessToken(scopes: [
-      'https://www.googleapis.com/auth/classroom.courses.readonly',
-      'https://www.googleapis.com/auth/classroom.coursework.me',
-      'https://www.googleapis.com/auth/classroom.coursework.students'
-          'https://www.googleapis.com/auth/forms.body',
-      'https://www.googleapis.com/auth/forms.responses.readonly'
-    ]);
+    final token = LocalStorageService.getGoogleAccessToken();
     if (token == null) {
       print(
           'Error: No valid OAuth token. Ensure the required scopes are enabled.');
@@ -123,7 +118,7 @@ class _GoogleCoursesState extends State<GoogleCourses> {
     return Scaffold(
       appBar: CustomAppBar(
           title: 'Google Classroom',
-          userprofileurl: MoodleApiSingleton().moodleProfileImage ?? ''),
+          userprofileurl: LmsFactory.getLmsService().profileImage ?? ''),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
           : Row(

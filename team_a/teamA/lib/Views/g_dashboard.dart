@@ -1,14 +1,13 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:learninglens_app/Api/moodle_api_singleton.dart';
+import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
-import 'package:learninglens_app/Views/assessments_view.dart';
-import 'package:learninglens_app/Views/course_list.dart';
 import 'package:learninglens_app/Views/essays_view.dart';
 import 'package:learninglens_app/Views/g_assignment_home.dart';
 import 'package:learninglens_app/Views/g_courses.dart';
 import 'package:learninglens_app/notifiers/login_notifier.dart';
+import 'package:learninglens_app/services/local_storage_service.dart';
 import 'package:provider/provider.dart';
 
 class GoogleTeacherDashboard extends StatelessWidget {
@@ -22,7 +21,7 @@ class GoogleTeacherDashboard extends StatelessWidget {
     return Scaffold(
       appBar: CustomAppBar(
         title: 'Learning Lens',
-        userprofileurl: MoodleApiSingleton().moodleProfileImage ?? '',
+        userprofileurl: LmsFactory.getLmsService().profileImage ?? '',
       ),
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: Column(
@@ -70,20 +69,8 @@ class GoogleTeacherDashboard extends StatelessWidget {
 
   /// Checks if user is logged in and has an LLM key
   bool canUserAccessApp(BuildContext context) {
-    bool isLoggedIn = true;
-    bool hasLLMKey = true;
-    // final loginNotifier = Provider.of<LoginNotifier>(context, listen: true);
-    var loginNotifier = Provider.of<LoginNotifier>(context, listen: true);
-    print('Login Notifier: ${loginNotifier.isLoggedIn}');
-    var user = MoodleApiSingleton().moodleFirstName;
-    if (user == null || user.isEmpty) {
-      isLoggedIn = false;
-      hasLLMKey = false;
-    } else {
-      isLoggedIn = true;
-      hasLLMKey = true;
-    }
-
+    bool isLoggedIn = LocalStorageService.isLoggedIntoGoogle();
+    bool hasLLMKey = LocalStorageService.hasLLMKey();
     return isLoggedIn && hasLLMKey;
   }
 
@@ -121,7 +108,7 @@ class GoogleTeacherDashboard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Teacher Dashboard',
+              'Teacher Google Dashboard',
               style: TextStyle(
                 fontSize: titleFontSize,
                 fontWeight: FontWeight.normal,
@@ -130,7 +117,7 @@ class GoogleTeacherDashboard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              'Welcome, ${MoodleApiSingleton().moodleFirstName ?? 'User'}',
+              'Welcome, ${LmsFactory.getLmsService().firstName ?? 'User'}',
               style: TextStyle(
                 fontSize: titleFontSize * 0.7,
                 fontWeight: FontWeight.normal,
@@ -190,7 +177,7 @@ class GoogleTeacherDashboard extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Text(
-                'Welcome, ${MoodleApiSingleton().moodleFirstName ?? 'User'}',
+                'Welcome, ${LmsFactory.getLmsService().firstName ?? 'User'}',
                 style: TextStyle(
                   fontSize: titleFontSize * 0.7,
                   fontWeight: FontWeight.normal,

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:learninglens_app/Api/moodle_api_singleton.dart';
+import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/Views/analytics_page.dart';
 import 'package:learninglens_app/Views/assessments_view.dart';
@@ -8,6 +8,7 @@ import 'package:learninglens_app/Views/essays_view.dart';
 import 'package:learninglens_app/Views/iep_page.dart';
 import 'package:learninglens_app/Views/lesson_plans.dart';
 import 'package:learninglens_app/notifiers/login_notifier.dart';
+import 'package:learninglens_app/services/local_storage_service.dart';
 import 'package:provider/provider.dart';
 
 class TeacherDashboard extends StatelessWidget {
@@ -21,7 +22,7 @@ class TeacherDashboard extends StatelessWidget {
     return Scaffold(
       appBar: CustomAppBar(
         title: 'Learning Lens',
-        userprofileurl: MoodleApiSingleton().moodleProfileImage ?? '',
+        userprofileurl: LmsFactory.getLmsService().profileImage ?? '',
       ),
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: Column(
@@ -69,9 +70,8 @@ class TeacherDashboard extends StatelessWidget {
 
   /// Checks if user is logged in and has an LLM key
   bool canUserAccessApp(BuildContext context) {
-    final loginNotifier = Provider.of<LoginNotifier>(context, listen: true);
-    bool isLoggedIn = loginNotifier.isLoggedIn;
-    bool hasLLMKey = loginNotifier.hasLLMKey;
+    bool isLoggedIn = LocalStorageService.isLoggedIntoMoodle();
+    bool hasLLMKey = LocalStorageService.hasLLMKey();
     return isLoggedIn && hasLLMKey;
   }
 
@@ -109,7 +109,7 @@ class TeacherDashboard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Teacher Dashboard',
+              'Teacher Moodle Dashboard',
               style: TextStyle(
                 fontSize: titleFontSize,
                 fontWeight: FontWeight.normal,
@@ -118,7 +118,7 @@ class TeacherDashboard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              'Welcome, ${MoodleApiSingleton().moodleFirstName ?? 'User'}',
+              'Welcome, ${LmsFactory.getLmsService().firstName ?? 'User'}',
               style: TextStyle(
                 fontSize: titleFontSize * 0.7,
                 fontWeight: FontWeight.normal,
@@ -178,7 +178,7 @@ class TeacherDashboard extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Text(
-                'Welcome, ${MoodleApiSingleton().moodleFirstName ?? 'User'}',
+                'Welcome, ${LmsFactory.getLmsService().firstName ?? 'User'}',
                 style: TextStyle(
                   fontSize: titleFontSize * 0.7,
                   fontWeight: FontWeight.normal,

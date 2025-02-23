@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/Views/view_submissions.dart';
 import 'package:learninglens_app/beans/participant.dart';
 import 'package:learninglens_app/beans/submission.dart';
 import 'package:learninglens_app/beans/moodle_rubric.dart';
-import '../Api/moodle_api_singleton.dart';
+import '../Api/lms/moodle/moodle_lms_service.dart';
 import 'dart:math';
 
 class SubmissionDetail extends StatefulWidget {
@@ -39,12 +40,12 @@ class SubmissionDetailState extends State<SubmissionDetail> {
   }
 
   Future<void> fetchRubric() async {
-    int? contextId = await MoodleApiSingleton()
+    int? contextId = await LmsFactory.getLmsService()
         .getContextId(widget.submission.assignmentId, widget.courseId);
     if (contextId != null) {
-      var fetchedRubric = await MoodleApiSingleton()
+      var fetchedRubric = await LmsFactory.getLmsService()
           .getRubric(widget.submission.assignmentId.toString());
-      var submissionScores = await MoodleApiSingleton().getRubricGrades(
+      var submissionScores = await LmsFactory.getLmsService().getRubricGrades(
           widget.submission.assignmentId, widget.participant.id);
 
       setState(() {
@@ -88,7 +89,7 @@ class SubmissionDetailState extends State<SubmissionDetail> {
     print('Updated Submission Scores and Remarks: $jsonScores');
     // Handle further actions like saving to a database or API here.
     // SubmissionListState? submissionListState = context.findAncestorStateOfType<SubmissionListState>();
-    bool results = await MoodleApiSingleton().setRubricGrades(
+    bool results = await LmsFactory.getLmsService().setRubricGrades(
         widget.submission.assignmentId, widget.participant.id, jsonScores);
     print('Results: $results');
     if (mounted) {
@@ -122,7 +123,7 @@ class SubmissionDetailState extends State<SubmissionDetail> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(title: 'Submission Details', userprofileurl: MoodleApiSingleton().moodleProfileImage ?? ''),
+      appBar: CustomAppBar(title: 'Submission Details', userprofileurl: LmsFactory.getLmsService().profileImage ?? ''),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : Padding(

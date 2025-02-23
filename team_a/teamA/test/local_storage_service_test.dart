@@ -41,16 +41,16 @@ void main() {
   });
 
   test('saveLoginState and getIsLoggedIn work correctly', () {
-    LocalStorageService.saveLoginState(true);
+    LocalStorageService.saveMoodleLoginState(true);
 
-    expect(LocalStorageService.getIsLoggedIn(), true);
+    expect(LocalStorageService.isLoggedIntoMoodle(), true);
   });
 
   test('clearLoginState resets login state', () {
-    LocalStorageService.saveLoginState(true);
-    LocalStorageService.clearLoginState();
+    LocalStorageService.saveMoodleLoginState(true);
+    LocalStorageService.clearMoodleLoginState();
 
-    expect(LocalStorageService.getIsLoggedIn(), false);
+    expect(LocalStorageService.isLoggedIntoMoodle(), false);
   });
 
   test('save and retrieve API keys', () {

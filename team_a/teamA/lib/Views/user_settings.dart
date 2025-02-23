@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
-import 'package:learninglens_app/Api/moodle_api_singleton.dart';
+import 'package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/Controller/main_controller.dart';
 import 'package:learninglens_app/Views/dashboard.dart';
@@ -74,7 +74,7 @@ class UserSettingsState extends State<UserSettings> {
       // ),
       appBar: CustomAppBar(
           title: 'User Settings',
-          userprofileurl: MoodleApiSingleton().moodleProfileImage ?? ''),
+          userprofileurl: MoodleLmsService().profileImage ?? ''),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
@@ -189,7 +189,8 @@ class UserSettingsState extends State<UserSettings> {
         SizedBox(height: 10),
         ElevatedButton(
           onPressed: () {
-            _handleSignIn();
+            // _handleSignIn(loginNotifier);
+            loginNotifier.signInWithGoogle();
           },
           child: Text('Login to Google Classroom'),
           style: ElevatedButton.styleFrom(
@@ -201,13 +202,13 @@ class UserSettingsState extends State<UserSettings> {
     );
   }
 
-  Future<void> _handleSignIn() async {
+  Future<void> _handleSignIn(LoginNotifier loginNotifier) async {
     setState(() {
       _isLoading = true;
     });
 
     try {
-      await _controller.signInWithGoogle(context);
+      loginNotifier.signInWithGoogle();
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => GoogleTeacherDashboard()),

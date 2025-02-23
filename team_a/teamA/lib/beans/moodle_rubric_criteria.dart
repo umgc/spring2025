@@ -7,10 +7,10 @@ class MoodleRubricCriteria {
 
   MoodleRubricCriteria({required this.id, required this.description, required this.levels});
 
-  factory MoodleRubricCriteria.fromJson(Map<String, dynamic> json) 
+  factory MoodleRubricCriteria.fromMoodleJson(Map<String, dynamic> json) 
   {
     var levelsList = (json['levels'] as List)
-        .map((l) => Level.fromJson(l))
+        .map((l) => Level.empty().fromMoodleJson(l))
         .toList();
 
     return MoodleRubricCriteria(

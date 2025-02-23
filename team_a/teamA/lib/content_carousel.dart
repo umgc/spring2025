@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:learninglens_app/Api/moodle_api_singleton.dart';
+import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
+import 'package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart';
 import 'package:learninglens_app/Views/essay_generation.dart';
 import 'package:learninglens_app/Views/quiz_generator.dart';
 import 'package:learninglens_app/Views/view_quiz.dart';
@@ -173,7 +174,7 @@ class CarouselCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    List<Course>? theCourses = MoodleApiSingleton().moodleCourses;
+    List<Course>? theCourses = LmsFactory.getLmsService().courses;
     Course matchedCourse = theCourses!.firstWhere((element) => element.id == courseId);
     return Card(
       color: Theme.of(context).colorScheme.secondaryContainer,

@@ -1,4 +1,6 @@
-class SubmissionStatus {
+import 'package:learninglens_app/beans/learning_lens_interface.dart';
+
+class SubmissionStatus implements LearningLensInterface {
   final int assignmentId;
   final int userId;
   final String status;
@@ -17,8 +19,19 @@ class SubmissionStatus {
     required this.needsGrading,
   });
 
+  // Empty constructor
+  SubmissionStatus.empty()
+      : assignmentId = 0,
+        userId = 0,
+        status = 'unknown',
+        timeSubmitted = null,
+        timeGraded = null,
+        grade = null,
+        needsGrading = false;
+
   // Factory method to create a SubmissionStatus object from a JSON response
-  factory SubmissionStatus.fromJson(Map<String, dynamic> json) {
+  @override
+  SubmissionStatus fromMoodleJson(Map<String, dynamic> json) {
     return SubmissionStatus(
       assignmentId: json['assignid'] ?? 0,
       userId: json['userid'] ?? 0,
@@ -38,6 +51,12 @@ class SubmissionStatus {
           : null,
       needsGrading: json['lastattempt']['gradingstatus'] == 'notgraded',
     );
+  }
+
+  @override
+  SubmissionStatus fromGoogleJson(Map<String, dynamic> json) {
+    // TODO: Dinesh, try to map the Google JSON to the SubmissionStatus object
+    throw UnimplementedError();
   }
 
   // Convert the SubmissionStatus object back to JSON if necessary

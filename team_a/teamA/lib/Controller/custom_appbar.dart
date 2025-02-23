@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:learninglens_app/Api/moodle_api_singleton.dart';
+import 'package:learninglens_app/Api/lms/enum/lms_enum.dart';
 import 'package:learninglens_app/Views/dashboard.dart';
-import 'package:learninglens_app/Views/g_courses.dart';
 import 'package:learninglens_app/Views/g_dashboard.dart';
-import 'package:learninglens_app/Views/login_page.dart';
 import 'package:learninglens_app/Views/user_settings.dart';
+import 'package:learninglens_app/services/local_storage_service.dart';
 
 class ClassroomSelection {
-  static String selectedClassroom = 'Google Classroom';
+  static LmsType selectedClassroom = LocalStorageService.getSelectedClassroom() == LmsType.MOODLE ? LmsType.MOODLE : LmsType.GOOGLE;
 }
 
 class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
@@ -24,8 +23,7 @@ class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
 }
 
 class _CustomAppBarState extends State<CustomAppBar> {
-  String _selectedClassroom = 'Google Classroom'; // Default selection
-
+  
   @override
   Widget build(BuildContext context) {
     return AppBar(
@@ -61,22 +59,22 @@ class _CustomAppBarState extends State<CustomAppBar> {
         ],
       ),
       actions: <Widget>[
-        DropdownButton<String>(
-          //value: _selectedClassroom,
+        DropdownButton<LmsType>(
           value: ClassroomSelection.selectedClassroom,
-          onChanged: (String? newValue) {
-            if (newValue != null) {
-              setState(() {
-                _selectedClassroom = newValue;
-              });
-              navigateToSelectedDashboard(context);
-            }
-          },
-          items: <String>['Moodle Classroom', 'Google Classroom']
-              .map<DropdownMenuItem<String>>((String value) {
-            return DropdownMenuItem<String>(
+          onChanged: isDashboard(context)
+              ? (LmsType? newValue) {
+                  if (newValue != null) {
+                    setState(() {
+                      ClassroomSelection.selectedClassroom = newValue;
+                    });
+                    navigateToSelectedDashboard(context);
+                  }
+                }
+              : null, // Disable dropdown if not on dashboard
+          items: LmsType.values.map<DropdownMenuItem<LmsType>>((LmsType value) {
+            return DropdownMenuItem<LmsType>(
               value: value,
-              child: Text(value),
+              child: Text(value == LmsType.GOOGLE ? 'Google Classroom' : 'Moodle Classroom'),
             );
           }).toList(),
         ),
@@ -102,13 +100,10 @@ class _CustomAppBarState extends State<CustomAppBar> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                 ),
-                child: ClipOval(
-                  child: Image.network(
-                    widget.userprofileurl,
-                    height: 50,
-                    width: 50,
-                    fit: BoxFit.cover,
-                  ),
+                child: Icon(
+                  Icons.account_circle,
+                  size: 50,
+                  color: Colors.black,
                 ),
               ),
             ),
@@ -123,16 +118,22 @@ class _CustomAppBarState extends State<CustomAppBar> {
   }
 
   void navigateToSelectedDashboard(BuildContext context) {
-    if (_selectedClassroom == 'Google Classroom') {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => GoogleTeacherDashboard()),
-      );
+
+    // set local storage state
+    if(ClassroomSelection.selectedClassroom == LmsType.GOOGLE){
+      LocalStorageService.saveSelectedClassroom(LmsType.GOOGLE);
     } else {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => TeacherDashboard()),
-      );
+      LocalStorageService.saveSelectedClassroom(LmsType.MOODLE);
     }
+
+    // navigate the selected dashboard
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ClassroomSelection.selectedClassroom == LmsType.GOOGLE
+            ? GoogleTeacherDashboard()
+            : TeacherDashboard(),
+      ),
+    );
   }
 }

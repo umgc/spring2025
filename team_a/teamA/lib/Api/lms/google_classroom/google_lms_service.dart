@@ -1,0 +1,496 @@
+import 'dart:convert';
+import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'package:xml/xml.dart' as xml;
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:learninglens_app/Api/lms/lms_interface.dart';
+import 'package:learninglens_app/beans/course.dart';
+import 'package:learninglens_app/beans/quiz.dart';
+import 'package:learninglens_app/beans/assignment.dart';
+import 'package:learninglens_app/beans/participant.dart';
+import 'package:learninglens_app/beans/submission_status.dart';
+import 'package:learninglens_app/beans/grade.dart';
+import 'package:learninglens_app/beans/submission.dart';
+import 'package:learninglens_app/beans/submission_with_grade.dart';
+import 'package:learninglens_app/beans/moodle_rubric.dart';
+import 'package:learninglens_app/services/api_service.dart';
+import 'package:learninglens_app/services/local_storage_service.dart';
+import 'package:learninglens_app/Api/lms/google_classroom/google_classroom_api.dart'; // Import the updated API
+
+/// A Singleton class for Moodle API access implementing [LmsInterface].
+class GoogleLmsService extends LmsInterface {
+  // Needed??
+  final GoogleClassroomApi _classroomApi = GoogleClassroomApi();
+
+  // ****************************************************************************************
+  // Static / Singleton internals
+  // ****************************************************************************************
+
+  static final GoogleLmsService _instance = GoogleLmsService._internal();
+
+  /// The singleton accessor.
+  factory GoogleLmsService() => _instance;
+
+  /// Private named constructor.
+  GoogleLmsService._internal();
+
+  // ****************************************************************************************
+  // Fields implementing LmsInterface
+  // ****************************************************************************************
+
+  @override
+  String serverUrl = ''; // The Google REST endpoint
+
+  // The user token is kept private (not in the interface).
+  String? _userToken;
+
+  @override
+  String apiURL = ''; // Base URL for your Moodle instance, e.g. "https://yourmoodle.com"
+  @override
+  String? userName;
+  @override
+  String? firstName;
+  @override
+  String? lastName;
+  @override
+  String? siteName;
+  @override
+  String? fullName;
+  @override
+  String? profileImage;
+  @override
+  List<Course>? courses;
+
+  late GoogleSignIn _googleSignIn;
+
+  // ****************************************************************************************
+  // Auth / Login
+  // ****************************************************************************************
+
+  @override
+  Future<void> login(String username, String password, String baseURL) {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+  Future<void> loginOath(String clientID) async {
+    print('Logging in to Google Classroom...');
+
+    _googleSignIn = GoogleSignIn(
+      clientId: clientID,
+      scopes: <String>[
+        'email',
+        'profile',
+        'https://www.googleapis.com/auth/classroom.courses',
+        'https://www.googleapis.com/auth/classroom.rosters',
+        'https://www.googleapis.com/auth/classroom.coursework.students',
+        'https://www.googleapis.com/auth/classroom.coursework.me',
+        'https://www.googleapis.com/auth/classroom.courses.readonly',
+        'https://www.googleapis.com/auth/forms.body',
+        'https://www.googleapis.com/auth/forms.responses.readonly'
+      ],
+    );
+
+    try {
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) {
+        throw Exception("Google Sign-In was cancelled by the user.");
+      }
+      // Get the user's name
+      userName = googleUser.displayName;
+
+      firstName ??= userName;
+
+      print('Welcome, ${firstName ?? 'User'}');
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+      _userToken = googleAuth.accessToken;
+
+      if (_userToken == null) {
+        throw Exception("Failed to obtain access token.");
+      }
+
+      // LocalStorageService.saveGoogleAccessToken(_userToken);
+    } catch (error) {
+      print("Google Sign-In Error: $error");
+      throw Exception("Google Sign-In failed: $error");
+    }
+  }
+
+  @override
+  bool isLoggedIn() {
+    return _userToken != null;
+  }
+
+  String getGoogleAccessToken() {
+    return _userToken!;
+  }
+
+  @override
+  Future<bool> isUserTeacher(List<Course> moodleCourses) async {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+  @override
+  void logout() {
+    print('Logging out of Google...');
+    _googleSignIn.signOut();
+    resetLMSUserInfo();
+  }
+
+  @override
+  void resetLMSUserInfo() {
+    // Clear all user-related fields
+    _userToken = null;
+    apiURL = '';
+    userName = null;
+    firstName = null;
+    lastName = null;
+    siteName = null;
+    fullName = null;
+    profileImage = null;
+    courses = [];
+  }
+
+  // ****************************************************************************************
+  // Course-related methods
+  // ****************************************************************************************
+
+  @override
+  Future<List<Course>> getCourses() async {
+    if (_userToken == null) throw StateError('User not logged in to Google');
+
+    final response = await ApiService().httpGet(
+      Uri.parse('https://classroom.googleapis.com/v1/courses'),
+      headers: {'Authorization': 'Bearer $_userToken'},
+    );
+
+    print(response.body);
+
+    if (response.statusCode != 200) {
+      throw HttpException(response.body);
+    }
+
+    final listData = jsonDecode(response.body) as List<dynamic>;
+    return listData.map((i) => Course.empty().fromGoogleJson(i)).toList();
+
+
+    // if (response.statusCode == 200) {
+    //   setState(() => _courses = jsonDecode(response.body)['courses'] ?? []);
+    // } else {
+    //   print('Courses fetch error: ${response.statusCode}');
+    // }
+    // setState(() => _isLoading = false);
+  }
+
+  @override
+  Future<List<Course>> getUserCourses() async {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<Participant>> getCourseParticipants(String courseId) async {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+  // ****************************************************************************************
+  // Quiz methods
+  // ****************************************************************************************
+
+  @override
+  Future<void> importQuiz(String courseid, String quizXml) async {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<Quiz>> getQuizzes(int? courseID) async {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<int?> createQuiz(
+      String courseid,
+      String quizname,
+      String quizintro,
+      String sectionid,
+      String timeopen,
+      String timeclose) async {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<String> addRandomQuestions(
+      String categoryid, String quizid, String numquestions) async {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<int?> importQuizQuestions(String courseid, String quizXml) async {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+  // ****************************************************************************************
+  // Assignment methods
+  // ****************************************************************************************
+
+  @override
+  Future<List<Assignment>> getEssays(int? courseID) async {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Map<String, dynamic>?> createAssignment(
+    String courseid,
+    String sectionid,
+    String assignmentName,
+    String startdate,
+    String enddate,
+    String rubricJson,
+    String description,
+  ) async {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<int?> getContextId(int assignmentId, String courseId) async {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+  // ****************************************************************************************
+  // Submissions and grading
+  // ****************************************************************************************
+
+  @override
+  Future<List<Submission>> getAssignmentSubmissions(int assignmentId) async {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<SubmissionWithGrade>> getSubmissionsWithGrades(
+      int assignmentId) async {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<SubmissionStatus?> getSubmissionStatus(
+      int assignmentId, int userId) async {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<Grade>> getAssignmentGrades(int assignmentId) async {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<bool> setRubricGrades(int assignmentId, int userId, String jsonGrades) async {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<dynamic>> getRubricGrades(int assignmentId, int userid) async {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+  @override
+  Grade? findGradeForUser(List<Grade> grades, int userId) {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+  // ****************************************************************************************
+  // Rubric retrieval
+  // ****************************************************************************************
+
+  @override
+  Future<MoodleRubric?> getRubric(String assignmentid) async {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+
+
+
+
+
+
+// -----------------------------------------------------------------------
+// Parses XML quiz data and creates/assigns the quiz
+// -----------------------------------------------------------------------
+  Future<bool> createAndAssignQuizFromXml(
+    String courseId,
+    String quizName,
+    String quizDescription,
+    String quizAsXml, // The XML string
+    String dueDate, // Format: YYYY-MM-DD-HH-MM
+  ) async {
+    try {
+      // 1. Parse the XML
+      final document = xml.XmlDocument.parse(quizAsXml);
+      final questions = document.findAllElements('question').toList();
+
+      // 2. Create the Google Form
+      Map<String, dynamic>? formResponse =
+          await _classroomApi.createForm(quizName);
+      if (formResponse == null) {
+        print('Error: Failed to create Google Form.');
+        return false;
+      }
+
+      final String formId = formResponse['formId'];
+      final String responderUri = formResponse['responderUri'];
+
+      // 3. Prepare the batch request for settings updates and question addition
+      List<Map<String, dynamic>> requests = [];
+
+      // Add request to update the form settings
+      requests.add({
+        'updateSettings': {
+          'settings': {
+            'emailCollectionType': 'DO_NOT_COLLECT',
+            'quizSettings': {'isQuiz': true}
+          },
+          'updateMask': 'email_collection_type,quiz_settings',
+        }
+      });
+
+      // 4. Add requests for adding questions to the form
+      for (var questionElement in questions) {
+        String questionType = questionElement.getAttribute('type') ?? 'unknown';
+        String questionText = questionElement
+                .getElement('questiontext')
+                ?.getElement('text')
+                ?.text ??
+            '';
+
+        // skip category questions
+        if (questionType == 'category') {
+          print(
+              'Warning: Unsupported question type: $questionType. Skipping question.');
+          continue; // Skip to the next question
+        }
+
+        switch (questionType) {
+          case 'multichoice':
+            List<String> options = [];
+            var answerElements =
+                questionElement.findAllElements('answer').toList();
+            for (var answerElement in answerElements) {
+              options.add(answerElement.getElement('text')?.text ?? '');
+            }
+            requests.add(
+                _createMultipleChoiceQuestionRequest(questionText, options));
+            break;
+          case 'truefalse':
+            requests.add(_createTrueFalseQuestionRequest(questionText));
+            break;
+          case 'shortanswer':
+            requests.add(_createShortAnswerQuestionRequest(questionText));
+            break;
+          default:
+            print('Warning: Unsupported question type: $questionType');
+        }
+      }
+
+      // 5. Send the batch update request
+      Map<String, dynamic>? batchResponse =
+          await _classroomApi.batchUpdateForm(formId, requests);
+      if (batchResponse == null) {
+        print('Error: Failed to update Google Form.');
+        return false;
+      }
+
+      // 6. Create the Classroom assignment and link the form
+      String? assignmentId = await _classroomApi.createAssignment(
+        courseId,
+        quizName,
+        quizDescription,
+        responderUri, // Pass the responderUri
+        dueDate,
+      );
+
+      if (assignmentId == null) {
+        print('Error: Failed to create Classroom assignment.');
+        return false;
+      }
+
+      print(
+          'Quiz created and assigned successfully! Assignment ID: $assignmentId');
+      return true;
+    } catch (e) {
+      print('Error during quiz creation and assignment: $e');
+      return false;
+    }
+  }
+
+  // Helper function to create a multiple choice question request
+  Map<String, dynamic> _createMultipleChoiceQuestionRequest(
+      String questionText, List<String> options) {
+    List<Map<String, dynamic>> choices = [];
+    for (String option in options) {
+      choices.add({
+        'value': option,
+      });
+    }
+
+    return {
+      'createItem': {
+        'item': {
+          'title': questionText,
+          'questionItem': {
+            'question': {
+              'required': true,
+              'choiceQuestion': {
+                'type': 'RADIO',
+                'options': choices,
+              }
+            }
+          }
+        },
+        'location': {'index': 0}
+      }
+    };
+  }
+
+  // Helper function to create a true/false question request
+  Map<String, dynamic> _createTrueFalseQuestionRequest(String questionText) {
+    return _createMultipleChoiceQuestionRequest(
+        questionText, ["True", "False"]);
+  }
+
+  // Helper function to create a short answer question request
+  Map<String, dynamic> _createShortAnswerQuestionRequest(String questionText) {
+    return {
+      'createItem': {
+        'item': {
+          'title': questionText,
+          'questionItem': {
+            'question': {
+              'required': true,
+              'textQuestion': {},
+            }
+          }
+        },
+        'location': {'index': 0}
+      }
+    };
+  }
+}
