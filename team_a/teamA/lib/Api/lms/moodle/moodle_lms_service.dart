@@ -828,44 +828,45 @@ class MoodleLmsService implements LmsInterface {
   // Submit lesson plan instance in a course.
   // ********************************************************************************************************************
   Future<bool> sendLessonPlanData(Map<String, dynamic> lessonPlanData) async {
-    try {
-      final response = await ApiService().httpPost(
-        Uri.parse(apiURL + serverUrl),
-        body: {
-          'wstoken': _userToken,
-          'wsfunction': 'mod_lesson_create_lessons', // Correct function name
-          'moodlewsrestformat': 'json',
-          'lessons': jsonEncode([
-            {
-              'courseid': lessonPlanData['courseId'], // Course ID
-              'name': lessonPlanData['lessonPlanName'], // Lesson Name
-              'intro': lessonPlanData['content'], // Lesson Description
-              'introformat': 1, // 1 for HTML format
-            }
-          ]),
-        },
-      );
+  try {
+    print(lessonPlanData);
+    print(lessonPlanData['courseid']);
+    print(lessonPlanData['lessonPlanName']);
+    print(lessonPlanData['content']);
+    final response = await ApiService().httpPost(
+      Uri.parse(apiURL + serverUrl),
+      body: {
+        'wstoken': _userToken,
+        'wsfunction': 'local_learninglens_create_lesson_plan',
+        'moodlewsrestformat': 'json',
+        'courseid': lessonPlanData['courseId'],  // Pass courseId directly
+        'lessonPlanName': lessonPlanData['lessonPlanName'],  // Pass lessonPlanName directly
+        'content': lessonPlanData['content'],  // Pass content directly
+      },
+    );
 
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> responseData = json.decode(response.body);
-        print('Response: $responseData');
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> responseData = json.decode(response.body);
+      print('Response: $responseData');
 
-        // If the lesson plan submission was successful, create the Moodle Lesson
-        if (responseData.containsKey('success') && responseData['success']) {
-          return await createLesson(
-            courseId: lessonPlanData['courseid'],
-            name: lessonPlanData['name'],
-          );
-        }
-      } else {
-        print('Request failed with status: ${response.statusCode}.');
+      // If the lesson plan submission was successful, create the Moodle Lesson
+      if (responseData.containsKey('lessonPlanId')) {
+        return await createLesson(
+          courseId: lessonPlanData['courseid'],
+          name: lessonPlanData['lessonPlanName'],
+        );
       }
-    } catch (e) {
-      print('Error occurred while submitting lesson plan: $e');
+    } else {
+      print('Request failed with status: ${response.statusCode}.');
     }
-    return false;
+  } catch (e) {
+    print('Error occurred while submitting lesson plan: $e');
   }
+  return false;
+}
 
+
+  // Method to create the lesson in Moodle
   Future<bool> createLesson({
     required int courseId,
     required String name,
@@ -904,4 +905,6 @@ class MoodleLmsService implements LmsInterface {
     print("Lesson created successfully: ${jsonResponse}");
     return true;
   }
+
 }
+

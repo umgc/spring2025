@@ -44,7 +44,7 @@ class ApiService {
         encoding: encoding,
       );
       stopwatch.stop();
-
+      print(response.body);
       _handleResponse(response, method: 'POST', duration: stopwatch.elapsed);
       return response;
     } catch (e, stackTrace) {
@@ -56,6 +56,7 @@ class ApiService {
       );
       rethrow;
     }
+    
   }
 
   /// Sends an HTTP GET request to the specified [url].

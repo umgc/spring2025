@@ -1,8 +1,9 @@
 import "package:flutter/material.dart";
 import "package:learninglens_app/Api/lms/factory/lms_factory.dart";
-import "package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart";
 import "package:learninglens_app/Controller/custom_appbar.dart";
+import "package:learninglens_app/beans/course.dart";
 import "package:learninglens_app/beans/lesson_plan.dart";
+
 
 ///
 /// Template for views
@@ -33,7 +34,7 @@ class LessonPlans extends StatefulWidget{
 }
 
 class _LessonPlanState extends State{
-  List<dynamic> courses = []; // To store the courses list
+  List<Course>? courses = []; // To store the courses list
   String? selectedCourse; // To track the selected course
 
   final TextEditingController lessonPlanNameController = TextEditingController();
@@ -55,12 +56,11 @@ class _LessonPlanState extends State{
 
   Future<void> _loadCourses() async {
     // Fetch courses from the API
-    var userCourses = await LmsFactory.getLmsService().getUserCourses();
+    var userCourses = await LmsFactory.getLmsService().courses;
     setState(() {
       courses = userCourses;
     });
   }
-
 
   @override
   Widget build(BuildContext context){
@@ -95,12 +95,12 @@ class _LessonPlanState extends State{
                     // Course Combo Box
                     DropdownButtonFormField<String>(
                       value: selectedCourse,
-                      items: courses.map<DropdownMenuItem<String>>((course) {
+                      items: courses?.map<DropdownMenuItem<String>>((course) {
                         return DropdownMenuItem<String>(
                           value: course.id.toString(), // Use 'id' for selection value
                           child: Text(course.fullName), // Use 'fullName' for display text
                         );
-                      }).toList(),
+                      }).toList() ?? [], // If courses is null, return an empty list
                       onChanged: (value) {
                         setState(() {
                           selectedCourse = value;
@@ -147,13 +147,14 @@ class _LessonPlanState extends State{
                         // Submit logic here
                         if(selectedCourse != null) {
                           LessonPlan newLp = LessonPlan(
-                          lessonPlanName: lessonPlanNameController.text,
-                          courseId: selectedCourse!,
-                          manualEntry: manualEntryController.text,
-                          //filePath: null
+                            lessonPlanName: lessonPlanNameController.text,
+                            courseId: selectedCourse!,
+                            manualEntry: manualEntryController.text,
+                            //filePath: null
                           );
 
                           newLp.saveLessonPlanLocally();
+                          
                           bool success = await newLp.submitLessonPlan();
                           if(success){
                             print('lesson plan sent successfully');
