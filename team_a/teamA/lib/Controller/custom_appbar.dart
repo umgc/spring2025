@@ -100,13 +100,10 @@ class _CustomAppBarState extends State<CustomAppBar> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                 ),
-                child: ClipOval(
-                  child: Image.network(
-                    widget.userprofileurl,
-                    height: 50,
-                    width: 50,
-                    fit: BoxFit.cover,
-                  ),
+                child: Icon(
+                  Icons.account_circle,
+                  size: 50,
+                  color: Colors.black,
                 ),
               ),
             ),

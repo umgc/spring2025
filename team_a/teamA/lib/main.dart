@@ -46,10 +46,12 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final loginNotifier = Provider.of<LoginNotifier>(context);
+
     // used to determine which dashboard to show based on the local storage system
     var selectedClassroom = LocalStorageService.getSelectedClassroom();
     var home = selectedClassroom == LmsType.MOODLE ? TeacherDashboard() : GoogleTeacherDashboard(); 
-
+    
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: "Learning Lens",
