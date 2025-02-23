@@ -34,6 +34,7 @@ class MoodleApiSingleton {
   String? moodleFullName;
   String? moodleProfileImage;
   List<Course>? moodleCourses;
+  List<Participant>? participants;
 
   // Singleton accessor.
   factory MoodleApiSingleton() {
@@ -269,6 +270,7 @@ class MoodleApiSingleton {
     } else {
       throw StateError('Unexpected response format');
     }
+    print(participants);
     return participants;
   }
 
@@ -305,7 +307,6 @@ class MoodleApiSingleton {
     }
     //obtain the contents of each course
     for (Course course in courses) {
-      getUserByCourse(course.id);
       course.quizzes = await getQuizzes(course.id);
       course.essays = await getEssays(course.id);
     }
@@ -315,7 +316,7 @@ class MoodleApiSingleton {
   /**
    * get User for a course by course ID
    */
-  Future<List<User>> getUserByCourse(int courseID) async {
+  /**Future<List<User>> getUserByCourse(int courseID) async {
     if (_userToken == null) throw StateError('User not logged in to Moodle');
 
     // Construct URL with query parameters for GET request
@@ -344,7 +345,7 @@ class MoodleApiSingleton {
       throw StateError(
           'Invalid JSON response from getUserByCourse: ${response.body}');
     }
-  }
+  }*/
 
   Future<SubmissionStatus?> getSubmissionStatus(
       int assignmentId, int userId) async {

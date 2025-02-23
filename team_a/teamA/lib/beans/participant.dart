@@ -34,4 +34,8 @@ class Participant {
       roles: rolesList,
     );
   }
+  @override
+  String toString(){
+    return "$fullname";
+  }
 }
