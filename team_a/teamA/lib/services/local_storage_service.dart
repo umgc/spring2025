@@ -194,4 +194,8 @@ class LocalStorageService {
   static void clearSelectedClassroom() {
     _prefs.remove('selectedClassroom');
   }
+
+  static hasLLMKey() {
+    return getOpenAIKey().isNotEmpty && getClaudeKey().isNotEmpty && getPerplexityKey().isNotEmpty;
+  }
 }

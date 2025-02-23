@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
-import 'package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/Views/analytics_page.dart';
 import 'package:learninglens_app/Views/assessments_view.dart';
@@ -9,6 +8,7 @@ import 'package:learninglens_app/Views/essays_view.dart';
 import 'package:learninglens_app/Views/iep_page.dart';
 import 'package:learninglens_app/Views/lesson_plans.dart';
 import 'package:learninglens_app/notifiers/login_notifier.dart';
+import 'package:learninglens_app/services/local_storage_service.dart';
 import 'package:provider/provider.dart';
 
 class TeacherDashboard extends StatelessWidget {
@@ -70,9 +70,8 @@ class TeacherDashboard extends StatelessWidget {
 
   /// Checks if user is logged in and has an LLM key
   bool canUserAccessApp(BuildContext context) {
-    final loginNotifier = Provider.of<LoginNotifier>(context, listen: true);
-    bool isLoggedIn = loginNotifier.isLoggedIn;
-    bool hasLLMKey = loginNotifier.hasLLMKey;
+    bool isLoggedIn = LocalStorageService.isLoggedIntoMoodle();
+    bool hasLLMKey = LocalStorageService.hasLLMKey();
     return isLoggedIn && hasLLMKey;
   }
 
