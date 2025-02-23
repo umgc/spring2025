@@ -7,9 +7,7 @@ import 'package:learninglens_app/Views/course_list.dart';
 import 'package:learninglens_app/Views/essays_view.dart';
 import 'package:learninglens_app/Views/iep_page.dart';
 import 'package:learninglens_app/Views/lesson_plans.dart';
-import 'package:learninglens_app/notifiers/login_notifier.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
-import 'package:provider/provider.dart';
 
 class TeacherDashboard extends StatelessWidget {
   const TeacherDashboard({super.key});

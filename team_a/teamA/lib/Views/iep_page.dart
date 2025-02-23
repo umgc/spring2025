@@ -391,13 +391,13 @@ class _IepPageState extends State{
 //loads courses for drop down menu.
 List<Course>? getAllCourses() {
   List<Course>? result;
-  result = MoodleApiSingleton().moodleCourses;
+  result = MoodleLmsService().courses;
   return result;
 }
 
 Future<List<Participant>>? getAllParticipants() async {
   List<Participant>? participants;
-  participants = await MoodleApiSingleton().getCourseParticipants('4');
+  participants = await MoodleLmsService().getCourseParticipants('4');
   print(participants);
   return participants;
 }

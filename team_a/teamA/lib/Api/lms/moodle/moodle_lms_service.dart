@@ -815,4 +815,85 @@ class MoodleLmsService implements LmsInterface {
     print('Rubric JSON Response: $responseData');
     return MoodleRubric.empty().fromMoodleJson(responseData.first);
   }
+
+  // ********************************************************************************************************************
+  // Submit lesson plan instance in a course.
+  // ********************************************************************************************************************
+  Future<bool> sendLessonPlanData(Map<String, dynamic> lessonPlanData) async {
+    try {
+      final response = await ApiService().httpPost(
+        Uri.parse(apiURL + serverUrl),
+        body: {
+          'wstoken': _userToken,
+          'wsfunction': 'mod_lesson_create_lessons', // Correct function name
+          'moodlewsrestformat': 'json',
+          'lessons': jsonEncode([
+            {
+              'courseid': lessonPlanData['courseId'], // Course ID
+              'name': lessonPlanData['lessonPlanName'], // Lesson Name
+              'intro': lessonPlanData['content'], // Lesson Description
+              'introformat': 1, // 1 for HTML format
+            }
+          ]),
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = json.decode(response.body);
+        print('Response: $responseData');
+
+        // If the lesson plan submission was successful, create the Moodle Lesson
+        if (responseData.containsKey('success') && responseData['success']) {
+          return await createLesson(
+            courseId: lessonPlanData['courseid'],
+            name: lessonPlanData['name'],
+          );
+        }
+      } else {
+        print('Request failed with status: ${response.statusCode}.');
+      }
+    } catch (e) {
+      print('Error occurred while submitting lesson plan: $e');
+    }
+    return false;
+  }
+
+  Future<bool> createLesson({
+    required int courseId,
+    required String name,
+    String intro = "This is an automatically created lesson.",
+    int available = 1,
+    int deadline = 0,
+    int timelimit = 0,
+    int retake = 1,
+    int maxAttempts = 3,
+  }) async {
+    final response = await ApiService().httpPost(
+      Uri.parse(apiURL + serverUrl),
+      body: {
+        "wstoken": _userToken,
+        "wsfunction": "mod_lesson_add_lesson",
+        "moodlewsrestformat": "json",
+        "courseid": courseId.toString(),
+        "name": name,
+        "intro": intro,
+        "introformat": "1",
+        "available": available.toString(),
+        "deadline": deadline.toString(),
+        "timelimit": timelimit.toString(),
+        "retake": retake.toString(),
+        "maxattempts": maxAttempts.toString(),
+      },
+    );
+
+    final Map<String, dynamic> jsonResponse = json.decode(response.body);
+
+    if (jsonResponse.containsKey("exception")) {
+      print("Error creating lesson: ${jsonResponse['message']}");
+      return false;
+    }
+
+    print("Lesson created successfully: ${jsonResponse}");
+    return true;
+  }
 }

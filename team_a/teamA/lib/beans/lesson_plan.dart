@@ -1,4 +1,4 @@
-import 'package:learninglens_app/Api/moodle_api_singleton.dart';
+import 'package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
@@ -47,9 +47,9 @@ class LessonPlan {
 
   Future<bool> submitLessonPlan() async {
     final lessonPlanJson = this.toJson();
-    bool success= await MoodleApiSingleton().sendLessonPlanData(lessonPlanJson);
+    bool success= await MoodleLmsService().sendLessonPlanData(lessonPlanJson);
     if (success) {
-      return await MoodleApiSingleton().createLesson(
+      return await MoodleLmsService().createLesson(
         courseId: int.parse(courseId), // Convert courseId to int
         name: lessonPlanName,
       );
