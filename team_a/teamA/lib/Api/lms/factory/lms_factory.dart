@@ -16,7 +16,7 @@ class LmsFactory {
       case LmsType.MOODLE:
         return getLmsServiceMoodle();
       case LmsType.GOOGLE:
-        // return getLmsServiceGoogle();
+        return getLmsServiceGoogle();
       default:
         print('LMS type not found, defaulting to Moodle');
         return getLmsServiceMoodle();

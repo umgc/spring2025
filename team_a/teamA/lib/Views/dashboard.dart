@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:learninglens_app/Api/lms/enum/lms_enum.dart';
 import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/Views/analytics_page.dart';
@@ -73,6 +74,10 @@ class TeacherDashboard extends StatelessWidget {
     return isLoggedIn && hasLLMKey;
   }
 
+  String getClassroom() {
+    return LocalStorageService.getSelectedClassroom() == LmsType.MOODLE ? 'Moodle' : 'Google';
+  }
+
   // ---------- DESKTOP LAYOUT ----------
   Widget _buildDesktopLayout(BuildContext context, BoxConstraints constraints) {
     final double screenWidth = constraints.maxWidth;
@@ -107,7 +112,7 @@ class TeacherDashboard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Teacher Moodle Dashboard',
+              'Teacher ${getClassroom()} Dashboard',
               style: TextStyle(
                 fontSize: titleFontSize,
                 fontWeight: FontWeight.normal,
@@ -128,7 +133,7 @@ class TeacherDashboard extends StatelessWidget {
           ],
         ),
       ),
-    );
+    ); 
   }
 
   // ---------- MOBILE LAYOUT ----------

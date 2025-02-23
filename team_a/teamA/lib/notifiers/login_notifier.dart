@@ -148,9 +148,6 @@ class LoginNotifier with ChangeNotifier {
         LocalStorageService.saveGoogleLoginState(_isLoggedIn);
         LocalStorageService.saveGoogleAccessToken(
                   LmsFactory.getLmsServiceGoogle().getGoogleAccessToken());
-        
-        // testing getCourses method
-        LmsFactory.getLmsServiceGoogle().getCourses();
 
         // check the hasLLMKey state
         notifyListeners(); // Notify listeners (widgets) about the login

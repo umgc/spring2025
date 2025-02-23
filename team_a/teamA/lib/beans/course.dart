@@ -49,8 +49,14 @@ class Course implements LearningLensInterface {
 
   @override
   Course fromGoogleJson(Map<String, dynamic> json) {
-    // TODO: Dinesh, try to map the Google JSON to the Course object
-    throw UnimplementedError();
+    return Course(
+      json['id'],
+      json['name'],
+      json['section'],
+      json['name'],
+      DateTime.fromMillisecondsSinceEpoch(json['creationTime'] * 1000),
+      DateTime.fromMillisecondsSinceEpoch(json['updateTime'] * 1000),
+    );
   }
 
   @override
