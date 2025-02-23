@@ -289,7 +289,6 @@ class MoodleApiSingleton {
     if (response.statusCode != 200) {
       throw HttpException(response.body);
     }
-
     var decodedJson = jsonDecode(response.body);
     // Check if the response is a list or a map containing a list
     List<Course> courses;
@@ -305,10 +304,27 @@ class MoodleApiSingleton {
     }
     //obtain the contents of each course
     for (Course course in courses) {
+      getUserByCourse(course.id);
       course.quizzes = await getQuizzes(course.id);
       course.essays = await getEssays(course.id);
     }
     return courses;
+  }
+Future<void> getUserByCourse(int courseID) async {
+    if (_userToken == null) throw StateError('User not logged in to Moodle');
+    // var moodleURL = MoodleApiSingleton().moodleURL;
+    final response =
+        await ApiService().httpPost(Uri.parse(moodleURL + serverUrl), body: {
+      'wstoken': _userToken,
+      'wsfunction':
+          'core_enrol_get_enrolled_users',
+      'moodlewsrestformat': 'json',
+      'courseid': courseID,
+    });
+    if (response.statusCode != 200) {
+      throw HttpException(response.body);
+    }
+    print(response.body);
   }
 
   Future<SubmissionStatus?> getSubmissionStatus(

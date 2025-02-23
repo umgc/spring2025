@@ -360,9 +360,9 @@ class _IepPageState extends State{
   }
 }
 
+//loads courses for drop down menu.
 List<Course>? getAllCourses() {
   List<Course>? result;
   result = MoodleApiSingleton().moodleCourses;
-  print(result);
   return result;
 }
