@@ -1,21 +1,32 @@
 import 'package:learninglens_app/Api/lms/enum/lms_enum.dart';
 import 'package:learninglens_app/Api/lms/lms_interface.dart';
 import 'package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart';
+import 'package:learninglens_app/Api/lms/google_classroom/google_lms_service.dart';
 
 class LmsFactory {
+
+  static MoodleLmsService _lmsServiceMoodle = MoodleLmsService();
+  static GoogleLmsService _lmsServiceGoogle = GoogleLmsService();
+
   static LmsInterface getLmsService() {
-    // TODO: use local storage to determine which LMS to use (Moodle, Google Classroom, etc.)
     LmsType lmsType = LmsType.MOODLE;
 
     switch (lmsType) {
       case LmsType.MOODLE:
-        return MoodleLmsService();
+        return getLmsServiceMoodle();
       case LmsType.GOOGLE:
-        // return GoogleClassroomLmsService();
-        throw Exception('Make GoogleClassroomLmsService impelement the LmsInterface');
+        return getLmsServiceGoogle();
       default:
         print('LMS type not found, defaulting to Moodle');
-        return MoodleLmsService();
+        return getLmsServiceMoodle();
     }
+  }
+
+  static MoodleLmsService getLmsServiceMoodle() {
+    return _lmsServiceMoodle;
+  }
+
+  static GoogleLmsService getLmsServiceGoogle() {
+    return _lmsServiceGoogle;
   }
 }
