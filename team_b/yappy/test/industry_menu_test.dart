@@ -34,9 +34,9 @@ void main() {
 
     // Tap the transcript history button.
     await tester.tap(find.byIcon(Icons.file_copy));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     // Verify that the transcripts are displayed.
-    expect(find.byIcon(Icons.description), findsNWidgets(2));
+    expect(find.byType(ListTile), findsNWidgets(2));
   });
 }
