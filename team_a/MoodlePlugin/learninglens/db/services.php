@@ -3,94 +3,94 @@ namespace learninglens\db;
 
 $functions = [
     'local_learninglens_create_quiz' => [
-        'classname'   => 'local_learninglens\external\create_quiz',
+        'classname' => 'local_learninglens\external\create_quiz',
         'description' => 'Create a quiz in a specified course',
-        'type'        => 'write',
-        'ajax'        => true,
-        'capabilities'=> 'mod/quiz:addinstance',
-        'services'     => [
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'mod/quiz:addinstance',
+        'services' => [
             MOODLE_OFFICIAL_MOBILE_SERVICE,
         ]
     ],
 
-     'local_learninglens_import_questions' => [
-        'classname'   => 'local_learninglens\external\import_questions',
+    'local_learninglens_import_questions' => [
+        'classname' => 'local_learninglens\external\import_questions',
         'description' => 'Import XML questions to a course question bank',
-        'type'        => 'write',
-        'ajax'        => true,
-        'capabilities'=> 'moodle/question:add',
-        'services'     => [
-            MOODLE_OFFICIAL_MOBILE_SERVICE,
-            ]
-        ],
-        'local_learninglens_add_type_randoms_to_quiz' => [
-        'classname'   => 'local_learninglens\external\add_type_randoms_to_quiz',
-        'description' => 'Add questions of type random to quiz from category',
-        'type'        => 'write',
-        'ajax'        => true,
-        'capabilities'=> 'mod/quiz:manage',
-        'services'     => [
-            MOODLE_OFFICIAL_MOBILE_SERVICE,
-            ]
-        ],
-        'local_learninglens_get_rubric' => [
-        'classname'   => 'local_learninglens\external\get_rubric',
-        'description' => 'Returns instances of grading forms including rubrics.',
-        'type'        => 'read',
-        'ajax'        => true,
-        'capabilities'=> 'moodle/grade:view',
-        'services'    => [
-            MOODLE_OFFICIAL_MOBILE_SERVICE,
-            ]
-        ],
-        'local_learninglens_create_assignment' => [
-        'classname'   => 'local_learninglens\external\create_assignment',
-        'description' => 'Creates an assignment and optionally attach a rubric.',
-        'type'        => 'write',
-        'ajax'        => true,
-        'capabilities'=> 'moodle/course:manageactivities',
-        'services'    => [
-            MOODLE_OFFICIAL_MOBILE_SERVICE,
-            ]
-        ],   
-        'local_learninglens_get_rubric_grades' => [
-        'classname'   => 'local_learninglens\external\get_rubric_grades',
-        'description' => 'Gets rubric grades for a specific submission.',
-        'type'        => 'read',
-        'ajax'        => true,
-        'capabilities'=> 'mod/assign:grade',
-        'services'    => [
-            MOODLE_OFFICIAL_MOBILE_SERVICE,
-            ]
-        ],   
-        'local_learninglens_write_rubric_grades' => [
-        'classname'   => 'local_learninglens\external\write_rubric_grades',
-        'description' => 'Sets rubric grades for a specific submission.',
-        'type'        => 'write',
-        'ajax'        => true,
-        'capabilities'=> 'mod/assign:grade',
-        'services'    => [
-            MOODLE_OFFICIAL_MOBILE_SERVICE,
-            ]
-        ],    
-        'local_learninglens_write_grades' => [
-        'classname'   => 'local_learninglens\external\write_grades',
-        'description' => 'Sets grades for a specific submission.',
-        'type'        => 'write',
-        'ajax'        => true,
-        'capabilities'=> 'mod/assign:grade',
-        'services'    => [
-            MOODLE_OFFICIAL_MOBILE_SERVICE,
-            ]
-    ],
-    'local_learninglens_create_lesson_plan' => [
-        'classname'   => 'local_learninglens\external\create_lesson_plan',
-        'description' => 'Create a lesson plan in a specified course',
-        'type'        => 'write',
-        'ajax'        => true,
-        'capabilities'=> 'mod/lesson:addinstance',
-        'services'     => [
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'moodle/question:add',
+        'services' => [
             MOODLE_OFFICIAL_MOBILE_SERVICE,
         ]
-    ],  
+    ],
+    'local_learninglens_add_type_randoms_to_quiz' => [
+        'classname' => 'local_learninglens\external\add_type_randoms_to_quiz',
+        'description' => 'Add questions of type random to quiz from category',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'mod/quiz:manage',
+        'services' => [
+            MOODLE_OFFICIAL_MOBILE_SERVICE,
+        ]
+    ],
+    'local_learninglens_get_rubric' => [
+        'classname' => 'local_learninglens\external\get_rubric',
+        'description' => 'Returns instances of grading forms including rubrics.',
+        'type' => 'read',
+        'ajax' => true,
+        'capabilities' => 'moodle/grade:view',
+        'services' => [
+            MOODLE_OFFICIAL_MOBILE_SERVICE,
+        ]
+    ],
+    'local_learninglens_create_assignment' => [
+        'classname' => 'local_learninglens\external\create_assignment',
+        'description' => 'Creates an assignment and optionally attach a rubric.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'moodle/course:manageactivities',
+        'services' => [
+            MOODLE_OFFICIAL_MOBILE_SERVICE,
+        ]
+    ],
+    'local_learninglens_get_rubric_grades' => [
+        'classname' => 'local_learninglens\external\get_rubric_grades',
+        'description' => 'Gets rubric grades for a specific submission.',
+        'type' => 'read',
+        'ajax' => true,
+        'capabilities' => 'mod/assign:grade',
+        'services' => [
+            MOODLE_OFFICIAL_MOBILE_SERVICE,
+        ]
+    ],
+    'local_learninglens_write_rubric_grades' => [
+        'classname' => 'local_learninglens\external\write_rubric_grades',
+        'description' => 'Sets rubric grades for a specific submission.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'mod/assign:grade',
+        'services' => [
+            MOODLE_OFFICIAL_MOBILE_SERVICE,
+        ]
+    ],
+    'local_learninglens_write_grades' => [
+        'classname' => 'local_learninglens\external\write_grades',
+        'description' => 'Sets grades for a specific submission.',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'mod/assign:grade',
+        'services' => [
+            MOODLE_OFFICIAL_MOBILE_SERVICE,
+        ]
+    ],
+    'local_learninglens_create_lesson' => [
+        'classname' => 'local_learninglens\external\create_lesson',
+        'description' => 'Creates a new lesson in a Moodle course and links it to the course modules',
+        'type' => 'write',
+        'ajax' => true,
+        'capabilities' => 'mod/lesson:addinstance',
+        'services' => [
+            MOODLE_OFFICIAL_MOBILE_SERVICEm
+        ]
+    ],
 ];

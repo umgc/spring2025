@@ -3,25 +3,23 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
 class LessonPlan {
+  final int courseId;
   final String lessonPlanName;
-  final String courseId;
-  final String? manualEntry;
-  //final String? filePath;
+  final String? content; // Content is now explicitly the lesson description
 
-  LessonPlan({required this.lessonPlanName, required this.courseId, this.manualEntry 
-  //,this.filePath
-  });
+  LessonPlan(
+      {required this.lessonPlanName, required this.courseId, this.content});
 
+  /// Convert lesson plan to JSON for storage or API submission
   Map<String, dynamic> toJson() {
     return {
       'lessonPlanName': lessonPlanName,
       'courseId': courseId,
-      'content': manualEntry,
-      //'filePath': filePath,
+      'content': content, // Pass content as lesson description
     };
   }
 
-  //pretty sure this works
+  /// Save lesson plan locally using SharedPreferences
   Future<void> saveLessonPlanLocally() async {
     final prefs = await SharedPreferences.getInstance();
     final List<String> savedPlans = prefs.getStringList('lessonPlans') ?? [];
@@ -29,7 +27,7 @@ class LessonPlan {
     await prefs.setStringList('lessonPlans', savedPlans);
   }
 
-  //unsure about this logic
+  /// Load lesson plans from SharedPreferences
   static Future<List<LessonPlan>> loadLessonPlans() async {
     final prefs = await SharedPreferences.getInstance();
     final List<String> savedPlans = prefs.getStringList('lessonPlans') ?? [];
@@ -39,23 +37,22 @@ class LessonPlan {
       return LessonPlan(
         lessonPlanName: planJson['lessonPlanName'],
         courseId: planJson['courseId'],
-        manualEntry: planJson['content'],
-        //filePath: planJson['filePath'],
+        content: planJson['content'],
       );
     }).toList();
   }
 
+  /// Submit lesson plan and automatically create a Moodle lesson
   Future<bool> submitLessonPlan() async {
     final lessonPlanJson = this.toJson();
-    bool success= await MoodleLmsService().sendLessonPlanData(lessonPlanJson);
-    if (success) {
-      return await MoodleLmsService().createLesson(
-        courseId: int.parse(courseId), // Convert courseId to int
-        name: lessonPlanName,
-      );
-    }
-    return false;
-
+    print("Submitting lesson plan with data: $lessonPlanJson");
+    var courseId = lessonPlanJson['courseId'];
+    var lessonPlanName = lessonPlanJson['lessonPlanName'];
+    var content = lessonPlanJson['content'];
+    return await MoodleLmsService().createLesson(
+      courseId: courseId, // Pass courseId as a string
+      lessonPlanName: lessonPlanName,
+      content: content ?? "No description provided",
+    );
   }
-
 }
