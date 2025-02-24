@@ -395,6 +395,7 @@ List<Course>? getAllCourses() {
   return result;
 }
 
+//loads participants for the drop down menu
 Future<List<Participant>>? getAllParticipants() async {
   List<Participant>? participants;
   participants = await MoodleLmsService().getCourseParticipants('4');
