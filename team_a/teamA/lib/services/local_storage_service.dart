@@ -133,7 +133,7 @@ class LocalStorageService {
 
   /// Retrieves Claude API key from storage or dotenv.
   static String getClaudeKey() {
-    return _prefs.getString('claudeKey') ?? dotenv.env['claudeApiKey'] ?? '';
+    return _prefs.getString('claudeKey') ?? dotenv.env['claude_ApiKey'] ?? '';
   }
 
   /// Clears Claude API key.
