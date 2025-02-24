@@ -50,7 +50,7 @@ class MyApp extends StatelessWidget {
 
     // used to determine which dashboard to show based on the local storage system
     var selectedClassroom = LocalStorageService.getSelectedClassroom();
-    var home = selectedClassroom == LmsType.MOODLE ? TeacherDashboard() : GoogleTeacherDashboard(); 
+    var home = selectedClassroom == LmsType.MOODLE ? TeacherDashboard() : TeacherDashboard(); //GoogleTeacherDashboard(); 
     
     return MaterialApp(
       debugShowCheckedModeBanner: false,

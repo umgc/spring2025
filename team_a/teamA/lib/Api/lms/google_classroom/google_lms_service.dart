@@ -167,26 +167,32 @@ class GoogleLmsService extends LmsInterface {
       headers: {'Authorization': 'Bearer $_userToken'},
     );
 
-    print(response.body);
+    // TODO: remove after testing. 
+    print('Google: ${response.body}');
 
     if (response.statusCode != 200) {
       throw HttpException(response.body);
     }
 
-    final listData = jsonDecode(response.body) as List<dynamic>;
-    return listData.map((i) => Course.empty().fromGoogleJson(i)).toList();
+    final decodedJson = jsonDecode(response.body);
+    List<Course> userCourses;
 
+    // The response can be either a List or a Map with a 'courses' key
+    if (decodedJson is List) {
+      userCourses = decodedJson.map((i) => Course.empty().fromGoogleJson(i)).toList();
+    } else if (decodedJson is Map<String, dynamic>) {
+      final courseList = decodedJson['courses'] as List<dynamic>;
+      userCourses = courseList.map((i) => Course.empty().fromGoogleJson(i)).toList();
+    } else {
+      throw StateError('Unexpected response format from Moodle');
+    }
 
-    // if (response.statusCode == 200) {
-    //   setState(() => _courses = jsonDecode(response.body)['courses'] ?? []);
-    // } else {
-    //   print('Courses fetch error: ${response.statusCode}');
-    // }
-    // setState(() => _isLoading = false);
+    return userCourses;
   }
 
   @override
   Future<List<Course>> getUserCourses() async {
+    return getCourses();
     // TODO: implement google api code
     throw UnimplementedError();
   }

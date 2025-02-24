@@ -131,7 +131,8 @@ class _CustomAppBarState extends State<CustomAppBar> {
       context,
       MaterialPageRoute(
         builder: (context) => ClassroomSelection.selectedClassroom == LmsType.GOOGLE
-            ? GoogleTeacherDashboard()
+            // ? GoogleTeacherDashboard()
+            ? TeacherDashboard()
             : TeacherDashboard(),
       ),
     );

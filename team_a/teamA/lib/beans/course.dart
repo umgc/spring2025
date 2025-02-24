@@ -49,13 +49,14 @@ class Course implements LearningLensInterface {
 
   @override
   Course fromGoogleJson(Map<String, dynamic> json) {
+    // TODO: Figure out an end date.
     return Course(
-      json['id'],
+      int.parse(json['id']),
       json['name'],
       json['section'],
       json['name'],
-      DateTime.fromMillisecondsSinceEpoch(json['creationTime'] * 1000),
-      DateTime.fromMillisecondsSinceEpoch(json['updateTime'] * 1000),
+      DateTime.parse(json['creationTime']),
+      DateTime.parse(json['updateTime']),
     );
   }
 
