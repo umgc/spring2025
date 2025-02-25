@@ -96,10 +96,11 @@ class GoogleLmsService extends LmsInterface {
       if (googleUser == null) {
         throw Exception("Google Sign-In was cancelled by the user.");
       }
+
       // Get the user's name
       userName = googleUser.displayName;
-
-      firstName ??= userName;
+      // firstName = googleUser.givenName;
+      print('user: $googleUser');
 
       print('Welcome, ${firstName ?? 'User'}');
 
@@ -116,6 +117,8 @@ class GoogleLmsService extends LmsInterface {
       print("Google Sign-In Error: $error");
       throw Exception("Google Sign-In failed: $error");
     }
+
+    courses = await getUserCourses();
   }
 
   @override
@@ -160,6 +163,13 @@ class GoogleLmsService extends LmsInterface {
 
   @override
   Future<List<Course>> getCourses() async {
+    // TODO: implement google api code
+    // Never called??
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<Course>> getUserCourses() async {
     if (_userToken == null) throw StateError('User not logged in to Google');
 
     final response = await ApiService().httpGet(
@@ -187,14 +197,13 @@ class GoogleLmsService extends LmsInterface {
       throw StateError('Unexpected response format from Moodle');
     }
 
-    return userCourses;
-  }
+    // Optionally fetch quizzes/essays for each course
+    for (Course c in userCourses) {
+      c.quizzes = await getQuizzes(c.id);
+      // c.essays = await getEssays(c.id);
+    }
 
-  @override
-  Future<List<Course>> getUserCourses() async {
-    return getCourses();
-    // TODO: implement google api code
-    throw UnimplementedError();
+    return userCourses;
   }
 
   @override
@@ -215,8 +224,36 @@ class GoogleLmsService extends LmsInterface {
 
   @override
   Future<List<Quiz>> getQuizzes(int? courseID) async {
-    // TODO: implement google api code
-    throw UnimplementedError();
+     if (_userToken == null) throw StateError('User not logged in to Google Classroom');
+
+    
+    final response = await ApiService().httpGet(
+      Uri.parse('https://classroom.googleapis.com/v1/courses/$courseID/courseWork'),
+      headers: {'Authorization': 'Bearer $_userToken'},
+    );
+
+    print('quizlist: ${response.body}');
+
+    if (response.statusCode != 200) {
+      throw HttpException(response.body);
+    }
+
+    final quizzesMap = jsonDecode(response.body) as Map<String, dynamic>;
+    final decodedJson = quizzesMap['courseWork'] as List<dynamic>?;
+
+    if (decodedJson == null) {
+      return [];
+    }
+    
+    List<Quiz> quizList = [];
+    for (var item in decodedJson) {
+      // If courseID is null, return all quizzes; otherwise filter by course
+      if (courseID == null || int.parse(item['courseId']) == courseID) {
+        quizList.add(Quiz.fromGoogleJson(item));
+      }
+    }
+
+    return quizList;
   }
 
   @override

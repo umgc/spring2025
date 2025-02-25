@@ -10,6 +10,7 @@ class Quiz {
   String? promptUsed;
   int? id; // quiz id, null if the quiz doesn't exist in Moodle yet
   int? coursedId;
+
   // Constructor with all optional params.
   Quiz({this.name, this.coursedId, this.description, this.id, List<Question>? questionList})
       : questionList = questionList ?? [];
@@ -39,7 +40,18 @@ class Quiz {
     return quiz;
   }
 
-
+  @override
+  static Quiz fromGoogleJson(Map<String, dynamic> json) {
+    Quiz tmpQuiz = Quiz();
+      tmpQuiz.name = json['title'];
+      tmpQuiz.description = json['description'];
+      tmpQuiz.questionList = <Question>[];
+      tmpQuiz.promptUsed = '';
+      tmpQuiz.id = int.parse(json['id']);
+      tmpQuiz.coursedId = int.parse(json['courseId']);
+    
+    return tmpQuiz;
+  }
 
   String toXmlString() {
     final builder = XmlBuilder();

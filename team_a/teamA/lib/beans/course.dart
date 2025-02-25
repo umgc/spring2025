@@ -56,7 +56,7 @@ class Course implements LearningLensInterface {
       json['section'],
       json['name'],
       DateTime.parse(json['creationTime']),
-      DateTime.parse(json['updateTime']),
+      DateTime.parse(json['updateTime']).add(Duration(days: 180)),
     );
   }
 
