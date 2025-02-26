@@ -204,30 +204,6 @@ Future<List<Assignment>> getAllEssays() async {
   return result;
 }
 
-//Debug function that prints out the number of courses and essays
-/*
-Future<List<Assignment>> getAllEssays() async {
-  List<Assignment> result = [];
-  var courses = LmsFactory.getLmsService().courses;
-  print('DEBUG: Found ${courses?.length ?? 0} courses.');
-  for (Course c in courses ?? []) {
-    print('DEBUG: Course ${c.id} (${c.shortName}) has ${c.essays?.length ?? 0} essays.');
-    result.addAll(c.essays ?? []);
-  }
-  print('DEBUG: Total essays aggregated: ${result.length}');
-  return result;
-}*/
-
-String getQuestionListAsString(Quiz? selectedQuiz) {
-  String result = "";
-
-  for (Question q in selectedQuiz?.questionList ?? []) {
-    result += q.toString();
-  }
-
-  return result.isEmpty ? "There are no quiz questions." : result;
-}
-
 //Helper function that gets the course number for the quiz
 Course getCourse(int? courseID) {
   for (Course c in LmsFactory.getLmsService().courses ?? []) {

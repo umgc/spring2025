@@ -146,13 +146,10 @@ class _AssessmentsState extends State<AssessmentsView> {
 }
 
 //Helper function that pulls the quizzes from all the user's courses
-Future<List<Quiz>?> getAllQuizzes() async {
-  List<Quiz>? result;
+Future<List<Quiz>> getAllQuizzes() async {
+  List<Quiz> result = [];
   for (Course c in LmsFactory.getLmsService().courses ?? []) {
-    result = (result ?? []) + (c.quizzes ?? []);
-  }
-  if (result == []) {
-    return null;
+    result.addAll(c.quizzes ?? []);
   }
   return result;
 }
