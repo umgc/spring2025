@@ -119,8 +119,7 @@ class _AssessmentsState extends State<AssessmentsView> {
                                         child: Column(
                                           mainAxisSize: MainAxisSize.min,
                                           children: [
-                                            Text(getQuestionListAsString(
-                                                selectedQuiz)),
+                                            Text(selectedQuiz.toString()),
                                           ],
                                         ),
                                       ),
