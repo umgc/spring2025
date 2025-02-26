@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:logging/logging.dart';
 import 'package:learninglens_app/Controller/main_controller.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
 
@@ -89,6 +90,7 @@ class GoogleClassroomApi {
     }
   }
 
+ //Future<Map<String, dynamic>?> createAssignment(String courseid, String sectionid, String assignmentName, String startdate, String enddate, String rubricJson, String description);
   // -----------------------------------------------------------------------
 // Creates a Classroom assignment and links the form
 // -----------------------------------------------------------------------
@@ -148,6 +150,8 @@ class GoogleClassroomApi {
 
   Future<String?> createAssignment(String courseId, String title,
       String description, String responderUri, String dueDate) async {
+    final log = Logger('GoogleClassroomApi');
+    log.info('We are calling createAssignment from Google Classroom.');
     final token = await _getToken();
     if (token == null) return null;
 

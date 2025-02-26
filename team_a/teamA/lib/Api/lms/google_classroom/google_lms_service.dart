@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:logger/logger.dart';
 import 'package:xml/xml.dart' as xml;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:learninglens_app/Api/lms/lms_interface.dart';
@@ -256,7 +257,7 @@ class GoogleLmsService extends LmsInterface {
     return quizList;
   }
 
-  @override
+@override
   Future<int?> createQuiz(
       String courseid,
       String quizname,
@@ -264,19 +265,121 @@ class GoogleLmsService extends LmsInterface {
       String sectionid,
       String timeopen,
       String timeclose) async {
-    // TODO: implement google api code
-    throw UnimplementedError();
+    print('Creating quiz in Google Classroom...');
+    print('Course ID: $courseid');
+    print('Quiz Name: $quizname');
+    print('Quiz Intro: $quizintro');
+    print('Section ID: $sectionid');
+    print('Time Open: $timeopen');
+    print('Time Close: $timeclose');
+
+    try {
+      // Convert timeopen to ISO 8601 format
+      String formattedTimeOpen = DateTime.parse(timeopen).toIso8601String();
+      
+      String? assignmentId = await createAssignmentHelper(
+          courseid, quizname, quizintro, sectionid, formattedTimeOpen);
+      
+      if (assignmentId != null) {
+        return int.parse(assignmentId);
+      } else {
+        print('Failed to create quiz');
+        return null;
+      }
+    } catch (e) {
+      print('Error creating quiz: $e');
+      return null;
+    }
+  }
+
+  Future<String?> createAssignmentHelper(String courseId, String title,
+      String description, String responderUri, String dueDate) async {
+    print('Creating assignment in Google Classroom... Inside helper');
+    print('Course ID: $courseId');
+    print('Title: $title');
+    print('Description: $description');
+    print('Responder URI: $responderUri');
+    print('Due Date: $dueDate');
+
+    final token = _userToken;
+    if (token == null) {
+      print('User token is null');
+      return null;
+    }
+
+    final url = Uri.parse(
+        'https://classroom.googleapis.com/v1/courses/$courseId/courseWork');
+    final headers = {
+      'Authorization': 'Bearer $token',
+      'Content-Type': 'application/json',
+    };
+
+    // Parse the dueDate string
+    DateTime parsedDate = DateTime.parse(dueDate);
+
+    final body = jsonEncode({
+      "title": title,
+      "description": description,
+      "workType": "ASSIGNMENT",
+      "state": "PUBLISHED",
+      "dueDate": {
+        "year": parsedDate.year,
+        "month": parsedDate.month,
+        "day": parsedDate.day
+      },
+      "dueTime": {
+        "hours": parsedDate.hour,
+        "minutes": parsedDate.minute,
+        "seconds": 0
+      },
+      "materials": [
+        {
+          "link": {"url": responderUri}
+        }
+      ]
+    });
+
+    // Print request details
+    print('Request URL: $url');
+    print('Request Headers: $headers');
+    print('Request Body: $body');
+
+    try {
+      final response = await http.post(url, headers: headers, body: body);
+
+      print("Response Status: ${response.statusCode}");
+      print("Response Body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final assignmentId = data['id'];
+        print('Assignment created successfully with ID: $assignmentId');
+        return assignmentId;
+      } else {
+        print('Assignment creation failed: ${response.statusCode}');
+        print('Error message: ${response.body}');
+        return null;
+      }
+    } catch (e) {
+      print('Error creating assignment: $e');
+      return null;
+    }
   }
 
   @override
   Future<String> addRandomQuestions(
       String categoryid, String quizid, String numquestions) async {
+        print('Adding random questions to quiz...');
+    print('Category ID: $categoryid');
     // TODO: implement google api code
     throw UnimplementedError();
   }
 
   @override
   Future<int?> importQuizQuestions(String courseid, String quizXml) async {
+    print('Importing quiz questions...');
+    print('Course ID: $courseid');
+    print('Quiz XML: $quizXml');
     // TODO: implement google api code
     throw UnimplementedError();
   }
@@ -287,6 +390,8 @@ class GoogleLmsService extends LmsInterface {
 
   @override
   Future<List<Assignment>> getEssays(int? courseID) async {
+    print('Getting essays...');
+    print('Course ID: $courseID');
     // TODO: implement google api code
     throw UnimplementedError();
   }
@@ -301,12 +406,21 @@ class GoogleLmsService extends LmsInterface {
     String rubricJson,
     String description,
   ) async {
+    print('Creating assignment...');
+    print('Course ID: $courseid');
+    print('Section ID: $sectionid');
+    print('Assignment Name: $assignmentName');
+    print('Start Date: $startdate');
+    print('End Date: $enddate');
     // TODO: implement google api code
     throw UnimplementedError();
   }
 
   @override
   Future<int?> getContextId(int assignmentId, String courseId) async {
+    print('Getting context ID...');
+    print('Assignment ID: $assignmentId');
+    print('Course ID: $courseId');
     // TODO: implement google api code
     throw UnimplementedError();
   }
@@ -317,6 +431,8 @@ class GoogleLmsService extends LmsInterface {
 
   @override
   Future<List<Submission>> getAssignmentSubmissions(int assignmentId) async {
+    print('Getting assignment submissions...');
+    print('Assignment ID: $assignmentId');
     // TODO: implement google api code
     throw UnimplementedError();
   }
@@ -324,6 +440,9 @@ class GoogleLmsService extends LmsInterface {
   @override
   Future<List<SubmissionWithGrade>> getSubmissionsWithGrades(
       int assignmentId) async {
+    print('Getting submissions with grades...');
+    print('Assignment ID: $assignmentId');
+
     // TODO: implement google api code
     throw UnimplementedError();
   }
@@ -331,30 +450,44 @@ class GoogleLmsService extends LmsInterface {
   @override
   Future<SubmissionStatus?> getSubmissionStatus(
       int assignmentId, int userId) async {
+    print('Getting submission status...');
+    print('Assignment ID: $assignmentId');
+    print('User ID: $userId');
     // TODO: implement google api code
     throw UnimplementedError();
   }
 
   @override
   Future<List<Grade>> getAssignmentGrades(int assignmentId) async {
+    print('Getting assignment grades...');
+    print('Assignment ID: $assignmentId');
     // TODO: implement google api code
     throw UnimplementedError();
   }
 
   @override
   Future<bool> setRubricGrades(int assignmentId, int userId, String jsonGrades) async {
+    print('Setting rubric grades...');
+    print('Assignment ID: $assignmentId');
+    print('User ID: $userId');
     // TODO: implement google api code
     throw UnimplementedError();
   }
 
   @override
   Future<List<dynamic>> getRubricGrades(int assignmentId, int userid) async {
+    print('Getting rubric grades...');
+    print('Assignment ID: $assignmentId');
+    print('User ID: $userid');
     // TODO: implement google api code
     throw UnimplementedError();
   }
 
   @override
   Grade? findGradeForUser(List<Grade> grades, int userId) {
+    print('Finding grade for user...');
+    print('User ID: $userId');
+
     // TODO: implement google api code
     throw UnimplementedError();
   }
@@ -366,6 +499,8 @@ class GoogleLmsService extends LmsInterface {
   @override
   Future<MoodleRubric?> getRubric(String assignmentid) async {
     // TODO: implement google api code
+    print('Getting rubric...');
+    print('Assignment ID: $assignmentid');
     throw UnimplementedError();
   }
 
@@ -386,6 +521,12 @@ class GoogleLmsService extends LmsInterface {
     String dueDate, // Format: YYYY-MM-DD-HH-MM
   ) async {
     try {
+      // 0. Check if the quizAsXml is empty
+      if (quizAsXml.isEmpty) {
+        print('Error: quizAsXml is empty.');
+        return false;
+      }
+      print('quizAsXml: $quizAsXml');
       // 1. Parse the XML
       final document = xml.XmlDocument.parse(quizAsXml);
       final questions = document.findAllElements('question').toList();
