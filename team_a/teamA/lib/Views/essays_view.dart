@@ -17,7 +17,7 @@ class EssaysView extends StatefulWidget {
 }
 
 class _EssaysState extends State<EssaysView> {
-  late Future<List<Assignment>?> essays;
+  late Future<List<Assignment>> essays;
   Assignment? selectedEssay;
 
   @override
@@ -41,7 +41,7 @@ class _EssaysState extends State<EssaysView> {
                 child: CreateButton('essay'))
           ]),
           Expanded(
-            child: FutureBuilder<List<Assignment>?>(
+            child: FutureBuilder<List<Assignment>>(
               future: essays,
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
@@ -191,14 +191,24 @@ class _EssaysState extends State<EssaysView> {
 }
 
 //Helper function that pulls the quizzes from all the user's courses
-Future<List<Assignment>?> getAllEssays() async {
-  List<Assignment>? result;
+/*Future<List<Assignment>> getAllEssays() async {
+  List<Assignment> result = [];
   for (Course c in LmsFactory.getLmsService().courses ?? []) {
-    result = (result ?? []) + (c.essays ?? []);
+    result.addAll(c.essays ?? []);
   }
-  if (result == []) {
-    return null;
+  return result;
+}*/
+
+//Debug
+Future<List<Assignment>> getAllEssays() async {
+  List<Assignment> result = [];
+  var courses = LmsFactory.getLmsService().courses;
+  print('DEBUG: Found ${courses?.length ?? 0} courses.');
+  for (Course c in courses ?? []) {
+    print('DEBUG: Course ${c.id} (${c.shortName}) has ${c.essays?.length ?? 0} essays.');
+    result.addAll(c.essays ?? []);
   }
+  print('DEBUG: Total essays aggregated: ${result.length}');
   return result;
 }
 
