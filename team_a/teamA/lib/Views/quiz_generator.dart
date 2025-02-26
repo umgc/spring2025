@@ -92,7 +92,13 @@ class _AssessmentState extends State<CreateAssessment> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: CustomAppBar(title: 'Create Assessment', userprofileurl: LmsFactory.getLmsService().profileImage ?? ''),
+      appBar: CustomAppBar(
+        title: 'Create Assessment', 
+        onRefresh: () {
+          // _loadCourses();
+        },
+        userprofileurl: LmsFactory.getLmsService().profileImage ?? ''
+        ),
       body: Form(
           key: _formKey,
           child:

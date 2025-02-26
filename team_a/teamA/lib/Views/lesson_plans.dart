@@ -67,6 +67,9 @@ class _LessonPlanState extends State {
     return Scaffold(
         appBar: CustomAppBar(
             title: 'Lesson Plans',
+            onRefresh: () {
+              _loadCourses();
+            },
             userprofileurl: LmsFactory.getLmsService().profileImage ?? ''),
         body: SingleChildScrollView(
           child: Row(

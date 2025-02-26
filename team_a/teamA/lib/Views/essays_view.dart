@@ -31,6 +31,11 @@ class _EssaysState extends State<EssaysView> {
     return Scaffold(
       appBar: CustomAppBar(
         title: 'Essays',
+        onRefresh: () {
+          setState(() {
+            essays = getAllEssays();
+          });
+        },
         userprofileurl: LmsFactory.getLmsService().profileImage ?? '',
       ),
       body: Column(

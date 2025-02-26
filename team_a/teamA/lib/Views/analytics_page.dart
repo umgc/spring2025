@@ -3,7 +3,6 @@ import 'dart:io' show File; // For non-web file I/O
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart'; // For file saving on non-web platforms
-import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
 // For web file export:
 import 'dart:html' as html;
 
@@ -11,6 +10,8 @@ import 'package:pdf/widgets.dart' as pw; // PDF package
 import 'package:pdf/pdf.dart'; // PDF package
 import 'package:excel/excel.dart'; // Excel package
 
+// Use the LmsFactory to retrieve current LMS service (profile image, etc.)
+import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/Controller/main_controller.dart';
 import 'package:learninglens_app/Views/dashboard.dart';
@@ -28,11 +29,9 @@ enum ExportFormat { pdf, excel }
 ///    (using proper PDF/Excel libraries)
 ///  - View tables in fixed-height containers with visible scrollbars.
 ///  
-/// To switch from test data to live data:
-///   1. Comment out the test data block in _fetchAnalyticsData().
-///   2. Uncomment the live API call block below it.
-///   The live block produces the same keys ('source', 'totalCourses', 'studentPerformance',
-///   'iepProgress', 'courseEngagement') so that the rest of the page functions identically.
+/// Additionally, each student's name in the student breakdown table is underlined
+/// (as a hyperlink). When clicked, a detail panel appears on the right showing that
+/// student's individual grades in detail.
 class AnalyticsPage extends StatefulWidget {
   const AnalyticsPage({super.key});
 
@@ -679,7 +678,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
   // ---------------------------------------------------------------------------
   // _buildReportGeneratorSection:
-  // Combines the report form (left) with the generated report (right),
+  // Combines the report form (left side) with the generated report (right side),
   // and places the student breakdown (with detail panel) below.
   // ---------------------------------------------------------------------------
   Widget _buildReportGeneratorSection() {
@@ -770,129 +769,25 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   }
 
   // ---------------------------------------------------------------------------
-  // _buildCustomAppBar:
-  // Builds a custom AppBar for the Analytics page that mirrors the TeacherDashboard's
-  // navigation (back, home, settings, LMS dropdown). This version is used for testing.
-  // ---------------------------------------------------------------------------
-  PreferredSizeWidget _buildCustomAppBar() {
-    return AppBar(
-      backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-      title: const Text('Analytics Dashboard'),
-      centerTitle: true,
-      leading: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Flexible(
-            child: IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-          ),
-          Flexible(
-            child: IconButton(
-              icon: const Icon(Icons.home),
-              onPressed: () {
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (context) => TeacherDashboard()),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-      actions: [
-        DropdownButtonHideUnderline(
-          child: DropdownButton<String>(
-            value: _selectedLMS,
-            dropdownColor: Colors.grey[800],
-            style: const TextStyle(color: Colors.white),
-            items: <String>['Moodle Classroom', 'Google Classroom']
-                .map<DropdownMenuItem<String>>((String value) {
-              return DropdownMenuItem<String>(
-                value: value,
-                child: Text(value, style: const TextStyle(color: Colors.white)),
-              );
-            }).toList(),
-            onChanged: (String? newValue) {
-              if (newValue != null) {
-                setState(() {
-                  _selectedLMS = newValue;
-                });
-                if (_selectedLMS == 'Google Classroom') {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => GoogleTeacherDashboard()),
-                  );
-                } else {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (context) => TeacherDashboard()),
-                  );
-                }
-              }
-            },
-            icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
-          ),
-        ),
-        IconButton(
-          icon: const Icon(Icons.settings),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => UserSettings()),
-            );
-          },
-        ),
-        Padding(
-          padding: const EdgeInsets.only(right: 10.0),
-          child: InkWell(
-            child: Material(
-              color: Colors.transparent,
-              child: Container(
-                width: 50,
-                height: 50,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                ),
-                child: ClipOval(
-                  child: Image.network(
-                    LmsFactory.getLmsService().profileImage ?? '',
-                    height: 50,
-                    width: 50,
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  // ---------------------------------------------------------------------------
   // build:
-  // Sets up the Scaffold using the custom AppBar, the main content,
-  // and a FloatingActionButton at the bottom-right for testing refresh.
+  // Sets up the Scaffold using the shared CustomAppBar (with refresh button)
+  // and the main content.
   // ---------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
-      appBar: _buildCustomAppBar(),
+      appBar: CustomAppBar(
+        title: 'Analytics Dashboard',
+        // Use LmsFactory.getLmsService() to get the current profile image.
+        userprofileurl: LmsFactory.getLmsService().profileImage ?? '',
+        onRefresh: _fetchAnalyticsData, // Passing the refresh callback.
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: _buildContent(),
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: Colors.black,
-        onPressed: _fetchAnalyticsData,
-        child: const Icon(Icons.refresh, color: Colors.white),
-        tooltip: 'Test Refresh',
-      ),
+      // FloatingActionButton removed since refresh is now in the AppBar.
     );
   }
 }

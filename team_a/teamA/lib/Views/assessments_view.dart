@@ -29,6 +29,11 @@ class _AssessmentsState extends State<AssessmentsView> {
     return Scaffold(
       appBar: CustomAppBar(
         title: 'Assessments',
+        onRefresh: () {
+          setState(() {
+            quizzes = getAllQuizzes();
+          });
+        },
         userprofileurl: LmsFactory.getLmsService().profileImage ?? '',
       ),
       body: Column(

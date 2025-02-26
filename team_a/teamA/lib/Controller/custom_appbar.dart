@@ -6,14 +6,17 @@ import 'package:learninglens_app/Views/user_settings.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
 
 class ClassroomSelection {
-  static LmsType selectedClassroom = LocalStorageService.getSelectedClassroom() == LmsType.MOODLE ? LmsType.MOODLE : LmsType.GOOGLE;
+  static LmsType selectedClassroom = LocalStorageService.getSelectedClassroom() == LmsType.MOODLE
+      ? LmsType.MOODLE
+      : LmsType.GOOGLE;
 }
 
 class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
   final String title;
   final String userprofileurl;
+  final VoidCallback? onRefresh; // Optional refresh callback
 
-  CustomAppBar({required this.title, required this.userprofileurl});
+  CustomAppBar({required this.title, required this.userprofileurl, this.onRefresh});
 
   @override
   _CustomAppBarState createState() => _CustomAppBarState();
@@ -23,7 +26,6 @@ class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
 }
 
 class _CustomAppBarState extends State<CustomAppBar> {
-  
   @override
   Widget build(BuildContext context) {
     return AppBar(
@@ -59,24 +61,43 @@ class _CustomAppBarState extends State<CustomAppBar> {
         ],
       ),
       actions: <Widget>[
-        DropdownButton<LmsType>(
-          value: ClassroomSelection.selectedClassroom,
-          onChanged: isDashboard(context)
-              ? (LmsType? newValue) {
-                  if (newValue != null) {
-                    setState(() {
-                      ClassroomSelection.selectedClassroom = newValue;
-                    });
-                    navigateToSelectedDashboard(context);
+        // Refresh button: Instead of relying on an external callback,
+        // try to obtain the current route's name and then replace the route,
+        // effectively refreshing the current view.
+        IconButton(
+          icon: Icon(Icons.refresh),
+          onPressed: () {
+            final currentRouteName = ModalRoute.of(context)?.settings.name;
+            if (currentRouteName != null) {
+              Navigator.pushReplacementNamed(context, currentRouteName);
+            } else {
+              // Fallback: if no route name is available, call the provided onRefresh callback if any.
+              widget.onRefresh?.call();
+            }
+          },
+        ),
+        DropdownButtonHideUnderline(
+          child: DropdownButton<LmsType>(
+            value: ClassroomSelection.selectedClassroom,
+            onChanged: isDashboard(context)
+                ? (LmsType? newValue) {
+                    if (newValue != null) {
+                      setState(() {
+                        ClassroomSelection.selectedClassroom = newValue;
+                      });
+                      navigateToSelectedDashboard(context);
+                    }
                   }
-                }
-              : null, // Disable dropdown if not on dashboard
-          items: LmsType.values.map<DropdownMenuItem<LmsType>>((LmsType value) {
-            return DropdownMenuItem<LmsType>(
-              value: value,
-              child: Text(value == LmsType.GOOGLE ? 'Google Classroom' : 'Moodle Classroom'),
-            );
-          }).toList(),
+                : null,
+            items: LmsType.values.map<DropdownMenuItem<LmsType>>((LmsType value) {
+              return DropdownMenuItem<LmsType>(
+                value: value,
+                child: Text(
+                  value == LmsType.GOOGLE ? 'Google Classroom' : 'Moodle Classroom',
+                ),
+              );
+            }).toList(),
+          ),
         ),
         IconButton(
           icon: Icon(Icons.settings),
@@ -100,10 +121,13 @@ class _CustomAppBarState extends State<CustomAppBar> {
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                 ),
-                child: Icon(
-                  Icons.account_circle,
-                  size: 50,
-                  color: Colors.black,
+                child: ClipOval(
+                  child: Image.network(
+                    widget.userprofileurl,
+                    height: 50,
+                    width: 50,
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
             ),
@@ -118,15 +142,12 @@ class _CustomAppBarState extends State<CustomAppBar> {
   }
 
   void navigateToSelectedDashboard(BuildContext context) {
-
-    // set local storage state
-    if(ClassroomSelection.selectedClassroom == LmsType.GOOGLE){
+    if (ClassroomSelection.selectedClassroom == LmsType.GOOGLE) {
       LocalStorageService.saveSelectedClassroom(LmsType.GOOGLE);
     } else {
       LocalStorageService.saveSelectedClassroom(LmsType.MOODLE);
     }
 
-    // navigate the selected dashboard
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
