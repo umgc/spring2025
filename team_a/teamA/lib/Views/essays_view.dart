@@ -191,15 +191,16 @@ class _EssaysState extends State<EssaysView> {
 }
 
 //Helper function that pulls the quizzes from all the user's courses
-/*Future<List<Assignment>> getAllEssays() async {
+Future<List<Assignment>> getAllEssays() async {
   List<Assignment> result = [];
   for (Course c in LmsFactory.getLmsService().courses ?? []) {
     result.addAll(c.essays ?? []);
   }
   return result;
-}*/
+}
 
-//Debug
+//Debug function that prints out the number of courses and essays
+/*
 Future<List<Assignment>> getAllEssays() async {
   List<Assignment> result = [];
   var courses = LmsFactory.getLmsService().courses;
@@ -210,7 +211,7 @@ Future<List<Assignment>> getAllEssays() async {
   }
   print('DEBUG: Total essays aggregated: ${result.length}');
   return result;
-}
+}*/
 
 String getQuestionListAsString(Quiz? selectedQuiz) {
   String result = "";
