@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:yappy/services/database_helper.dart';
 
 class IndustryMenu extends StatelessWidget {
   final String title;
@@ -45,6 +46,12 @@ class IndustryMenu extends StatelessWidget {
         ],
       );
     }
+
+      Future<List<Map<String, dynamic>>> _fetchTranscripts() async {
+    DatabaseHelper dbHelper = DatabaseHelper();
+    
+    return await dbHelper.getAllTranscripts();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -146,9 +153,7 @@ class IndustryMenu extends StatelessWidget {
                   ),
                     onPressed: () async {
 
-                      // Creates a database query to get all of the inquiries for the industry.
-                      // Replace the following line with the actual database query.
-                      //int transcriptCount = await fetchTranscriptCount();
+                        List<Map<String, dynamic>> transcripts = await _fetchTranscripts();
 
                         showModalBottomSheet(
                           context: context,
@@ -158,7 +163,7 @@ class IndustryMenu extends StatelessWidget {
                           // List<String> transcripts = await fetchTranscripts();
 
                           //This is a test to make sure it works
-                          List<String> transcripts = ['Transcript 1', 'Transcript 2']; // Example data
+                          //List<String> transcripts = ['Transcript 1', 'Transcript 2']; // Example data
 
                           return Container(
                           padding: EdgeInsets.all(16.0),
@@ -173,9 +178,10 @@ class IndustryMenu extends StatelessWidget {
                                   child: ListView.builder(
                                     itemCount: transcripts.length,
                                     itemBuilder: (context, index) {
+                                      Map<String, dynamic> transcript = transcripts[index];
                                       return ListTile(
                                         title: Text(
-                                          transcripts[index],
+                                          'Transcript ${transcript['transcript_id']}',
                                           style: TextStyle(
                                             color: Colors.white
                                           ),
@@ -185,10 +191,11 @@ class IndustryMenu extends StatelessWidget {
                                           showDialog(
                                             context: context,
                                             builder: (BuildContext context) {
-                                              //This is the real code
-                                              //return generateTranscript(context, transcripts[index], 'Content of ${transcripts[index]}');
-                                              //This is a test to make sure it works
-                                              return generateTranscript(context, 'Transcript', 'Waiter: Good afternoon! Welcome to Bella Bistro. My name is Jake, and I\'ll be your server today. Can I start you off with something to drink?\n\nCustomer: Hi, Jake. Yeah, I’ll have an iced tea, please.\n\nWaiter: Absolutely. Sweetened or unsweetened?\n\nCustomer: Unsweetened, please.\n\nWaiter: Got it. I’ll be right back with that. (Leaves and returns with the drink) Here you go. Have you had a chance to look over the menu?\n\nCustomer: Yeah, I think so. I’m trying to decide between the grilled salmon and the chicken parmesan.\n\nWaiter: Both are great choices! If you’re in the mood for something lighter, the salmon is served with roasted veggies and a lemon butter sauce. The chicken parmesan is heartier, with a side of pasta and garlic bread.\n\nCustomer: Hmm… that lemon butter sauce sounds amazing. Let’s go with the salmon.\n\nWaiter: Excellent choice! Would you like a soup or salad with that?\n\nCustomer: A salad, please. Ranch dressing on the side.\n\nWaiter: Perfect. Would you like to add anything else?\n\nCustomer: No, I think I’m good for now.\n\nWaiter: Sounds good! I’ll get that started for you. Let me know if you need anything else in the meantime.\n\nCustomer: Will do. Thanks!\n\n[Time passes, and the waiter returns with the food.]\n\nWaiter: Here’s your grilled salmon and salad. Can I get you anything else?\n\nCustomer: This looks great! No, I’m all set.\n\nWaiter: Enjoy your meal! Let me know if you need anything.\n\nCustomer: Will do, thanks!',);
+                                              return generateTranscript(
+                                              context,
+                                                'Transcript',
+                                                transcript['transcript_text_data'] ?? 'No content available',
+                                              );
                                             },
                                           );
                                         },
@@ -199,10 +206,10 @@ class IndustryMenu extends StatelessWidget {
                               ],
                             ),
                           ),
-                          );
-                          },
                         );
-                    },
+                      },
+                    );
+                  },
                 ),
               ),
             ],
@@ -212,4 +219,5 @@ class IndustryMenu extends StatelessWidget {
     );
   }
 }
+
 
