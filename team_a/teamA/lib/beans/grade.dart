@@ -3,7 +3,7 @@ import 'package:learninglens_app/beans/learning_lens_interface.dart';
 class Grade implements LearningLensInterface {
   final int id;
   final int userid;
-  final double grade; // Convert from string in the JSON
+  final double grade;
   final int grader;
   final DateTime timecreated;
   final DateTime timemodified;
@@ -17,7 +17,6 @@ class Grade implements LearningLensInterface {
     required this.timemodified,
   });
 
-  // Empty constructor
   Grade.empty()
       : id = 0,
         userid = 0,
@@ -26,25 +25,21 @@ class Grade implements LearningLensInterface {
         timecreated = DateTime.now(),
         timemodified = DateTime.now();
 
-  // Parse grade JSON
   @override
   Grade fromMoodleJson(Map<String, dynamic> json) {
     return Grade(
       id: json['id'] ?? 0,
       userid: json['userid'] ?? 0,
-      // Parsing the grade as a double from a string
       grade: json['grade'] != null ? double.parse(json['grade']) : 0.0,
       grader: json['grader'] ?? 0,
-      timecreated:
-          DateTime.fromMillisecondsSinceEpoch(json['timecreated'] * 1000),
-      timemodified:
-          DateTime.fromMillisecondsSinceEpoch(json['timemodified'] * 1000),
+      timecreated: DateTime.fromMillisecondsSinceEpoch(json['timecreated'] * 1000),
+      timemodified: DateTime.fromMillisecondsSinceEpoch(json['timemodified'] * 1000),
     );
   }
 
   @override
   Grade fromGoogleJson(Map<String, dynamic> json) {
-    // TODO: Dinesh, try to map the Google JSON to the Grade object
+    // TODO: Map Google Classroom JSON to Grade.
     throw UnimplementedError();
   }
 }

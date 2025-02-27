@@ -23,11 +23,6 @@ abstract class LmsInterface {
   String? profileImage;
   List<Course>? courses;
 
-  // Singleton accessor.
-  // factory LmsInterface() {
-  //   throw UnimplementedError("Api Interface cannot be instantiated.");
-  // }
-
   // Authentication/Login methods
   Future<void> login(String username, String password, String baseURL);
   bool isLoggedIn();
@@ -65,5 +60,4 @@ abstract class LmsInterface {
 
   // Rubric methods
   Future<MoodleRubric?> getRubric(String assignmentid);
-  
 }

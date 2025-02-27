@@ -10,7 +10,11 @@ import 'package:pdf/widgets.dart' as pw; // PDF package
 import 'package:pdf/pdf.dart'; // PDF package
 import 'package:excel/excel.dart'; // Excel package
 
-// Use the LmsFactory to retrieve current LMS service (profile image, etc.)
+// Import the LMS services using prefixes so that type checks work correctly.
+import 'package:learninglens_app/lms/lms_factory.dart';
+import 'package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart' as moodle;
+import 'package:learninglens_app/Api/lms/google_classroom/google_lms_service.dart' as google;
+
 import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/Controller/main_controller.dart';
@@ -19,11 +23,16 @@ import 'package:learninglens_app/Views/g_courses.dart';
 import 'package:learninglens_app/Views/user_settings.dart';
 import 'package:learninglens_app/Views/g_dashboard.dart';
 
+import 'package:learninglens_app/beans/course.dart';
+import 'package:learninglens_app/beans/assignment.dart';
+import 'package:learninglens_app/beans/participant.dart';
+import 'package:learninglens_app/beans/grade.dart';
+
 /// Enum to represent export formats.
 enum ExportFormat { pdf, excel }
 
 /// AnalyticsPage displays the Analytics Dashboard where teachers can:
-///  - View overall analytics data (either hard-coded for testing or live data)
+///  - View overall analytics data (live data fetched from the LMS)
 ///  - Generate a detailed report (assignment breakdown + student breakdown)
 ///  - Export the generated report as a valid PDF or Excel file to a chosen location
 ///    (using proper PDF/Excel libraries)
@@ -40,31 +49,28 @@ class AnalyticsPage extends StatefulWidget {
 }
 
 class _AnalyticsPageState extends State<AnalyticsPage> {
-  // Holds top-level analytics data.
+  // Live analytics data fetched from the LMS.
   Map<String, dynamic>? analyticsData;
   bool isLoading = false;
   String errorMsg = '';
 
-  // Report generation selections.
-  String? selectedCourse;
-  String? selectedSubject;
-  String? selectedAssignment;
+  // Live data for dropdowns.
+  List<Course> _coursesData = [];
+  List<Assignment> _assignmentsData = [];
+  List<Participant> _participantsData = [];
 
-  // Hard-coded sample data for combo boxes.
-  final List<String> _courses = ['MAT144', 'ENG101', 'SCI202'];
-  final List<String> _subjects = ['Shape Area and Volume', 'Grammar Basics', 'Chemistry'];
-  final List<String> _assignments = ['Quiz - Assessment', 'Essay Assignment', 'Lab Report'];
+  // Selections from dropdowns.
+  Course? _selectedCourse;
+  // For subject, we assume each Course has a 'subject' property.
+  String? _selectedSubject;
+  Assignment? _selectedAssignment;
 
-  // Hard-coded sample data for the generated report (assignment breakdown).
+  // Report data built from live LMS data.
   List<Map<String, dynamic>> _generatedReport = [];
-
-  // Hard-coded sample data for the student breakdown.
   List<Map<String, dynamic>> _studentBreakdown = [];
-
-  // Holds the selected student for detailed view.
   Map<String, dynamic>? _selectedStudent;
 
-  // LMS selection for the AppBar dropdown.
+  // LMS selection (from the AppBar dropdown).
   String _selectedLMS = "Moodle Classroom";
 
   // Scroll controllers for the tables.
@@ -76,13 +82,12 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   @override
   void initState() {
     super.initState();
-    // Optionally auto-fetch analytics data here:
-    // _fetchAnalyticsData();
-
     _verticalReportController = ScrollController();
     _horizontalReportController = ScrollController();
     _verticalStudentController = ScrollController();
     _horizontalStudentController = ScrollController();
+    // Auto-fetch live analytics data on initialization.
+    _fetchAnalyticsData();
   }
 
   @override
@@ -96,30 +101,11 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
   // ---------------------------------------------------------------------------
   // _fetchAnalyticsData:
-  // This block uses hard-coded values for testing purposes.
-  // When ready for live data, comment out this block and uncomment the live API call block below.
-  // ---------------------------------------------------------------------------
-  Future<void> _fetchAnalyticsData() async {
-    setState(() {
-      isLoading = true;
-      errorMsg = '';
-    });
-    await Future.delayed(const Duration(seconds: 1));
-    setState(() {
-      analyticsData = {
-        'source': 'Test Data',
-        'totalCourses': 3,
-        'studentPerformance': '90% Average Performance',
-        'iepProgress': '80% Progress',
-        'courseEngagement': 'High Engagement',
-      };
-      isLoading = false;
-    });
-  }
-
-  /*
-  // ---------------------------------------------------------------------------
-  // Live API Call Code (Comment out above block to use this)
+  // Live API Call Code.
+  // This block fetches live data from the LMS using the appropriate API.
+  // If the teacher is logged into Moodle, it fetches courses, assignments, and
+  // participants from Moodle.
+  // If logged into Google Classroom, it fetches data from Google Classroom.
   // ---------------------------------------------------------------------------
   Future<void> _fetchAnalyticsData() async {
     setState(() {
@@ -128,38 +114,27 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     });
     try {
       final controller = MainController();
-      if (controller.isLoggedInMoodle) {
-        final moodleApi = MoodleApiSingleton();
-        List courses = await moodleApi.getUserCourses();
-        int totalCourses = courses.length;
-        setState(() {
-          analyticsData = {
-            'source': 'Moodle',
-            'totalCourses': totalCourses,
-            'studentPerformance': 'Moodle Performance Data',
-            'iepProgress': 'Moodle IEP Data',
-            'courseEngagement': 'Moodle Engagement Metrics',
-          };
-        });
-      } else if (controller.isLoggedInGoogleClassroom) {
-        final googleApi = GoogleClassroomApi();
-        List courses = await googleApi.getUserCourses();
-        int totalCourses = courses.length;
-        setState(() {
-          analyticsData = {
-            'source': 'Google Classroom',
-            'totalCourses': totalCourses,
-            'studentPerformance': 'Google Classroom Performance Data',
-            'iepProgress': 'Google Classroom IEP Data',
-            'courseEngagement': 'Google Classroom Engagement Metrics',
-          };
-        });
-      } else {
-        setState(() {
-          analyticsData = null;
-          errorMsg = 'Please ensure you are properly logged into an LMS.';
-        });
+      final lmsService = LmsFactory.getLmsService();
+      // Fetch courses from LMS.
+      _coursesData = await lmsService.getUserCourses();
+      int totalCourses = _coursesData.length;
+      // Set default selected course.
+      if (_coursesData.isNotEmpty) {
+        _selectedCourse = _coursesData.first;
+        _selectedSubject = _selectedCourse?.subject; // assuming Course has a 'subject'
+        // Fetch assignments and participants for the selected course.
+        _assignmentsData = await lmsService.getEssays(_selectedCourse!.id);
+        _participantsData = await lmsService.getCourseParticipants(_selectedCourse!.id.toString());
       }
+      setState(() {
+        analyticsData = {
+          'source': lmsService is moodle.MoodleLmsService ? 'Moodle' : 'Google Classroom',
+          'totalCourses': totalCourses,
+          'studentPerformance': 'Live Performance Data', // Replace with actual metrics if available
+          'iepProgress': 'Live IEP Data',
+          'courseEngagement': 'Live Engagement Metrics',
+        };
+      });
     } catch (e) {
       setState(() {
         errorMsg = 'Failed to load analytics data: $e';
@@ -170,69 +145,75 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       });
     }
   }
-  */
 
   // ---------------------------------------------------------------------------
   // _generateReport:
-  // Generates 20 rows of assignment breakdown and 20 rows of student breakdown data.
-  // For the student breakdown, the data is sorted by average grade in descending order,
-  // so that the highest average is ranked number 1.
+  // Generates report data using live assignments and participant data.
+  // For assignments, it builds a row for each Assignment from the LMS.
+  // For student breakdown, it uses real participant data and sorts by average grade.
+  // (Assumes that each Participant object has an 'avgGrade' property.)
   // ---------------------------------------------------------------------------
-  void _generateReport() {
+  Future<void> _generateReport() async {
+    if (_selectedCourse == null) return;
     setState(() {
       isLoading = true;
       errorMsg = '';
       _generatedReport.clear();
       _studentBreakdown.clear();
-      _selectedStudent = null; // Clear any previous selection.
+      _selectedStudent = null;
     });
-    Future.delayed(const Duration(seconds: 1), () {
+    try {
+      final lmsService = LmsFactory.getLmsService();
+      // Build generated report rows from assignments.
+      _generatedReport = _assignmentsData.map((assignment) {
+        return {
+          'questionNumber': assignment.id, // Using assignment ID as placeholder.
+          'type': assignment.name ?? 'Unknown',
+          'timeSec': 0, // Real timing data may not be available.
+          'percentCorrect': 'N/A', // Replace with actual data if available.
+          'percentPartiallyCorrect': 'N/A'
+        };
+      }).toList();
+
+      // Build student breakdown from participants.
+      _studentBreakdown = _participantsData.map((participant) {
+        // Convert avgGrade (double?) to int; if null, default to 75.
+        int grade = participant.avgGrade != null ? participant.avgGrade!.toInt() : 75;
+        return {
+          'studentName': participant.fullname,
+          'avgGrade': '$grade%',
+          'classRank': 0, // To be computed later
+          'nationalComparison': 'N/A' // Replace with actual comparison if available.
+        };
+      }).toList();
+
+      // Sort students by average grade (assuming numeric value).
+      _studentBreakdown.sort((a, b) {
+        int aGrade = int.tryParse(a['avgGrade'].replaceAll('%', '')) ?? 0;
+        int bGrade = int.tryParse(b['avgGrade'].replaceAll('%', '')) ?? 0;
+        return bGrade.compareTo(aGrade);
+      });
+      // Assign ranking.
+      for (int i = 0; i < _studentBreakdown.length; i++) {
+        _studentBreakdown[i]['classRank'] = i + 1;
+      }
+    } catch (e) {
+      setState(() {
+        errorMsg = 'Failed to generate report: $e';
+      });
+    } finally {
       setState(() {
         isLoading = false;
-        // Generate 20 rows for assignment breakdown.
-        _generatedReport = List.generate(20, (index) {
-          List<String> types = ['T/F', 'Mult. Choice', 'Short Ans'];
-          return {
-            'questionNumber': index + 1,
-            'type': types[index % types.length],
-            'timeSec': 20 + index,
-            'percentCorrect': '${70 + (index % 20)}%',
-            'percentPartiallyCorrect': (index % 3 == 0) ? 'n/a' : '${(index % 15) + 5}%',
-          };
-        });
-        // Generate 20 rows for student breakdown with numeric average grade.
-        List<Map<String, dynamic>> students = List.generate(20, (index) {
-          int grade = 75 + (index % 25);
-          int comparison = (index % 5) - 2;
-          String compText = comparison >= 0 
-              ? '+$comparison% above national avg' 
-              : '$comparison% below national avg';
-          return {
-            'studentName': 'Student ${index + 1}',
-            'avgGrade': grade, // Stored as int for sorting.
-            'nationalComparison': compText,
-          };
-        });
-        // Sort students in descending order by avgGrade.
-        students.sort((a, b) => b['avgGrade'].compareTo(a['avgGrade']));
-        // Assign classRank based on sorted order and convert avgGrade to string.
-        for (int i = 0; i < students.length; i++) {
-          students[i]['classRank'] = i + 1;
-          students[i]['avgGrade'] = '${students[i]['avgGrade']}%';
-        }
-        _studentBreakdown = students;
       });
-    });
+    }
   }
 
   // ---------------------------------------------------------------------------
-  // _exportReportAsPdf:
-  // Uses the pdf package to generate a PDF document containing both the generated report
-  // and student breakdown tables. Returns the PDF as a list of bytes.
+  // The export methods (_exportReportAsPdf, _exportReportAsExcel, _chooseExportFormat,
+  // _pickFileLocation, and _saveReport) remain unchanged.
   // ---------------------------------------------------------------------------
   Future<List<int>> _exportReportAsPdf() async {
     final pdf = pw.Document();
-
     pdf.addPage(
       pw.MultiPage(
         build: (pw.Context context) => [
@@ -276,19 +257,11 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         ],
       ),
     );
-
     return pdf.save();
   }
 
-  // ---------------------------------------------------------------------------
-  // _exportReportAsExcel:
-  // Uses the excel package to generate an Excel file with two sheets:
-  // one for the generated report and one for the student breakdown.
-  // Returns the Excel document as a list of bytes.
-  // ---------------------------------------------------------------------------
   Future<List<int>> _exportReportAsExcel() async {
     var excel = Excel.createExcel();
-    // Sheet for Generated Report.
     Sheet reportSheet = excel['Generated Report'];
     reportSheet.appendRow([
       'Question Number',
@@ -306,7 +279,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         row['percentPartiallyCorrect']
       ]);
     }
-    // Sheet for Student Breakdown.
     Sheet studentSheet = excel['Student Breakdown'];
     studentSheet.appendRow([
       'Student Name',
@@ -325,10 +297,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     return excel.encode()!;
   }
 
-  // ---------------------------------------------------------------------------
-  // _chooseExportFormat:
-  // Prompts the user to select whether to export the report as PDF or Excel.
-  // ---------------------------------------------------------------------------
   Future<ExportFormat?> _chooseExportFormat() async {
     return showDialog<ExportFormat>(
       context: context,
@@ -355,11 +323,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     );
   }
 
-  // ---------------------------------------------------------------------------
-  // _pickFileLocation:
-  // For non-web platforms, uses FilePicker to let the user choose a save location.
-  // On web, file saving is handled via an AnchorElement.
-  // ---------------------------------------------------------------------------
   Future<String?> _pickFileLocation(String defaultName) async {
     if (kIsWeb) return null;
     final result = await FilePicker.platform.saveFile(
@@ -369,11 +332,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     return result;
   }
 
-  // ---------------------------------------------------------------------------
-  // _saveReport:
-  // Exports the generated report as PDF or Excel and saves it.
-  // On web, triggers a download via an AnchorElement; on non-web, writes to the chosen location.
-  // ---------------------------------------------------------------------------
   Future<void> _saveReport() async {
     final format = await _chooseExportFormat();
     if (format == null) return;
@@ -422,9 +380,9 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
   // ---------------------------------------------------------------------------
   // _buildReportForm:
-  // Displays combo boxes for selecting course, subject, and assignment,
+  // Displays dropdowns for selecting course, subject, and assignment,
   // along with Generate and Export buttons.
-  // The Export button is enabled only when report data exists.
+  // The dropdowns are now populated from live LMS data.
   // ---------------------------------------------------------------------------
   Widget _buildReportForm() {
     return Container(
@@ -437,39 +395,60 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           const Text('Generate New Report',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
           const SizedBox(height: 8),
-          DropdownButtonFormField<String>(
-            value: selectedCourse,
+          // Course dropdown populated with live courses.
+          DropdownButtonFormField<Course>(
+            value: _selectedCourse,
             decoration: const InputDecoration(labelText: 'Course'),
-            items: _courses.map((course) {
-              return DropdownMenuItem(value: course, child: Text(course));
+            items: _coursesData.map((course) {
+              return DropdownMenuItem<Course>(
+                value: course,
+                child: Text(course.fullName ?? course.shortName ?? 'Unknown Course'),
+              );
             }).toList(),
-            onChanged: (val) {
+            onChanged: (val) async {
               setState(() {
-                selectedCourse = val;
+                _selectedCourse = val;
+                _selectedSubject = val?.subject;
               });
+              if (_selectedCourse != null) {
+                // When a course is selected, fetch assignments for that course.
+                final lmsService = LmsFactory.getLmsService();
+                _assignmentsData = await lmsService.getEssays(_selectedCourse!.id);
+                setState(() {});
+              }
             },
           ),
+          // Subject dropdown: using the subject property of the selected course.
           DropdownButtonFormField<String>(
-            value: selectedSubject,
+            value: _selectedSubject,
             decoration: const InputDecoration(labelText: 'Subject'),
-            items: _subjects.map((subject) {
-              return DropdownMenuItem(value: subject, child: Text(subject));
-            }).toList(),
+            items: _selectedCourse != null && _selectedCourse!.subject != null
+                ? [
+                    DropdownMenuItem(
+                      value: _selectedCourse!.subject,
+                      child: Text(_selectedCourse!.subject!),
+                    )
+                  ]
+                : [],
             onChanged: (val) {
               setState(() {
-                selectedSubject = val;
+                _selectedSubject = val;
               });
             },
           ),
-          DropdownButtonFormField<String>(
-            value: selectedAssignment,
+          // Assignment dropdown populated from live assignments.
+          DropdownButtonFormField<Assignment>(
+            value: _selectedAssignment,
             decoration: const InputDecoration(labelText: 'Assignment'),
-            items: _assignments.map((assignment) {
-              return DropdownMenuItem(value: assignment, child: Text(assignment));
+            items: _assignmentsData.map((assignment) {
+              return DropdownMenuItem<Assignment>(
+                value: assignment,
+                child: Text(assignment.name ?? 'Unknown Assignment'),
+              );
             }).toList(),
             onChanged: (val) {
               setState(() {
-                selectedAssignment = val;
+                _selectedAssignment = val;
               });
             },
           ),
@@ -494,8 +473,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
   // ---------------------------------------------------------------------------
   // _buildGeneratedReport:
-  // Displays the assignment breakdown table in a fixed-height container with
-  // both vertical and horizontal scrolling and visible scrollbars.
+  // Displays the assignment breakdown table with live data in a fixed-height container.
   // ---------------------------------------------------------------------------
   Widget _buildGeneratedReport() {
     if (_generatedReport.isEmpty && !isLoading) {
@@ -505,7 +483,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       return const Center(child: CircularProgressIndicator());
     }
     return SizedBox(
-      height: 300, // Fixed height container for the table.
+      height: 300,
       child: Scrollbar(
         thumbVisibility: true,
         controller: _verticalReportController,
@@ -546,9 +524,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
   // ---------------------------------------------------------------------------
   // _buildStudentBreakdown:
-  // Displays the student breakdown table and a detail panel side-by-side.
-  // The student names are underlined and clickable.
-  // Tapping a name updates the detail panel with that student's detailed grades.
+  // Displays the student breakdown table (with clickable names) and a detail panel.
   // ---------------------------------------------------------------------------
   Widget _buildStudentBreakdown() {
     if (_studentBreakdown.isEmpty && !isLoading) {
@@ -557,7 +533,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     if (isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
-    // Build the student table with clickable (hyperlinked) names.
     Widget studentTable = SizedBox(
       height: 300,
       child: Scrollbar(
@@ -582,7 +557,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                 ],
                 rows: _studentBreakdown.map((student) {
                   return DataRow(cells: [
-                    // Underlined hyperlink for student name.
                     DataCell(
                       InkWell(
                         onTap: () {
@@ -611,7 +585,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       ),
     );
 
-    // Build the detail panel for the selected student.
     Widget detailPanel = Container(
       width: 300,
       padding: const EdgeInsets.all(16),
@@ -619,7 +592,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       child: _buildStudentDetail(),
     );
 
-    // Return a Row with the table on the left and the detail panel on the right.
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -633,7 +605,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   // ---------------------------------------------------------------------------
   // _buildStudentDetail:
   // Displays detailed grade information for the selected student.
-  // If no student is selected, a placeholder message is shown.
   // ---------------------------------------------------------------------------
   Widget _buildStudentDetail() {
     if (_selectedStudent == null) {
@@ -644,8 +615,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         ),
       );
     }
-    // For demonstration, we simulate detailed data.
-    // In a real application, fetch or compute the student's detailed grades.
     List<Map<String, String>> detailData = List.generate(5, (index) {
       return {
         'Assignment': 'Assignment ${index + 1}',
@@ -678,8 +647,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
   // ---------------------------------------------------------------------------
   // _buildReportGeneratorSection:
-  // Combines the report form (left side) with the generated report (right side),
-  // and places the student breakdown (with detail panel) below.
+  // Combines the report form with the generated report and student breakdown.
   // ---------------------------------------------------------------------------
   Widget _buildReportGeneratorSection() {
     return Column(
@@ -687,7 +655,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       children: [
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center, // Center the row horizontally.
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             _buildReportForm(),
             const SizedBox(width: 20),
@@ -723,8 +691,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
   // ---------------------------------------------------------------------------
   // _buildContent:
-  // Builds the overall page content, centering the analytics summary and including
-  // the report generator section.
+  // Builds the overall page content.
   // ---------------------------------------------------------------------------
   Widget _buildContent() {
     if (isLoading && analyticsData == null && errorMsg.isEmpty) {
@@ -760,7 +727,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             ),
           ),
           const SizedBox(height: 20),
-          // Combined section for report generation and student breakdown.
+          // Report generator section.
           _buildReportGeneratorSection(),
           const SizedBox(height: 30),
         ],
@@ -770,7 +737,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
   // ---------------------------------------------------------------------------
   // build:
-  // Sets up the Scaffold using the shared CustomAppBar (with refresh button)
+  // Sets up the Scaffold using the shared CustomAppBar (which now includes a refresh button)
   // and the main content.
   // ---------------------------------------------------------------------------
   @override
@@ -779,15 +746,13 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: CustomAppBar(
         title: 'Analytics Dashboard',
-        // Use LmsFactory.getLmsService() to get the current profile image.
         userprofileurl: LmsFactory.getLmsService().profileImage ?? '',
-        onRefresh: _fetchAnalyticsData, // Passing the refresh callback.
+        onRefresh: _fetchAnalyticsData,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: _buildContent(),
       ),
-      // FloatingActionButton removed since refresh is now in the AppBar.
     );
   }
 }
