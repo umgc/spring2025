@@ -9,7 +9,8 @@ import 'package:yappy/tool_bar.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
-
+//Creates the home page of the app
+//The page will contain buttons that will navigate to different industries
   @override
   Widget build(BuildContext context) {
     return Scaffold(

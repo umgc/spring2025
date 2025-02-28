@@ -158,13 +158,6 @@ class IndustryMenu extends StatelessWidget {
                         showModalBottomSheet(
                           context: context,
                           builder: (BuildContext context) {
-
-                          //This could be the code to get the actual data
-                          // List<String> transcripts = await fetchTranscripts();
-
-                          //This is a test to make sure it works
-                          //List<String> transcripts = ['Transcript 1', 'Transcript 2']; // Example data
-
                           return Container(
                           padding: EdgeInsets.all(16.0),
                           decoration: BoxDecoration(
