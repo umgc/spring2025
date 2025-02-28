@@ -5,6 +5,7 @@ import 'package:learninglens_app/beans/course.dart';
 import 'package:learninglens_app/beans/quiz.dart';
 import 'package:learninglens_app/beans/assignment.dart';
 import 'package:learninglens_app/beans/participant.dart';
+import 'package:learninglens_app/beans/quiz_override';
 import 'package:learninglens_app/beans/quiz_type.dart';
 import 'package:learninglens_app/beans/submission_status.dart';
 import 'package:learninglens_app/beans/grade.dart';
@@ -914,6 +915,48 @@ class MoodleLmsService implements LmsInterface {
           .toList();
     } else {
       throw Exception("Failed to fetch questions: ${response.body}");
+    }
+  }
+
+  Future<QuizOverride> addQuizOverride({
+    required int quizId,
+    int? userId,
+    int? groupId,
+    int? timeOpen,
+    int? timeClose,
+    int? timeLimit,
+    int? attempts,
+    String? password,
+  }) async {
+    if (_userToken == null) throw StateError('User not logged in to Moodle');
+
+    final url = Uri.parse('$apiURL$serverUrl');
+
+    // Dynamically build request body, removing null values
+    final Map<String, String> body = {
+      'wstoken': _userToken!,
+      'wsfunction': 'local_learninglens_add_quiz_override',
+      'moodlewsrestformat': 'json',
+      'quizid': quizId.toString(),
+    };
+
+    // Add only non-null fields
+    if (userId != null) body['userid'] = userId.toString();
+    if (groupId != null) body['groupid'] = groupId.toString();
+    if (timeOpen != null) body['timeopen'] = timeOpen.toString();
+    if (timeClose != null) body['timeclose'] = timeClose.toString();
+    if (timeLimit != null) body['timelimit'] = timeLimit.toString();
+    if (attempts != null) body['attempts'] = attempts.toString();
+    if (password != null && password.isNotEmpty) body['password'] = password;
+
+    final response = await ApiService().httpPost(url, body: body);
+
+    final responseData = json.decode(response.body);
+
+    if (response.statusCode == 200 && responseData is Map<String, dynamic>) {
+      return QuizOverride.empty().fromMoodleJson(responseData);
+    } else {
+      throw Exception("Failed to create quiz override: ${response.body}");
     }
   }
 }

@@ -101,4 +101,12 @@ $functions = [
         'capabilities'=> 'mod/quiz:view',
         'services'    => [MOODLE_OFFICIAL_MOBILE_SERVICE],
     ],
+    'local_learninglens_add_quiz_override' => [
+        'classname'   => 'local_learninglens\external\add_quiz_override',
+        'description' => 'Adds an override to a quiz for a user or group.',
+        'type'        => 'write',
+        'ajax'        => true,
+        'capabilities'=> 'mod/quiz:manage',
+        'services'    => [MOODLE_OFFICIAL_MOBILE_SERVICE],
+    ],
 ];
