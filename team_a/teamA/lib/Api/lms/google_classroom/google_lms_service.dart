@@ -114,7 +114,7 @@ class GoogleLmsService extends LmsInterface {
         throw Exception("Failed to obtain access token.");
       }
 
-      // LocalStorageService.saveGoogleAccessToken(_userToken);
+      LocalStorageService.saveGoogleAccessToken(_userToken!);
     } catch (error) {
       print("Google Sign-In Error: $error");
       throw Exception("Google Sign-In failed: $error");
@@ -216,8 +216,12 @@ class GoogleLmsService extends LmsInterface {
         for (var topic in topics) {
           if (topic['name'] == 'Quiz') {
             course.quizTopicId = int.parse(topic['topicId']);
+              print('Id for quiz');
+            print(topic['topicId']);
           } else if (topic['name'] == 'Essay') {
             course.essayTopicId = int.parse(topic['topicId']);
+             print('Id for essay');
+            print(topic['topicId']);
           }
         }
       }
@@ -273,9 +277,10 @@ class GoogleLmsService extends LmsInterface {
       // If courseID is null, return all quizzes; otherwise filter by course
       if (courseID == null || int.parse(item['courseId']) == courseID) {
         if (topicId != null && item.containsKey('topicId')) {
+          
           if (int.parse(item['topicId']) == topicId) {
             quizList.add(Quiz.fromGoogleJson(item));
-          }
+           }
         }
       }
     }
@@ -439,10 +444,12 @@ class GoogleLmsService extends LmsInterface {
     for (var item in decodedJson) {
       // If courseID is null, return all quizzes; otherwise filter by course
       if (courseID == null || int.parse(item['courseId']) == courseID) {
-        if (topicId != null && item.containsKey('topicId')) {
-          if (int.parse(item['topicId']) == topicId) {
-            essayList.add(Assignment.empty().fromGoogleJson(item));
-          }
+       if (topicId != null && item.containsKey('topicId')) {
+
+          
+           if (int.parse(item['topicId']) == topicId) {
+             essayList.add(Assignment.empty().fromGoogleJson(item));
+           }
         }
       }
     }
