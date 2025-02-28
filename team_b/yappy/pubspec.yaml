@@ -42,6 +42,7 @@ dependencies:
   shelf_router: ^1.1.4
   shelf_cors_headers: ^0.1.5
   speech_to_text: ^6.1.1 
+  encrypt: ^5.0.3
 
 dev_dependencies:
   lints: ^5.1.1
