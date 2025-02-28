@@ -13,6 +13,8 @@ class Course implements LearningLensInterface {
 
   List<Quiz>? quizzes;
   List<Assignment>? essays;
+  int? quizTopicId;
+  int? essayTopicId;
 
   // Barebones constructor.
   Course(this.id, this.shortName, this.courseId, this.fullName, this.startdate,

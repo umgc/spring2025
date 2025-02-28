@@ -83,6 +83,7 @@ class GoogleLmsService extends LmsInterface {
         'email',
         'profile',
         'https://www.googleapis.com/auth/classroom.courses',
+        'https://www.googleapis.com/auth/classroom.topics',
         'https://www.googleapis.com/auth/classroom.rosters',
         'https://www.googleapis.com/auth/classroom.coursework.students',
         'https://www.googleapis.com/auth/classroom.coursework.me',
@@ -179,32 +180,53 @@ class GoogleLmsService extends LmsInterface {
     );
 
     // TODO: remove after testing. 
-    print('Google: ${response.body}');
+    // print('Google: ${response.body}');
 
     if (response.statusCode != 200) {
       throw HttpException(response.body);
     }
 
     final decodedJson = jsonDecode(response.body);
-    List<Course> userCourses;
+    List<Course> courses;
 
     // The response can be either a List or a Map with a 'courses' key
     if (decodedJson is List) {
-      userCourses = decodedJson.map((i) => Course.empty().fromGoogleJson(i)).toList();
+      courses = decodedJson.map((i) => Course.empty().fromGoogleJson(i)).toList();
     } else if (decodedJson is Map<String, dynamic>) {
       final courseList = decodedJson['courses'] as List<dynamic>;
-      userCourses = courseList.map((i) => Course.empty().fromGoogleJson(i)).toList();
+      courses = courseList.map((i) => Course.empty().fromGoogleJson(i)).toList();
     } else {
       throw StateError('Unexpected response format from Moodle');
     }
 
     // Optionally fetch quizzes/essays for each course
-    for (Course c in userCourses) {
-      c.quizzes = await getQuizzes(c.id);
-      // c.essays = await getEssays(c.id);
+    for (Course course in courses) {
+      // set topic ids
+      final responseTopics = await ApiService().httpGet(
+        Uri.parse('https://classroom.googleapis.com/v1/courses/${course.id}/topics/'),
+        headers: {'Authorization': 'Bearer $_userToken'},
+      );
+      
+      var decodedResponseTopics = jsonDecode(responseTopics.body);
+
+      if (decodedResponseTopics.containsKey('topic')) {
+        List<dynamic> topics = decodedResponseTopics["topic"];
+
+        // Iterate and capture topicIds
+        for (var topic in topics) {
+          if (topic['name'] == 'Quiz') {
+            course.quizTopicId = int.parse(topic['topicId']);
+          } else if (topic['name'] == 'Essay') {
+            course.essayTopicId = int.parse(topic['topicId']);
+          }
+        }
+      }
+      
+      course.quizzes = await getQuizzes(course.id, topicId: course.quizTopicId);
+      course.essays = await getEssays(course.id, topicId: course.essayTopicId);
     }
 
-    return userCourses;
+    return courses;
   }
 
   @override
@@ -224,8 +246,8 @@ class GoogleLmsService extends LmsInterface {
   }
 
   @override
-  Future<List<Quiz>> getQuizzes(int? courseID) async {
-     if (_userToken == null) throw StateError('User not logged in to Google Classroom');
+  Future<List<Quiz>> getQuizzes(int? courseID, {int? topicId}) async {
+    if (_userToken == null) throw StateError('User not logged in to Google Classroom');
 
     
     final response = await ApiService().httpGet(
@@ -233,7 +255,7 @@ class GoogleLmsService extends LmsInterface {
       headers: {'Authorization': 'Bearer $_userToken'},
     );
 
-    print('quizlist: ${response.body}');
+    // print('quizlist: ${response.body}');
 
     if (response.statusCode != 200) {
       throw HttpException(response.body);
@@ -250,7 +272,11 @@ class GoogleLmsService extends LmsInterface {
     for (var item in decodedJson) {
       // If courseID is null, return all quizzes; otherwise filter by course
       if (courseID == null || int.parse(item['courseId']) == courseID) {
-        quizList.add(Quiz.fromGoogleJson(item));
+        if (topicId != null && item.containsKey('topicId')) {
+          if (int.parse(item['topicId']) == topicId) {
+            quizList.add(Quiz.fromGoogleJson(item));
+          }
+        }
       }
     }
 
@@ -389,11 +415,39 @@ class GoogleLmsService extends LmsInterface {
   // ****************************************************************************************
 
   @override
-  Future<List<Assignment>> getEssays(int? courseID) async {
-    print('Getting essays...');
-    print('Course ID: $courseID');
-    // TODO: implement google api code
-    throw UnimplementedError();
+  Future<List<Assignment>> getEssays(int? courseID, {int? topicId}) async {
+    if (_userToken == null) throw StateError('User not logged in to Google Classroom');
+
+    
+    final response = await ApiService().httpGet(
+      Uri.parse('https://classroom.googleapis.com/v1/courses/$courseID/courseWork'),
+      headers: {'Authorization': 'Bearer $_userToken'},
+    );
+
+    if (response.statusCode != 200) {
+      throw HttpException(response.body);
+    }
+
+    final essaysMap = jsonDecode(response.body) as Map<String, dynamic>;
+    final decodedJson = essaysMap['courseWork'] as List<dynamic>?;
+
+    if (decodedJson == null) {
+      return [];
+    }
+    
+    List<Assignment> essayList = [];
+    for (var item in decodedJson) {
+      // If courseID is null, return all quizzes; otherwise filter by course
+      if (courseID == null || int.parse(item['courseId']) == courseID) {
+        if (topicId != null && item.containsKey('topicId')) {
+          if (int.parse(item['topicId']) == topicId) {
+            essayList.add(Assignment.empty().fromGoogleJson(item));
+          }
+        }
+      }
+    }
+
+    return essayList;
   }
 
   @override

@@ -275,7 +275,7 @@ class MoodleLmsService implements LmsInterface {
   }
 
   @override
-  Future<List<Quiz>> getQuizzes(int? courseID) async {
+  Future<List<Quiz>> getQuizzes(int? courseID, {int? topicId}) async {
     if (_userToken == null) throw StateError('User not logged in to Moodle');
 
     final response = await ApiService().httpPost(
@@ -435,7 +435,7 @@ class MoodleLmsService implements LmsInterface {
   // ****************************************************************************************
 
   @override
-  Future<List<Assignment>> getEssays(int? courseID) async {
+  Future<List<Assignment>> getEssays(int? courseID, {int? topicId}) async {
     if (_userToken == null) throw StateError('User not logged in to Moodle');
 
     final response = await ApiService().httpPost(

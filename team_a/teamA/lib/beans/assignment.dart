@@ -91,7 +91,27 @@ class Assignment implements LearningLensInterface {
 
   @override
   Assignment fromGoogleJson(Map<String, dynamic> json) {
-    // TODO: Dinesh, try to map the Google JSON to the Assignment object
-    throw UnimplementedError();
+    return Assignment(
+      id: int.parse(json['id']),
+      name: json['title'] ?? 'Untitled',
+      description: json['description'] ?? '',
+      dueDate: json['dueDate'] != null
+          ? DateTime(json['dueDate']['year'], 
+                    json['dueDate']['month'], 
+                    json['dueDate']['day'])
+          : null,
+      allowsubmissionsfromdate: json['creationTime'] != null
+          ? DateTime.parse(json['creationTime'])
+          : null,
+      cutoffDate: json['dueDate'] != null
+          ? DateTime(json['dueDate']['year'], 
+                    json['dueDate']['month'], 
+                    json['dueDate']['day'])
+          : null,
+      isDraft: false,
+      maxAttempts: 1,
+      gradingStatus: 0, // TODO: figure out grading status
+      courseId: int.parse(json['courseId']),
+    );
   }
 }

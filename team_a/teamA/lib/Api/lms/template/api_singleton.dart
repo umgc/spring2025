@@ -118,7 +118,7 @@ class ApiSingleton implements LmsInterface {
   }
 
   @override
-  Future<List<Quiz>> getQuizzes(int? courseID) {
+  Future<List<Quiz>> getQuizzes(int? courseID, {int? topicId}) {
     // TODO: implement getQuizzes
     throw UnimplementedError();
   }
@@ -144,7 +144,7 @@ class ApiSingleton implements LmsInterface {
   
   // Assignment methods
   @override
-  Future<List<Assignment>> getEssays(int? courseID) {
+  Future<List<Assignment>> getEssays(int? courseID, {int? topicId}) {
     // TODO: implement getEssays
     throw UnimplementedError();
   }

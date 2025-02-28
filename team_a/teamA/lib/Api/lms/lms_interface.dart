@@ -42,14 +42,14 @@ abstract class LmsInterface {
 
   // Quiz methods
   Future<void> importQuiz(String courseid, String quizXml);
-  Future<List<Quiz>> getQuizzes(int? courseID);
+  Future<List<Quiz>> getQuizzes(int? courseID, {int? topicId});
   Future<int?> createQuiz(String courseid, String quizname, String quizintro,
                           String sectionid, String timeopen, String timeclose);
   Future<String> addRandomQuestions(String categoryid, String quizid, String numquestions);
   Future<int?> importQuizQuestions(String courseid, String quizXml);
 
   // Assignment methods
-  Future<List<Assignment>> getEssays(int? courseID);
+  Future<List<Assignment>> getEssays(int? courseID, {int? topicId});
   Future<Map<String, dynamic>?> createAssignment(String courseid, String sectionid, String assignmentName, 
                                                   String startdate, String enddate, String rubricJson, String description);
   Future<int?> getContextId(int assignmentId, String courseId);
