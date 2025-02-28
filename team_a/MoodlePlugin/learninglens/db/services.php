@@ -90,7 +90,15 @@ $functions = [
         'ajax' => true,
         'capabilities' => 'mod/lesson:addinstance',
         'services' => [
-            MOODLE_OFFICIAL_MOBILE_SERVICEm
+            MOODLE_OFFICIAL_MOBILE_SERVICE,
         ]
+    ],
+    'local_learninglens_get_questions_from_quiz' => [
+        'classname'   => 'local_learninglens\external\get_questions_from_quiz',
+        'description' => 'Fetches questions linked to a quiz ID',
+        'type'        => 'read',
+        'ajax'        => true,
+        'capabilities'=> 'mod/quiz:view',
+        'services'    => [MOODLE_OFFICIAL_MOBILE_SERVICE],
     ],
 ];

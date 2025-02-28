@@ -5,6 +5,7 @@ import 'package:learninglens_app/beans/course.dart';
 import 'package:learninglens_app/beans/quiz.dart';
 import 'package:learninglens_app/beans/assignment.dart';
 import 'package:learninglens_app/beans/participant.dart';
+import 'package:learninglens_app/beans/quiz_type.dart';
 import 'package:learninglens_app/beans/submission_status.dart';
 import 'package:learninglens_app/beans/grade.dart';
 import 'package:learninglens_app/beans/submission.dart';
@@ -884,7 +885,35 @@ class MoodleLmsService implements LmsInterface {
       print("Error occurred while creating lesson: $e");
       return false;
     }
-    
+  }
+
+  /**
+   * Fetches all the questions from a quiz.
+   */
+  Future<List<QuestionType>> getQuestionsFromQuiz(int quizId) async {
+    if (_userToken == null) throw StateError('User not logged in to Moodle');
+
+    final url = Uri.parse('$apiURL$serverUrl');
+
+    final response = await ApiService().httpPost(
+      url,
+      body: {
+        'wstoken': _userToken!,
+        'wsfunction': 'local_learninglens_get_questions_from_quiz',
+        'moodlewsrestformat': 'json',
+        'quizid': quizId.toString(),
+      },
+    );
+
+    print("all Questions " + response.body);
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonList = json.decode(response.body);
+
+      return jsonList
+          .map((json) => QuestionType.empty().fromMoodleJson(json))
+          .toList();
+    } else {
+      throw Exception("Failed to fetch questions: ${response.body}");
+    }
   }
 }
-
