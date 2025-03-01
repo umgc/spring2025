@@ -13,7 +13,8 @@ class RestaurantApp extends StatelessWidget {
     );
   }
 }
-
+//Creates a page for the Restaurant industry
+//The page will contain the industry menu and the transcription box
 class RestaurantPage extends StatelessWidget {
   const RestaurantPage({super.key});
 
@@ -21,13 +22,11 @@ class RestaurantPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 0, 0, 0),
-
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(140), 
         child: ToolBar()
       ),
       drawer: HamburgerDrawer(),
-
       body: Column(
         children: [
         IndustryMenu(title: "Restaurant", icon: Icons.restaurant_menu),
