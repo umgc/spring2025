@@ -32,28 +32,29 @@ class FileHandler {
     }
   }
 
-  Future<void> moveFileToDatabase(DatabaseHelper dbHelper, String fileName, int transcriptId) async {
-    try {
-      final path = await localStoragePath;
-      final file = File(join(path, fileName));
-      if (await file.exists()) {
-        final bytes = await file.readAsBytes();
-        await dbHelper.insertDocument(transcriptId, fileName, bytes);
-        await file.delete();
-        if (kDebugMode) {
-          print('File moved to database and deleted from local storage: $fileName');
-        }
-      } else {
-        if (kDebugMode) {
-          print('File not found in local storage: $fileName');
-        }
-      }
-    } catch (e) {
-      if (kDebugMode) {
-        print('Error moving file to database: $e');
-      }
-    }
-  }
+  // Future<void> moveFileToDatabase(DatabaseHelper dbHelper, String fileName, int transcriptId) async {
+  //   try {
+  //     final path = await localStoragePath;
+  //     final file = File(join(path, fileName));
+  //     if (await file.exists()) {
+  //       final bytes = await file.readAsBytes();
+  //       await dbHelper.insertDocument(transcriptId, fileName, bytes);
+
+  //       await file.delete();
+  //       if (kDebugMode) {
+  //         print('File moved to database and deleted from local storage: $fileName');
+  //       }
+  //     } else {
+  //       if (kDebugMode) {
+  //         print('File not found in local storage: $fileName');
+  //       }
+  //     }
+  //   } catch (e) {
+  //     if (kDebugMode) {
+  //       print('Error moving file to database: $e');
+  //     }
+  //   }
+  // }
 
   Future<void> deleteFile(String fileName) async {
     try {
