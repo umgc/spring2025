@@ -7,19 +7,18 @@ class IndustryMenu extends StatelessWidget {
   final IconData icon;
 
   const IndustryMenu({required this.title, required this.icon, super.key});
-  Widget generateTranscript(
-      BuildContext context, String title, String content) {
-    return AlertDialog(
-      title: Text(title),
-      content: SingleChildScrollView(
-        child: Text(content),
-      ),
-      actions: [
-        //add export capes
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            IconButton(
+    Widget generateTranscript(BuildContext context, String title, String content) {
+      return AlertDialog(
+        title: Text(title),
+        content: SingleChildScrollView(
+          child: Text(content),
+        ),
+        actions: [
+          //add export capes
+            Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              IconButton(
               icon: Icon(Icons.share),
               onPressed: () {
                 // Add your share functionality here
@@ -53,9 +52,8 @@ class IndustryMenu extends StatelessWidget {
       );
     }
 
-      Future<List<Map<String, dynamic>>> _fetchTranscripts() async {
+  Future<List<Map<String, dynamic>>> _fetchTranscripts() async {
     DatabaseHelper dbHelper = DatabaseHelper();
-    
     return await dbHelper.getAllTranscripts();
   }
 
@@ -83,7 +81,10 @@ class IndustryMenu extends StatelessWidget {
                 child: Center(
                   child: Text(
                     title,
-                    style: TextStyle(fontSize: 24, color: Colors.white),
+                    style: TextStyle(
+                      fontSize: 24,
+                      color: Colors.white
+                    ),
                   ),
                 )),
           ),
@@ -104,7 +105,9 @@ class IndustryMenu extends StatelessWidget {
                     color: Colors.white,
                     size: screenHeight * .05,
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+
+                  },
                 ),
               ),
               SizedBox(width: screenWidth * .06),
@@ -120,7 +123,10 @@ class IndustryMenu extends StatelessWidget {
                     color: Colors.white,
                     size: screenHeight * .05,
                   ),
-                  onPressed: () {},
+
+                  onPressed: () {
+
+                  },
                 ),
               ),
               SizedBox(width: screenWidth * .06),
@@ -136,63 +142,62 @@ class IndustryMenu extends StatelessWidget {
                     color: Colors.white,
                     size: screenHeight * .05,
                   ),
-                    onPressed: () async {
+                  onPressed: () {
+                    // Store the context before async operation
+                    final BuildContext currentContext = context;
 
-                        List<Map<String, dynamic>> transcripts = await _fetchTranscripts();
+                    // Load transcripts and then show modal
+                    _fetchTranscripts().then((transcripts) {
+                      if (!currentContext.mounted) return;
 
-                    showModalBottomSheet(
-                      context: context,
-                      builder: (BuildContext context) {
-                        //This could be the code to get the actual data
-                        // List<String> transcripts = await fetchTranscripts();
-
-                          //This is a test to make sure it works
-                          //List<String> transcripts = ['Transcript 1', 'Transcript 2']; // Example data
-
-                        return Container(
-                          padding: EdgeInsets.all(16.0),
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(12),
-                            color: const Color.fromARGB(255, 67, 67, 67),
-                          ),
-                          child: Center(
-                            child: Column(
-                              children: [
-                                Expanded(
-                                  child: ListView.builder(
-                                    itemCount: transcripts.length,
-                                    itemBuilder: (context, index) {
-                                      Map<String, dynamic> transcript = transcripts[index];
-                                      return ListTile(
-                                        title: Text(
-                                          'Transcript ${transcript['transcript_id']}',
-                                          style: TextStyle(
-                                            color: Colors.white
-                                          ),
-                                        ),
-                                        onTap: () {
-                                          Navigator.pop(context);
-                                          showDialog(
-                                            context: context,
-                                            builder: (BuildContext context) {
-                                              return generateTranscript(
-                                              context,
-                                                'Transcript',
-                                                transcript['transcript_text_data'] ?? 'No content available',
-                                              );
-                                            },
-                                          );
-                                        },
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ],
+                      showModalBottomSheet(
+                        context: currentContext,
+                        builder: (BuildContext context) {
+                          return Container(
+                            padding: EdgeInsets.all(16.0),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              color: const Color.fromARGB(255, 67, 67, 67),
                             ),
-                          ),
-                        );
-                      },
-                    );
+                            child: Center(
+                              child: Column(
+                                children: [
+                                  Expanded(
+                                    child: ListView.builder(
+                                      itemCount: transcripts.length,
+                                      itemBuilder: (context, index) {
+                                        Map<String, dynamic> transcript = transcripts[index];
+                                        return ListTile(
+                                          title: Text(
+                                            'Transcript ${transcript['transcript_id']}',
+                                            style: TextStyle(
+                                              color: Colors.white
+                                            ),
+                                          ),
+                                          onTap: () {
+                                            Navigator.pop(context);
+                                            showDialog(
+                                              context: context,
+                                              builder: (BuildContext context) {
+                                                return generateTranscript(
+                                                  context,
+                                                  'Transcript',
+                                                  transcript['transcript_text_data'] ?? 'No content available',
+                                                );
+                                              },
+                                            );
+                                          },
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    });
                   },
                 ),
               ),
