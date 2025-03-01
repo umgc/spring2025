@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 void main() {
   runApp(TranscriptionBox());
 }
-
+//Creates a transcription box that will display the AI transcript
+//The box will be a text field that will display the AI transcript
 class TranscriptionBox extends StatelessWidget {
   const TranscriptionBox({super.key});
 
@@ -24,7 +25,8 @@ class TranscriptionBox extends StatelessWidget {
     );
   }
 }
-
+//Creates a chat box that will display the AI transcript
+//The box will be a text field that will display the AI transcript
 class ChatBox extends StatelessWidget {
   const ChatBox({super.key});
 
