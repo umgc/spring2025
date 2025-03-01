@@ -125,4 +125,12 @@ $functions = [
         'capabilities' => 'mod/lesson:manage',
         'services'    => [MOODLE_OFFICIAL_MOBILE_SERVICE]
     ],
+    'local_learninglens_update_lesson_plan' => [
+        'classname'   => 'local_learninglens\external\update_lesson_plan',
+        'description' => 'Updates an existing lesson plan by ID.',
+        'type'        => 'write',
+        'ajax'        => true,
+        'capabilities' => 'mod/lesson:manage',
+        'services'    => [MOODLE_OFFICIAL_MOBILE_SERVICE]
+    ],
 ];

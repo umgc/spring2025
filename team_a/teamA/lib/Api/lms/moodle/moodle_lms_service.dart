@@ -827,6 +827,10 @@ class MoodleLmsService implements LmsInterface {
     return MoodleRubric.empty().fromMoodleJson(responseData.first);
   }
 
+
+  // ****************************************************************************************
+  // TODO: add the method below to the lms_interface. 
+  // ****************************************************************************************
   /**
    * Fetches all the questions from a quiz.
    */
@@ -1024,6 +1028,53 @@ class MoodleLmsService implements LmsInterface {
       }
     } else {
       throw Exception("Failed to delete lesson plan: ${response.body}");
+    }
+  }
+
+  /**
+ * Updates a lesson plan in Moodle by its lesson ID.
+ */
+  Future<bool> updateLessonPlan({
+    required int lessonId,
+    String? name,
+    String? intro,
+    int? available,
+    int? deadline,
+  }) async {
+    if (_userToken == null) throw StateError('User not logged in to Moodle');
+
+    final url = Uri.parse('$apiURL$serverUrl');
+
+    // Construct request body dynamically
+    final Map<String, String> body = {
+      'wstoken': _userToken!,
+      'wsfunction': 'local_learninglens_update_lesson_plan',
+      'moodlewsrestformat': 'json',
+      'lessonid': lessonId.toString(),
+    };
+
+    if (name != null) body['name'] = name;
+    if (intro != null) body['intro'] = intro;
+    if (available != null) body['available'] = available.toString();
+    if (deadline != null) body['deadline'] = deadline.toString();
+
+    final response = await ApiService().httpPost(url, body: body);
+
+    print("Update Lesson Plan Response: ${response.body}");
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> jsonResponse = json.decode(response.body);
+
+      if (jsonResponse.containsKey("status") &&
+          jsonResponse["status"] == "success") {
+        print("Lesson plan updated successfully.");
+        return true;
+      } else {
+        print("Error updating lesson plan: ${jsonResponse['message']}");
+        return false;
+      }
+    } else {
+      throw Exception("Failed to update lesson plan: ${response.body}");
     }
   }
 }
