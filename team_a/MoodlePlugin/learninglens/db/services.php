@@ -12,6 +12,7 @@ $functions = [
             MOODLE_OFFICIAL_MOBILE_SERVICE,
         ]
     ],
+
      'local_learninglens_import_questions' => [
         'classname'   => 'local_learninglens\external\import_questions',
         'description' => 'Import XML questions to a course question bank',
@@ -81,5 +82,15 @@ $functions = [
         'services'    => [
             MOODLE_OFFICIAL_MOBILE_SERVICE,
             ]
+    ],
+    'local_learninglens_create_lesson_plan' => [
+        'classname'   => 'local_learninglens\external\create_lesson_plan',
+        'description' => 'Create a lesson plan in a specified course',
+        'type'        => 'write',
+        'ajax'        => true,
+        'capabilities'=> 'mod/lesson:addinstance',
+        'services'     => [
+            MOODLE_OFFICIAL_MOBILE_SERVICE,
+        ]
     ],  
 ];
