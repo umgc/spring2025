@@ -1,58 +1,38 @@
-import 'package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:convert';
+import 'package:learninglens_app/beans/learning_lens_interface.dart';
 
-class LessonPlan {
-  final int courseId;
-  final String lessonPlanName;
-  final String? content; // Content is now explicitly the lesson description
+class LessonPlan implements LearningLensInterface {
+  final int id;
+  final String name;
+  final String intro;
+  final int timemodified;
 
-  LessonPlan(
-      {required this.lessonPlanName, required this.courseId, this.content});
+  LessonPlan({
+    required this.id,
+    required this.name,
+    required this.intro,
+    required this.timemodified,
+  });
 
-  /// Convert lesson plan to JSON for storage or API submission
-  Map<String, dynamic> toJson() {
-    return {
-      'lessonPlanName': lessonPlanName,
-      'courseId': courseId,
-      'content': content, // Pass content as lesson description
-    };
-  }
+  // Empty constructor
+  LessonPlan.empty()
+      : id = 0,
+        name = '',
+        intro = '',
+        timemodified = 0;
 
-  /// Save lesson plan locally using SharedPreferences
-  Future<void> saveLessonPlanLocally() async {
-    final prefs = await SharedPreferences.getInstance();
-    final List<String> savedPlans = prefs.getStringList('lessonPlans') ?? [];
-    savedPlans.add(jsonEncode(this.toJson()));
-    await prefs.setStringList('lessonPlans', savedPlans);
-  }
-
-  /// Load lesson plans from SharedPreferences
-  static Future<List<LessonPlan>> loadLessonPlans() async {
-    final prefs = await SharedPreferences.getInstance();
-    final List<String> savedPlans = prefs.getStringList('lessonPlans') ?? [];
-
-    return savedPlans.map((plan) {
-      final Map<String, dynamic> planJson = jsonDecode(plan);
-      return LessonPlan(
-        lessonPlanName: planJson['lessonPlanName'],
-        courseId: planJson['courseId'],
-        content: planJson['content'],
-      );
-    }).toList();
-  }
-
-  /// Submit lesson plan and automatically create a Moodle lesson
-  Future<bool> submitLessonPlan() async {
-    final lessonPlanJson = this.toJson();
-    print("Submitting lesson plan with data: $lessonPlanJson");
-    var courseId = lessonPlanJson['courseId'];
-    var lessonPlanName = lessonPlanJson['lessonPlanName'];
-    var content = lessonPlanJson['content'];
-    return await MoodleLmsService().createLesson(
-      courseId: courseId, // Pass courseId as a string
-      lessonPlanName: lessonPlanName,
-      content: content ?? "No description provided",
+  @override
+  LessonPlan fromMoodleJson(Map<String, dynamic> json) {
+    return LessonPlan(
+      id: json['id'],
+      name: json['name'],
+      intro: json['intro'],
+      timemodified: json['timemodified'],
     );
+  }
+
+  @override
+  LessonPlan fromGoogleJson(Map<String, dynamic> json) {
+    // TODO: Map Google Classroom JSON to LessonPlan.
+    throw UnimplementedError();
   }
 }

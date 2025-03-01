@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import "package:learninglens_app/Api/lms/factory/lms_factory.dart";
 import "package:learninglens_app/Controller/custom_appbar.dart";
+import "package:learninglens_app/Views/lesson.dart";
 import "package:learninglens_app/beans/course.dart";
 import "package:learninglens_app/beans/lesson_plan.dart";
 
@@ -156,16 +157,16 @@ class _LessonPlanState extends State {
                         onPressed: () async {
                           // Submit logic here
                           if (selectedCourse != null) {
-                            LessonPlan newLp = LessonPlan(
+                            Lesson newLp = Lesson(
                               lessonPlanName: lessonPlanNameController.text,
                               courseId: int.parse(selectedCourse!),
                               content: manualEntryController.text,
                               //filePath: null
                             );
 
-                            newLp.saveLessonPlanLocally();
+                            newLp.saveLessonLocally();
 
-                            bool success = await newLp.submitLessonPlan();
+                            bool success = await newLp.submitLesson();
                             if (success) {
                               print('lesson plan sent successfully');
                             } else {

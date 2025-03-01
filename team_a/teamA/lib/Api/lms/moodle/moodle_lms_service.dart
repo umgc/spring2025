@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:learninglens_app/Api/lms/lms_interface.dart';
 import 'package:learninglens_app/beans/course.dart';
+import 'package:learninglens_app/beans/lesson_plan.dart';
 import 'package:learninglens_app/beans/quiz.dart';
 import 'package:learninglens_app/beans/assignment.dart';
 import 'package:learninglens_app/beans/participant.dart';
@@ -957,6 +958,36 @@ class MoodleLmsService implements LmsInterface {
       return QuizOverride.empty().fromMoodleJson(responseData);
     } else {
       throw Exception("Failed to create quiz override: ${response.body}");
+    }
+  }
+
+/**
+ * Fetches all lesson plans associated with a given course ID.
+ */
+  Future<List<LessonPlan>> getLessonPlans(int? courseId) async {
+    if (_userToken == null) throw StateError('User not logged in to Moodle');
+
+    final url = Uri.parse('$apiURL$serverUrl');
+
+    final response = await ApiService().httpPost(
+      url,
+      body: {
+        'wstoken': _userToken!,
+        'wsfunction': 'local_learninglens_get_lesson_plans_by_course',
+        'moodlewsrestformat': 'json',
+        'courseid': courseId.toString(),
+      },
+    );
+
+    // print("Lesson Plans Response: ${response.body}");
+
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonList = json.decode(response.body);
+      return jsonList
+          .map((json) => LessonPlan.empty().fromMoodleJson(json))
+          .toList();
+    } else {
+      throw Exception("Failed to fetch lesson plans: ${response.body}");
     }
   }
 }

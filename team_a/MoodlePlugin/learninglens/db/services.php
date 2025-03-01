@@ -109,4 +109,12 @@ $functions = [
         'capabilities'=> 'mod/quiz:manage',
         'services'    => [MOODLE_OFFICIAL_MOBILE_SERVICE],
     ],
+    'local_learninglens_get_lesson_plans_by_course' => [
+        'classname'   => 'local_learninglens\external\get_lesson_plans_by_course',
+        'description' => 'Retrieves lesson plans associated with a given course ID.',
+        'type'        => 'read',
+        'ajax'        => true,
+        'capabilities' => 'mod/lesson:view',
+        'services'    => [MOODLE_OFFICIAL_MOBILE_SERVICE] // Enables use in the Moodle Mobile App
+    ],
 ];
