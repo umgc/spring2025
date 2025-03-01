@@ -299,37 +299,37 @@ class GoogleTeacherDashboard extends StatelessWidget {
           ),
           const SizedBox(height: 20),
 
-          // // Row 2: (IEP, Analytics)
-          // Row(
-          //   mainAxisAlignment: MainAxisAlignment.center,
-          //   children: [
-          //     Expanded(
-          //       child: _buildResponsiveColumn(
-          //         context,
-          //         buttonData[2]['description'],
-          //         buttonData[2]['title'],
-          //         baseDescriptionFontSize,
-          //         baseButtonSize,
-          //         baseButtonFontSize,
-          //         buttonData[2]['onPressed'],
-          //         buttonData[2]['color'],
-          //       ),
-          //     ),
-          //     const SizedBox(width: 20),
-          //     Expanded(
-          //       child: _buildResponsiveColumn(
-          //         context,
-          //         buttonData[3]['description'],
-          //         buttonData[3]['title'],
-          //         baseDescriptionFontSize,
-          //         baseButtonSize,
-          //         baseButtonFontSize,
-          //         buttonData[3]['onPressed'],
-          //         buttonData[3]['color'],
-          //       ),
-          //     ),
-          //   ],
-          // ),
+          // Row 2: (IEP, Analytics)
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(
+                child: _buildResponsiveColumn(
+                  context,
+                  buttonData[2]['description'],
+                  buttonData[2]['title'],
+                  baseDescriptionFontSize,
+                  baseButtonSize,
+                  baseButtonFontSize,
+                  buttonData[2]['onPressed'],
+                  buttonData[2]['color'],
+                ),
+              ),
+              const SizedBox(width: 20),
+              // Expanded(
+              //   child: _buildResponsiveColumn(
+              //     context,
+              //     buttonData[3]['description'],
+              //     buttonData[3]['title'],
+              //     baseDescriptionFontSize,
+              //     baseButtonSize,
+              //     baseButtonFontSize,
+              //     buttonData[3]['onPressed'],
+              //     buttonData[3]['color'],
+              //   ),
+              // ),
+            ],
+          ),
           // const SizedBox(height: 20),
 
           // // Row 3: (Lesson Plan, Assessments)
