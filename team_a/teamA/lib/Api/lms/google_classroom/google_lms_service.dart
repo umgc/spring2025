@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:learninglens_app/beans/quiz_type.dart';
 import 'package:xml/xml.dart' as xml;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:learninglens_app/Api/lms/lms_interface.dart';
@@ -45,7 +46,8 @@ class GoogleLmsService extends LmsInterface {
   String? _userToken;
 
   @override
-  String apiURL = ''; // Base URL for your Moodle instance, e.g. "https://yourmoodle.com"
+  String apiURL =
+      ''; // Base URL for your Moodle instance, e.g. "https://yourmoodle.com"
   @override
   String? userName;
   @override
@@ -134,6 +136,12 @@ class GoogleLmsService extends LmsInterface {
   }
 
   @override
+  Future<List<QuestionType>> getQuestionsFromQuiz(int quizId) async {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
+  @override
   void logout() {
     print('Logging out of Google...');
     _googleSignIn.signOut();
@@ -176,7 +184,6 @@ class GoogleLmsService extends LmsInterface {
     final listData = jsonDecode(response.body) as List<dynamic>;
     return listData.map((i) => Course.empty().fromGoogleJson(i)).toList();
 
-
     // if (response.statusCode == 200) {
     //   setState(() => _courses = jsonDecode(response.body)['courses'] ?? []);
     // } else {
@@ -214,13 +221,8 @@ class GoogleLmsService extends LmsInterface {
   }
 
   @override
-  Future<int?> createQuiz(
-      String courseid,
-      String quizname,
-      String quizintro,
-      String sectionid,
-      String timeopen,
-      String timeclose) async {
+  Future<int?> createQuiz(String courseid, String quizname, String quizintro,
+      String sectionid, String timeopen, String timeclose) async {
     // TODO: implement google api code
     throw UnimplementedError();
   }
@@ -299,7 +301,8 @@ class GoogleLmsService extends LmsInterface {
   }
 
   @override
-  Future<bool> setRubricGrades(int assignmentId, int userId, String jsonGrades) async {
+  Future<bool> setRubricGrades(
+      int assignmentId, int userId, String jsonGrades) async {
     // TODO: implement google api code
     throw UnimplementedError();
   }
@@ -325,12 +328,6 @@ class GoogleLmsService extends LmsInterface {
     // TODO: implement google api code
     throw UnimplementedError();
   }
-
-
-
-
-
-
 
 // -----------------------------------------------------------------------
 // Parses XML quiz data and creates/assigns the quiz
