@@ -77,6 +77,9 @@ class UserSettingsState extends State<UserSettings> {
       // ),
       appBar: CustomAppBar(
           title: 'User Settings',
+          onRefresh: () {
+            // Add refresh logic here
+          },
           userprofileurl: MoodleLmsService().profileImage ?? ''),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

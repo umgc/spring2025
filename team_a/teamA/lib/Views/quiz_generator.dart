@@ -7,13 +7,11 @@ import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
 import 'package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart';
 import 'package:learninglens_app/beans/assignment_form.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
-import 'package:learninglens_app/llm/claudeai_api.dart';
+import 'package:learninglens_app/Api/llm/claudeai_api.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
 import 'edit_questions.dart';
-import 'package:learninglens_app/llm/openai_api.dart';
-import 'package:learninglens_app/llm/grok_api.dart';
-
-
+import 'package:learninglens_app/Api/llm/openai_api.dart';
+import 'package:learninglens_app/Api/llm/grok_api.dart';
 
 class CreateAssessment extends StatefulWidget {
 
@@ -96,7 +94,13 @@ class _AssessmentState extends State<CreateAssessment> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: CustomAppBar(title: 'Create Assessment', userprofileurl: LmsFactory.getLmsService().profileImage ?? ''),
+      appBar: CustomAppBar(
+        title: 'Create Assessment', 
+        onRefresh: () {
+          // _loadCourses();
+        },
+        userprofileurl: LmsFactory.getLmsService().profileImage ?? ''
+        ),
       body: Form(
           key: _formKey,
           child:

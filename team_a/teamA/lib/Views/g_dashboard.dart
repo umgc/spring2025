@@ -230,24 +230,24 @@ class GoogleTeacherDashboard extends StatelessWidget {
                 context, MaterialPageRoute(builder: (context) => EssaysView())),
         'color': Colors.red,
       },
-      {
-        'title': 'IEP',
-        'description': 'Manage Individualized Education Plans.',
-        'onPressed': !canAccessApp ? null : () {}, // Add navigation
-        'color': Colors.green,
-      },
-      {
-        'title': 'Analytics',
-        'description': 'View performance analytics.',
-        'onPressed': !canAccessApp ? null : () {}, // Add navigation
-        'color': Colors.cyan,
-      },
-      {
-        'title': 'Lesson Plan',
-        'description': 'Create and manage lesson plans.',
-        'onPressed': !canAccessApp ? null : () {}, // Add navigation
-        'color': Colors.purple,
-      },
+      // {
+      //   'title': 'IEP',
+      //   'description': 'Manage Individualized Education Plans.',
+      //   'onPressed': !canAccessApp ? null : () {}, // Add navigation
+      //   'color': Colors.green,
+      // },
+      // {
+      //   'title': 'Analytics',
+      //   'description': 'View performance analytics.',
+      //   'onPressed': !canAccessApp ? null : () {}, // Add navigation
+      //   'color': Colors.cyan,
+      // },
+      // {
+      //   'title': 'Lesson Plan',
+      //   'description': 'Create and manage lesson plans.',
+      //   'onPressed': !canAccessApp ? null : () {}, // Add navigation
+      //   'color': Colors.purple,
+      // },
       {
         'title': 'Assessments',
         'description': 'Create or view assessments.',
@@ -316,53 +316,53 @@ class GoogleTeacherDashboard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 20),
-              Expanded(
-                child: _buildResponsiveColumn(
-                  context,
-                  buttonData[3]['description'],
-                  buttonData[3]['title'],
-                  baseDescriptionFontSize,
-                  baseButtonSize,
-                  baseButtonFontSize,
-                  buttonData[3]['onPressed'],
-                  buttonData[3]['color'],
-                ),
-              ),
+              // Expanded(
+              //   child: _buildResponsiveColumn(
+              //     context,
+              //     buttonData[3]['description'],
+              //     buttonData[3]['title'],
+              //     baseDescriptionFontSize,
+              //     baseButtonSize,
+              //     baseButtonFontSize,
+              //     buttonData[3]['onPressed'],
+              //     buttonData[3]['color'],
+              //   ),
+              // ),
             ],
           ),
-          const SizedBox(height: 20),
+          // const SizedBox(height: 20),
 
-          // Row 3: (Lesson Plan, Assessments)
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Expanded(
-                child: _buildResponsiveColumn(
-                  context,
-                  buttonData[4]['description'],
-                  buttonData[4]['title'],
-                  baseDescriptionFontSize,
-                  baseButtonSize,
-                  baseButtonFontSize,
-                  buttonData[4]['onPressed'],
-                  buttonData[4]['color'],
-                ),
-              ),
-              const SizedBox(width: 20),
-              Expanded(
-                child: _buildResponsiveColumn(
-                  context,
-                  buttonData[5]['description'],
-                  buttonData[5]['title'],
-                  baseDescriptionFontSize,
-                  baseButtonSize,
-                  baseButtonFontSize,
-                  buttonData[5]['onPressed'],
-                  buttonData[5]['color'],
-                ),
-              ),
-            ],
-          ),
+          // // Row 3: (Lesson Plan, Assessments)
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.center,
+          //   children: [
+          //     Expanded(
+          //       child: _buildResponsiveColumn(
+          //         context,
+          //         buttonData[4]['description'],
+          //         buttonData[4]['title'],
+          //         baseDescriptionFontSize,
+          //         baseButtonSize,
+          //         baseButtonFontSize,
+          //         buttonData[4]['onPressed'],
+          //         buttonData[4]['color'],
+          //       ),
+          //     ),
+          //     const SizedBox(width: 20),
+          //     Expanded(
+          //       child: _buildResponsiveColumn(
+          //         context,
+          //         buttonData[5]['description'],
+          //         buttonData[5]['title'],
+          //         baseDescriptionFontSize,
+          //         baseButtonSize,
+          //         baseButtonFontSize,
+          //         buttonData[5]['onPressed'],
+          //         buttonData[5]['color'],
+          //       ),
+          //     ),
+          //   ],
+          // ),
         ],
       ),
     );

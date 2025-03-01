@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:learninglens_app/beans/course.dart';
 import 'package:learninglens_app/beans/quiz.dart';
+import 'package:learninglens_app/beans/quiz_type.dart';
 import 'package:learninglens_app/beans/assignment.dart';
 import 'package:learninglens_app/beans/participant.dart';
 import 'package:learninglens_app/beans/submission_status.dart';
@@ -138,6 +139,12 @@ class ApiSingleton implements LmsInterface {
   @override
   Future<String> addRandomQuestions(String categoryid, String quizid, String numquestions) {
     // TODO: implement addRandomQuestions
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<QuestionType>> getQuestionsFromQuiz(int quizId) async {
+    // TODO: implement google api code
     throw UnimplementedError();
   }
   

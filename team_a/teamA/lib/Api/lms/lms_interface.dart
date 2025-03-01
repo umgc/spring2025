@@ -1,5 +1,6 @@
 import 'package:learninglens_app/beans/course.dart';
 import 'package:learninglens_app/beans/quiz.dart';
+import 'package:learninglens_app/beans/quiz_type.dart';
 import 'package:learninglens_app/beans/assignment.dart';
 import 'package:learninglens_app/beans/participant.dart';
 import 'package:learninglens_app/beans/submission_status.dart';
@@ -10,7 +11,6 @@ import 'package:learninglens_app/beans/moodle_rubric.dart';
 
 // Singleton interface class for API access.
 abstract class LmsInterface {
-  
   late String serverUrl;
 
   // User info
@@ -22,11 +22,6 @@ abstract class LmsInterface {
   String? fullName;
   String? profileImage;
   List<Course>? courses;
-
-  // Singleton accessor.
-  // factory LmsInterface() {
-  //   throw UnimplementedError("Api Interface cannot be instantiated.");
-  // }
 
   // Authentication/Login methods
   Future<void> login(String username, String password, String baseURL);
@@ -44,9 +39,11 @@ abstract class LmsInterface {
   Future<void> importQuiz(String courseid, String quizXml);
   Future<List<Quiz>> getQuizzes(int? courseID, {int? topicId});
   Future<int?> createQuiz(String courseid, String quizname, String quizintro,
-                          String sectionid, String timeopen, String timeclose);
-  Future<String> addRandomQuestions(String categoryid, String quizid, String numquestions);
+      String sectionid, String timeopen, String timeclose);
+  Future<String> addRandomQuestions(
+      String categoryid, String quizid, String numquestions);
   Future<int?> importQuizQuestions(String courseid, String quizXml);
+  Future<List<QuestionType>> getQuestionsFromQuiz(int quizId);
 
   // Assignment methods
   Future<List<Assignment>> getEssays(int? courseID, {int? topicId});
@@ -65,5 +62,4 @@ abstract class LmsInterface {
 
   // Rubric methods
   Future<MoodleRubric?> getRubric(String assignmentid);
-  
 }

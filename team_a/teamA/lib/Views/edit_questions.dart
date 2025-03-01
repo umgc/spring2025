@@ -1,7 +1,7 @@
 import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/Views/send_quiz_to_moodle.dart';
-import 'package:learninglens_app/llm/openai_api.dart';
+import 'package:learninglens_app/Api/llm/openai_api.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
 import '../Api/lms/moodle/moodle_lms_service.dart';
 import 'package:learninglens_app/beans/quiz.dart';

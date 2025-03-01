@@ -4,6 +4,7 @@ import 'package:learninglens_app/beans/quiz.dart';
 import 'package:learninglens_app/beans/course.dart';
 import 'package:learninglens_app/beans/question.dart';
 import "package:learninglens_app/Controller/custom_appbar.dart";
+import "package:learninglens_app/beans/quiz_type.dart";
 import "package:learninglens_app/content_carousel.dart";
 
 //The Page
@@ -17,6 +18,7 @@ class AssessmentsView extends StatefulWidget {
 class _AssessmentsState extends State<AssessmentsView> {
   late Future<List<Quiz>?> quizzes;
   Quiz? selectedQuiz;
+  List<Map<String, dynamic>> questionsData = [];
 
   @override
   void initState() {
@@ -29,6 +31,11 @@ class _AssessmentsState extends State<AssessmentsView> {
     return Scaffold(
       appBar: CustomAppBar(
         title: 'Assessments',
+        onRefresh: () {
+          setState(() {
+            quizzes = getAllQuizzes();
+          });
+        },
         userprofileurl: LmsFactory.getLmsService().profileImage ?? '',
       ),
       body: Column(
@@ -107,24 +114,88 @@ class _AssessmentsState extends State<AssessmentsView> {
                                 ? Center(
                                     child:
                                         Text('Select a quiz to view details'))
-                                : Container(
-                                    decoration: BoxDecoration(
-                                      border: Border.all(color: Colors.grey),
-                                      borderRadius: BorderRadius.circular(8.0),
-                                    ),
-                                    margin: EdgeInsets.all(8.0),
-                                    child: Center(
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(16.0),
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Text(getQuestionListAsString(
-                                                selectedQuiz)),
-                                          ],
-                                        ),
+                                : Column(
+                                    children: [
+                                      Text('Questions',
+                                          style: TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold)),
+                                      FutureBuilder<List<QuestionType>?>(
+                                        future: LmsFactory.getLmsService()
+                                            .getQuestionsFromQuiz(
+                                                selectedQuiz?.id ?? 0),
+                                        builder: (context, snapshot) {
+                                          if (snapshot.connectionState ==
+                                              ConnectionState.waiting) {
+                                            return Center(
+                                                child:
+                                                    CircularProgressIndicator());
+                                          } else if (snapshot.hasError) {
+                                            return Center(
+                                                child: Text(
+                                                    'Error loading questions'));
+                                          } else if (!snapshot.hasData ||
+                                              snapshot.data!.isEmpty) {
+                                            return Center(
+                                                child:
+                                                    Text('No questions found'));
+                                          } else {
+                                            final questionList = snapshot.data!;
+                                            questionsData =
+                                                questionList.map((question) {
+                                              return {
+                                                'questionNumber': question.name,
+                                                'questionType':
+                                                    question.questionType,
+                                                'questionText':
+                                                    question.questionText,
+                                              };
+                                            }).toList();
+
+                                            return Container(
+                                              decoration: BoxDecoration(
+                                                border: Border.all(
+                                                    color: Colors.grey),
+                                                borderRadius:
+                                                    BorderRadius.circular(8.0),
+                                              ),
+                                              margin: EdgeInsets.all(8.0),
+                                              child: DataTable(
+                                                headingRowColor:
+                                                    MaterialStateProperty.all(
+                                                        Theme.of(context)
+                                                            .colorScheme
+                                                            .primary
+                                                            .withOpacity(0.1)),
+                                                columns: const [
+                                                  DataColumn(
+                                                      label: Text(
+                                                          'Question Number')),
+                                                  DataColumn(
+                                                      label: Text('Type')),
+                                                  DataColumn(
+                                                      label: Text(
+                                                          'Question Text')),
+                                                ],
+                                                rows: questionsData.map((row) {
+                                                  return DataRow(cells: [
+                                                    DataCell(Text(
+                                                        row['questionNumber']
+                                                            .toString())),
+                                                    DataCell(Text(
+                                                        row['questionType']
+                                                            .toString())),
+                                                    DataCell(Text(
+                                                        row['questionText']
+                                                            .toString())),
+                                                  ]);
+                                                }).toList(),
+                                              ),
+                                            );
+                                          }
+                                        },
                                       ),
-                                    ),
+                                    ],
                                   ),
                           ),
                         ],
@@ -142,25 +213,12 @@ class _AssessmentsState extends State<AssessmentsView> {
 }
 
 //Helper function that pulls the quizzes from all the user's courses
-Future<List<Quiz>?> getAllQuizzes() async {
-  List<Quiz>? result;
+Future<List<Quiz>> getAllQuizzes() async {
+  List<Quiz> result = [];
   for (Course c in LmsFactory.getLmsService().courses ?? []) {
-    result = (result ?? []) + (c.quizzes ?? []);
-  }
-  if (result == []) {
-    return null;
+    result.addAll(c.quizzes ?? []);
   }
   return result;
-}
-
-String getQuestionListAsString(Quiz? selectedQuiz) {
-  String result = "";
-
-  for (Question q in selectedQuiz?.questionList ?? []) {
-    result += q.toString();
-  }
-
-  return result.isEmpty ? "There are no quiz questions." : result;
 }
 
 //Helper function that gets the course number for the quiz

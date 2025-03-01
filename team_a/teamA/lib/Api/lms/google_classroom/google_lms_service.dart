@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
+import 'package:learninglens_app/beans/quiz_type.dart';
 import 'package:xml/xml.dart' as xml;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:learninglens_app/Api/lms/lms_interface.dart';
@@ -419,6 +420,12 @@ class GoogleLmsService extends LmsInterface {
     throw UnimplementedError();
   }
 
+  @override
+  Future<List<QuestionType>> getQuestionsFromQuiz(int quizId) async {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+
   // ****************************************************************************************
   // Assignment methods
   // ****************************************************************************************
@@ -566,12 +573,6 @@ class GoogleLmsService extends LmsInterface {
     print('Assignment ID: $assignmentid');
     throw UnimplementedError();
   }
-
-
-
-
-
-
 
 // -----------------------------------------------------------------------
 // Parses XML quiz data and creates/assigns the quiz

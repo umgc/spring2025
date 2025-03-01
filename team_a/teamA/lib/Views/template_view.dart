@@ -36,7 +36,13 @@ class _TemplateState extends State{
   @override
   Widget build(BuildContext context){
     return Scaffold(
-      appBar: CustomAppBar(title: 'Template View', userprofileurl: LmsFactory.getLmsService().profileImage ?? ''),
+      appBar: CustomAppBar(
+        title: 'Template View', 
+        onRefresh: () {
+          // Add refresh logic here
+        },
+        userprofileurl: LmsFactory.getLmsService().profileImage ?? ''
+        ),
       body: SingleChildScrollView(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceAround,

@@ -21,7 +21,13 @@ class _IepPageState extends State{
   @override
   Widget build(BuildContext context){
     return Scaffold(
-      appBar: CustomAppBar(title: 'Individual Education Plans', userprofileurl: LmsFactory.getLmsService().profileImage ?? ''),
+      appBar: CustomAppBar(
+        title: 'Individual Education Plans',
+        onRefresh: () {
+          // _loadCourses();
+        },
+        userprofileurl: LmsFactory.getLmsService().profileImage ?? ''
+        ),
       body: SingleChildScrollView(
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
@@ -395,6 +401,7 @@ List<Course>? getAllCourses() {
   return result;
 }
 
+//loads participants for the drop down menu
 Future<List<Participant>>? getAllParticipants() async {
   List<Participant>? participants;
   participants = await MoodleLmsService().getCourseParticipants('4');

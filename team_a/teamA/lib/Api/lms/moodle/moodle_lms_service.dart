@@ -2,9 +2,12 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:learninglens_app/Api/lms/lms_interface.dart';
 import 'package:learninglens_app/beans/course.dart';
+import 'package:learninglens_app/beans/lesson_plan.dart';
 import 'package:learninglens_app/beans/quiz.dart';
 import 'package:learninglens_app/beans/assignment.dart';
 import 'package:learninglens_app/beans/participant.dart';
+import 'package:learninglens_app/beans/quiz_override';
+import 'package:learninglens_app/beans/quiz_type.dart';
 import 'package:learninglens_app/beans/submission_status.dart';
 import 'package:learninglens_app/beans/grade.dart';
 import 'package:learninglens_app/beans/submission.dart';
@@ -824,87 +827,254 @@ class MoodleLmsService implements LmsInterface {
     return MoodleRubric.empty().fromMoodleJson(responseData.first);
   }
 
-  // ********************************************************************************************************************
-  // Submit lesson plan instance in a course.
-  // ********************************************************************************************************************
-  Future<bool> sendLessonPlanData(Map<String, dynamic> lessonPlanData) async {
-  try {
-    print(lessonPlanData);
-    print(lessonPlanData['courseid']);
-    print(lessonPlanData['lessonPlanName']);
-    print(lessonPlanData['content']);
+
+  // ****************************************************************************************
+  // TODO: add the method below to the lms_interface. 
+  // ****************************************************************************************
+  /**
+   * Fetches all the questions from a quiz.
+   */
+  Future<List<QuestionType>> getQuestionsFromQuiz(int quizId) async {
+    if (_userToken == null) throw StateError('User not logged in to Moodle');
+
+    final url = Uri.parse('$apiURL$serverUrl');
+
     final response = await ApiService().httpPost(
-      Uri.parse(apiURL + serverUrl),
+      url,
       body: {
-        'wstoken': _userToken,
-        'wsfunction': 'local_learninglens_create_lesson_plan',
+        'wstoken': _userToken!,
+        'wsfunction': 'local_learninglens_get_questions_from_quiz',
         'moodlewsrestformat': 'json',
-        'courseid': lessonPlanData['courseId'],  // Pass courseId directly
-        'lessonPlanName': lessonPlanData['lessonPlanName'],  // Pass lessonPlanName directly
-        'content': lessonPlanData['content'],  // Pass content directly
+        'quizid': quizId.toString(),
       },
     );
 
+    print("all Questions " + response.body);
     if (response.statusCode == 200) {
-      final Map<String, dynamic> responseData = json.decode(response.body);
-      print('Response: $responseData');
+      final List<dynamic> jsonList = json.decode(response.body);
 
-      // If the lesson plan submission was successful, create the Moodle Lesson
-      if (responseData.containsKey('lessonPlanId')) {
-        return await createLesson(
-          courseId: lessonPlanData['courseid'],
-          name: lessonPlanData['lessonPlanName'],
-        );
-      }
+      return jsonList
+          .map((json) => QuestionType.empty().fromMoodleJson(json))
+          .toList();
     } else {
-      print('Request failed with status: ${response.statusCode}.');
+      throw Exception("Failed to fetch questions: ${response.body}");
     }
-  } catch (e) {
-    print('Error occurred while submitting lesson plan: $e');
   }
-  return false;
-}
 
+  Future<QuizOverride> addQuizOverride({
+    required int quizId,
+    int? userId,
+    int? groupId,
+    int? timeOpen,
+    int? timeClose,
+    int? timeLimit,
+    int? attempts,
+    String? password,
+  }) async {
+    if (_userToken == null) throw StateError('User not logged in to Moodle');
 
-  // Method to create the lesson in Moodle
+    final url = Uri.parse('$apiURL$serverUrl');
+
+    // Dynamically build request body, removing null values
+    final Map<String, String> body = {
+      'wstoken': _userToken!,
+      'wsfunction': 'local_learninglens_add_quiz_override',
+      'moodlewsrestformat': 'json',
+      'quizid': quizId.toString(),
+    };
+
+    // Add only non-null fields
+    if (userId != null) body['userid'] = userId.toString();
+    if (groupId != null) body['groupid'] = groupId.toString();
+    if (timeOpen != null) body['timeopen'] = timeOpen.toString();
+    if (timeClose != null) body['timeclose'] = timeClose.toString();
+    if (timeLimit != null) body['timelimit'] = timeLimit.toString();
+    if (attempts != null) body['attempts'] = attempts.toString();
+    if (password != null && password.isNotEmpty) body['password'] = password;
+
+    final response = await ApiService().httpPost(url, body: body);
+
+    final responseData = json.decode(response.body);
+
+    if (response.statusCode == 200 && responseData is Map<String, dynamic>) {
+      return QuizOverride.empty().fromMoodleJson(responseData);
+    } else {
+      throw Exception("Failed to create quiz override: ${response.body}");
+    }
+  }
+
+/**
+ * Fetches all lesson plans associated with a given course ID.
+ */
+  Future<List<LessonPlan>> getLessonPlans(int? courseId) async {
+    if (_userToken == null) throw StateError('User not logged in to Moodle');
+
+    final url = Uri.parse('$apiURL$serverUrl');
+
+    final response = await ApiService().httpPost(
+      url,
+      body: {
+        'wstoken': _userToken!,
+        'wsfunction': 'local_learninglens_get_lesson_plans_by_course',
+        'moodlewsrestformat': 'json',
+        'courseid': courseId.toString(),
+      },
+    );
+
+    // print("Lesson Plans Response: ${response.body}");
+
+    if (response.statusCode == 200) {
+      final List<dynamic> jsonList = json.decode(response.body);
+      return jsonList
+          .map((json) => LessonPlan.empty().fromMoodleJson(json))
+          .toList();
+    } else {
+      throw Exception("Failed to fetch lesson plans: ${response.body}");
+    }
+  }
+
+// Method to create the lesson in Moodle
   Future<bool> createLesson({
     required int courseId,
-    required String name,
-    String intro = "This is an automatically created lesson.",
-    int available = 1,
+    required String lessonPlanName,
+    required String content,
+    int introformat = 1,
+    int showdescription = 1,
+    int available = 0,
     int deadline = 0,
     int timelimit = 0,
     int retake = 1,
     int maxAttempts = 3,
+    int usepassword = 0,
+    String password = '',
+    int completion = 1,
   }) async {
+    try {
+      print("Creating lesson with courseId: $courseId, name: $lessonPlanName");
+
+      final response = await ApiService().httpPost(
+        Uri.parse(apiURL + serverUrl),
+        body: {
+          "wstoken": _userToken,
+          "wsfunction": "local_learninglens_create_lesson",
+          "moodlewsrestformat": "json",
+          // REQUIRED fields
+          "courseid": courseId.toString(),
+          "name": lessonPlanName,
+          "intro": content,
+          // OPTIONAL fields
+          "introformat": introformat.toString(),
+          "showdescription": showdescription.toString(),
+          "available": available.toString(),
+          "deadline": deadline.toString(),
+          "timelimit": timelimit.toString(),
+          "retake": retake.toString(),
+          "maxattempts": maxAttempts.toString(),
+          "usepassword": usepassword.toString(),
+          "password": password,
+          "completion": completion.toString(),
+        },
+      );
+
+      final jsonResponse = json.decode(response.body) as Map<String, dynamic>;
+      print("createLesson Response: $jsonResponse");
+
+      if (jsonResponse.containsKey("exception")) {
+        print("Error creating lesson: ${jsonResponse['message']}");
+        return false;
+      }
+
+      print(
+          "Lesson created successfully! Lesson ID: ${jsonResponse['lessonId']}");
+      print("Linked to Course Module ID: ${jsonResponse['courseModuleId']}");
+
+      return true;
+    } catch (e) {
+      print("Error occurred while creating lesson: $e");
+      return false;
+    }
+  }
+
+  /**
+  * Deletes a lesson plan from Moodle by its lesson ID.
+  */
+  Future<bool> deleteLessonPlan(int lessonId) async {
+    if (_userToken == null) throw StateError('User not logged in to Moodle');
+
+    final url = Uri.parse('$apiURL$serverUrl');
+
     final response = await ApiService().httpPost(
-      Uri.parse(apiURL + serverUrl),
+      url,
       body: {
-        "wstoken": _userToken,
-        "wsfunction": "mod_lesson_add_lesson",
-        "moodlewsrestformat": "json",
-        "courseid": courseId.toString(),
-        "name": name,
-        "intro": intro,
-        "introformat": "1",
-        "available": available.toString(),
-        "deadline": deadline.toString(),
-        "timelimit": timelimit.toString(),
-        "retake": retake.toString(),
-        "maxattempts": maxAttempts.toString(),
+        'wstoken': _userToken!,
+        'wsfunction': 'local_learninglens_delete_lesson_plan',
+        'moodlewsrestformat': 'json',
+        'lessonid': lessonId.toString(),
       },
     );
 
-    final Map<String, dynamic> jsonResponse = json.decode(response.body);
+    print("Delete Lesson Plan Response: ${response.body}");
 
-    if (jsonResponse.containsKey("exception")) {
-      print("Error creating lesson: ${jsonResponse['message']}");
-      return false;
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> jsonResponse = json.decode(response.body);
+
+      if (jsonResponse.containsKey("status") &&
+          jsonResponse["status"] == "success") {
+        print("Lesson plan deleted successfully.");
+        return true;
+      } else {
+        print("Error deleting lesson plan: ${jsonResponse['message']}");
+        return false;
+      }
+    } else {
+      throw Exception("Failed to delete lesson plan: ${response.body}");
     }
-
-    print("Lesson created successfully: ${jsonResponse}");
-    return true;
   }
 
-}
+  /**
+ * Updates a lesson plan in Moodle by its lesson ID.
+ */
+  Future<bool> updateLessonPlan({
+    required int lessonId,
+    String? name,
+    String? intro,
+    int? available,
+    int? deadline,
+  }) async {
+    if (_userToken == null) throw StateError('User not logged in to Moodle');
 
+    final url = Uri.parse('$apiURL$serverUrl');
+
+    // Construct request body dynamically
+    final Map<String, String> body = {
+      'wstoken': _userToken!,
+      'wsfunction': 'local_learninglens_update_lesson_plan',
+      'moodlewsrestformat': 'json',
+      'lessonid': lessonId.toString(),
+    };
+
+    if (name != null) body['name'] = name;
+    if (intro != null) body['intro'] = intro;
+    if (available != null) body['available'] = available.toString();
+    if (deadline != null) body['deadline'] = deadline.toString();
+
+    final response = await ApiService().httpPost(url, body: body);
+
+    print("Update Lesson Plan Response: ${response.body}");
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> jsonResponse = json.decode(response.body);
+
+      if (jsonResponse.containsKey("status") &&
+          jsonResponse["status"] == "success") {
+        print("Lesson plan updated successfully.");
+        return true;
+      } else {
+        print("Error updating lesson plan: ${jsonResponse['message']}");
+        return false;
+      }
+    } else {
+      throw Exception("Failed to update lesson plan: ${response.body}");
+    }
+  }
+}
