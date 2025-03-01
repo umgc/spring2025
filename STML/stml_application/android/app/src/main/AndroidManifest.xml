@@ -1,4 +1,14 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- To ensure safe zone entry/exit detection works properly, we need to request location permissions -->
+    <!-- Precise location access -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <!-- Approximate location access -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    <!-- Allows location access when the app is running -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <!-- Allows location tracking in the background -->
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
+
     <application
         android:label="stml_application"
         android:name="${applicationName}"

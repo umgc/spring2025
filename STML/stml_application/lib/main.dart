@@ -1,6 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
+import 'database_helper.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  final db = DatabaseHelper.instance; 
+
+  Future.delayed(Duration(seconds: 1), () {
+    db.startSafeZoneTracking(); // Start Safe Zone Tracking after delay
+  });
   runApp(STMLApp());
 }
 
@@ -14,7 +22,32 @@ class STMLApp extends StatelessWidget {
   }
 }
 
-class WelcomePage extends StatelessWidget {
+// Convert WelcomePage to a StatefulWidget (Fixes `initState()` issue)
+class WelcomePage extends StatefulWidget {
+  @override
+  _WelcomePageState createState() => _WelcomePageState();
+}
+
+class _WelcomePageState extends State<WelcomePage> {
+  @override
+  void initState() {
+    super.initState();
+    requestLocationPermission(); // ✅ Request location permission here
+  }
+
+//Function to request location permissions
+Future<void> requestLocationPermission() async {
+  LocationPermission permission = await Geolocator.requestPermission();
+  if (permission == LocationPermission.denied) {
+    print("Location permission denied.");
+  } else if (permission == LocationPermission.deniedForever) {
+    print("Location permission permanently denied. Open settings to enable.");
+  } else {
+    print("Location permission granted!");
+  }
+}
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
