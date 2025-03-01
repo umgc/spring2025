@@ -23,6 +23,7 @@ class UserSettingsState extends State<UserSettings> {
   final TextEditingController _moodleUrlController = TextEditingController();
   final TextEditingController _apiKeyController = TextEditingController();
   final TextEditingController _claudeKeyController = TextEditingController();
+  final TextEditingController _grokKeyController = TextEditingController();
   final TextEditingController _preplexityKeyController =
       TextEditingController();
   // Add Google Classroom Client ID controller
@@ -45,6 +46,7 @@ class UserSettingsState extends State<UserSettings> {
     final apiKey = LocalStorageService.getOpenAIKey();
     final claudeKey = LocalStorageService.getClaudeKey();
     final preplexityKey = LocalStorageService.getPerplexityKey();
+    final grokKey = LocalStorageService.getGrokKey();
     // Load Google Client ID from .env file
     final googleClientId = dotenv.env['GOOGLE_CLIENT_ID'] ?? '';
 
@@ -55,6 +57,7 @@ class UserSettingsState extends State<UserSettings> {
       _apiKeyController.text = apiKey;
       _claudeKeyController.text = claudeKey;
       _preplexityKeyController.text = preplexityKey;
+      _grokKeyController.text = grokKey;
       _googleClientIdController.text = googleClientId;
     });
   }
@@ -269,6 +272,12 @@ class UserSettingsState extends State<UserSettings> {
           controller: _claudeKeyController,
           loginNotifier: loginNotifier,
           keyType: LLMKey.claude,
+        ),
+        _buildApiKeyField(
+          label: 'Grok AI API Key',
+          controller: _grokKeyController,
+          loginNotifier: loginNotifier,
+          keyType: LLMKey.grok,
         ),
       ],
     );

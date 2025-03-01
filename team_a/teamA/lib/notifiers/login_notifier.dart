@@ -7,7 +7,7 @@ import 'package:learninglens_app/Api/lms/lms_interface.dart';
 import 'package:learninglens_app/Api/lms/google_classroom/google_lms_service.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
 
-enum LLMKey { openAI, perplexity, claude }
+enum LLMKey { openAI, perplexity, claude, grok }
 
 class LoginNotifier with ChangeNotifier {
   bool _isLoggedIn = false;
@@ -51,10 +51,12 @@ class LoginNotifier with ChangeNotifier {
     String? openAIKey = LocalStorageService.getOpenAIKey();
     String? perplexityKey = LocalStorageService.getPerplexityKey();
     String? claudeKey = LocalStorageService.getClaudeKey();
+    String? grokKey = LocalStorageService.getGrokKey();
 
     return openAIKey != null && openAIKey.isNotEmpty ||
         perplexityKey != null && perplexityKey.isNotEmpty ||
-        claudeKey != null && claudeKey.isNotEmpty;
+        claudeKey != null && claudeKey.isNotEmpty || 
+        grokKey != null && grokKey.isNotEmpty;
   }
 
   Future<void> _autoLogin() async {
@@ -124,6 +126,9 @@ class LoginNotifier with ChangeNotifier {
       LocalStorageService.savePerplexityKey(value);
     } else if (key == LLMKey.claude) {
       LocalStorageService.saveClaudeKey(value);
+    } else if (key == LLMKey.grok) {
+      print('saving grok key');
+      LocalStorageService.saveGrokKey(value);
     }
     _hasLLMKey = await _checkHasLLMKey();
     notifyListeners();

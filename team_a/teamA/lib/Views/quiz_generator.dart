@@ -11,6 +11,7 @@ import 'package:learninglens_app/llm/claudeai_api.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
 import 'edit_questions.dart';
 import 'package:learninglens_app/llm/openai_api.dart';
+import 'package:learninglens_app/llm/grok_api.dart';
 
 
 
@@ -64,16 +65,19 @@ class _AssessmentState extends State<CreateAssessment> {
     final perplexityApiKey = LocalStorageService.getPerplexityKey();
     final openApiKey = LocalStorageService.getOpenAIKey();
     final claudApiKey =  LocalStorageService.getClaudeKey();
+    final grokApiKey = LocalStorageService.getGrokKey();
     try {
       setState((){_isLoading=true;});
       final aiModel;
       if (selectedLLM == 'ChatGPT') {
-        aiModel = OpenAiLLM(openApiKey);
-      } else if (selectedLLM == 'CLAUDE') {
-        aiModel = ClaudeAiAPI(claudApiKey);
-      } else {
+        aiModel = OpenAiLLM(openApiKey);        
+      } else if (selectedLLM == 'Grok') {
+        aiModel = GrokLLM(grokApiKey);
+      } else if (selectedLLM == 'Perplexity') {
         // aiModel = OpenAiLLM(perplexityApiKey); 
         aiModel = LlmApi(perplexityApiKey);
+      } else {
+        aiModel = ClaudeAiAPI(claudApiKey);
       }
       var result = await aiModel.postToLlm(PromptEngine.generatePrompt(af));
       if (result.isNotEmpty) {
@@ -186,7 +190,7 @@ class _AssessmentState extends State<CreateAssessment> {
                               selectedLLM = newValue;
                             });
                           },
-                          items: ['ChatGPT', 'CLAUDE', 'Perplexity'].map((String value) {
+                          items: ['ChatGPT', 'CLAUDE', 'Perplexity', 'Grok'].map((String value) {
                             return DropdownMenuItem<String>(
                               value: value,
                               child: Text(value),

@@ -46,7 +46,7 @@ class GoogleLmsService extends LmsInterface {
   String? _userToken;
 
   @override
-  String apiURL = ''; // Base URL for your Moodle instance, e.g. "https://yourmoodle.com"
+  String apiURL = 'https://classroom.googleapis.com/v1'; // Base URL for your Google Classroom
   @override
   String? userName;
   @override
@@ -54,7 +54,7 @@ class GoogleLmsService extends LmsInterface {
   @override
   String? lastName;
   @override
-  String? siteName;
+  String? siteName = 'Google Classroom';
   @override
   String? fullName;
   @override
@@ -100,9 +100,13 @@ class GoogleLmsService extends LmsInterface {
       }
 
       // Get the user's name
-      userName = googleUser.displayName;
-      // firstName = googleUser.givenName;
-      print('user: $googleUser');
+      userName = googleUser.email.split("@").first;
+      fullName = googleUser.displayName ?? "Unknown User";
+      
+      List<String> nameParts = fullName!.split(" ");
+
+      firstName = nameParts.isNotEmpty ? nameParts.first : "";
+      lastName = nameParts.length > 1 ? nameParts.sublist(1).join(" ") : "";
 
       print('Welcome, ${firstName ?? 'User'}');
 
@@ -445,8 +449,6 @@ class GoogleLmsService extends LmsInterface {
       // If courseID is null, return all quizzes; otherwise filter by course
       if (courseID == null || int.parse(item['courseId']) == courseID) {
        if (topicId != null && item.containsKey('topicId')) {
-
-          
            if (int.parse(item['topicId']) == topicId) {
              essayList.add(Assignment.empty().fromGoogleJson(item));
            }

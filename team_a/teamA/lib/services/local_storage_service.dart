@@ -133,7 +133,7 @@ class LocalStorageService {
 
   /// Retrieves Claude API key from storage or dotenv.
   static String getClaudeKey() {
-    return _prefs.getString('claudeKey') ?? dotenv.env['claude_ApiKey'] ?? '';
+    return _prefs.getString('claudeKey') ?? dotenv.env['claude_apiKey'] ?? '';
   }
 
   /// Clears Claude API key.
@@ -154,6 +154,21 @@ class LocalStorageService {
   /// Clears Perplexity API key.
   static void clearPerplexityKey() {
     _prefs.remove('perplexityKey');
+  }
+
+  /// Saves Grok API key.
+  static void saveGrokKey(String grokKey) {
+    _prefs.setString('grokKey', grokKey);
+  }
+
+  /// Retrieves Grok API key from storage or dotenv.
+  static String getGrokKey() {
+    return _prefs.getString('grokKey') ?? dotenv.env['grok_apiKey'] ?? '';
+  }
+
+  /// Clears Grok API key.
+  static void clearGrokKey() {
+    _prefs.remove('grokKey');
   }
 
   static String? getGoogleClientId() {
