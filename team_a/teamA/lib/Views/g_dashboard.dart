@@ -221,15 +221,15 @@ class GoogleTeacherDashboard extends StatelessWidget {
                 MaterialPageRoute(builder: (context) => GoogleCourses())),
         'color': Colors.blue,
       },
-      // {
-      //   'title': 'Essays',
-      //   'description': 'View or grade essays.',
-      //   'onPressed': !canAccessApp
-      //       ? null
-      //       : () => Navigator.push(
-      //           context, MaterialPageRoute(builder: (context) => EssaysView())),
-      //   'color': Colors.red,
-      // },
+      {
+        'title': 'Essays',
+        'description': 'View or grade essays.',
+        'onPressed': !canAccessApp
+            ? null
+            : () => Navigator.push(
+                context, MaterialPageRoute(builder: (context) => EssaysView())),
+        'color': Colors.red,
+      },
       // {
       //   'title': 'IEP',
       //   'description': 'Manage Individualized Education Plans.',
