@@ -11,7 +11,6 @@ import 'package:pdf/pdf.dart'; // PDF package
 import 'package:excel/excel.dart'; // Excel package
 
 // Import the LMS services using prefixes so that type checks work correctly.
-import 'package:learninglens_app/lms/lms_factory.dart';
 import 'package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart' as moodle;
 import 'package:learninglens_app/Api/lms/google_classroom/google_lms_service.dart' as google;
 
