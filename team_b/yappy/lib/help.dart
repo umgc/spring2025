@@ -12,7 +12,8 @@ class HelpApp extends StatelessWidget {
     );
   }
 }
-
+//Creates a page for the Help industry
+//The page will contain the industry menu and the transcription box
 class HelpPage extends StatelessWidget {
   const HelpPage({super.key});
 
@@ -32,7 +33,7 @@ class HelpPage extends StatelessWidget {
             padding: const EdgeInsets.all(8.0),
             child: Align(
               alignment: Alignment.center,
-              child: Text(
+              child: Text(//This text is displayed on the help page
                 'Lets Yap about Yappy',
                 style: TextStyle(
                   color: Colors.white,
@@ -47,7 +48,7 @@ class HelpPage extends StatelessWidget {
               alignment: Alignment.center,
               child: Column(
                 children: [
-                  Text(
+                  Text(//This text is displayed on the help page
                     'Reporting a Problem with Yappy\n'
                     'Something Isn\'t Working\n'
                     'If something isn\'t working on Yappy, please follow the instructions below to let us know.\n\n'
@@ -81,7 +82,6 @@ class HelpPage extends StatelessWidget {
                   child: Text('Report a problem'),
                 ),
                 SizedBox(height: 10),
-                
                   SizedBox(height: 10),
                   ElevatedButton(
                     onPressed: () {

@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
-// import 'package:yappy/logout.dart';
 import 'package:yappy/home_page.dart';
-// import 'package:yappy/login_page.dart';
 import 'package:yappy/services/database_helper.dart';
-
-// Correct import
 
 // Create a global instance of DatabaseHelper
 final DatabaseHelper dbHelper = DatabaseHelper();
@@ -17,16 +13,12 @@ void main() async{
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-
+// This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      //home: const LoginPage() 
       home: const HomePage(),
-      // home: const SignUpPage(), 
-      //home: const LogoutPage()
-
     );
   }
 }

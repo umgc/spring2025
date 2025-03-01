@@ -17,7 +17,8 @@ class MechanicalAidApp extends StatelessWidget {
     );
   }
 }
-
+//Creates a page for the Mechanical Aid industry
+//The page will contain the industry menu and the transcription box
 class MechanicalAidPage extends StatelessWidget {
   const MechanicalAidPage({super.key});
 
