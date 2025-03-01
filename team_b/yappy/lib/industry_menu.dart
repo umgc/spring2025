@@ -97,7 +97,22 @@ class IndustryMenu extends StatelessWidget {
                     color: Colors.white,
                     size: screenHeight * .05,
                   ),
-                  onPressed: () {},
+                  onPressed: () {
+                    // on press a list of todays transcriipts that have gone through the API will be displayed
+                    // take the code from the history button to display the transcripts
+                    // when clicked on the transcript, the chat will be displayed
+                    // for resturant the transcript will be a kanaban style list that can be moved up and down
+                    // for the other industries we will need to figure it out
+                    
+
+
+
+
+
+
+
+
+                  },
                 ),
               ),
               SizedBox(width: screenWidth * .06),
