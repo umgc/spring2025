@@ -827,68 +827,6 @@ class MoodleLmsService implements LmsInterface {
     return MoodleRubric.empty().fromMoodleJson(responseData.first);
   }
 
-  // Method to create the lesson in Moodle
-  Future<bool> createLesson({
-    required int courseId,
-    required String lessonPlanName,
-    required String content,
-    int introformat = 1,
-    int showdescription = 1,
-    int available = 0,
-    int deadline = 0,
-    int timelimit = 0,
-    int retake = 1,
-    int maxAttempts = 3,
-    int usepassword = 0,
-    String password = '',
-    int completion = 1,
-  }) async {
-    try {
-      print("Creating lesson with courseId: $courseId, name: $lessonPlanName");
-
-      final response = await ApiService().httpPost(
-        Uri.parse(apiURL + serverUrl),
-        body: {
-          "wstoken": _userToken,
-          "wsfunction": "local_learninglens_create_lesson",
-          "moodlewsrestformat": "json",
-          // REQUIRED fields
-          "courseid": courseId.toString(),
-          "name": lessonPlanName,
-          "intro": content,
-          // OPTIONAL fields
-          "introformat": introformat.toString(),
-          "showdescription": showdescription.toString(),
-          "available": available.toString(),
-          "deadline": deadline.toString(),
-          "timelimit": timelimit.toString(),
-          "retake": retake.toString(),
-          "maxattempts": maxAttempts.toString(),
-          "usepassword": usepassword.toString(),
-          "password": password,
-          "completion": completion.toString(),
-        },
-      );
-
-      final jsonResponse = json.decode(response.body) as Map<String, dynamic>;
-      print("createLesson Response: $jsonResponse");
-
-      if (jsonResponse.containsKey("exception")) {
-        print("Error creating lesson: ${jsonResponse['message']}");
-        return false;
-      }
-
-      print(
-          "Lesson created successfully! Lesson ID: ${jsonResponse['lessonId']}");
-      print("Linked to Course Module ID: ${jsonResponse['courseModuleId']}");
-
-      return true;
-    } catch (e) {
-      print("Error occurred while creating lesson: $e");
-      return false;
-    }
-  }
-
   /**
    * Fetches all the questions from a quiz.
    */
@@ -988,6 +926,104 @@ class MoodleLmsService implements LmsInterface {
           .toList();
     } else {
       throw Exception("Failed to fetch lesson plans: ${response.body}");
+    }
+  }
+
+// Method to create the lesson in Moodle
+  Future<bool> createLesson({
+    required int courseId,
+    required String lessonPlanName,
+    required String content,
+    int introformat = 1,
+    int showdescription = 1,
+    int available = 0,
+    int deadline = 0,
+    int timelimit = 0,
+    int retake = 1,
+    int maxAttempts = 3,
+    int usepassword = 0,
+    String password = '',
+    int completion = 1,
+  }) async {
+    try {
+      print("Creating lesson with courseId: $courseId, name: $lessonPlanName");
+
+      final response = await ApiService().httpPost(
+        Uri.parse(apiURL + serverUrl),
+        body: {
+          "wstoken": _userToken,
+          "wsfunction": "local_learninglens_create_lesson",
+          "moodlewsrestformat": "json",
+          // REQUIRED fields
+          "courseid": courseId.toString(),
+          "name": lessonPlanName,
+          "intro": content,
+          // OPTIONAL fields
+          "introformat": introformat.toString(),
+          "showdescription": showdescription.toString(),
+          "available": available.toString(),
+          "deadline": deadline.toString(),
+          "timelimit": timelimit.toString(),
+          "retake": retake.toString(),
+          "maxattempts": maxAttempts.toString(),
+          "usepassword": usepassword.toString(),
+          "password": password,
+          "completion": completion.toString(),
+        },
+      );
+
+      final jsonResponse = json.decode(response.body) as Map<String, dynamic>;
+      print("createLesson Response: $jsonResponse");
+
+      if (jsonResponse.containsKey("exception")) {
+        print("Error creating lesson: ${jsonResponse['message']}");
+        return false;
+      }
+
+      print(
+          "Lesson created successfully! Lesson ID: ${jsonResponse['lessonId']}");
+      print("Linked to Course Module ID: ${jsonResponse['courseModuleId']}");
+
+      return true;
+    } catch (e) {
+      print("Error occurred while creating lesson: $e");
+      return false;
+    }
+  }
+
+  /**
+  * Deletes a lesson plan from Moodle by its lesson ID.
+  */
+  Future<bool> deleteLessonPlan(int lessonId) async {
+    if (_userToken == null) throw StateError('User not logged in to Moodle');
+
+    final url = Uri.parse('$apiURL$serverUrl');
+
+    final response = await ApiService().httpPost(
+      url,
+      body: {
+        'wstoken': _userToken!,
+        'wsfunction': 'local_learninglens_delete_lesson_plan',
+        'moodlewsrestformat': 'json',
+        'lessonid': lessonId.toString(),
+      },
+    );
+
+    print("Delete Lesson Plan Response: ${response.body}");
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> jsonResponse = json.decode(response.body);
+
+      if (jsonResponse.containsKey("status") &&
+          jsonResponse["status"] == "success") {
+        print("Lesson plan deleted successfully.");
+        return true;
+      } else {
+        print("Error deleting lesson plan: ${jsonResponse['message']}");
+        return false;
+      }
+    } else {
+      throw Exception("Failed to delete lesson plan: ${response.body}");
     }
   }
 }

@@ -117,4 +117,12 @@ $functions = [
         'capabilities' => 'mod/lesson:view',
         'services'    => [MOODLE_OFFICIAL_MOBILE_SERVICE] // Enables use in the Moodle Mobile App
     ],
+    'local_learninglens_delete_lesson_plan' => [
+        'classname'   => 'local_learninglens\external\delete_lesson_plan',
+        'description' => 'Deletes a lesson plan by ID.',
+        'type'        => 'write',
+        'ajax'        => true,
+        'capabilities' => 'mod/lesson:manage',
+        'services'    => [MOODLE_OFFICIAL_MOBILE_SERVICE]
+    ],
 ];
