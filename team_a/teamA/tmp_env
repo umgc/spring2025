@@ -5,4 +5,5 @@ GOOGLE_CLIENT_ID=
 
 perplexity_apikey=
 openai_apikey=
-claude_ApiKey=
+claude_apiKey=
+grok_apiKey=
