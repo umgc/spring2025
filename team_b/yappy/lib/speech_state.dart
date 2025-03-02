@@ -5,7 +5,6 @@ import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:record/record.dart';
-// import 'package:path_provider/path_provider.dart';
 
 import 'package:sherpa_onnx/sherpa_onnx.dart' as sherpa_onnx;
 
@@ -200,20 +199,24 @@ class SpeechState extends ChangeNotifier {
 
   Future<void> initialize() async {
     if (!isInitialized) {
-      // init online recognizer
-      sherpa_onnx.initBindings();
-      onlineRecognizer = await createOnlineRecognizer();
-      onlineStream = onlineRecognizer?.createStream();
+      try {
+        // init online recognizer
+        sherpa_onnx.initBindings();
+        onlineRecognizer = await createOnlineRecognizer();
+        onlineStream = onlineRecognizer?.createStream();
 
-      // init offline recognizer
-      offlineRecognizer = await createOfflineRecognizer();
+        // init offline recognizer
+        offlineRecognizer = await createOfflineRecognizer();
 
-      // init speaker identification components
-      speakerExtractor = await createSpeakerExtractor();
-      speakerManager = sherpa_onnx.SpeakerEmbeddingManager(speakerExtractor!.dim);
+        // init speaker identification components
+        speakerExtractor = await createSpeakerExtractor();
+        speakerManager = sherpa_onnx.SpeakerEmbeddingManager(speakerExtractor!.dim);
 
-      isInitialized = true;
-      notifyListeners();
+        isInitialized = true;
+        notifyListeners();
+      } catch (e) {
+        debugPrint('Sherpa initialization failed: $e');
+      }
     }
   }
 
@@ -256,13 +259,17 @@ class SpeechState extends ChangeNotifier {
       start: start,
       end: start, // Will be updated when segment ends
     ));
+
+    debugPrint('Added new segment $currentIndex: "$text" (${start.toStringAsFixed(2)}s - ${start.toStringAsFixed(2)}s)');
   }
 
   // Update an existing segment with improved recognition
   void _updateRecognizedSegment(int index, String newText, {String? speakerId, Float32List? embedding}) {
     final segmentIndex = recognizedSegments.indexWhere((s) => s.index == index);
     if (segmentIndex != -1) {
-      recognizedSegments[segmentIndex].text = newText;
+      if (newText.trim().isNotEmpty) {
+        recognizedSegments[segmentIndex].text = newText;
+      }
       recognizedSegments[segmentIndex].isProcessed = true;
 
       if (speakerId != null) {
@@ -286,19 +293,6 @@ class SpeechState extends ChangeNotifier {
     }
 
     try {
-      // // Check if the segment exists in recognizedSegments
-      // final segmentIndex = recognizedSegments.indexWhere((s) => s.index == segment.index);
-      // if (segmentIndex == -1) {
-      //   debugPrint('Segment ${segment.index} not found in recognizedSegments, creating placeholder');
-      //   // Create a placeholder if it doesn't exist
-      //   recognizedSegments.add(RecognizedSegment(
-      //     index: segment.index,
-      //     text: "",
-      //     start: segment.start,
-      //     end: segment.end,
-      //   ));
-      // }
-
       // Perform offline speech recognition
       final offlineStream = offlineRecognizer!.createStream();
       
@@ -348,15 +342,7 @@ class SpeechState extends ChangeNotifier {
           speakerId: speakerId,
           embedding: embedding,
         );
-      } else {
-        // debugPrint('Empty text result for segment ${segment.index}, only updating speaker ID');
-        // _updateRecognizedSegment(
-        //   segment.index, 
-        //   result.text,
-        //   speakerId: speakerId,
-        //   embedding: embedding,
-        // );
-      }
+      } 
       
       // Free resources
       offlineStream.free();
@@ -420,10 +406,8 @@ class SpeechState extends ChangeNotifier {
     try {
       if (await audioRecorder.hasPermission()) {
         // Reset speakers for new recording
-        // speakerManager?.free();
-        // speakerManager = sherpa_onnx.SpeakerEmbeddingManager(speakerExtractor!.dim);
         currentSpeakerCount = 0;
-        // recognizedSegments.clear();
+        recognizedSegments.clear();
 
         // Create a path for saving the recording
         recordingFilePath = await _createRecordingFilePath();
@@ -442,7 +426,7 @@ class SpeechState extends ChangeNotifier {
 
         recordState = RecordState.record;
         controller.value = TextEditingValue(
-          text: "Ready to record..."
+          text: "Listening..."
         );
         notifyListeners();
 
@@ -520,6 +504,12 @@ class SpeechState extends ChangeNotifier {
               currentSegmentSamples.clear();
               currentIndex += 1;
             }
+          },
+          onError: (error) {
+            debugPrint('Error from audio stream: $error');
+          },
+          onDone: () {
+            debugPrint('Audio stream done');
           },
         );
       }
