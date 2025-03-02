@@ -1,35 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:yappy/streaming_asr.dart';
 
-void main() {
-  runApp(TranscriptionBox());
-}
-//Creates a transcription box that will display the AI transcript
-//The box will be a text field that will display the AI transcript
 class TranscriptionBox extends StatelessWidget {
-  const TranscriptionBox({super.key});
+  final TextEditingController controller;
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-        backgroundColor: Colors.black,
-        body: Column(
-          children: [
-            Expanded(
-              child: ChatBox(),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-//Creates a chat box that will display the AI transcript
-//The box will be a text field that will display the AI transcript
-class ChatBox extends StatelessWidget {
-  const ChatBox({super.key});
+  const TranscriptionBox({
+    required this.controller,
+    super.key
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +16,9 @@ class ChatBox extends StatelessWidget {
           color: const Color.fromARGB(255, 67, 67, 67)
         ),
         child: TextField(
+          controller: controller,
           maxLines: null,
+          readOnly: true,
           decoration: InputDecoration(
             hintText: 'AI Transcript will go here',
             hintStyle: TextStyle(

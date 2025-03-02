@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:record/record.dart';
+import 'package:yappy/speech_state.dart';
 import 'package:yappy/services/database_helper.dart';
 
 class IndustryMenu extends StatelessWidget {
   final String title;
   final IconData icon;
+  final SpeechState speechState;
 
-  const IndustryMenu({required this.title, required this.icon, super.key});
+  const IndustryMenu({required this.title, required this.icon, required this.speechState, super.key}); 
     Widget generateTranscript(BuildContext context, String title, String content) {
       return AlertDialog(
         title: Text(title),
@@ -96,18 +99,18 @@ class IndustryMenu extends StatelessWidget {
             children: [
               // Creates the chat button for each menu
               Container(
-                decoration:
-                    BoxDecoration(shape: BoxShape.circle, color: Colors.grey),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: speechState.recordState == RecordState.stop ? Colors.grey : Colors.red
+                ),
                 padding: EdgeInsets.all(5),
                 child: IconButton(
                   icon: Icon(
-                    Icons.chat,
+                    speechState.recordState == RecordState.stop ? Icons.mic : Icons.stop,
                     color: Colors.white,
                     size: screenHeight * .05,
                   ),
-                  onPressed: () {
-
-                  },
+                  onPressed: () => speechState.toggleRecording(),
                 ),
               ),
               SizedBox(width: screenWidth * .06),
