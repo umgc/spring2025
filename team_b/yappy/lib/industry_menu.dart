@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:record/record.dart';
 import 'package:yappy/speech_state.dart';
 import 'package:yappy/services/database_helper.dart';
+import 'package:share_plus/share_plus.dart';
 
 class IndustryMenu extends StatelessWidget {
   final String title;
@@ -54,7 +55,7 @@ class IndustryMenu extends StatelessWidget {
       );
     }
 
-      Future<List<Map<String, dynamic>>> _fetchTranscripts() async {
+  Future<List<Map<String, dynamic>>> _fetchTranscripts() async {
     DatabaseHelper dbHelper = DatabaseHelper();
     
     return await dbHelper.getAllTranscripts();
@@ -149,10 +150,12 @@ class IndustryMenu extends StatelessWidget {
                     // Store the context before async operation
                     final BuildContext currentContext = context;
 
-                        List<Map<String, dynamic>> transcripts = await _fetchTranscripts();
+                    // Load transcripts and then show modal
+                    _fetchTranscripts().then((transcripts) {
+                      if (!currentContext.mounted) return;
 
                         showModalBottomSheet(
-                          context: context,
+                          context: currentContext,
                           builder: (BuildContext context) {
                           return Container(
                           padding: EdgeInsets.all(16.0),
@@ -197,8 +200,8 @@ class IndustryMenu extends StatelessWidget {
                           ),
                         );
                       },
-                    );
-                  },
+                    );});
+                  }
                 ),
               ),
             ],
@@ -208,5 +211,3 @@ class IndustryMenu extends StatelessWidget {
     );
   }
 }
-
-
