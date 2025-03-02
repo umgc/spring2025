@@ -1,105 +1,50 @@
 import 'package:flutter/material.dart';
-import 'package:yappy/login_page.dart';
+import 'package:yappy/contact_page.dart';
+import 'package:yappy/help.dart';
+import 'package:yappy/mechanic.dart';
+import 'package:yappy/medical_doctor.dart';
+import 'package:yappy/medical_patient.dart';
+import 'package:yappy/restaurant.dart';
+import 'package:yappy/tool_bar.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
-
+//Creates the home page of the app
+//The page will contain buttons that will navigate to different industries
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        leading: Builder(
-          builder: (context) {
-            return IconButton(
-              icon: const Icon(Icons.menu),
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
-            );
-          },        
-        ),
-        toolbarHeight: 140,
-        title: Center(
-          child: CircleAvatar(
-            backgroundColor: const Color.fromARGB(255, 0, 0, 0),
-            radius: 140,
-            child: Image.asset(
-              'assets/icon/app_icon.png',
-              width: 140,
-              height: 140,
-            ),
-          ),
-        ),
-
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.info, color: Colors.white),
-            onPressed: () {
-              Navigator.push(
-                 context,
-                 MaterialPageRoute(builder: (context) => LoginPage()), // Navigate to Login  
-              );
-            },
-          ),
+      backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(140),
+        child: ToolBar(showHamburger: false), // Using the ToolBar widget
+      ),
+      body: Column(
+        children: [
+          _buildButton('Restaurant', context, RestaurantPage()),
+          _buildButton('Vehicle Maintenance', context, MechanicalAidPage()),
+          _buildButton('Medical Doctor', context, MedicalDoctorPage()),
+          _buildButton('Medical Patient', context, MedicalPatientPage()),
+          _buildButton('Help', context, HelpPage()),
+          _buildButton('Contact', context, ContactPage()),
         ],
-      ),
-            // Hamburger Menu (Drawer)
-      drawer: Drawer(
-        width: 150,
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            _buildDrawerItem('Restaurant'),
-            _buildDrawerItem('Mechanic'),
-            _buildDrawerItem('Medical'),
-            _buildDrawerItem('Help'),
-            _buildDrawerItem('Contact'),
-            _buildDrawerItem('Log Out'),
-          ],
-        ),
-      ),
-
-      body: Padding(
-        padding: const EdgeInsets.all(30.0),
-        child: Column(
-          children: [
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.grey[900],
-                borderRadius: BorderRadius.circular(10),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 10),
-              child: const TextField(
-                style: TextStyle(color: Colors.white),
-                decoration: InputDecoration(
-                  icon: Icon(Icons.search, color: Colors.white60),
-                  hintText: 'Search conversations',
-                  hintStyle: TextStyle(color: Colors.white60),
-                  border: InputBorder.none,
-                ),
-              ),
-            ),
-            const SizedBox(height: 20),
-            
-            // Buttons
-            _buildButton('Restaurant'),
-            _buildButton('Mechanic'),
-            _buildButton('Medical'),
-          ],
-        ),
       ),
     );
   }
 
-  Widget _buildButton(String text) {
+  // Function for button navigation
+  Widget _buildButton(String text, BuildContext context, Widget page) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: SizedBox(
         width: double.infinity,
         child: ElevatedButton(
-          onPressed: () {},
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => page),
+            );
+          },
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.grey[900],
             padding: const EdgeInsets.symmetric(vertical: 15),
@@ -110,18 +55,6 @@ class HomePage extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildDrawerItem(String title) {
-    return ListTile(
-      contentPadding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-      textColor: Colors.white,
-      tileColor: const Color.fromARGB(255, 54, 54, 54),
-      title: Text(title),
-      onTap: () {
-        // TODO Navigate to the corresponding screen
-      },
     );
   }
 }
