@@ -1,0 +1,8 @@
+//Enum for CourseState
+enum CourseState {
+  COURSE_STATE_UNSPECIFIED,
+  ACTIVE,
+  ARCHIVED,
+  PROVISIONED,
+  DECLINED
+}

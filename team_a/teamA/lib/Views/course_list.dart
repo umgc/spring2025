@@ -1,23 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
+import 'package:learninglens_app/Api/lms/lms_interface.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
-import 'package:learninglens_app/Views/course_content.dart';
-import 'package:learninglens_app/Controller/beans.dart';
-import '../Api/moodle_api_singleton.dart';
+import 'package:learninglens_app/beans/course.dart';
+import '../content_carousel.dart';
 
-// This is the course list UI
-class CourseList extends StatelessWidget {
-  final MoodleApiSingleton api = MoodleApiSingleton();
-  late final Future<List<Course>> courses;
+class CourseList extends StatefulWidget {
+  CourseList({super.key});
 
-  CourseList({super.key}) {
+  @override
+  _CourseListState createState() => _CourseListState();
+}
+
+class _CourseListState extends State<CourseList> {
+  final LmsInterface api = LmsFactory.getLmsService();
+  late Future<List<Course>> courses;
+  Course? selectedCourse;
+
+  @override
+  void initState() {
+    super.initState();
     courses = api.getUserCourses();
   }
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(title: 'Courses', userprofileurl: MoodleApiSingleton().moodleProfileImage ?? ''),
+      appBar: CustomAppBar(
+        title: 'Courses',
+        userprofileurl: LmsFactory.getLmsService().profileImage ?? '',
+      ),
       body: FutureBuilder<List<Course>>(
         future: courses,
         builder: (context, snapshot) {
@@ -32,66 +44,100 @@ class CourseList extends StatelessWidget {
 
             return LayoutBuilder(
               builder: (context, constraints) {
-                // Calculate number of columns based on screen width
-                int columns = constraints.maxWidth > 600 ? 2 : 1;
-
-                return GridView.builder(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: columns, // 1 column for narrow, 2 for wide
-                    crossAxisSpacing: 10,
-                    mainAxisSpacing: 10,
-                    childAspectRatio: 3, // Aspect ratio for the cards
-                  ),
-                  itemCount: courseList.length,
-                  itemBuilder: (context, index) {
-                    final course = courseList[index];
-                    return Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: ElevatedButton(
-                        onPressed: () {
-                          // Button onPressed Action (e.g., navigate to course details)
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ViewCourseContents(course),
-                            ),
-                          );
-                        },
-                        style: ButtonStyle(
-                          backgroundColor: WidgetStateProperty.all(
-                              Theme.of(context).colorScheme.secondaryContainer),
-                          shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-                            RoundedRectangleBorder(
-                                side: BorderSide(
-                                color: Theme.of(context).colorScheme.primary,
-                                width: 3.0, // Adjust the width to make the border thicker
-                                ),
-                              borderRadius: BorderRadius.circular(10.0),
-                            ),
-                          ),
+                return Row(
+                  children: [
+                    // Left-side course list with border
+                    Expanded(
+                      flex: 1,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey),
+                          borderRadius: BorderRadius.circular(8.0),
                         ),
-                        child: ListTile(
-                          title: Text(
-                            course.fullName,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.onSecondaryContainer,
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          subtitle: Text(
-                            course.shortName,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Theme.of(context).colorScheme.onSecondaryContainer,
-                              fontSize: 16,
-                            ),
-                          ),
+                        margin: EdgeInsets.all(8.0),
+                        child: ListView.builder(
+                          itemCount: courseList.length,
+                          itemBuilder: (context, index) {
+                            final course = courseList[index];
+                            return ListTile(
+                              title: Text(course.fullName),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text('${course.shortName}${course.courseId}'),
+                                  Text('${Course.dateFormatted(course.startdate)} - ${Course.dateFormatted(course.enddate)}'),                 
+                                ],
+                              ),
+                              tileColor: selectedCourse == course 
+                                  ? Theme.of(context).colorScheme.primary.withOpacity(0.1) 
+                                  : null,
+                              onTap: () {
+                                setState(() {
+                                  selectedCourse = course;
+                                });
+                              },
+                            );
+                          },
                         ),
                       ),
-                    );
-                  },
+                    ),
+
+                    // Right-side course details (essays and quizzes)
+                    Expanded(
+                      flex: 2,
+                      child: selectedCourse == null
+                          ? Center(child: Text('Select a course to view details'))
+                          : Column(
+                              key: ValueKey(selectedCourse!.id), // Force rebuild on course change
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Essays section
+                                Container(
+                                  width: double.infinity,
+                                  color: Theme.of(context).colorScheme.secondary,
+                                  padding: const EdgeInsets.all(8.0),
+                                  margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                                  child: Text(
+                                    "Essays",
+                                    style: TextStyle(
+                                      fontSize: 24,
+                                      color: Theme.of(context).colorScheme.onSecondary,
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: ContentCarousel(
+                                    'essay',
+                                    selectedCourse!.essays,
+                                    courseId: selectedCourse!.id,
+                                  ),
+                                ),
+
+                                // Quizzes section
+                                Container(
+                                  width: double.infinity,
+                                  color: Theme.of(context).colorScheme.secondary,
+                                  padding: const EdgeInsets.all(8.0),
+                                  margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                                  child: Text(
+                                    "Quizzes",
+                                    style: TextStyle(
+                                      fontSize: 24,
+                                      color: Theme.of(context).colorScheme.onSecondary,
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: ContentCarousel(
+                                    'assessment',
+                                    selectedCourse!.quizzes,
+                                    courseId: selectedCourse!.id,
+                                  ),
+                                ),
+                              ],
+                            ),
+                    ),
+                  ],
                 );
               },
             );

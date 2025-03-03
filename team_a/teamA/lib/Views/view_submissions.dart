@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
+import 'package:learninglens_app/Api/lms/lms_interface.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
-import 'package:learninglens_app/llm/claudeai_api.dart';
-import 'package:learninglens_app/llm/openai_api.dart';
+import 'package:learninglens_app/Api/llm/claudeai_api.dart';
+import 'package:learninglens_app/Api/llm/openai_api.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
-import '../Api/moodle_api_singleton.dart';
-import 'package:learninglens_app/Controller/beans.dart';
+import 'package:learninglens_app/beans/submission_with_grade.dart';
+import 'package:learninglens_app/beans/participant.dart';
 import 'view_submission_detail.dart';
-import '../Api/llm_api.dart';
+import '../Api/llm/llm_api.dart';
 import 'dart:convert';
 import 'package:intl/intl.dart';
 
@@ -24,7 +26,7 @@ class SubmissionList extends StatefulWidget {
 }
 
 class SubmissionListState extends State<SubmissionList> {
-  MoodleApiSingleton api = MoodleApiSingleton();
+  LmsInterface api = LmsFactory.getLmsService();
   Map<int, bool> isLoadingMap = {}; // Track loading state for each participant
   Map<int, String> llmSelectionMap =
       {}; // Track LLM selection for each participant
@@ -103,7 +105,7 @@ class SubmissionListState extends State<SubmissionList> {
     return Scaffold(
         appBar: CustomAppBar(
             title: 'Submissions',
-            userprofileurl: MoodleApiSingleton().moodleProfileImage ?? ''),
+            userprofileurl: LmsFactory.getLmsService().profileImage ?? ''),
         body: Column(
 children: [
             // Filter Row
@@ -383,7 +385,7 @@ children: [
                                                                           .submission
                                                                           .onlineText;
                                                                   int? contextId =
-                                                                      await MoodleApiSingleton().getContextId(
+                                                                      await LmsFactory.getLmsService().getContextId(
                                                                           widget
                                                                               .assignmentId,
                                                                           widget
@@ -393,7 +395,7 @@ children: [
                                                                   if (contextId !=
                                                                       null) {
                                                                     fetchedRubric =
-                                                                        await MoodleApiSingleton().getRubric(widget
+                                                                        await LmsFactory.getLmsService().getRubric(widget
                                                                             .assignmentId
                                                                             .toString());
                                                                     if (fetchedRubric ==
@@ -526,7 +528,7 @@ children: [
                                                                           '```',
                                                                           '')
                                                                       .trim();
-                                                                  var results = await MoodleApiSingleton().setRubricGrades(
+                                                                  var results = await LmsFactory.getLmsService().setRubricGrades(
                                                                       widget
                                                                           .assignmentId,
                                                                       participant
