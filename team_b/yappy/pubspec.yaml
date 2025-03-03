@@ -31,8 +31,10 @@ dependencies:
   flutter:
     sdk: flutter
 
+  file_picker: ^9.0.2
+
 # Allows sharing with the phones default apps.
-  share_plus: ^10.1.4  
+  share_plus: ^10.1.4 
 
 
   # The following adds the Cupertino Icons font to your application.
