@@ -6,6 +6,7 @@ import 'package:yappy/medical_doctor.dart';
 import 'package:yappy/medical_patient.dart';
 import 'package:yappy/restaurant.dart';
 import 'package:yappy/tool_bar.dart';
+import 'package:yappy/Settings_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -27,6 +28,7 @@ class HomePage extends StatelessWidget {
           _buildButton('Medical Patient', context, MedicalPatientPage()),
           _buildButton('Help', context, HelpPage()),
           _buildButton('Contact', context, ContactPage()),
+          _buildButton('Settings', context, SettingsPage()),
         ],
       ),
     );
