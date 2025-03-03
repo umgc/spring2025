@@ -27,4 +27,28 @@ void main() {
     expect(find.text('0'), findsNothing);
     expect(find.text('1'), findsOneWidget);
   });
+
+  void main() {  
+  group('EmergencyHelpButton Widget Tests', () {  
+    testWidgets('EmergencyHelpButton should be visible and properly styled',   
+      (WidgetTester tester) async {  
+      await tester.pumpWidget(MaterialApp(  
+        theme: ThemeData(  
+          colorScheme: ColorScheme.light(  
+            error: Colors.red,  
+          ),  
+        ),  
+        home: const Scaffold(  
+          body: EmergencyHelpButton(),  
+        ),  
+      ));  
+      
+      final buttonFinder = find.byType(ElevatedButton);  
+      expect(buttonFinder, findsOneWidget);  
+      
+      final iconFinder = find.byIcon(Icons.emergency);  
+      expect(iconFinder, findsOneWidget);  
+    });  
+  });  
+}  
 }
