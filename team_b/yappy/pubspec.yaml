@@ -31,6 +31,9 @@ dependencies:
   flutter:
     sdk: flutter
 
+# Allows sharing with the phones default apps.
+  share_plus: ^10.1.4  
+
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
