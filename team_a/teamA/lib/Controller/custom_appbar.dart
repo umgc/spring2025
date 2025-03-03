@@ -1,105 +1,161 @@
 import 'package:flutter/material.dart';
-import 'package:learninglens_app/Api/moodle_api_singleton.dart';
+import 'package:learninglens_app/Api/lms/enum/lms_enum.dart';
 import 'package:learninglens_app/Views/dashboard.dart';
-import 'package:learninglens_app/Views/login_page.dart';
+import 'package:learninglens_app/Views/g_dashboard.dart';
 import 'package:learninglens_app/Views/user_settings.dart';
+import 'package:learninglens_app/services/local_storage_service.dart';
 
-class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
+class ClassroomSelection {
+  static LmsType selectedClassroom = LocalStorageService.getSelectedClassroom() == LmsType.MOODLE
+      ? LmsType.MOODLE
+      : LmsType.GOOGLE;
+}
+
+class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
   final String title;
   final String userprofileurl;
+  final VoidCallback? onRefresh; // Optional refresh callback
 
-  CustomAppBar({required this.title, required this.userprofileurl});
+  CustomAppBar({required this.title, required this.userprofileurl, this.onRefresh});
 
+  @override
+  _CustomAppBarState createState() => _CustomAppBarState();
+
+  @override
+  Size get preferredSize => Size.fromHeight(kToolbarHeight);
+}
+
+class _CustomAppBarState extends State<CustomAppBar> {
   @override
   Widget build(BuildContext context) {
     return AppBar(
       backgroundColor: Theme.of(context).colorScheme.primaryContainer,
       title: Text(
-        title,
+        widget.title,
         textAlign: TextAlign.center,
       ),
-      centerTitle: true, // Ensures the title stays centered
+      centerTitle: true,
       leading: Row(
-        mainAxisSize: MainAxisSize.min, // Ensures the row doesn’t take all available space
+        mainAxisSize: MainAxisSize.min,
         children: [
           Flexible(
             child: IconButton(
               icon: Icon(Icons.arrow_back),
-              onPressed:  isDashboard(context) ? null : () {
-                Navigator.pop(context); // Navigate back
-              },
+              onPressed: isDashboard(context)
+                  ? null
+                  : () {
+                      Navigator.pop(context);
+                    },
             ),
           ),
           Flexible(
             child: IconButton(
               icon: Icon(Icons.home),
-              // if the current page is the dashboard, do nothing
-              onPressed: isDashboard(context) ? null : () {
-                // Navigate to the TeacherDashboardr
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => TeacherDashboard()),
-                );
-              },
+              onPressed: isDashboard(context)
+                  ? null
+                  : () {
+                      navigateToSelectedDashboard(context);
+                    },
             ),
           ),
         ],
       ),
       actions: <Widget>[
+        // Refresh button: Instead of relying on an external callback,
+        // try to obtain the current route's name and then replace the route,
+        // effectively refreshing the current view.
+        IconButton(
+          icon: Icon(Icons.refresh),
+          onPressed: () {
+            final currentRouteName = ModalRoute.of(context)?.settings.name;
+            if (currentRouteName != null) {
+              Navigator.pushReplacementNamed(context, currentRouteName);
+            } else {
+              // Fallback: if no route name is available, call the provided onRefresh callback if any.
+              widget.onRefresh?.call();
+            }
+          },
+        ),
+        DropdownButtonHideUnderline(
+          child: DropdownButton<LmsType>(
+            value: ClassroomSelection.selectedClassroom,
+            onChanged: isDashboard(context)
+                ? (LmsType? newValue) {
+                    if (newValue != null) {
+                      setState(() {
+                        ClassroomSelection.selectedClassroom = newValue;
+                      });
+                      navigateToSelectedDashboard(context);
+                    }
+                  }
+                : null,
+            items: LmsType.values.map<DropdownMenuItem<LmsType>>((LmsType value) {
+              return DropdownMenuItem<LmsType>(
+                value: value,
+                child: Text(
+                  value == LmsType.GOOGLE ? 'Google Classroom' : 'Moodle Classroom',
+                ),
+              );
+            }).toList(),
+          ),
+        ),
         IconButton(
           icon: Icon(Icons.settings),
-          onPressed: !isDashboard(context) ? null : () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => UserSettings()),
-            );
-          },
+          onPressed: !isDashboard(context)
+              ? null
+              : () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => UserSettings()),
+                  );
+                },
         ),
         Padding(
           padding: EdgeInsets.only(right: 10.0),
           child: InkWell(
-        // remove the logout button 
-        // onTap: () {
-        //   MoodleApiSingleton().logout();
-        //   Navigator.pushAndRemoveUntil(
-        //     context,
-        //     MaterialPageRoute(builder: (context) => LoginApp()),
-        //     (route) => false,
-        //   );
-        //   print("Profile image clicked!");
-        // },
-        child: Material(
-          color: Colors.transparent,
-          child: Container(
-            width: 50,
-            height: 50,
-            decoration: BoxDecoration(
-          shape: BoxShape.circle,
+            child: Material(
+              color: Colors.transparent,
+              child: Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                ),
+                child: ClipOval(
+                  child: Image.network(
+                    widget.userprofileurl,
+                    height: 50,
+                    width: 50,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
             ),
-            child: ClipOval(
-          child: Image.network(
-            userprofileurl,
-            height: 50,
-            width: 50,
-            fit: BoxFit.cover,
-          ),
-            ),
-          ),
-        ),
           ),
         ),
       ],
     );
   }
 
-  /**
-   * Check if the current page is the dashboard
-   */
   bool isDashboard(BuildContext context) {
-    return title == 'Learning Lens';// TODO: there has to be a better reference to the dashboard view...
+    return widget.title == 'Learning Lens';
   }
 
-  // This is required to implement PreferredSizeWidget
-  @override
-  Size get preferredSize => Size.fromHeight(kToolbarHeight);
+  void navigateToSelectedDashboard(BuildContext context) {
+    if (ClassroomSelection.selectedClassroom == LmsType.GOOGLE) {
+      LocalStorageService.saveSelectedClassroom(LmsType.GOOGLE);
+    } else {
+      LocalStorageService.saveSelectedClassroom(LmsType.MOODLE);
+    }
+
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ClassroomSelection.selectedClassroom == LmsType.GOOGLE
+            // ? GoogleTeacherDashboard()
+            ? TeacherDashboard()
+            : TeacherDashboard(),
+      ),
+    );
+  }
 }

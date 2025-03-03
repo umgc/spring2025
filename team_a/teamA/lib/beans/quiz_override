@@ -1,0 +1,26 @@
+import 'package:learninglens_app/beans/learning_lens_interface.dart';
+
+class QuizOverride implements LearningLensInterface {
+  final int overrideId;
+
+  QuizOverride({required this.overrideId});
+
+  QuizOverride.empty() : overrideId = 0;
+
+  @override
+  QuizOverride fromMoodleJson(Map<String, dynamic> json) {
+    return QuizOverride(
+      overrideId: json['overrideid'] as int,
+    );
+  }
+
+  @override
+  QuizOverride fromGoogleJson(Map<String, dynamic> json) {
+    throw UnimplementedError();
+  }
+
+  @override
+  String toString() {
+    return "QuizOverride(overrideId: $overrideId)";
+  }
+}
