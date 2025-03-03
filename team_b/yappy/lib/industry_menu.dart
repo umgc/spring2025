@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yappy/services/database_helper.dart';
+import 'package:share_plus/share_plus.dart';
 
 class IndustryMenu extends StatelessWidget {
   final String title;
@@ -106,23 +107,30 @@ class IndustryMenu extends StatelessWidget {
                     size: screenHeight * .05,
                   ),
                   onPressed: () {
-                    // on press a list of todays transcriipts that have gone through the API will be displayed
-                    // take the code from the history button to display the transcripts
-                    // when clicked on the transcript, the chat will be displayed
-                    // for resturant the transcript will be a kanaban style list that can be moved up and down
-                    // for the other industries we will need to figure it out
-                    
-
-
-
-
-
-
-
-
+                    //add Bernhards code here
                   },
                 ),
               ),
+                SizedBox(width: screenWidth * .06),
+
+                // Creates a refine data button
+                //after the transcipt is done it will go to this button to be edited. 
+                //after the edits post it to the database
+                Container(
+                decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.grey),
+                padding: EdgeInsets.all(5),
+                child: IconButton(
+                  icon: Icon(
+                  Icons.edit,
+                  color: Colors.white,
+                  size: screenHeight * .05,
+                  ),
+                  onPressed: () {
+                  // Add your refine data functionality here
+                  },
+                ),
+                ),
+
               SizedBox(width: screenWidth * .06),
 
               // Creates a industry specific icon based on user input
@@ -137,12 +145,78 @@ class IndustryMenu extends StatelessWidget {
                     size: screenHeight * .05,
                   ),
 
-                  onPressed: () {
+                  
+                  onPressed: () async {
+                  List<Map<String, dynamic>> transcripts = await _fetchTranscripts();
+                  showModalBottomSheet(
+                    context: context,
+                    builder: (BuildContext context) {
+                    return Container(
+                      padding: EdgeInsets.all(16.0),
+                      decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      color: const Color.fromARGB(255, 67, 67, 67),
+                      ),
+                      child: Center(
+                      child: Column(
+                        children: [
+                        Expanded(
+                          child: ListView.builder(
+                          itemCount: transcripts.length,
+                          itemBuilder: (context, index) {
+                            Map<String, dynamic> transcript = transcripts[index];
+                            return ListTile(
+                            title: Text(
+                              'Transcript ${transcript['transcript_id']}',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                            onTap: () {
+                              Navigator.pop(context);
+                              if (title == 'Restaurant') {
+                              // Show Kanban style list for restaurant
 
-                  },
-                ),
-              ),
-              SizedBox(width: screenWidth * .06),
+
+
+
+                              showModalBottomSheet(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return KanbanBoard(tasks: ['Cheeseburger no lettuce', 'Rootbeer', 'Water with lemon and a large cheese pizza']);
+                                },
+                              );
+                              
+
+
+
+                              } else {
+                              // Show regular transcript for other industries
+                                showDialog(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                  return generateTranscript(
+                                    context,
+                                    'Transcript',
+                                    transcript['transcript_text_data'] ?? 'No content available',
+                                  );
+                                  },
+                                );
+                              }
+                            }, 
+                            );
+                          },
+                          ),
+                        ),
+                        ],
+                      ),
+                      ),
+                    );
+                    },
+                  );                 
+              },
+            ),
+          ),
+          SizedBox(width: screenWidth * .06),
+
 
               // Creates a transcript history button
               Container(
@@ -155,9 +229,8 @@ class IndustryMenu extends StatelessWidget {
                     color: Colors.white,
                     size: screenHeight * .05,
                   ),
-                  onPressed: () {
+                  onPressed: () async {
                     // Store the context before async operation
-                    final BuildContext currentContext = context;
 
                         List<Map<String, dynamic>> transcripts = await _fetchTranscripts();
 
@@ -219,4 +292,129 @@ class IndustryMenu extends StatelessWidget {
   }
 }
 
+class KanbanBoard extends StatefulWidget {
+  final List<String> tasks;
 
+  const KanbanBoard({super.key, required this.tasks});
+
+  @override
+  KanbanBoardState createState() => KanbanBoardState();
+}
+
+class KanbanBoardState extends State<KanbanBoard> {
+  late List<String> tasks;
+
+  @override
+  void initState() {
+    super.initState();
+    tasks = widget.tasks;
+  }
+
+
+//creates the kanban board sytle widget for the restaurant
+//need to allow the user to edit the order by holding the card
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Restaurant Order'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                itemCount: tasks.length,
+                itemBuilder: (context, index) {
+                  return Card(
+                    elevation: 4,
+                    margin: const EdgeInsets.symmetric(vertical: 8),
+                    child: ListTile(
+                      title: Text(tasks[index]),
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: Icon(Icons.arrow_upward),
+                            onPressed: index > 0
+                                ? () {
+                                    setState(() {
+                                      final temp = tasks[index];
+                                      tasks[index] = tasks[index - 1];
+                                      tasks[index - 1] = temp;
+                                    });
+                                  }
+                                : null,
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.arrow_downward),
+                            onPressed: index < tasks.length - 1
+                                ? () {
+                                    setState(() {
+                                      final temp = tasks[index];
+                                      tasks[index] = tasks[index + 1];
+                                      tasks[index + 1] = temp;
+                                    });
+                                  }
+                                : null,
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.edit),
+                            onPressed: () {
+                              TextEditingController controller = TextEditingController(text: tasks[index]);
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return AlertDialog(
+                                    title: Text('Edit Task'),
+                                    content: TextField(
+                                      controller: controller,
+                                      decoration: InputDecoration(hintText: 'Enter new task'),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            tasks[index] = controller.text;
+                                          });
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: Text('Save'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: Text('Cancel'),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+            // Add a close button at the bottom
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('Close'),
+            ),
+
+                // Add your save to database functionality here
+
+          ],
+        ),
+      ),
+    );
+  }
+}
