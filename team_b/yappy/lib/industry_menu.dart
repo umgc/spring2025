@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:record/record.dart';
+import 'package:yappy/speech_state.dart';
 import 'package:yappy/services/database_helper.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:share_plus/share_plus.dart';
 
 class IndustryMenu extends StatelessWidget {
   final String title;
   final IconData icon;
+  final SpeechState speechState;
 
-  const IndustryMenu({required this.title, required this.icon, super.key});
+  const IndustryMenu({required this.title, required this.icon, required this.speechState, super.key}); 
     Widget generateTranscript(BuildContext context, String title, String content) {
       return AlertDialog(
         title: Text(title),
@@ -52,7 +56,7 @@ class IndustryMenu extends StatelessWidget {
       );
     }
 
-      Future<List<Map<String, dynamic>>> _fetchTranscripts() async {
+  Future<List<Map<String, dynamic>>> _fetchTranscripts() async {
     DatabaseHelper dbHelper = DatabaseHelper();
     
     return await dbHelper.getAllTranscripts();
@@ -97,18 +101,18 @@ class IndustryMenu extends StatelessWidget {
             children: [
               // Creates the chat button for each menu
               Container(
-                decoration:
-                    BoxDecoration(shape: BoxShape.circle, color: Colors.grey),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: speechState.recordState == RecordState.stop ? Colors.grey : Colors.red
+                ),
                 padding: EdgeInsets.all(5),
                 child: IconButton(
                   icon: Icon(
-                    Icons.chat,
+                    speechState.recordState == RecordState.stop ? Icons.mic : Icons.stop,
                     color: Colors.white,
                     size: screenHeight * .05,
                   ),
-                  onPressed: () {
-                    //add Bernhards code here
-                  },
+                  onPressed: () => speechState.toggleRecording(),
                 ),
               ),
                 SizedBox(width: screenWidth * .06),
@@ -232,10 +236,12 @@ class IndustryMenu extends StatelessWidget {
                   onPressed: () async {
                     // Store the context before async operation
 
-                        List<Map<String, dynamic>> transcripts = await _fetchTranscripts();
+                    // Load transcripts and then show modal
+                    _fetchTranscripts().then((transcripts) {
+                      if (!currentContext.mounted) return;
 
                         showModalBottomSheet(
-                          context: context,
+                          context: currentContext,
                           builder: (BuildContext context) {
                           return Container(
                           padding: EdgeInsets.all(16.0),
@@ -280,8 +286,8 @@ class IndustryMenu extends StatelessWidget {
                           ),
                         );
                       },
-                    );
-                  },
+                    );});
+                  }
                 ),
               ),
             ],
