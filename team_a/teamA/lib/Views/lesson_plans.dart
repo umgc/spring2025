@@ -82,6 +82,44 @@ class _LessonPlanState extends State {
     }
   }
 
+  String _convertTextToHtml(String text) {
+    return "<p>${text.replaceAll('\n\n', '</p><p>').replaceAll('\n', '<br>')}</p>";
+  }
+
+  String _stripHtmlTags(String htmlText) {
+    return htmlText
+        .replaceAll(RegExp(r'<p[^>]*>'), '\n\n') // Replace <p> with double line break
+        .replaceAll(RegExp(r'</p>'), '') // Remove closing </p> tags
+        .replaceAll(RegExp(r'<br\s*/?>'), '\n') // Replace <br> or <br/> with single line break
+        .replaceAll(RegExp(r'<[^>]*>'), '') // Remove all other HTML tags
+        .trim(); // Trim any extra newlines at the start or end
+  }
+
+  void _showLessonPlanDialog(LessonPlan plan) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(plan.name), // Display Lesson Plan Name
+          content: SingleChildScrollView(
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.4, // Adjust width
+              child: Text(_stripHtmlTags(plan.intro), textAlign: TextAlign.left),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog
+              },
+              child: Text("Close"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -182,7 +220,7 @@ class _LessonPlanState extends State {
                             Lesson newLp = Lesson(
                               lessonPlanName: lessonPlanNameController.text,
                               courseId: int.parse(selectedCourse!),
-                              content: manualEntryController.text,
+                              content: _convertTextToHtml(manualEntryController.text),
                             );
                             newLp.saveLessonLocally();
                             bool success = await newLp.submitLesson();
@@ -213,27 +251,49 @@ class _LessonPlanState extends State {
                         child: SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           child: DataTable(
+                            columnSpacing: 10, // Reduce spacing between columns
                             columns: [
-                              DataColumn(label: Text('Name')),
-                              DataColumn(label: Text('Lesson Plan')),
-                              DataColumn(label: Text('Select')),
+                              DataColumn(
+                                label: SizedBox(
+                                  width: 100, // Reduce width of Name column
+                                  child: Text('Name', style: TextStyle(fontWeight: FontWeight.bold)),
+                                ),
+                              ),
+                              DataColumn(
+                                label: SizedBox(
+                                  width: 200, // Reduce width of Lesson Plan column
+                                  child: Text('Lesson Plan', style: TextStyle(fontWeight: FontWeight.bold)),
+                                ),
+                              ),
+                              DataColumn(label: Text('Select', style: TextStyle(fontWeight: FontWeight.bold))),
+                              DataColumn(label: Text('View', style: TextStyle(fontWeight: FontWeight.bold))),
                             ],
                             rows: lessonPlans.map((plan) {
                               bool isSelected = selectedLessonPlan == plan;
                               return DataRow(
                                 cells: [
-                                  DataCell(isSelected && isEditing
-                                      ? TextField(controller: lessonPlanNameController)
-                                      : Text(plan.name)),
-                                  DataCell(isSelected && isEditing
-                                      ? TextField(controller: manualEntryController, maxLines: 3)
-                                      : Container(
-                                          width: MediaQuery.of(context).size.width * 0.25,
-                                          child: SingleChildScrollView(
-                                            scrollDirection: Axis.vertical,
-                                            child: Text(plan.intro),
-                                          ),
-                                        )),
+                                  DataCell(
+                                    ConstrainedBox(
+                                      constraints: BoxConstraints(maxWidth: 150), // Limit Name column width
+                                      child: Text(
+                                        plan.name,
+                                        overflow: TextOverflow.ellipsis, // Adds "..." if text is too long
+                                      ),
+                                    ),
+                                  ),
+                                  DataCell(
+                                    ConstrainedBox(
+                                      constraints: BoxConstraints(maxWidth: 250), // Limit Lesson Plan content width
+                                      child: SingleChildScrollView(
+                                        scrollDirection: Axis.vertical,
+                                        child: Text(
+                                          _stripHtmlTags(plan.intro),
+                                          maxLines: 3, // Show only 3 lines, add scroll for longer text
+                                          overflow: TextOverflow.ellipsis, // Adds "..." if content is too long
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                                   DataCell(Checkbox(
                                     value: isSelected,
                                     onChanged: (bool? selected) {
@@ -242,12 +302,21 @@ class _LessonPlanState extends State {
                                       });
                                     },
                                   )),
+                                  DataCell(
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        _showLessonPlanDialog(plan);
+                                      },
+                                      child: Text("View"),
+                                    ),
+                                  ),
                                 ],
                               );
                             }).toList(),
                           ),
                         ),
                       ),
+
                       SizedBox(height: 20),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
