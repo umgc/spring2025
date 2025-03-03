@@ -5,7 +5,6 @@ import 'package:memoryminder/src/database/repository/photo_repository.dart';
 import 'package:memoryminder/src/database/repository/significant_object_repository.dart';
 import 'package:memoryminder/src/database/repository/video_repository.dart';
 import 'package:memoryminder/src/database/repository/video_response_repository.dart';
-import 'package:memoryminder/src/database/repository/resource_repository.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
@@ -112,14 +111,6 @@ class AppDatabase {
       ${SignificantObjectFields.top} $floatType,
       ${SignificantObjectFields.width} $floatType,
       ${SignificantObjectFields.height} $floatType
-    )
-  ''');
-
-    await db.execute('''
-    CREATE TABLE $tableResources (
-      ${ResourceFields.id} $idType,
-      ${ResourceFields.location} $textNullableType,
-      ${ResourceFields.link} $textNullableType
     )
   ''');
 
