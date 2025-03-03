@@ -59,7 +59,7 @@ class SettingsPage extends StatelessWidget {
                   child: Text('Save'),
                   onPressed: () {
                     // Save the API key to env.dart file
-                    String apiKey = apiKeyController.text;
+                    // String apiKey = apiKeyController.text;
                     // Add your logic to save the API key here
                     Navigator.of(context).pop();
                   },

@@ -52,7 +52,7 @@ class IndustryMenu extends StatelessWidget {
       );
     }
 
-      Future<List<Map<String, dynamic>>> _fetchTranscripts() async {
+  Future<List<Map<String, dynamic>>> _fetchTranscripts() async {
     DatabaseHelper dbHelper = DatabaseHelper();
     
     return await dbHelper.getAllTranscripts();
@@ -146,76 +146,12 @@ class IndustryMenu extends StatelessWidget {
                   ),
 
                   
-                  onPressed: () async {
-                  List<Map<String, dynamic>> transcripts = await _fetchTranscripts();
-                  showModalBottomSheet(
-                    context: context,
-                    builder: (BuildContext context) {
-                    return Container(
-                      padding: EdgeInsets.all(16.0),
-                      decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      color: const Color.fromARGB(255, 67, 67, 67),
-                      ),
-                      child: Center(
-                      child: Column(
-                        children: [
-                        Expanded(
-                          child: ListView.builder(
-                          itemCount: transcripts.length,
-                          itemBuilder: (context, index) {
-                            Map<String, dynamic> transcript = transcripts[index];
-                            return ListTile(
-                            title: Text(
-                              'Transcript ${transcript['transcript_id']}',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                            onTap: () {
-                              Navigator.pop(context);
-                              if (title == 'Restaurant') {
-                              // Show Kanban style list for restaurant
-
-
-
-
-                              showModalBottomSheet(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return KanbanBoard(tasks: ['Cheeseburger no lettuce', 'Rootbeer', 'Water with lemon and a large cheese pizza']);
-                                },
-                              );
-                              
-
-
-
-                              } else {
-                              // Show regular transcript for other industries
-                                showDialog(
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                  return generateTranscript(
-                                    context,
-                                    'Transcript',
-                                    transcript['transcript_text_data'] ?? 'No content available',
-                                  );
-                                  },
-                                );
-                              }
-                            }, 
-                            );
-                          },
-                          ),
-                        ),
-                        ],
-                      ),
-                      ),
-                    );
-                    },
-                  );                 
-              },
-            ),
-          ),
-          SizedBox(width: screenWidth * .06),
+                  onPressed: () {
+                    _showTranscriptsBottomSheet(context);
+                  },
+                ),
+              ),
+              SizedBox(width: screenWidth * .06),
 
 
               // Creates a transcript history button
@@ -229,58 +165,8 @@ class IndustryMenu extends StatelessWidget {
                     color: Colors.white,
                     size: screenHeight * .05,
                   ),
-                  onPressed: () async {
-                    // Store the context before async operation
-
-                        List<Map<String, dynamic>> transcripts = await _fetchTranscripts();
-
-                        showModalBottomSheet(
-                          context: context,
-                          builder: (BuildContext context) {
-                          return Container(
-                          padding: EdgeInsets.all(16.0),
-                          decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(12),
-                          color: const Color.fromARGB(255, 67, 67, 67),
-                          ),
-                          child: Center(
-                            child: Column(
-                              children: [
-                                Expanded(
-                                  child: ListView.builder(
-                                    itemCount: transcripts.length,
-                                    itemBuilder: (context, index) {
-                                      Map<String, dynamic> transcript = transcripts[index];
-                                      return ListTile(
-                                        title: Text(
-                                          'Transcript ${transcript['transcript_id']}',
-                                          style: TextStyle(
-                                            color: Colors.white
-                                          ),
-                                        ),
-                                        onTap: () {
-                                          Navigator.pop(context);
-                                          showDialog(
-                                            context: context,
-                                            builder: (BuildContext context) {
-                                              return generateTranscript(
-                                              context,
-                                                'Transcript',
-                                                transcript['transcript_text_data'] ?? 'No content available',
-                                              );
-                                            },
-                                          );
-                                        },
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    );
+                  onPressed: () {
+                    _showTranscriptsHistoryBottomSheet(context);
                   },
                 ),
               ),
@@ -288,6 +174,129 @@ class IndustryMenu extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  // Extract the functionality to show transcripts into a separate method
+  void _showTranscriptsBottomSheet(BuildContext context) async {
+    // Fetch transcripts first
+    List<Map<String, dynamic>> transcripts = await _fetchTranscripts();
+    
+    // Check if the context is still valid
+    if (!context.mounted) return;
+    
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return Container(
+          padding: EdgeInsets.all(16.0),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            color: const Color.fromARGB(255, 67, 67, 67),
+          ),
+          child: Center(
+            child: Column(
+              children: [
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: transcripts.length,
+                    itemBuilder: (context, index) {
+                      Map<String, dynamic> transcript = transcripts[index];
+                      return ListTile(
+                        title: Text(
+                          'Transcript ${transcript['transcript_id']}',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                        onTap: () {
+                          Navigator.pop(context);
+                          if (title == 'Restaurant') {
+                            // Show Kanban style list for restaurant
+                            showModalBottomSheet(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return KanbanBoard(tasks: ['Cheeseburger no lettuce', 'Rootbeer', 'Water with lemon and a large cheese pizza']);
+                              },
+                            );
+                          } else {
+                            // Show regular transcript for other industries
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return generateTranscript(
+                                  context,
+                                  'Transcript',
+                                  transcript['transcript_text_data'] ?? 'No content available',
+                                );
+                              },
+                            );
+                          }
+                        }, 
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // Extract the functionality to show transcript history into a separate method
+  void _showTranscriptsHistoryBottomSheet(BuildContext context) async {
+    // Fetch transcripts first
+    List<Map<String, dynamic>> transcripts = await _fetchTranscripts();
+    
+    // Check if the context is still valid
+    if (!context.mounted) return;
+    
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return Container(
+          padding: EdgeInsets.all(16.0),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            color: const Color.fromARGB(255, 67, 67, 67),
+          ),
+          child: Center(
+            child: Column(
+              children: [
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: transcripts.length,
+                    itemBuilder: (context, index) {
+                      Map<String, dynamic> transcript = transcripts[index];
+                      return ListTile(
+                        title: Text(
+                          'Transcript ${transcript['transcript_id']}',
+                          style: TextStyle(
+                            color: Colors.white
+                          ),
+                        ),
+                        onTap: () {
+                          Navigator.pop(context);
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                              return generateTranscript(
+                                context,
+                                'Transcript',
+                                transcript['transcript_text_data'] ?? 'No content available',
+                              );
+                            },
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
