@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:yappy/services/database_helper.dart';
-import 'package:share_plus/share_plus.dart';
 
 class IndustryMenu extends StatelessWidget {
   final String title;
@@ -22,10 +21,10 @@ class IndustryMenu extends StatelessWidget {
               icon: Icon(Icons.share),
               onPressed: () {
                 // Add your share functionality here
-                Share.share(
-                  content,
-                  subject: title,
-                );
+                // Share.share(
+                //   content,
+                //   subject: title,
+                // );
               },
             ),
             IconButton(

@@ -43,6 +43,7 @@ dependencies:
   path: ^1.8.0
   envied: ^1.1.1
   path_provider: ^2.0.11
+  dart_openai: ^5.1.0
 
 dev_dependencies:
   flutter_test:
@@ -77,6 +78,9 @@ flutter:
     - assets/icon/app_icon.png
     - assets/yappy_database.db
     - assets/test_document.txt
+    - assets/sample_medical_transcript.txt
+    - assets/sample_restaurant_order_transcript.txt
+    - assets/sample_mechanic_transcript.txt
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

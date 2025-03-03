@@ -91,4 +91,16 @@ class FileHandler {
       }
     }
   }
+
+  // TODO: function to pull transcript text from database instead
+  Future<String> loadTextFile(String filePath) async {
+    try {
+      String fileContent = await rootBundle.loadString(filePath);
+      return fileContent;
+    } catch (e) {
+      // ignore: avoid_print TODO: remove
+      print("Error reading text file: $e");
+      return "Error loading file";
+    }
+  }
 }

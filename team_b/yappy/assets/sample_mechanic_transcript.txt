@@ -1,0 +1,43 @@
+**Mechanic:** Good morning! How can I help you today?  
+
+**Vehicle Owner:** Hi there. I’ve been having some issues with my car. Lately, it’s been making a strange knocking sound when I start it up, and sometimes it feels like it’s struggling to accelerate.  
+
+**Mechanic:** Got it. How long have you been noticing this issue?  
+
+**Vehicle Owner:** It started about a week ago, but it seems to be getting worse.  
+
+**Mechanic:** Okay. Does the knocking sound happen only when you start the engine, or does it continue while you’re driving?  
+
+**Vehicle Owner:** It’s mostly right when I start the car, but sometimes I hear a little rattling when I’m idling at a stoplight.  
+
+**Mechanic:** That could be a few different things—maybe an issue with the engine mounts, low oil levels, or something in the fuel system. Have you noticed any warning lights on your dashboard?  
+
+**Vehicle Owner:** Yeah, actually, the check engine light came on yesterday.  
+
+**Mechanic:** Alright, that helps. I’ll run a diagnostic scan to see what codes are coming up. In the meantime, have you had an oil change recently?  
+
+**Vehicle Owner:** Not in a while… probably about 6,000 miles ago.  
+
+**Mechanic:** That could be a factor. If the oil is too low or dirty, it might be causing engine knocking. I’ll check the oil level as well.  
+
+**Vehicle Owner:** That makes sense. Also, the acceleration issue—could that be related?  
+
+**Mechanic:** Possibly. If your fuel injectors are clogged or your spark plugs are worn, that could cause sluggish acceleration. We’ll check both.  
+
+**Vehicle Owner:** Alright, sounds good.  
+
+*(After running diagnostics and checking the vehicle...)*  
+
+**Mechanic:** So, I found a couple of issues. Your engine oil is very low, which could be contributing to the knocking sound. You’re also getting a diagnostic code for a misfiring cylinder, which likely means your spark plugs need to be replaced.  
+
+**Vehicle Owner:** Oh, wow. So I need an oil change and new spark plugs?  
+
+**Mechanic:** Exactly. I’d recommend an oil change right away and replacing the spark plugs. That should help with both the knocking and the acceleration problem.  
+
+**Vehicle Owner:** Alright, let’s do it. How long will it take?  
+
+**Mechanic:** It should take about an hour or so. You’re welcome to wait in the lounge while we take care of it.  
+
+**Vehicle Owner:** Sounds good. Thanks for checking everything.  
+
+**Mechanic:** No problem! I’ll let you know as soon as it’s ready.  
