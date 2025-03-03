@@ -6,6 +6,10 @@ import "package:learninglens_app/Controller/custom_appbar.dart";
 import "package:learninglens_app/Views/lesson.dart";
 import "package:learninglens_app/beans/course.dart";
 import "package:learninglens_app/beans/lesson_plan.dart";
+import 'package:learninglens_app/Api/llm/openai_api.dart';
+import 'package:learninglens_app/Api/llm/grok_api.dart';
+import 'package:learninglens_app/Api/llm/llm_api.dart';
+import 'package:learninglens_app/services/local_storage_service.dart';
 
 class LessonPlans extends StatefulWidget {
   @override
@@ -18,6 +22,9 @@ class _LessonPlanState extends State {
   List<LessonPlan> lessonPlans = [];
   LessonPlan? selectedLessonPlan;
   bool isEditing = false;
+  bool useAiGeneration = false;
+  String? selectedLLM;
+
 
   final TextEditingController lessonPlanNameController = TextEditingController();
   final TextEditingController manualEntryController = TextEditingController();
@@ -48,6 +55,33 @@ class _LessonPlanState extends State {
       lessonPlans = plans;
     });
   }
+
+  Future<void> generateLessonPlanWithAI() async {
+    final openApiKey = LocalStorageService.getOpenAIKey();
+    final grokApiKey = LocalStorageService.getGrokKey();
+    final perplexityApiKey = LocalStorageService.getPerplexityKey();
+
+    try {
+      final aiModel;
+      if (selectedLLM == 'ChatGPT') {
+        aiModel = OpenAiLLM(openApiKey);
+      } else if (selectedLLM == 'Grok') {
+        aiModel = GrokLLM(grokApiKey);
+      } else {
+        aiModel = LlmApi(perplexityApiKey);
+      }
+
+      String prompt = "Generate a lesson plan for ${lessonPlanNameController.text} covering key topics like ${manualEntryController.text}.";
+      var result = await aiModel.postToLlm(prompt);
+
+      setState(() {
+        manualEntryController.text = result;
+      });
+    } catch (e) {
+      print("Error generating lesson plan: $e");
+    }
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -108,9 +142,43 @@ class _LessonPlanState extends State {
                         ),
                       ),
                       SizedBox(height: 20),
+
+                      CheckboxListTile(
+                        title: Text("Generate Lesson Plan with AI"),
+                        value: useAiGeneration,
+                        onChanged: (bool? value) {
+                          setState(() {
+                            useAiGeneration = value!;
+                            if (!useAiGeneration) {
+                              selectedLLM = null; // Reset dropdown when unchecked
+                            }
+                          });
+                        },
+                      ),
+
+                      DropdownButtonFormField<String>(
+                        value: selectedLLM,
+                        decoration: const InputDecoration(labelText: "Select AI Model"),
+                        onChanged: useAiGeneration ? (String? newValue) {
+                          setState(() {
+                            selectedLLM = newValue;
+                          });
+                        } : null, // Disables interaction when checkbox is unchecked
+                        items: ['ChatGPT', 'Grok', 'Perplexity'].map((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        disabledHint: Text("Enable AI to select a model"), // Greyed-out text when disabled
+                      ),
+
                       ElevatedButton(
                         onPressed: () async {
                           if (selectedCourse != null) {
+                            if (useAiGeneration) {
+                              await generateLessonPlanWithAI();
+                            }
                             Lesson newLp = Lesson(
                               lessonPlanName: lessonPlanNameController.text,
                               courseId: int.parse(selectedCourse!),
