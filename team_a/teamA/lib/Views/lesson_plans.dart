@@ -17,6 +17,7 @@ class _LessonPlanState extends State {
   String? selectedCourse;
   List<LessonPlan> lessonPlans = [];
   LessonPlan? selectedLessonPlan;
+  bool isEditing = false;
 
   final TextEditingController lessonPlanNameController = TextEditingController();
   final TextEditingController manualEntryController = TextEditingController();
@@ -150,18 +151,23 @@ class _LessonPlanState extends State {
                               DataColumn(label: Text('Select')),
                             ],
                             rows: lessonPlans.map((plan) {
+                              bool isSelected = selectedLessonPlan == plan;
                               return DataRow(
                                 cells: [
-                                  DataCell(Text(plan.name)),
-                                  DataCell(Container(
-                                    width: MediaQuery.of(context).size.width * 0.25,
-                                    child: SingleChildScrollView(
-                                      scrollDirection: Axis.vertical,
-                                      child: Text(plan.intro),
-                                    ),
-                                  )),
+                                  DataCell(isSelected && isEditing
+                                      ? TextField(controller: lessonPlanNameController)
+                                      : Text(plan.name)),
+                                  DataCell(isSelected && isEditing
+                                      ? TextField(controller: manualEntryController, maxLines: 3)
+                                      : Container(
+                                          width: MediaQuery.of(context).size.width * 0.25,
+                                          child: SingleChildScrollView(
+                                            scrollDirection: Axis.vertical,
+                                            child: Text(plan.intro),
+                                          ),
+                                        )),
                                   DataCell(Checkbox(
-                                    value: selectedLessonPlan == plan,
+                                    value: isSelected,
                                     onChanged: (bool? selected) {
                                       setState(() {
                                         selectedLessonPlan = selected! ? plan : null;
@@ -179,24 +185,50 @@ class _LessonPlanState extends State {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           ElevatedButton(
-                            onPressed: () async {
-                              await MoodleLmsService().deleteLessonPlan(selectedLessonPlan!.id);
-                              _fetchLessonPlans(int.parse(selectedCourse!));
-                            },
+                            onPressed: selectedLessonPlan != null
+                                ? () async {
+                                    await MoodleLmsService().deleteLessonPlan(selectedLessonPlan!.id);
+                                    _fetchLessonPlans(int.parse(selectedCourse!));
+                                    setState(() {
+                                      selectedLessonPlan = null;
+                                    });
+                                  }
+                                : null,
                             child: Text('Delete Selected'),
                           ),
                           ElevatedButton(
-                            onPressed: () async {
-                              await MoodleLmsService().updateLessonPlan(
-                                lessonId: selectedLessonPlan!.id,
-                                name: "Updated Lesson Name",
-                                intro: "This is the new introduction text.",
-                                available: 1672531200,
-                                deadline: 1675132800,
-                              );
-                              _fetchLessonPlans(int.parse(selectedCourse!));
-                            },
+                            onPressed: selectedLessonPlan != null
+                                ? () {
+                                    setState(() {
+                                      isEditing = true;
+                                      lessonPlanNameController.text = selectedLessonPlan!.name;
+                                      manualEntryController.text = selectedLessonPlan!.intro;
+                                    });
+                                  }
+                                : null,
                             child: Text('Edit Selected'),
+                          ),
+                          ElevatedButton(
+                            onPressed: isEditing
+                                ? () async {
+                                    await MoodleLmsService().updateLessonPlan(
+                                      lessonId: selectedLessonPlan!.id,
+                                      name: lessonPlanNameController.text,
+                                      intro: manualEntryController.text,
+                                      available: 1672531200, //dummy value
+                                      deadline: 1675132800, //dummy value
+                                    );
+                                    _fetchLessonPlans(int.parse(selectedCourse!));
+                                    lessonPlanNameController.clear();
+                                    manualEntryController.clear();
+                                    
+                                    setState(() {
+                                      selectedLessonPlan = null; // Reset selection
+                                      isEditing = false; // Exit editing mode
+                                    });
+                                  }
+                                : null,
+                            child: Text('Save Edits'),
                           ),
                         ],
                       ),
