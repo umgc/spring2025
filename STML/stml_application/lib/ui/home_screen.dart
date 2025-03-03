@@ -8,7 +8,6 @@ import 'package:memoryminder/ui/gallery_screen.dart';
 import 'package:memoryminder/ui/profile_screen.dart';
 import 'package:memoryminder/ui/tour_screen.dart';
 import 'package:memoryminder/ui/location_history_screen.dart';
-import 'package:memoryminder/ui/dementia_resources.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:memoryminder/src/camera_manager.dart';
