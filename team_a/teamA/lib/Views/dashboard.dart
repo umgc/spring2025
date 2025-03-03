@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:learninglens_app/Api/moodle_api_singleton.dart';
+import 'package:learninglens_app/Api/lms/enum/lms_enum.dart';
+import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
+import 'package:learninglens_app/Views/analytics_page.dart';
 import 'package:learninglens_app/Views/assessments_view.dart';
 import 'package:learninglens_app/Views/course_list.dart';
 import 'package:learninglens_app/Views/essays_view.dart';
-import 'package:learninglens_app/notifiers/login_notifier.dart';
-import 'package:provider/provider.dart';
+import 'package:learninglens_app/Views/iep_page.dart';
+import 'package:learninglens_app/Views/lesson_plans.dart';
+import 'package:learninglens_app/services/local_storage_service.dart';
 
 class TeacherDashboard extends StatelessWidget {
   const TeacherDashboard({super.key});
@@ -18,7 +21,7 @@ class TeacherDashboard extends StatelessWidget {
     return Scaffold(
       appBar: CustomAppBar(
         title: 'Learning Lens',
-        userprofileurl: MoodleApiSingleton().moodleProfileImage ?? '',
+        userprofileurl: LmsFactory.getLmsService().profileImage ?? '',
       ),
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: Column(
@@ -66,10 +69,13 @@ class TeacherDashboard extends StatelessWidget {
 
   /// Checks if user is logged in and has an LLM key
   bool canUserAccessApp(BuildContext context) {
-    final loginNotifier = Provider.of<LoginNotifier>(context, listen: true);
-    bool isLoggedIn = loginNotifier.isLoggedIn;
-    bool hasLLMKey = loginNotifier.hasLLMKey;
+    bool isLoggedIn = LocalStorageService.isLoggedIntoMoodle();
+    bool hasLLMKey = LocalStorageService.hasLLMKey();
     return isLoggedIn && hasLLMKey;
+  }
+
+  String getClassroom() {
+    return LocalStorageService.getSelectedClassroom() == LmsType.MOODLE ? 'Moodle' : 'Google';
   }
 
   // ---------- DESKTOP LAYOUT ----------
@@ -106,7 +112,7 @@ class TeacherDashboard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              'Teacher Dashboard',
+              'Teacher ${getClassroom()} Dashboard',
               style: TextStyle(
                 fontSize: titleFontSize,
                 fontWeight: FontWeight.normal,
@@ -115,7 +121,7 @@ class TeacherDashboard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             Text(
-              'Welcome, ${MoodleApiSingleton().moodleFirstName ?? 'User'}',
+              'Welcome, ${LmsFactory.getLmsService().firstName ?? 'User'}',
               style: TextStyle(
                 fontSize: titleFontSize * 0.7,
                 fontWeight: FontWeight.normal,
@@ -127,7 +133,7 @@ class TeacherDashboard extends StatelessWidget {
           ],
         ),
       ),
-    );
+    ); 
   }
 
   // ---------- MOBILE LAYOUT ----------
@@ -175,7 +181,7 @@ class TeacherDashboard extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Text(
-                'Welcome, ${MoodleApiSingleton().moodleFirstName ?? 'User'}',
+                'Welcome, ${LmsFactory.getLmsService().firstName ?? 'User'}',
                 style: TextStyle(
                   fontSize: titleFontSize * 0.7,
                   fontWeight: FontWeight.normal,
@@ -231,19 +237,28 @@ class TeacherDashboard extends StatelessWidget {
       {
         'title': 'IEP',
         'description': 'Manage Individualized Education Plans.',
-        'onPressed': !canAccessApp ? null : () {}, // Add navigation
+        'onPressed': !canAccessApp 
+            ? null 
+            : () => Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => IepPage())), // Add navigation
         'color': Colors.green,
       },
       {
         'title': 'Analytics',
         'description': 'View performance analytics.',
-        'onPressed': !canAccessApp ? null : () {}, // Add navigation
+        'onPressed': !canAccessApp 
+            ? null 
+            : () => Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => AnalyticsPage())), // Add navigation
         'color': Colors.cyan,
       },
       {
         'title': 'Lesson Plan',
         'description': 'Create and manage lesson plans.',
-        'onPressed': !canAccessApp ? null : () {}, // Add navigation
+        'onPressed': !canAccessApp 
+            ? null 
+            : () => Navigator.push(
+                    context, MaterialPageRoute(builder: (context) => LessonPlans())), // Add navigation
         'color': Colors.purple,
       },
       {

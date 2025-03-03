@@ -1,4 +1,5 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:learninglens_app/Api/lms/enum/lms_enum.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// This class manages local storage operations using SharedPreferences and dotenv.
@@ -55,18 +56,34 @@ class LocalStorageService {
   }
 
   /// Saves login state.
-  static void saveLoginState(bool isLoggedIn) {
-    _prefs.setBool('isLoggedIn', isLoggedIn);
+  static void saveMoodleLoginState(bool isLoggedIn) {
+    _prefs.setBool('isLoggedIntoMoodle', isLoggedIn);
   }
 
   /// Retrieves login state.
-  static bool getIsLoggedIn() {
-    return _prefs.getBool('isLoggedIn') ?? false;
+  static bool isLoggedIntoMoodle() {
+    return _prefs.getBool('isLoggedIntoMoodle') ?? false;
   }
 
   /// Clears login state.
-  static void clearLoginState() {
-    _prefs.remove('isLoggedIn');
+  static void clearMoodleLoginState() {
+    _prefs.remove('isLoggedIntoMoodle');
+  }
+
+
+    /// Saves login state.
+  static void saveGoogleLoginState(bool isLoggedIn) {
+    _prefs.setBool('isLoggedIntoGoogle', isLoggedIn);
+  }
+
+  /// Retrieves login state.
+  static bool isLoggedIntoGoogle() {
+    return _prefs.getBool('isLoggedIntoGoogle') ?? false;
+  }
+
+  /// Clears login state.
+  static void clearGoogleLoginState() {
+    _prefs.remove('isLoggedIntoGoogle');
   }
 
   /// Saves Moodle URL.
@@ -116,7 +133,7 @@ class LocalStorageService {
 
   /// Retrieves Claude API key from storage or dotenv.
   static String getClaudeKey() {
-    return _prefs.getString('claudeKey') ?? dotenv.env['claudeApiKey'] ?? '';
+    return _prefs.getString('claudeKey') ?? dotenv.env['claude_apiKey'] ?? '';
   }
 
   /// Clears Claude API key.
@@ -137,5 +154,63 @@ class LocalStorageService {
   /// Clears Perplexity API key.
   static void clearPerplexityKey() {
     _prefs.remove('perplexityKey');
+  }
+
+  /// Saves Grok API key.
+  static void saveGrokKey(String grokKey) {
+    _prefs.setString('grokKey', grokKey);
+  }
+
+  /// Retrieves Grok API key from storage or dotenv.
+  static String getGrokKey() {
+    return _prefs.getString('grokKey') ?? dotenv.env['grok_apiKey'] ?? '';
+  }
+
+  /// Clears Grok API key.
+  static void clearGrokKey() {
+    _prefs.remove('grokKey');
+  }
+
+  static String? getGoogleClientId() {
+    return _prefs.getString('GOOGLE_CLIENT_ID') ?? dotenv.env['GOOGLE_CLIENT_ID'] ?? '';
+  }
+
+  static void saveGoogleClientId(String clientId) {
+    _prefs.setString('GOOGLE_CLIENT_ID', clientId);
+  }
+
+  static void clearGoogleClientId() {
+    _prefs.remove('GOOGLE_CLIENT_ID');
+  }
+
+  static saveGoogleAccessToken(String accessToken) {
+    _prefs.setString('GOOGLE_ACCESS_TOKEN', accessToken);
+  }
+
+  static String? getGoogleAccessToken() {
+    return _prefs.getString('GOOGLE_ACCESS_TOKEN');
+  }
+
+  static clearGoogleAccessToken() {
+    _prefs.remove('GOOGLE_ACCESS_TOKEN');
+  }  
+  // Save LmsType as an INTEGER
+  static void saveSelectedClassroom(LmsType type) {
+    _prefs.setInt('selectedClassroom', type.index);
+  }
+
+  // Get LmsType from stored INTEGER
+  static LmsType getSelectedClassroom() {
+    int? storedValue = _prefs.getInt('selectedClassroom');
+    return storedValue != null ? LmsType.values[storedValue] : LmsType.MOODLE;
+  }
+
+  // Clear stored selection
+  static void clearSelectedClassroom() {
+    _prefs.remove('selectedClassroom');
+  }
+
+  static hasLLMKey() {
+    return getOpenAIKey().isNotEmpty || getClaudeKey().isNotEmpty || getPerplexityKey().isNotEmpty;
   }
 }

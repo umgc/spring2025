@@ -1,6 +1,6 @@
 import "package:flutter/material.dart";
-import "package:learninglens_app/Api/moodle_api_singleton.dart";
-import "package:learninglens_app/Controller/beans.dart";
+import "package:learninglens_app/Api/lms/factory/lms_factory.dart";
+import "package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart";
 import "package:learninglens_app/Controller/custom_appbar.dart";
 
 ///
@@ -36,7 +36,13 @@ class _TemplateState extends State{
   @override
   Widget build(BuildContext context){
     return Scaffold(
-      appBar: CustomAppBar(title: 'Template View', userprofileurl: MoodleApiSingleton().moodleProfileImage ?? ''),
+      appBar: CustomAppBar(
+        title: 'Template View', 
+        onRefresh: () {
+          // Add refresh logic here
+        },
+        userprofileurl: LmsFactory.getLmsService().profileImage ?? ''
+        ),
       body: SingleChildScrollView(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceAround,

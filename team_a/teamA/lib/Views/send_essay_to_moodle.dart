@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
-import 'package:learninglens_app/Controller/beans.dart';
+import 'package:learninglens_app/beans/course.dart';
 import 'package:learninglens_app/Views/dashboard.dart';
 import 'dart:convert';
-import '../Api/moodle_api_singleton.dart';
+import '../Api/lms/moodle/moodle_lms_service.dart';
 
 class EssayAssignmentSettings extends StatefulWidget {
   final String updatedJson;
@@ -78,7 +79,7 @@ class EssayAssignmentSettingsState extends State<EssayAssignmentSettings> {
   // Fetch courses from the controller
   Future<void> fetchCourses() async {
     try {
-      List<Course>? courseList = MoodleApiSingleton().moodleCourses;
+      List<Course>? courseList = LmsFactory.getLmsService().courses;
       setState(() {
         courses = courseList ?? [];
         // Don't auto-select any course here, leave it to the user to select.
@@ -238,7 +239,7 @@ class EssayAssignmentSettingsState extends State<EssayAssignmentSettings> {
         return Scaffold(
           appBar: CustomAppBar(
               title: 'Assign Essay',
-              userprofileurl: MoodleApiSingleton().moodleProfileImage ?? ''),
+              userprofileurl: LmsFactory.getLmsService().profileImage ?? ''),
           body: SingleChildScrollView(
             padding: EdgeInsets.all(14.0),
             child: Form(
@@ -434,7 +435,7 @@ class EssayAssignmentSettingsState extends State<EssayAssignmentSettings> {
                             if (_formKey.currentState!.validate() &&
                                 _descriptionController.text.trim().isNotEmpty &&
                                 _validateAvailabilityDates()) {
-                              var api = MoodleApiSingleton();
+                              var api = LmsFactory.getLmsService();
                               bool? token = api.isLoggedIn();
 
                               if (token) {

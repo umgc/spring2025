@@ -2,16 +2,16 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:learninglens_app/Api/llm/prompt_engine.dart';
-import 'package:learninglens_app/Api/llm_api.dart';
-import 'package:learninglens_app/Api/moodle_api_singleton.dart';
-import 'package:learninglens_app/Controller/beans.dart';
+import 'package:learninglens_app/Api/llm/llm_api.dart';
+import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
+import 'package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart';
+import 'package:learninglens_app/beans/assignment_form.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
-import 'package:learninglens_app/llm/claudeai_api.dart';
+import 'package:learninglens_app/Api/llm/claudeai_api.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
 import 'edit_questions.dart';
-import 'package:learninglens_app/llm/openai_api.dart';
-
-
+import 'package:learninglens_app/Api/llm/openai_api.dart';
+import 'package:learninglens_app/Api/llm/grok_api.dart';
 
 class CreateAssessment extends StatefulWidget {
 
@@ -63,16 +63,19 @@ class _AssessmentState extends State<CreateAssessment> {
     final perplexityApiKey = LocalStorageService.getPerplexityKey();
     final openApiKey = LocalStorageService.getOpenAIKey();
     final claudApiKey =  LocalStorageService.getClaudeKey();
+    final grokApiKey = LocalStorageService.getGrokKey();
     try {
       setState((){_isLoading=true;});
       final aiModel;
       if (selectedLLM == 'ChatGPT') {
-        aiModel = OpenAiLLM(openApiKey);
-      } else if (selectedLLM == 'CLAUDE') {
-        aiModel = ClaudeAiAPI(claudApiKey);
-      } else {
+        aiModel = OpenAiLLM(openApiKey);        
+      } else if (selectedLLM == 'Grok') {
+        aiModel = GrokLLM(grokApiKey);
+      } else if (selectedLLM == 'Perplexity') {
         // aiModel = OpenAiLLM(perplexityApiKey); 
         aiModel = LlmApi(perplexityApiKey);
+      } else {
+        aiModel = ClaudeAiAPI(claudApiKey);
       }
       var result = await aiModel.postToLlm(PromptEngine.generatePrompt(af));
       if (result.isNotEmpty) {
@@ -91,7 +94,13 @@ class _AssessmentState extends State<CreateAssessment> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: CustomAppBar(title: 'Create Assessment', userprofileurl: MoodleApiSingleton().moodleProfileImage ?? ''),
+      appBar: CustomAppBar(
+        title: 'Create Assessment', 
+        onRefresh: () {
+          // _loadCourses();
+        },
+        userprofileurl: LmsFactory.getLmsService().profileImage ?? ''
+        ),
       body: Form(
           key: _formKey,
           child:
@@ -185,7 +194,7 @@ class _AssessmentState extends State<CreateAssessment> {
                               selectedLLM = newValue;
                             });
                           },
-                          items: ['ChatGPT', 'CLAUDE', 'Perplexity'].map((String value) {
+                          items: ['ChatGPT', 'CLAUDE', 'Perplexity', 'Grok'].map((String value) {
                             return DropdownMenuItem<String>(
                               value: value,
                               child: Text(value),
