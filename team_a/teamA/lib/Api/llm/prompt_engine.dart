@@ -1,4 +1,4 @@
-import 'package:learninglens_app/Controller/beans.dart';
+import 'package:learninglens_app/beans/assignment_form.dart';
 
 class PromptEngine {
 

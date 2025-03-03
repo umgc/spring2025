@@ -14,7 +14,8 @@ class MedicalDoctorApp extends StatelessWidget {
     );
   }
 }
-
+//Creates a page for the Medical Doctor industry
+//The page will contain the industry menu and the transcription box
 class MedicalDoctorPage extends StatelessWidget {
   const MedicalDoctorPage({super.key});
 
@@ -22,13 +23,11 @@ class MedicalDoctorPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 0, 0, 0),
-
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(140), 
         child: ToolBar()
       ),
       drawer: HamburgerDrawer(),
-
       body: Column(
         children: [
         IndustryMenu(title: "Medical Doctor", icon: Icons.medical_services),

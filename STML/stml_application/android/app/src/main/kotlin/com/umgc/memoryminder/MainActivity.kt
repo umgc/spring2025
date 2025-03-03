@@ -1,4 +1,4 @@
-package com.example.stml_application
+package com.umgc.memoryminder
 
 import io.flutter.embedding.android.FlutterActivity
 

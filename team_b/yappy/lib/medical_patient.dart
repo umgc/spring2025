@@ -14,7 +14,8 @@ class MedicalPatientApp extends StatelessWidget {
     );
   }
 }
-
+//Creates a page for the Medical Patient industry
+//The page will contain the industry menu and the transcription box
 class MedicalPatientPage extends StatelessWidget {
   const MedicalPatientPage({super.key});
 
@@ -22,7 +23,6 @@ class MedicalPatientPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 0, 0, 0),
-
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(140), 
         child: ToolBar()

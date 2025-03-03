@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:learninglens_app/Controller/beans.dart';
+import 'package:learninglens_app/Api/lms/enum/lms_enum.dart';
+import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
+import 'package:learninglens_app/Api/lms/google_classroom/google_lms_service.dart';
+import 'package:learninglens_app/beans/quiz.dart';
+import 'package:learninglens_app/beans/course.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/Views/dashboard.dart';
-import '../Api/moodle_api_singleton.dart';
+import 'package:learninglens_app/services/local_storage_service.dart';
+import '../Api/lms/moodle/moodle_lms_service.dart'; // Make sure this path is correct
+
+
+
 
 class QuizMoodle extends StatefulWidget {
   final Quiz quiz;
@@ -16,13 +24,15 @@ class QuizMoodleState extends State<QuizMoodle> {
   // Submission form dates
   String selectedDaySubmission = '01';
   String selectedMonthSubmission = 'January';
-  String selectedYearSubmission = '2024';
+  String selectedYearSubmission = '2025'; // Start from 2025
   String selectedHourSubmission = '00';
   String selectedMinuteSubmission = '00';
   late String quizasxml;
-  late MoodleApiSingleton api;
+  late MoodleLmsService api;
   List<Course> courses = [];
   String selectedCourse = 'Select a course';
+
+  LmsType? lmsType;
 
   @override
   void initState() {
@@ -31,12 +41,21 @@ class QuizMoodleState extends State<QuizMoodle> {
     quizQuestionsController = TextEditingController();
     quizasxml = widget.quiz.toXmlString();
     fetchCourses();
+    _getLmsType(); // Fetch LMS type on init
+  }
+
+  // Fetch LMS type from local storage
+  Future<void> _getLmsType() async {
+    LmsType retrievedLmsType = LocalStorageService.getSelectedClassroom();
+    setState(() {
+      lmsType = retrievedLmsType;
+    });
   }
 
 // Fetch courses from the controller
   Future<void> fetchCourses() async {
     try {
-      List<Course>? courseList = MoodleApiSingleton().moodleCourses;
+      List<Course>? courseList = LmsFactory.getLmsService().courses;
       setState(() {
         courses = courseList ?? [];
         // Don't auto-select any course here, leave it to the user to select.
@@ -91,7 +110,7 @@ class QuizMoodleState extends State<QuizMoodle> {
   // Due date selection
   String selectedDayDue = '01';
   String selectedMonthDue = 'January';
-  String selectedYearDue = '2024';
+  String selectedYearDue = '2025'; // Start from 2025
   String selectedHourDue = '00';
   String selectedMinuteDue = '00';
 
@@ -115,7 +134,7 @@ class QuizMoodleState extends State<QuizMoodle> {
     'November',
     'December'
   ];
-  List<String> years = ['2023', '2024', '2025'];
+  List<String> years = ['2025', '2026', '2027']; // Years starting from 2025
   List<String> hours =
       List.generate(24, (index) => index.toString().padLeft(2, '0'));
   List<String> minutes =
@@ -157,7 +176,7 @@ class QuizMoodleState extends State<QuizMoodle> {
     return Scaffold(
       appBar: CustomAppBar(
           title: 'Assign Assessment',
-          userprofileurl: MoodleApiSingleton().moodleProfileImage ?? ''),
+          userprofileurl: LmsFactory.getLmsService().profileImage ?? ''),
       body: SingleChildScrollView(
         padding: EdgeInsets.all(15.0),
         child: Column(
@@ -167,7 +186,7 @@ class QuizMoodleState extends State<QuizMoodle> {
               child: Padding(
                 padding: const EdgeInsets.only(top: 15.0),
                 child: Text(
-                  'Send Quiz to Moodle',
+                  'Assign Quiz',
                   textDirection: TextDirection.ltr,
                   style: TextStyle(fontSize: 25, fontWeight: FontWeight.normal),
                   textAlign: TextAlign.center,
@@ -312,138 +331,184 @@ class QuizMoodleState extends State<QuizMoodle> {
               ),
             ),
             SizedBox(height: 16),
-
-            // // Grading Section
-            // sectionTitle(title: 'Grade'),
-            // SizedBox(height: 15),
-
-            // sectionTitle(title: 'Grade Categories:'),
-            // DropdownButton<String>(
-            //   value: selectedCategory,
-            //   icon: Icon(Icons.keyboard_arrow_down),
-            //   items: categoryItems.map((String item) {
-            //     return DropdownMenuItem<String>(
-            //       value: item,
-            //       child: Text(item),
-            //     );
-            //   }).toList(),
-            //   onChanged: (String? newValue) {
-            //     setState(() {
-            //       selectedCategory = newValue!;
-            //     });
-            //   },
-            // ),
-            // SizedBox(height: 16),
-
-            // sectionTitle(title: 'Grade to Pass:'),
-            // TextField(
-            //   controller: gradeController,
-            //   decoration: InputDecoration(
-            //     labelText: 'Enter grade',
-            //     border: OutlineInputBorder(),
-            //   ),
-            // ),
-            // SizedBox(height: 16),
-
-            // sectionTitle(title: 'Attempts Allowed:'),
-            // DropdownButton<String>(
-            //   value: selectedAttempt,
-            //   icon: Icon(Icons.keyboard_arrow_down),
-            //   items: attemptItems.map((String attempt) {
-            //     return DropdownMenuItem<String>(
-            //       value: attempt,
-            //       child: Text(attempt),
-            //     );
-            //   }).toList(),
-            //   onChanged: (String? newValue) {
-            //     setState(() {
-            //       selectedAttempt = newValue!;
-            //     });
-            //   },
-            // ),
-            // SizedBox(height: 16),
-
-            // sectionTitle(title: 'Grading Method:'),
-            // DropdownButton<String>(
-            //   value: selectedGradingMethod,
-            //   icon: Icon(Icons.keyboard_arrow_down),
-            //   items: gradingMethodItems.map((String method) {
-            //     return DropdownMenuItem<String>(
-            //       value: method,
-            //       child: Text(method),
-            //     );
-            //   }).toList(),
-            //   onChanged: (String? newValue) {
-            //     setState(() {
-            //       selectedGradingMethod = newValue!;
-            //     });
-            //   },
-            // ),
-            // SizedBox(height: 16),
-
             Directionality(
               textDirection: TextDirection.ltr,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  ElevatedButton(
-                    onPressed: () async {
-                      var quizid = await MoodleApiSingleton().createQuiz(
-                        selectedCourse,
-                        widget.quiz.name ?? 'Quiz Name',
-                        widget.quiz.description ?? 'Quiz Description',
-                        quizSectionController.text,
-                        '$selectedDaySubmission $selectedMonthSubmission $selectedYearSubmission $selectedHourSubmission:$selectedMinuteSubmission',
-                        '$selectedDayDue $selectedMonthDue $selectedYearDue $selectedHourDue:$selectedMinuteDue',
-                      );
-                      print('Quiz ID: $quizid');
-                      var categoryid = await MoodleApiSingleton()
-                          .importQuizQuestions(selectedCourse, quizasxml);
-                      print('Category ID: $categoryid');
-                      var randomresult = await MoodleApiSingleton()
-                          .addRandomQuestions(categoryid.toString(),
-                              quizid.toString(), quizQuestionsController.text);
-                      print('Random Result: $randomresult');
-
-                      if (mounted) {
-                        if (randomresult == 'true') {
-                          final snackBar = SnackBar(
-                            content: Text('Quiz submitted successfully!'),
-                            duration: Duration(seconds: 2),
+                  if (lmsType == LmsType.MOODLE)
+                    ElevatedButton(
+                      onPressed: () async {
+                        // Validate selected course
+                        if (selectedCourse == 'Select a course') {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content: Text(
+                                    'Please select a course to proceed.')),
                           );
-                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                          await Future.delayed(snackBar.duration);
-                          if (mounted) {
-                            Navigator.pop(context);
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => TeacherDashboard(),
-                              ),
+                          return;
+                        }
+                        try {
+                          // 1. Construct submission and due dates as DateTime objects
+                          DateTime submissionDate = DateTime(
+                            int.parse(selectedYearSubmission),
+                            months.indexOf(selectedMonthSubmission) + 1,
+                            int.parse(selectedDaySubmission),
+                            int.parse(selectedHourSubmission),
+                            int.parse(selectedMinuteSubmission),
+                          );
+
+                          DateTime dueDate = DateTime(
+                            int.parse(selectedYearDue),
+                            months.indexOf(selectedMonthDue) + 1,
+                            int.parse(selectedDayDue),
+                            int.parse(selectedHourDue),
+                            int.parse(selectedMinuteDue),
+                          );
+
+                          // 2. Format the due date as YYYY-MM-DD-HH-MM
+                          String formattedDueDate =
+                              "${dueDate.year}-${dueDate.month.toString().padLeft(2, '0')}-${dueDate.day.toString().padLeft(2, '0')}-${dueDate.hour.toString().padLeft(2, '0')}-${dueDate.minute.toString().padLeft(2, '0')}";
+
+                          // Call Moodle-specific methods
+                          var quizid = await LmsFactory.getLmsService()
+                              .createQuiz(
+                            selectedCourse,
+                            widget.quiz.name ?? 'Quiz Name',
+                            widget.quiz.description ?? 'Quiz Description',
+                            quizSectionController.text,
+                            '$selectedDaySubmission $selectedMonthSubmission $selectedYearSubmission $selectedHourSubmission:$selectedMinuteSubmission',
+                            '$selectedDayDue $selectedMonthDue $selectedYearDue $selectedHourDue:$selectedMinuteDue',
+                          );
+                          print('Quiz ID: $quizid');
+
+                          var categoryid = await LmsFactory.getLmsService()
+                              .importQuizQuestions(
+                                  selectedCourse, quizasxml);
+                          print('Category ID: $categoryid');
+
+                          var randomresult = await LmsFactory.getLmsService()
+                              .addRandomQuestions(
+                                  categoryid.toString(),
+                                  quizid.toString(),
+                                  quizQuestionsController.text);
+                          print('Random Result: $randomresult');
+
+                          if (randomresult == 'true') {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                  content: Text(
+                                      'Quiz submitted successfully to Moodle!')),
+                            );
+                            await Future.delayed(Duration(seconds: 2));
+                            if (mounted) {
+                              Navigator.pop(context);
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => TeacherDashboard(),
+                                ),
+                              );
+                            }
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                  content: Text(
+                                      'Failed to update grades in Moodle.')),
                             );
                           }
-                        } else {
+                        } catch (e) {
+                          print('Error during quiz creation: $e');
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Failed to update grades.')),
+                            SnackBar(
+                                content: Text('An error occurred: ${e}')),
                           );
                         }
-                      }
-                    },
-                    child: Text(
-                      'Send to Moodle',
-                      textDirection: TextDirection.ltr,
+                      },
+                      child: Text(
+                        'Send to Moodle',
+                        textDirection: TextDirection.ltr,
+                      ),
                     ),
-                  ),
-                  // ElevatedButton(
-                  //   onPressed: () {
-                  //     // Back to quiz action
-                  //     Navigator.pop(context);
-                  //   },
-                  //   child: Text(
-                  //     'Go back to update quiz',
-                  //     textDirection: TextDirection.ltr,
-                  //   ),
-                  // ),
+                  if (lmsType == LmsType.GOOGLE)
+                    ElevatedButton(
+                      onPressed: () async {
+                        // Validate selected course
+                        if (selectedCourse == 'Select a course') {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content: Text(
+                                    'Please select a course to proceed.')),
+                          );
+                          return;
+                        }
+                        try {
+                          // 1. Construct submission and due dates as DateTime objects
+                          DateTime submissionDate = DateTime(
+                            int.parse(selectedYearSubmission),
+                            months.indexOf(selectedMonthSubmission) + 1,
+                            int.parse(selectedDaySubmission),
+                            int.parse(selectedHourSubmission),
+                            int.parse(selectedMinuteSubmission),
+                          );
+
+                          DateTime dueDate = DateTime(
+                            int.parse(selectedYearDue),
+                            months.indexOf(selectedMonthDue) + 1,
+                            int.parse(selectedDayDue),
+                            int.parse(selectedHourDue),
+                            int.parse(selectedMinuteDue),
+                          );
+
+                          // 2. Format the due date as YYYY-MM-DD-HH-MM
+                          String formattedDueDate =
+                              "${dueDate.year}-${dueDate.month.toString().padLeft(2, '0')}-${dueDate.day.toString().padLeft(2, '0')}-${dueDate.hour.toString().padLeft(2, '0')}-${dueDate.minute.toString().padLeft(2, '0')}";
+
+                          // Call Google Classroom-specific methods
+                          bool success = await GoogleLmsService()
+                              .createAndAssignQuizFromXml(
+                            selectedCourse,
+                            quizNameController.text,
+                            widget.quiz.description ?? 'Quiz Description',
+                            quizasxml,
+                            formattedDueDate,
+                          );
+                          if (success) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                  content: Text(
+                                      'Quiz submitted successfully to Google Classroom!')),
+                            );
+                            await Future.delayed(Duration(seconds: 2));
+                            if (mounted) {
+                              Navigator.pop(context);
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => TeacherDashboard(),
+                                ),
+                              );
+                            }
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                  content: Text(
+                                      'Failed to create quiz in Google Classroom.')),
+                            );
+                          }
+                        } catch (e) {
+                          print('Error during quiz creation: $e');
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content: Text('An error occurred: ${e}')),
+                          );
+                        }
+                      },
+                      child: Text(
+                        'Send to Google Classroom',
+                        textDirection: TextDirection.ltr,
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -453,69 +518,95 @@ class QuizMoodleState extends State<QuizMoodle> {
     );
   }
 
-  // Dropdown Builder
   Widget _buildDropdown(
-    String label,
-    String selectedDay,
-    String selectedMonth,
-    String selectedYear,
-    String selectedHour,
-    String selectedMinute,
-    bool isEnabled,
-    ValueChanged<String?> onDayChanged,
-    ValueChanged<String?> onMonthChanged,
-    ValueChanged<String?> onYearChanged,
-    ValueChanged<String?> onHourChanged,
-    ValueChanged<String?> onMinuteChanged,
-  ) {
+      String label,
+      String selectedDay,
+      String selectedMonth,
+      String selectedYear,
+      String selectedHour,
+      String selectedMinute,
+      bool isEnabled,
+      ValueChanged<String?> onDayChanged,
+      ValueChanged<String?> onMonthChanged,
+      ValueChanged<String?> onYearChanged,
+      ValueChanged<String?> onHourChanged,
+      ValueChanged<String?> onMinuteChanged) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label),
         Row(
           children: [
-            _buildDropdownButton(days, selectedDay, onDayChanged, isEnabled),
-            SizedBox(width: 8),
-            _buildDropdownButton(
-                months, selectedMonth, onMonthChanged, isEnabled),
-            SizedBox(width: 8),
-            _buildDropdownButton(years, selectedYear, onYearChanged, isEnabled),
-            SizedBox(width: 8),
-            _buildDropdownButton(hours, selectedHour, onHourChanged, isEnabled),
-            SizedBox(width: 8),
-            _buildDropdownButton(
-                minutes, selectedMinute, onMinuteChanged, isEnabled),
-            SizedBox(width: 8),
+            DropdownButton<String>(
+              value: selectedDay,
+              onChanged: isEnabled ? onDayChanged : null,
+              items: days.map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+            ),
+            SizedBox(width: 5),
+            DropdownButton<String>(
+              value: selectedMonth,
+              onChanged: isEnabled ? onMonthChanged : null,
+              items: months.map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+            ),
+            SizedBox(width: 5),
+            DropdownButton<String>(
+              value: selectedYear,
+              onChanged: isEnabled ? onYearChanged : null,
+              items: years.map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+            ),
+            SizedBox(width: 5),
+            DropdownButton<String>(
+              value: selectedHour,
+              onChanged: isEnabled ? onHourChanged : null,
+              items: hours.map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+            ),
+            SizedBox(width: 5),
+            DropdownButton<String>(
+              value: selectedMinute,
+              onChanged: isEnabled ? onMinuteChanged : null,
+              items: minutes.map<DropdownMenuItem<String>>((String value) {
+                return DropdownMenuItem<String>(
+                  value: value,
+                  child: Text(value),
+                );
+              }).toList(),
+            ),
           ],
         ),
       ],
     );
   }
-}
 
-// Dropdown Button Builder
-Widget _buildDropdownButton(List<String> items, String selectedValue,
-    ValueChanged<String?> onChanged, bool isEnabled) {
-  return DropdownButton<String>(
-    value: selectedValue,
-    onChanged: isEnabled ? onChanged : null,
-    items: items.map<DropdownMenuItem<String>>((String value) {
-      return DropdownMenuItem<String>(
-        value: value,
-        child: Text(value),
-      );
-    }).toList(),
-  );
-}
-
-// Section Title Widget
-Widget sectionTitle({required String title}) {
-  return Text(
-    title,
-    textDirection: TextDirection.ltr,
-    style: TextStyle(
-      fontSize: 20,
-      fontWeight: FontWeight.bold,
-    ),
-  );
+  Widget sectionTitle({required String title}) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 8.0),
+      child: Text(
+        title,
+        style: TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
 }
