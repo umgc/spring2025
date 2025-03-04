@@ -44,6 +44,7 @@ dependencies:
   envied: ^1.1.1
   path_provider: ^2.0.11
   dart_openai: ^5.1.0
+  shared_preferences: ^2.5.2
 
 dev_dependencies:
   flutter_test:

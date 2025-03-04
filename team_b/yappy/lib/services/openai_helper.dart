@@ -6,10 +6,9 @@ import 'package:yappy/services/file_handler.dart';
 
 class OpenAIHelper {    
   final List<Map<String, String>> messages = [];
-  // TODO: Create an ephemeral session for the user instead of a hardcoded key
 
   final String restaurantContextPrompt =
-      '''You are a restaurant assistant.  Take the following audio transcript of a waiter taking patrons' orders and generate a summary of patrons' orders at a restaurant.  There may be up to 10 speakers in the conversation.  Different speakers' voices are indicated by "spk_0", "spk_1", "spk_2" or up to "spk_9".  You must separate out different speakers' orders and refer to them using using "Seat 1", "Seat 2", "Seat 3", etc.
+      '''You are a restaurant assistant.  Take the following audio transcript of a waiter taking patrons' orders and generate a summary of patrons' orders at a restaurant. You must separate out different speakers' orders and refer to them using using "Seat 1", "Seat 2", "Seat 3", etc.
         Example format:
 
         Seat 1: Hamburger, hold the lettuce, fries, Diet Dr. Pepper.
@@ -19,26 +18,22 @@ class OpenAIHelper {
         Audio Transcript:
       ''';
 
-  // TODO: Update prompt
   final String mechanicContextPrompt =
-    '''You are a restaurant assistant.  Take the following audio transcript of a waiter taking patrons' orders and generate a summary of patrons' orders at a restaurant.  There may be up to 10 speakers in the conversation.  Different speakers' voices are indicated by "spk_0", "spk_1", "spk_2" or up to "spk_9".  You must separate out different speakers' orders and refer to them using using "Seat 1", "Seat 2", "Seat 3", etc.
+    '''You are a vehicle mechanic assistant.  Take the following audio transcript of a customer describing their vehicle's issues and generate a summary of vehicle's issues and include suggestions for resolution.
       Example format:
 
-      Seat 1: Hamburger, hold the lettuce, fries, Diet Dr. Pepper.
-
-      Seat 2: Caesar salad, iced tea.
+      Customer: My car is making a weird whirring noise at idle. It is also leaking oil.
 
       Audio Transcript:
     ''';
 
-  // TODO: Update prompt
   final String medicalContextPrompt =
-    '''You are a restaurant assistant.  Take the following audio transcript of a waiter taking patrons' orders and generate a summary of patrons' orders at a restaurant.  There may be up to 10 speakers in the conversation.  Different speakers' voices are indicated by "spk_0", "spk_1", "spk_2" or up to "spk_9".  You must separate out different speakers' orders and refer to them using using "Seat 1", "Seat 2", "Seat 3", etc.
+    '''You are a medical assistant.  Take the following audio transcript of a physician discussing a patient's concerns and generate a summary of patient's issues and include suggestions for resolution.
       Example format:
 
-      Seat 1: Hamburger, hold the lettuce, fries, Diet Dr. Pepper.
+      Patient: I've been feeling really itchy recently. And I've been having trouble sleeping.
 
-      Seat 2: Caesar salad, iced tea.
+      Physician: I see. I recommend you take an antihistamine for the itching and try to avoid caffeine in the evenings.
 
       Audio Transcript:
     ''';

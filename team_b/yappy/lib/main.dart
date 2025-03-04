@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+// import 'package:shared_preferences/shared_preferences.dart';
 import 'package:yappy/home_page.dart';
 import 'package:yappy/services/database_helper.dart';
 import 'package:dart_openai/dart_openai.dart';
@@ -11,7 +12,13 @@ final DatabaseHelper dbHelper = DatabaseHelper();
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
-  OpenAI.apiKey = Env.apiKey;
+  String apiKey = Env.apiKey;
+  if (apiKey.isNotEmpty) {
+    OpenAI.apiKey = apiKey;
+    print('Env API Key found and set'); // TODO: Temp
+  } else {
+    print('Env API Key not found');
+  }
   await dbHelper.database;
   final fileHandler = FileHandler();
   // await fileHandler.copyAssetToLocalStorage('assets/test_document.txt', 'test_document.txt');
@@ -35,3 +42,8 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
+// Future<String?> getApiKey() async {
+//   final SharedPreferences prefs = await SharedPreferences.getInstance();
+//   return prefs.getString('openai_api_key');
+// }

@@ -1,4 +1,6 @@
+import 'package:dart_openai/dart_openai.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -57,10 +59,14 @@ class SettingsPage extends StatelessWidget {
                   ),
                   TextButton(
                   child: Text('Save'),
-                  onPressed: () {
-                    // Save the API key to env.dart file
-                    // String apiKey = apiKeyController.text;
-                    // Add your logic to save the API key here
+                  onPressed: () async {
+                    // Save the API key to env.dart file // TODO: update if not true
+                    String apiKey = apiKeyController.text;
+                    SharedPreferences prefs = await SharedPreferences.getInstance();
+                    await prefs.setString('openai_api_key', apiKey);
+                    OpenAI.apiKey = apiKey;
+                    // print('New API Key saved: $apiKey'); // TODO: Temp
+                    // ignore: use_build_context_synchronously
                     Navigator.of(context).pop();
                   },
                   ),
