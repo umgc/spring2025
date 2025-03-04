@@ -6,7 +6,7 @@ import 'package:yappy/help.dart';
 import 'package:yappy/medical_patient.dart';
 import 'package:yappy/medical_doctor.dart';
 import 'package:yappy/mechanic.dart';
-import 'package:yappy/Settings_page.dart';
+import 'package:yappy/settings_page.dart';
 
 // Defines a reusable Hamburger Menu Widget (AppBar + Drawer)
 class ToolBar extends StatelessWidget {
