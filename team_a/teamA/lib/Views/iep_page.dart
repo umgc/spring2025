@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import 'package:flutter_quill/flutter_quill.dart';
 import "package:learninglens_app/Api/lms/factory/lms_factory.dart";
 import "package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart";
 import "package:learninglens_app/Controller/custom_appbar.dart";
@@ -23,6 +24,10 @@ class _IepPageState extends State{
   String? selectedCourse;
   String? selectedAssignment;
   String? selectedEssay;
+  int? quizId;
+  int? userId;
+  int? newEndTime;
+  String selectedDate = 'Select a Date';
   Future<List<Participant>>? participants;
   Future<List<Assignment>>? essay;
   Future<List<Quiz>>? quiz;
@@ -94,7 +99,7 @@ class _IepPageState extends State{
                       } else if (snapshot.hasData) {
                         List<DropdownMenuEntry<String>> dropdownEntries = snapshot.data!.map((Participant participant){
                           return DropdownMenuEntry<String>(
-                            value: participant.fullname,
+                            value: participant.id.toString(),
                             label: participant.fullname,
                           );
                         }).toList();
@@ -119,7 +124,7 @@ class _IepPageState extends State{
                   visible: selectedCourse != null,
                   child: DropdownMenu(
                   width: 500,
-                  helperText: 'Assigment',
+                  helperText: 'Assignment',
                   hintText: 'Select Quiz or Essay',
                   dropdownMenuEntries: type.map<DropdownMenuEntry<String>>((String value) {
                     return DropdownMenuEntry<String>(
@@ -188,7 +193,7 @@ class _IepPageState extends State{
                         List<DropdownMenuEntry<String>> dropdownEntries = snapshot.data!.map((Quiz quiz){
                           return DropdownMenuEntry<String>(
                             value: quiz.name!,
-                            label: quiz.name!,
+                            label: quiz.id.toString()! + ' ' + quiz.timeClose.toString() + ' ' + quiz.name!,
                           );
                         }).toList();
                       return DropdownMenu(
@@ -252,7 +257,18 @@ class _IepPageState extends State{
                     },
                     child: Text('Submit')  
                   )
-                )
+                ),
+                GestureDetector(
+                  onTap:() => _selectDate(context),
+                  child: Container(
+                    padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.black),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(selectedDate),
+                  ),
+                ),
               ]
             ),
             Column(
@@ -373,11 +389,9 @@ Future<List<Quiz>> handleQuizSelection(int? courseID) async {
 }
 
 void quizOver() async {
-  int? timeOpen;
-  int? timeClose;
-  int? timeLimit;
-  int? attempts;
-  String password = 'securepass';
+  QuizOverride override = await MoodleLmsService().addQuizOverride(quizId:10, userId:15, timeClose: 500000);
+}
 
-  QuizOverride override = await MoodleLmsService().addQuizOverride(quizId:18);
+void _selectDate(BuildContext context) async {
+  DateTime? pickedDate = await showDatePicker(context: context, firstDate: DateTime(2000), lastDate: DateTime(2100),);
 }
