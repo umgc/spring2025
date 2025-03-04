@@ -89,4 +89,9 @@ class Assignment implements LearningLensInterface {
       courseId: int.parse(json['courseId']),
     );
   }
+  @override
+  String toString() {
+    return "$name";
+  }
+
 }
