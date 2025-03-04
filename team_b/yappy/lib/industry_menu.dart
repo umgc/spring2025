@@ -3,7 +3,6 @@ import 'package:record/record.dart';
 import 'package:yappy/speech_state.dart';
 import 'package:yappy/services/database_helper.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:share_plus/share_plus.dart';
 
 class IndustryMenu extends StatelessWidget {
   final String title;
