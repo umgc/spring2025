@@ -24,6 +24,8 @@ class _LessonPlanState extends State {
   bool isEditing = false;
   bool useAiGeneration = false;
   String? selectedLLM;
+  bool isSubmitDisabled = false; 
+
 
 
   final TextEditingController lessonPlanNameController = TextEditingController();
@@ -212,24 +214,26 @@ class _LessonPlanState extends State {
                       ),
 
                       ElevatedButton(
-                        onPressed: () async {
-                          if (selectedCourse != null) {
-                            if (useAiGeneration) {
-                              await generateLessonPlanWithAI();
-                            }
-                            Lesson newLp = Lesson(
-                              lessonPlanName: lessonPlanNameController.text,
-                              courseId: int.parse(selectedCourse!),
-                              content: _convertTextToHtml(manualEntryController.text),
-                            );
-                            newLp.saveLessonLocally();
-                            bool success = await newLp.submitLesson();
-                            print(success ? 'Lesson plan sent successfully' : 'Lesson plan send failed');
-                            _fetchLessonPlans(int.parse(selectedCourse!));
-                            lessonPlanNameController.clear();
-                            manualEntryController.clear();
-                          }
-                        },
+                        onPressed: isSubmitDisabled
+                            ? null // Disable the button
+                            : () async {
+                                if (selectedCourse != null) {
+                                  if (useAiGeneration) {
+                                    await generateLessonPlanWithAI();
+                                  }
+                                  Lesson newLp = Lesson(
+                                    lessonPlanName: lessonPlanNameController.text,
+                                    courseId: int.parse(selectedCourse!),
+                                    content: _convertTextToHtml(manualEntryController.text),
+                                  );
+                                  newLp.saveLessonLocally();
+                                  bool success = await newLp.submitLesson();
+                                  print(success ? 'Lesson plan sent successfully' : 'Lesson plan send failed');
+                                  _fetchLessonPlans(int.parse(selectedCourse!));
+                                  lessonPlanNameController.clear();
+                                  manualEntryController.clear();
+                                }
+                              },
                         child: Text('Submit'),
                       ),
                     ],
@@ -339,8 +343,10 @@ class _LessonPlanState extends State {
                                     setState(() {
                                       isEditing = true;
                                       lessonPlanNameController.text = selectedLessonPlan!.name;
-                                      manualEntryController.text = selectedLessonPlan!.intro;
+                                      manualEntryController.text = _stripHtmlTags(selectedLessonPlan!.intro);
+                                      isSubmitDisabled = true;
                                     });
+                                    
                                   }
                                 : null,
                             child: Text('Edit Selected'),
@@ -362,6 +368,7 @@ class _LessonPlanState extends State {
                                     setState(() {
                                       selectedLessonPlan = null; // Reset selection
                                       isEditing = false; // Exit editing mode
+                                      isSubmitDisabled = false;
                                     });
                                   }
                                 : null,

@@ -296,6 +296,7 @@ class UserSettingsState extends State<UserSettings> {
       children: [
         TextField(
           controller: controller,
+          obscureText: true,
           decoration: InputDecoration(labelText: label),
           enabled: controller
               .text.isEmpty, // Make it non-editable if a key is present
