@@ -241,7 +241,11 @@ class _LessonPlanState extends State {
                         items: LlmType.values.map((LlmType llm) {
                           return DropdownMenuItem<LlmType>(
                             value: llm,
-                            child: Text(llm.displayName),
+                            enabled: LocalStorageService.userHasLlmKey(llm),
+                            child: Text(llm.displayName, style: TextStyle(
+                              color: LocalStorageService.userHasLlmKey(llm) ? Colors.black87 : Colors.grey,
+                              ),
+                            ),
                           );
                         }).toList(),
                         disabledHint: Text("Enable AI to select a model"), // Greyed-out text when disabled

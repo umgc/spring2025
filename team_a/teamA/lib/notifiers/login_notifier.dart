@@ -52,12 +52,11 @@ class LoginNotifier with ChangeNotifier {
   Future<bool> _checkHasLLMKey() async {
     String? openAIKey = LocalStorageService.getOpenAIKey();
     String? perplexityKey = LocalStorageService.getPerplexityKey();
-    String? claudeKey = LocalStorageService.getClaudeKey();
+    // String? claudeKey = LocalStorageService.getClaudeKey();
     String? grokKey = LocalStorageService.getGrokKey();
 
     return openAIKey != null && openAIKey.isNotEmpty ||
         perplexityKey != null && perplexityKey.isNotEmpty ||
-        claudeKey != null && claudeKey.isNotEmpty || 
         grokKey != null && grokKey.isNotEmpty;
   }
 
@@ -123,8 +122,6 @@ class LoginNotifier with ChangeNotifier {
       LocalStorageService.saveOpenAIKey(value);
     } else if (key == LLMKey.perplexity) {
       LocalStorageService.savePerplexityKey(value);
-    } else if (key == LLMKey.claude) {
-      LocalStorageService.saveClaudeKey(value);
     } else if (key == LLMKey.grok) {
       print('Saving Grok key');
       LocalStorageService.saveGrokKey(value);

@@ -22,7 +22,7 @@ class UserSettingsState extends State<UserSettings> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _moodleUrlController = TextEditingController();
   final TextEditingController _apiKeyController = TextEditingController();
-  final TextEditingController _claudeKeyController = TextEditingController();
+  // final TextEditingController _claudeKeyController = TextEditingController();
   final TextEditingController _grokKeyController = TextEditingController();
   final TextEditingController _preplexityKeyController =
       TextEditingController();
@@ -44,7 +44,7 @@ class UserSettingsState extends State<UserSettings> {
     final password = LocalStorageService.getPassword();
     final moodleUrl = LocalStorageService.getMoodleUrl();
     final apiKey = LocalStorageService.getOpenAIKey();
-    final claudeKey = LocalStorageService.getClaudeKey();
+    // final claudeKey = LocalStorageService.getClaudeKey();
     final preplexityKey = LocalStorageService.getPerplexityKey();
     final grokKey = LocalStorageService.getGrokKey();
     // Load Google Client ID from .env file
@@ -55,7 +55,7 @@ class UserSettingsState extends State<UserSettings> {
       _passwordController.text = password;
       _moodleUrlController.text = moodleUrl;
       _apiKeyController.text = apiKey;
-      _claudeKeyController.text = claudeKey;
+      // _claudeKeyController.text = claudeKey;
       _preplexityKeyController.text = preplexityKey;
       _grokKeyController.text = grokKey;
       _googleClientIdController.text = googleClientId;

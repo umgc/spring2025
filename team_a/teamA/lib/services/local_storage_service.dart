@@ -1,6 +1,7 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:learninglens_app/Api/lms/enum/lms_enum.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:learninglens_app/Api/llm/enum/llm_enum.dart';
 
 /// This class manages local storage operations using SharedPreferences and dotenv.
 /// TODO:
@@ -70,7 +71,6 @@ class LocalStorageService {
     _prefs.remove('isLoggedIntoMoodle');
   }
 
-
     /// Saves login state.
   static void saveGoogleLoginState(bool isLoggedIn) {
     _prefs.setBool('isLoggedIntoGoogle', isLoggedIn);
@@ -121,25 +121,29 @@ class LocalStorageService {
     return _prefs.getString('openAIKey') ?? dotenv.env['openai_apikey'] ?? '';
   }
 
+  static bool hasOpenAIKey() {
+    return getOpenAIKey().isNotEmpty;
+  }
+
   /// Clears OpenAI API key.
   static void clearOpenAIKey() {
     _prefs.remove('openAIKey');
   }
 
-  /// Saves Claude API key.
-  static void saveClaudeKey(String claudeKey) {
-    _prefs.setString('claudeKey', claudeKey);
-  }
+  // /// Saves Claude API key.
+  // static void saveClaudeKey(String claudeKey) {
+  //   _prefs.setString('claudeKey', claudeKey);
+  // }
 
-  /// Retrieves Claude API key from storage or dotenv.
-  static String getClaudeKey() {
-    return _prefs.getString('claudeKey') ?? dotenv.env['claude_apiKey'] ?? '';
-  }
+  // /// Retrieves Claude API key from storage or dotenv.
+  // static String getClaudeKey() {
+  //   return _prefs.getString('claudeKey') ?? dotenv.env['claude_apiKey'] ?? '';
+  // }
 
-  /// Clears Claude API key.
-  static void clearClaudeKey() {
-    _prefs.remove('claudeKey');
-  }
+  // /// Clears Claude API key.
+  // static void clearClaudeKey() {
+  //   _prefs.remove('claudeKey');
+  // }
 
   /// Saves Perplexity API key.
   static void savePerplexityKey(String perplexityKey) {
@@ -149,6 +153,10 @@ class LocalStorageService {
   /// Retrieves Perplexity API key from storage or dotenv.
   static String getPerplexityKey() {
     return _prefs.getString('perplexityKey') ?? dotenv.env['perplexity_apikey'] ?? '';
+  }
+
+  static bool hasPerplexityKey() {
+    return getPerplexityKey().isNotEmpty;
   }
 
   /// Clears Perplexity API key.
@@ -164,6 +172,10 @@ class LocalStorageService {
   /// Retrieves Grok API key from storage or dotenv.
   static String getGrokKey() {
     return _prefs.getString('grokKey') ?? dotenv.env['grok_apiKey'] ?? '';
+  }
+
+  static bool hasGrokKey() {
+    return getGrokKey().isNotEmpty;
   }
 
   /// Clears Grok API key.
@@ -211,6 +223,18 @@ class LocalStorageService {
   }
 
   static hasLLMKey() {
-    return getOpenAIKey().isNotEmpty || getClaudeKey().isNotEmpty || getPerplexityKey().isNotEmpty;
+    return getOpenAIKey().isNotEmpty || getGrokKey().isNotEmpty || getPerplexityKey().isNotEmpty;
+  }
+
+  static bool userHasLlmKey(LlmType llm) {
+    if (llm == LlmType.CHATGPT) {
+        return LocalStorageService.hasOpenAIKey();
+      } else if (llm == LlmType.GROK) {
+        return LocalStorageService.hasGrokKey();
+      } else if (llm == LlmType.PERPLEXITY) {
+        return LocalStorageService.hasPerplexityKey();
+      } 
+    
+    return false;
   }
 }

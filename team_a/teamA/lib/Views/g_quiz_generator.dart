@@ -70,7 +70,7 @@ class _AssessmentState extends State<CreateAssessmentGoogle> {
   Future<void> generateQuestions(AssignmentForm af) async {
     final perplexityApiKey = LocalStorageService.getPerplexityKey();
     final openApiKey = LocalStorageService.getOpenAIKey();
-    final claudApiKey = LocalStorageService.getClaudeKey();
+    // final claudApiKey = LocalStorageService.getClaudeKey();
     try {
       setState(() {
         _isLoading = true;
@@ -78,8 +78,8 @@ class _AssessmentState extends State<CreateAssessmentGoogle> {
       final aiModel;
       if (selectedLLM == 'ChatGPT') {
         aiModel = OpenAiLLM(openApiKey);
-      } else if (selectedLLM == 'CLAUDE') {
-        aiModel = ClaudeAiAPI(claudApiKey);
+      } else if (selectedLLM == 'Perplexity') {
+        aiModel = ClaudeAiAPI(perplexityApiKey);
       } else {
         // aiModel = OpenAiLLM(perplexityApiKey);
         aiModel = LlmApi(perplexityApiKey);

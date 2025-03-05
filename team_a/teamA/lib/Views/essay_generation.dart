@@ -232,7 +232,11 @@ class _EssayGenerationState extends State<EssayGeneration>
                     items: LlmType.values.map((LlmType llm) {
                       return DropdownMenuItem<LlmType>(
                         value: llm,
-                        child: Text(llm.displayName),
+                        enabled: LocalStorageService.userHasLlmKey(llm),
+                        child: Text(llm.displayName, style: TextStyle(
+                          color: LocalStorageService.userHasLlmKey(llm) ? Colors.black87 : Colors.grey,
+                          ),
+                        ),
                       );
                     }).toList()
                   ),
