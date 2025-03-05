@@ -7,7 +7,7 @@ import 'package:archive/archive.dart';
 import 'package:path/path.dart' as path;
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import './toast_manager.dart';
+import 'toast_service.dart';
 
 class ModelManager {
   // Base directory for storing models
@@ -37,9 +37,8 @@ class ModelManager {
     ),
   ];
   
-  // Variables to store progress information
-  String _progressMessage = 'Starting download...';
-  double _progressValue = 0.0;
+  // Toast service
+  final _toastService = ToastService();
   
   ModelManager() {
     _modelDirPath = _initModelDir();
@@ -200,13 +199,10 @@ class ModelManager {
   
   // Download all models
   Future<bool> downloadModels(BuildContext context) async {
-    // Store context for later use since we'll be crossing async gaps
-    final scaffoldContext = context;
-    
-    // Check connectivity first
+    // Check connectivity first - still need context for initial dialogs
     final canDownload = await _checkConnectivity();
     if (!canDownload) {
-      final changeSettings = await _showConnectivityWarning(scaffoldContext);
+      final changeSettings = await _showConnectivityWarning(context);
       if (changeSettings) {
         // User wants to change settings
         await saveWifiOnlySetting(false);
@@ -216,13 +212,18 @@ class ModelManager {
       }
     }
     
+    // Start async download process
+    _startDownloadProcess();
+    
+    // Return true to indicate the download has started
+    return true;
+  }
+  
+  // Handle the download process independently of any specific context
+  Future<void> _startDownloadProcess() async {
     try {
       // Show initial toast notification
-      _updateDownloadProgress(
-        context: scaffoldContext,
-        message: 'Starting downloads...',
-        progress: 0.0,
-      );
+      _toastService.showToast('Starting downloads...', progress: 0.0);
       
       final modelDir = await _modelDirPath;
       int completedModels = 0;
@@ -230,9 +231,8 @@ class ModelManager {
       // Process each model
       for (var model in _models) {
         // Update progress
-        _updateDownloadProgress(
-          context: scaffoldContext, 
-          message: 'Downloading ${model.name}...',
+        _toastService.showToast(
+          'Downloading ${model.name}...',
           progress: completedModels / _models.length,
         );
         
@@ -245,9 +245,8 @@ class ModelManager {
         // Process based on file type
         if (model.isCompressed) {
           // Update progress
-          _updateDownloadProgress(
-            context: scaffoldContext,
-            message: 'Extracting ${model.name}...',
+          _toastService.showToast(
+            'Extracting ${model.name}...',
             progress: completedModels / _models.length,
           );
           
@@ -264,10 +263,7 @@ class ModelManager {
         }
         
         completedModels++;
-        _updateDownloadProgress(
-          context: scaffoldContext,
-          progress: completedModels / _models.length,
-        );
+        _toastService.updateProgress(completedModels / _models.length);
       }
       
       // Create marker file to indicate successful installation
@@ -275,65 +271,18 @@ class ModelManager {
       await markerFile.writeAsString('Models installed on ${DateTime.now()}');
       
       // Hide toast and show success toast
-      ToastManager.hideToast();
-      _showDownloadCompleteToast(scaffoldContext);
+      _toastService.hideToast();
+      _toastService.showSuccess('All models have been downloaded successfully.');
       
-      return true;
     } catch (e) {
       debugPrint('Error downloading models: $e');
       
       // Hide progress toast
-      ToastManager.hideToast();
+      _toastService.hideToast();
       
-      // Show error dialog
-      await showDialog(
-        context: scaffoldContext,
-        builder: (dialogContext) => AlertDialog(
-          title: const Text('Download Failed'),
-          content: Text('Failed to download models: $e'),
-          actions: [
-            TextButton(
-              child: const Text('OK'),
-              onPressed: () => Navigator.of(dialogContext).pop(),
-            ),
-          ],
-        ),
-      );
-      
-      return false;
+      // Show error toast
+      _toastService.showError('Failed to download models: $e');
     }
-  }
-  
-  // Update download progress toast
-  void _updateDownloadProgress({
-    required BuildContext context,
-    String? message,
-    required double progress,
-  }) {
-    // Update progress values
-    if (message != null) {
-      _progressMessage = message;
-    }
-    _progressValue = progress;
-    
-    // Show or update toast
-    ToastManager.showPersistentToast(
-      context: context,
-      message: _progressMessage,
-      progress: _progressValue,
-    );
-  }
-  
-  // Show temporary download complete toast
-  void _showDownloadCompleteToast(BuildContext context) {
-    // Show a success toast
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('All models have been downloaded successfully.'),
-        backgroundColor: Colors.green,
-        duration: Duration(seconds: 3),
-      ),
-    );
   }
   
   // Process compressed .bz2 file
@@ -414,12 +363,9 @@ class ModelManager {
   
   // Trigger model download from settings page
   Future<bool> downloadModelsFromSettings(BuildContext context) async {
-    // Store context for later use
-    final scaffoldContext = context;
-    
-    final shouldDownload = await showDownloadDialog(scaffoldContext);
+    final shouldDownload = await showDownloadDialog(context);
     if (shouldDownload) {
-      return await downloadModels(scaffoldContext);
+      return await downloadModels(context);
     }
     return false;
   }
