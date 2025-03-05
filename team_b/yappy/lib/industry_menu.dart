@@ -12,7 +12,7 @@ class IndustryMenu extends StatelessWidget {
   
 
   const IndustryMenu({required this.title, required this.icon, required this.speechState, super.key}); 
-    Widget generateTranscript(BuildContext context, String title, String content) {
+    Widget generateTranscript(BuildContext context, String title, String content, int transcript) {
       return AlertDialog(
         title: Text(title),
         content: SingleChildScrollView(
@@ -41,8 +41,37 @@ class IndustryMenu extends StatelessWidget {
             ),
             IconButton(
               icon: Icon(Icons.delete),
-              onPressed: () {
+                onPressed: () async {
                 // Add your delete functionality here
+                bool confirmDelete = await showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: Text('Confirm Delete'),
+                    content: Text('Are you sure you want to delete this transcript?'),
+                    actions: [
+                    TextButton(
+                      onPressed: () {
+                      Navigator.of(context).pop(false);
+                      },
+                      child: Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                      Navigator.of(context).pop(true);
+                      },
+                      child: Text('Delete'),
+                    ),
+                    ],
+                  );
+                  },
+                );
+
+                if (confirmDelete) {
+                  // Perform the delete operation
+                    await DatabaseHelper().deleteTranscript(transcript);
+                  Navigator.of(context).pop();
+                }
               },
               ),
             ],
@@ -124,10 +153,8 @@ class IndustryMenu extends StatelessWidget {
                       // Get the user ID (assuming you have a method to get the current user ID)
                         int userId = 0001;
 
-                      // Create a new transcript ID (assuming you have a method to generate a new ID)
-                        String date = DateTime.now().toIso8601String();
-                        int count = await DatabaseHelper().getTranscriptCountForDate(date);
-                        int transcriptId = int.parse('$date${count + 1}');
+                      // Create a new transcript ID 
+                          int transcriptId = DateTime.now().millisecondsSinceEpoch;
 
                       // Show a dialog to edit the text
                       TextEditingController controller = TextEditingController(text: recordedText);
@@ -263,6 +290,7 @@ class IndustryMenu extends StatelessWidget {
                                   context,
                                   'Transcript',
                                   transcript['transcript_text_data'] ?? 'No content available',
+                                  transcript['transcript_id'],
                                 );
                               },
                             );
@@ -321,6 +349,8 @@ class IndustryMenu extends StatelessWidget {
                                 context,
                                 'Transcript',
                                 transcript['transcript_text_data'] ?? 'No content available',
+                                transcript['transcript_id'],
+                                
                               );
                             },
                           );
