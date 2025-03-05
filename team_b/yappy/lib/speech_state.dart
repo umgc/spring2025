@@ -33,15 +33,27 @@ Future<sherpa_onnx.OfflineRecognizer> createOfflineRecognizer() async {
   return sherpa_onnx.OfflineRecognizer(config);
 }
 
+class RecognizedSegment {
+  final int index;
+  String text;
+  bool isProcessed;
+
+  RecognizedSegment({
+    required this.index,
+    required this.text,
+    this.isProcessed = false,
+  });
+}
+
 class AudioSegment {
   final Float32List samples;
   final int sampleRate;
-  final String streamingText;
+  final int index;
   
   AudioSegment({
     required this.samples,
     required this.sampleRate,
-    required this.streamingText,
+    required this.index,
   });
 }
 
@@ -51,14 +63,16 @@ class SpeechState extends ChangeNotifier {
   
   RecordState recordState = RecordState.stop;
   bool isInitialized = false;
-  String streamingText = '';
-  int index = 0;
+  int currentIndex = 0;
   
+  // Store all recognized segments
+  final List<RecognizedSegment> recognizedSegments = [];
+
   // First pass - streaming recognition
   sherpa_onnx.OnlineRecognizer? onlineRecognizer;
   sherpa_onnx.OnlineStream? onlineStream;
 
-  // Second pass - Whisper offline recognition
+  // Second pass - offline recognition
   sherpa_onnx.OfflineRecognizer? offlineRecognizer;
 
   // Buffer for collecting samples between endpoints
@@ -83,7 +97,44 @@ class SpeechState extends ChangeNotifier {
     }
   }
 
-Future<void> processSegmentOffline(AudioSegment segment) async {
+  // Helper method to update the displayed text
+  void _updateDisplayText() {
+    final buffer = StringBuffer();
+    for (final segment in recognizedSegments) {
+      if (segment.text.isNotEmpty) {
+        if (buffer.isNotEmpty) {
+          buffer.write('\n');
+        }
+        buffer.write('${segment.index}: ${segment.text}');
+      }
+    }
+    
+    controller.value = TextEditingValue(
+      text: buffer.toString(),
+      selection: TextSelection.collapsed(offset: buffer.length),
+    );
+  }
+
+  // Add a new segment of recognized text
+  void _addRecognizedSegment(String text) {
+    recognizedSegments.add(RecognizedSegment(
+      index: currentIndex,
+      text: text,
+    ));
+    _updateDisplayText();
+  }
+
+  // Update an existing segment with improved recognition
+  void _updateRecognizedSegment(int index, String newText) {
+    final segmentIndex = recognizedSegments.indexWhere((s) => s.index == index);
+    if (segmentIndex != -1) {
+      recognizedSegments[segmentIndex].text = newText;
+      recognizedSegments[segmentIndex].isProcessed = true;
+      _updateDisplayText();
+    }
+  }
+
+  Future<void> processSegmentOffline(AudioSegment segment) async {
     final offlineStream = offlineRecognizer!.createStream();
     
     offlineStream.acceptWaveform(
@@ -95,16 +146,7 @@ Future<void> processSegmentOffline(AudioSegment segment) async {
     final result = offlineRecognizer!.getResult(offlineStream);
     
     // Replace the streaming result with the offline result
-    final oldText = segment.streamingText;
-    final newText = result.text;
-    
-    final currentText = controller.text;
-    final updatedText = currentText.replaceAll(oldText, newText);
-    
-    controller.value = TextEditingValue(
-      text: updatedText,
-      selection: TextSelection.collapsed(offset: updatedText.length),
-    );
+    _updateRecognizedSegment(segment.index, result.text);
     
     offlineStream.free();
   }
@@ -137,10 +179,8 @@ Future<void> processSegmentOffline(AudioSegment segment) async {
 
     try {
       if (await audioRecorder.hasPermission()) {
-        const encoder = AudioEncoder.pcm16bits;
-        
         const config = RecordConfig(
-          encoder: encoder,
+          encoder: AudioEncoder.pcm16bits,
           sampleRate: 16000,
           numChannels: 1,
         );
@@ -169,16 +209,19 @@ Future<void> processSegmentOffline(AudioSegment segment) async {
             final text = onlineRecognizer!.getResult(onlineStream!).text;
 
             if (text.isNotEmpty) {
-              streamingText = '$index: $text';
-              controller.value = TextEditingValue(
-                text: streamingText,
-                selection: TextSelection.collapsed(offset: streamingText.length),
-              );
+              // Update or add the current segment
+              final existingSegment = recognizedSegments.lastOrNull;
+              if (existingSegment?.index == currentIndex) {
+                existingSegment!.text = text;
+                _updateDisplayText();
+              } else {
+                _addRecognizedSegment(text);
+              }
             }
 
             if (onlineRecognizer!.isEndpoint(onlineStream!)) {
               // Store the current segment for offline processing
-              if (currentSegmentSamples.isNotEmpty && streamingText.isNotEmpty) {
+              if (currentSegmentSamples.isNotEmpty) {
                 // Combine all Float32Lists into a single one
                 final combinedSamples = Float32List(currentSegmentSamples.fold<int>(
                   0, (sum, list) => sum + list.length));
@@ -191,7 +234,7 @@ Future<void> processSegmentOffline(AudioSegment segment) async {
                 pendingSegments.add(AudioSegment(
                   samples: combinedSamples,
                   sampleRate: sampleRate,
-                  streamingText: streamingText,
+                  index: currentIndex,
                 ));
                 
                 // Process with Whisper in the background
@@ -201,7 +244,7 @@ Future<void> processSegmentOffline(AudioSegment segment) async {
               // Reset for next segment
               onlineRecognizer!.reset(onlineStream!);
               currentSegmentSamples.clear();
-              index += 1;
+              currentIndex += 1;
             }
           },
         );
@@ -213,7 +256,7 @@ Future<void> processSegmentOffline(AudioSegment segment) async {
 
   Future<void> stopRecording() async {
     // Process any remaining audio with Whisper
-    if (currentSegmentSamples.isNotEmpty && streamingText.isNotEmpty) {
+    if (currentSegmentSamples.isNotEmpty) {
       // Combine all Float32Lists into a single one
       final combinedSamples = Float32List(currentSegmentSamples.fold<int>(
         0, (sum, list) => sum + list.length));
@@ -226,7 +269,7 @@ Future<void> processSegmentOffline(AudioSegment segment) async {
       pendingSegments.add(AudioSegment(
         samples: combinedSamples,
         sampleRate: sampleRate,
-        streamingText: streamingText,
+        index: currentIndex,
       ));
     }
 
