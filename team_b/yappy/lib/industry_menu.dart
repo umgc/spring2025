@@ -273,7 +273,7 @@ class IndustryMenu extends StatelessWidget {
                           'Transcript ${transcript['transcript_id']}',
                           style: TextStyle(
                             color: Colors.white
-                          ),
+                          ), 
                         ),
                         onTap: () {
                           Navigator.pop(context);

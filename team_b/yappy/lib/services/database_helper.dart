@@ -486,6 +486,6 @@ class DatabaseHelper {
       where: 'order_id = ?',
       whereArgs: [orderId],
     );
-    return results.map((result) => result['item_id'] as int).toList();
+    return results.map((result) => result['item_id'] as int).toList(); 
   }
 }
