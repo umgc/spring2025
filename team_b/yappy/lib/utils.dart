@@ -8,11 +8,9 @@ import "dart:io";
 // Copy the asset file from src to dst
 Future<String> copyAssetFile(String src, [String? dst]) async {
   final Directory directory = await getApplicationDocumentsDirectory();
-  if (dst == null) {
-    dst = basename(src);
-  }
+  dst ??= basename(src);
   final target = join(directory.path, dst);
-  bool exists = await new File(target).exists();
+  bool exists = await File(target).exists();
 
   final data = await rootBundle.load(src);
 

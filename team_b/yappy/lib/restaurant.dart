@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:yappy/tool_bar.dart';
 import 'package:yappy/industry_menu.dart';
 import 'package:yappy/transcription_box.dart';
+import 'package:yappy/speech_state.dart';
 
 class RestaurantApp extends StatelessWidget {
   const RestaurantApp({super.key});
@@ -16,7 +17,8 @@ class RestaurantApp extends StatelessWidget {
 //Creates a page for the Restaurant industry
 //The page will contain the industry menu and the transcription box
 class RestaurantPage extends StatelessWidget {
-  const RestaurantPage({super.key});
+  RestaurantPage({super.key});
+  final speechState = SpeechState();
 
   @override
   Widget build(BuildContext context) {
@@ -27,16 +29,27 @@ class RestaurantPage extends StatelessWidget {
         child: ToolBar()
       ),
       drawer: HamburgerDrawer(),
-      body: Column(
-        children: [
-        IndustryMenu(title: "Restaurant", icon: Icons.restaurant_menu),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: TranscriptionBox(),
-            ),
-          ),
-        ],
+      body: ListenableBuilder(
+        listenable: speechState,
+        builder: (context, child) {
+          return Column(
+            children: [
+              IndustryMenu(
+                title: "Restaurant", 
+                icon: Icons.restaurant_menu,
+                speechState: speechState,
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: TranscriptionBox(
+                    controller: speechState.controller,
+                  ),
+                ),
+              ),
+            ],
+          );
+        }
       ),
     );
   }

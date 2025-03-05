@@ -3,8 +3,6 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 import 'package:record/record.dart';
 
 import 'package:sherpa_onnx/sherpa_onnx.dart' as sherpa_onnx;
@@ -35,14 +33,14 @@ class _StreamingAsrScreenState extends State<StreamingAsrScreen> {
   late final TextEditingController _controller;
   late final AudioRecorder _audioRecorder;
 
-  String _title = 'Real-time speech recognition';
+  final String _title = 'Real-time speech recognition';
   String _last = '';
   int _index = 0;
   bool _isInitialized = false;
 
   sherpa_onnx.OnlineRecognizer? _recognizer;
   sherpa_onnx.OnlineStream? _stream;
-  int _sampleRate = 16000;
+  final int _sampleRate = 16000;
 
   StreamSubscription<RecordState>? _recordSub;
   RecordState _recordState = RecordState.stop;
@@ -122,12 +120,16 @@ class _StreamingAsrScreenState extends State<StreamingAsrScreen> {
             );
           },
           onDone: () {
-            print('stream stopped.');
+            if (kDebugMode) {
+              print('stream stopped.');
+            }
           },
         );
       }
     } catch (e) {
-      print(e);
+      if (kDebugMode) {
+        print(e);
+      }
     }
   }
 
@@ -138,9 +140,9 @@ class _StreamingAsrScreenState extends State<StreamingAsrScreen> {
     await _audioRecorder.stop();
   }
 
-  Future<void> _pause() => _audioRecorder.pause();
+  // Future<void> _pause() => _audioRecorder.pause();
 
-  Future<void> _resume() => _audioRecorder.resume();
+  // Future<void> _resume() => _audioRecorder.resume();
 
   void _updateRecordState(RecordState recordState) {
     setState(() => _recordState = recordState);
@@ -211,11 +213,11 @@ class _StreamingAsrScreenState extends State<StreamingAsrScreen> {
 
     if (_recordState != RecordState.stop) {
       icon = const Icon(Icons.stop, color: Colors.red, size: 30);
-      color = Colors.red.withOpacity(0.1);
+      color = Colors.red.withValues(alpha: 0.1);
     } else {
       final theme = Theme.of(context);
       icon = Icon(Icons.mic, color: theme.primaryColor, size: 30);
-      color = theme.primaryColor.withOpacity(0.1);
+      color = theme.primaryColor.withValues(alpha: 0.1);
     }
 
     return ClipOval(
