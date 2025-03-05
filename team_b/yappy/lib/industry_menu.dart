@@ -9,6 +9,8 @@ class IndustryMenu extends StatelessWidget {
   final IconData icon;
   final SpeechState speechState;
 
+  
+
   const IndustryMenu({required this.title, required this.icon, required this.speechState, super.key}); 
     Widget generateTranscript(BuildContext context, String title, String content) {
       return AlertDialog(
@@ -57,7 +59,6 @@ class IndustryMenu extends StatelessWidget {
 
   Future<List<Map<String, dynamic>>> _fetchTranscripts() async {
     DatabaseHelper dbHelper = DatabaseHelper();
-    
     return await dbHelper.getAllTranscripts();
   }
 
@@ -111,30 +112,65 @@ class IndustryMenu extends StatelessWidget {
                     color: Colors.white,
                     size: screenHeight * .05,
                   ),
-                  onPressed: () => speechState.toggleRecording(),
+                  onPressed: () async {
+                    await speechState.toggleRecording();
+                    // When speechState.stop happens it needs to store the text in the database
+                    // The new text file needs to get the USERID, create a new Transcript ID,
+                    // The user will be asked to edit the text to ensure accuracy. After hitting save, the text will be saved to the database in the transcript table using the same transcript ID
+                    if (speechState.recordState == RecordState.stop) {
+                      // Fetch the recorded text
+                      String recordedText = await speechState.getRecordedText();
+
+                      // Get the user ID (assuming you have a method to get the current user ID)
+                        int userId = 0001;
+
+                      // Create a new transcript ID (assuming you have a method to generate a new ID)
+                        String date = DateTime.now().toIso8601String();
+                        int count = await DatabaseHelper().getTranscriptCountForDate(date);
+                        int transcriptId = int.parse('$date${count + 1}');
+
+                      // Show a dialog to edit the text
+                      TextEditingController controller = TextEditingController(text: recordedText);
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Text('Edit Transcript'),
+                            content: TextField(
+                              controller: controller,
+                              decoration: InputDecoration(hintText: 'Edit the transcript text'),
+                              maxLines: null,
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () async {
+                                  // Save the edited text to the database
+                                  await DatabaseHelper().saveTranscript(
+                                    userId: userId,
+                                    transcriptId: transcriptId,
+                                    text: controller.text,
+                                  );
+                                  Navigator.of(context).pop();
+                                },
+                                child: Text('Save'),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: Text('Cancel'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    }
+                  }
+                )
+
                 ),
-              ),
+              
                 SizedBox(width: screenWidth * .06),
-
-                // Creates a refine data button
-                //after the transcipt is done it will go to this button to be edited. 
-                //after the edits post it to the database
-                Container(
-                decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.grey),
-                padding: EdgeInsets.all(5),
-                child: IconButton(
-                  icon: Icon(
-                  Icons.edit,
-                  color: Colors.white,
-                  size: screenHeight * .05,
-                  ),
-                  onPressed: () {
-                  // Add your refine data functionality here
-                  },
-                ),
-                ),
-
-              SizedBox(width: screenWidth * .06),
 
               // Creates a industry specific icon based on user input
               Container(
@@ -148,14 +184,12 @@ class IndustryMenu extends StatelessWidget {
                     size: screenHeight * .05,
                   ),
 
-                  
                   onPressed: () {
                     _showTranscriptsBottomSheet(context);
                   },
                 ),
               ),
               SizedBox(width: screenWidth * .06),
-
 
               // Creates a transcript history button
               Container(
