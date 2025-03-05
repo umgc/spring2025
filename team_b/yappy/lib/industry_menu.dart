@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:yappy/services/database_helper.dart';
 import 'package:share_plus/share_plus.dart';
-// import 'package:file_picker/file_picker.dart';
-import 'package:path_provider/path_provider.dart'; // Import path_provider
+import 'package:path_provider/path_provider.dart';
 import 'dart:io';
-import 'dart:convert'; // Import dart:convert for utf8.encode
-import 'package:yappy/services/file_handler.dart'; // Import file_handler
+import 'dart:convert';
+import 'package:yappy/services/file_handler.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter/services.dart';
 
 class IndustryMenu extends StatelessWidget {
   final String title;
@@ -39,20 +40,45 @@ class IndustryMenu extends StatelessWidget {
               icon: Icon(Icons.download),
               onPressed: () async {
                 try {
-                  final directory = await getApplicationDocumentsDirectory();
-                  final filePath = '${directory.path}/$title.txt';
-                  final file = File(filePath);
-                  await file.writeAsBytes(
-                      utf8.encode(content)); // Convert content to bytes
+                  // Request storage permission
+                  if (await Permission.storage.request().isGranted ||
+                      await Permission.manageExternalStorage
+                          .request()
+                          .isGranted) {
+                    // Attempt to find the Downloads directory
+                    final directories = await getExternalStorageDirectories(
+                        type: StorageDirectory.downloads);
+                    final downloadsDirectory = directories?.first;
 
-                  // Use FileHandler to add the document
-                  FileHandler fileHandler = FileHandler();
-                  await fileHandler.addDocument(file);
+                    if (downloadsDirectory != null) {
+                      final filePath = '${downloadsDirectory.path}/$title.txt';
+                      final file = File(filePath);
+                      await file.writeAsBytes(utf8.encode(content),
+                          flush: true);
 
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Transcript saved to $filePath')),
-                  );
-                  print('File saved at: $filePath');
+                      await MethodChannel('com.yourcompany.yappy/files')
+                          .invokeMethod('scanFile', {'filePath': filePath});
+
+                      FileHandler fileHandler = FileHandler();
+                      await fileHandler.addDocument(file);
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                            content: Text('Transcript saved to $filePath')),
+                      );
+                      print('File saved at: $filePath');
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                            content:
+                                Text('Failed to find Downloads directory')),
+                      );
+                    }
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Storage permission denied')),
+                    );
+                  }
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Failed to save file: $e')),
