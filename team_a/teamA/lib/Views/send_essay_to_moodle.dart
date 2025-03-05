@@ -23,14 +23,14 @@ class EssayAssignmentSettingsState extends State<EssayAssignmentSettings> {
   // Date selection variables for "Allow submissions from"
   String selectedDaySubmission = '01';
   String selectedMonthSubmission = 'January';
-  String selectedYearSubmission = '2024';
+  String selectedYearSubmission = '2025';
   String selectedHourSubmission = '00';
   String selectedMinuteSubmission = '00';
 
   // Date selection variables for "Due date"
   String selectedDayDue = '01';
   String selectedMonthDue = 'January';
-  String selectedYearDue = '2024';
+  String selectedYearDue = '2025';
   String selectedHourDue = '00';
   String selectedMinuteDue = '00';
 
@@ -207,7 +207,7 @@ class EssayAssignmentSettingsState extends State<EssayAssignmentSettings> {
   bool _validateAvailabilityDates() {
     if (selectedDaySubmission == '01' &&
         selectedMonthSubmission == 'January' &&
-        selectedYearSubmission == '2024' &&
+        selectedYearSubmission == '2025' &&
         selectedHourSubmission == '00' &&
         selectedMinuteSubmission == '00') {
       return false; // If the default date for submission is selected, return false
@@ -215,7 +215,7 @@ class EssayAssignmentSettingsState extends State<EssayAssignmentSettings> {
 
     if (selectedDayDue == '01' &&
         selectedMonthDue == 'January' &&
-        selectedYearDue == '2024' &&
+        selectedYearDue == '2025' &&
         selectedHourDue == '00' &&
         selectedMinuteDue == '00') {
       return false; // If the default due date is selected, return false

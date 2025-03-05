@@ -15,6 +15,8 @@ class LoginNotifier with ChangeNotifier {
   String? _username;
   String? _password;
   String? _moodleUrl;
+  String? _errorMessage; // Added to store error messages
+
   // Google variables
   String? _clientID;
 
@@ -22,11 +24,11 @@ class LoginNotifier with ChangeNotifier {
   final LmsInterface _api = LmsFactory.getLmsService(); // Moodle API instance
 
   bool get hasLLMKey => _hasLLMKey;
-
   bool get isLoggedIn => _isLoggedIn;
   String? get username => _username;
   String? get password => _password;
   String? get moodleUrl => _moodleUrl;
+  String? get errorMessage => _errorMessage; // Getter for error messages
 
   late GoogleSignIn _googleSignIn;
 
@@ -60,24 +62,22 @@ class LoginNotifier with ChangeNotifier {
   }
 
   Future<void> _autoLogin() async {
-  if (_username != null && _username!.isNotEmpty &&
-      _password != null && _password!.isNotEmpty &&
-      _moodleUrl != null && _moodleUrl!.isNotEmpty) {
-    try {
-      // Attempt to auto-login with saved credentials
-      await login(_username!, _password!, _moodleUrl!);
-    } catch (e) {
-      // Handle any exceptions during auto-login
-      print('Auto-login Error: $e');
+    if (_username != null && _username!.isNotEmpty &&
+        _password != null && _password!.isNotEmpty &&
+        _moodleUrl != null && _moodleUrl!.isNotEmpty) {
+      try {
+        // Attempt to auto-login with saved credentials
+        await login(_username!, _password!, _moodleUrl!);
+      } catch (e) {
+        print('Auto-login Error: $e');
+      }
+    } else {
+      print('Auto-login skipped: Missing or empty credentials.');
     }
-  } else {
-    print('Auto-login skipped: Missing or empty credentials.');
   }
-}
 
   Future<void> login(String username, String password, String moodleUrl) async {
     try {
-      // 1. Authenticate with Moodle API:
       await _api.login(username, password, moodleUrl);
 
       if (_api.isLoggedIn()) {
@@ -85,22 +85,20 @@ class LoginNotifier with ChangeNotifier {
         _username = username;
         _password = password;
         _moodleUrl = moodleUrl;
+        _errorMessage = null; // Clear error message on success
 
-        // 2. Save login state and credentials to local storage:
         LocalStorageService.saveMoodleLoginState(_isLoggedIn);
         LocalStorageService.saveCredentials(username, password);
         LocalStorageService.saveMoodleUrl(moodleUrl); // Save Moodle URL
 
-        // check the hasLLMKey state
-        notifyListeners(); // Notify listeners (widgets) about the login
+        notifyListeners();
       } else {
-        // Handle login failure (e.g., show an error message)
-        throw Exception('Moodle login failed. Check credentials and URL.');
+        _errorMessage = "Invalid username or password."; // Set error message
+        notifyListeners();
       }
     } catch (e) {
-      // Handle any exceptions during login
-      print('Login Error: $e');
-      rethrow; // Re-throw the exception to be handled by the caller
+      _errorMessage = "Login failed: ${e.toString()}"; // Handle exception message
+      notifyListeners();
     }
   }
 
@@ -109,6 +107,7 @@ class LoginNotifier with ChangeNotifier {
     _username = null;
     _password = null;
     _moodleUrl = null;
+    _errorMessage = null; // Clear error message on logout
 
     LocalStorageService.clearMoodleLoginState();
     LocalStorageService.clearCredentials();
@@ -118,7 +117,7 @@ class LoginNotifier with ChangeNotifier {
     notifyListeners();
   }
 
-  // save the llm key to local storage
+  // Save the LLM key to local storage
   Future<void> saveLLMKey(LLMKey key, String value) async {
     if (key == LLMKey.openAI) {
       LocalStorageService.saveOpenAIKey(value);
@@ -127,7 +126,7 @@ class LoginNotifier with ChangeNotifier {
     } else if (key == LLMKey.claude) {
       LocalStorageService.saveClaudeKey(value);
     } else if (key == LLMKey.grok) {
-      print('saving grok key');
+      print('Saving Grok key');
       LocalStorageService.saveGrokKey(value);
     }
     _hasLLMKey = await _checkHasLLMKey();
@@ -135,7 +134,7 @@ class LoginNotifier with ChangeNotifier {
   }
 
   ///
-  /// Google classroom login steps 
+  /// Google Classroom login steps 
   ///
   Future<void> signInWithGoogle() async {
     if (_clientID == null) {
@@ -143,27 +142,24 @@ class LoginNotifier with ChangeNotifier {
     }
 
     try {
-      // 1. Authenticate with Google OATH:
       await LmsFactory.getLmsServiceGoogle().loginOath(_clientID!);
 
       if (_api.isLoggedIn()) {
         _isLoggedIn = true;
 
-        // 2. Save login state and credentials to local storage:
         LocalStorageService.saveGoogleLoginState(_isLoggedIn);
         LocalStorageService.saveGoogleAccessToken(
-                  LmsFactory.getLmsServiceGoogle().getGoogleAccessToken());
+            LmsFactory.getLmsServiceGoogle().getGoogleAccessToken());
 
-        // check the hasLLMKey state
-        notifyListeners(); // Notify listeners (widgets) about the login
+        notifyListeners();
       } else {
-        // Handle login failure (e.g., show an error message)
         throw Exception('Google login failed.');
       }
     } catch (e) {
-      // Handle any exceptions during login
       print('Login Error: $e');
-      rethrow; // Re-throw the exception to be handled by the caller
+      _errorMessage = "Google login failed: ${e.toString()}";
+      notifyListeners();
+      rethrow;
     }
   }
 
@@ -177,34 +173,34 @@ class LoginNotifier with ChangeNotifier {
       print("Google Sign-Out Error: $error");
       throw Exception("Google Sign-Out failed: $error");
     }
+  }
 
-    Future<void> makeClassroomApiRequest(
-        String apiEndpoint, dynamic http) async {
-      String? accessToken = LocalStorageService.getGoogleAccessToken();
+  Future<void> makeClassroomApiRequest(
+      String apiEndpoint, dynamic http) async {
+    String? accessToken = LocalStorageService.getGoogleAccessToken();
 
-      if (accessToken != null) {
-        try {
-          final response = await http.get(
-            Uri.parse(apiEndpoint),
-            headers: {'Authorization': 'Bearer $accessToken'},
-          );
+    if (accessToken != null) {
+      try {
+        final response = await http.get(
+          Uri.parse(apiEndpoint),
+          headers: {'Authorization': 'Bearer $accessToken'},
+        );
 
-          if (response.statusCode == 200) {
-            print('Classroom API Response: ${response.body}');
-          } else {
-            print(
-                'Classroom API Error: ${response.statusCode} - ${response.body}');
-            throw Exception(
-                "Classroom API request failed: ${response.statusCode}");
-          }
-        } catch (e) {
-          print('Error making Classroom API request: $e');
-          throw Exception("Failed to make Classroom API request: $e");
+        if (response.statusCode == 200) {
+          print('Classroom API Response: ${response.body}');
+        } else {
+          print(
+              'Classroom API Error: ${response.statusCode} - ${response.body}');
+          throw Exception(
+              "Classroom API request failed: ${response.statusCode}");
         }
-      } else {
-        print('No Google access token available. User needs to sign in.');
-        throw Exception("No access token available. Please sign in again.");
+      } catch (e) {
+        print('Error making Classroom API request: $e');
+        throw Exception("Failed to make Classroom API request: $e");
       }
+    } else {
+      print('No Google access token available. User needs to sign in.');
+      throw Exception("No access token available. Please sign in again.");
     }
   }
 }

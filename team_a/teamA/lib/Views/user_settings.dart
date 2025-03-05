@@ -174,9 +174,21 @@ class UserSettingsState extends State<UserSettings> {
               foregroundColor: Colors.white,
             ),
           ),
+        // Show error message if login fails
+        // Show error message if login fails
+        if (loginNotifier.errorMessage?.isNotEmpty ?? false)
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Text(
+              loginNotifier.errorMessage ?? '',
+              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+            ),
+          ),
+
       ],
     );
   }
+
 
   // Google Classroom Login Block
   Widget _buildGoogleClassroomLoginBlock(LoginNotifier loginNotifier) {
@@ -269,12 +281,6 @@ class UserSettingsState extends State<UserSettings> {
           controller: _preplexityKeyController,
           loginNotifier: loginNotifier,
           keyType: LLMKey.perplexity,
-        ),
-        _buildApiKeyField(
-          label: 'Claude AI API Key',
-          controller: _claudeKeyController,
-          loginNotifier: loginNotifier,
-          keyType: LLMKey.claude,
         ),
         _buildApiKeyField(
           label: 'Grok AI API Key',
