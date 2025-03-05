@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:learninglens_app/Api/llm/grok_api.dart';
 import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
 import 'package:learninglens_app/Api/lms/lms_interface.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
-import 'package:learninglens_app/Api/llm/claudeai_api.dart';
 import 'package:learninglens_app/Api/llm/openai_api.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
 import 'package:learninglens_app/beans/submission_with_grade.dart';
@@ -42,7 +42,7 @@ class SubmissionListState extends State<SubmissionList> {
   // API keys
   final perplexityApiKey = LocalStorageService.getPerplexityKey();
   final openApiKey = LocalStorageService.getOpenAIKey();
-  final claudeApiKey =  LocalStorageService.getClaudeKey();
+  final grokApiKey =  LocalStorageService.getGrokKey();
 
   // Filter state
   String filterOption = 'All'; // Options: 'All', 'With Submission', 'Without Submission'
@@ -53,8 +53,8 @@ class SubmissionListState extends State<SubmissionList> {
     switch (selectedLlm) {
       case 'OpenAI':
         return openApiKey;
-      case 'Claude':
-        return claudeApiKey;
+      case 'Grok':
+        return grokApiKey;
       default:
         return perplexityApiKey;
     }
@@ -313,7 +313,7 @@ children: [
                                                         items: <String>[
                                                           'Perplexity',
                                                           'OpenAI',
-                                                          'Claude'
+                                                          'Grok'
                                                         ].map<
                                                             DropdownMenuItem<
                                                                 String>>((String
@@ -506,9 +506,9 @@ children: [
                                                                         OpenAiLLM(
                                                                             apiKey);
                                                                   } else if (selectedLlm ==
-                                                                      'Claude') {
+                                                                      'Grok') {
                                                                     llmInstance =
-                                                                        ClaudeAiAPI(
+                                                                        GrokLLM(
                                                                             apiKey);
                                                                   } else {
                                                                     llmInstance =
