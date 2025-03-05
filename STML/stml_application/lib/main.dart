@@ -8,6 +8,7 @@ import 'package:memoryminder/src/data_service.dart';
 import 'package:memoryminder/src/s3_connection.dart';
 import 'package:memoryminder/src/utils/directory_manager.dart';
 import 'package:memoryminder/src/utils/permission_manager.dart';
+import 'package:memoryminder/ui/caregiver_task_screen.dart'; // Added import
 
 void main() async {
   initializeLogging();
@@ -28,20 +29,18 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      initialRoute: '/loginScreen', // the initial screen when the app starts
+      initialRoute: '/loginScreen', // App starts at the login screen
       routes: {
         '/loginScreen': (context) => LoginScreen(),
         '/homeScreen': (context) => HomeScreen(),
-        // You can add other routes as needed
+        '/caregiverTaskScreen': (context) => CaregiverTaskScreen(), // Added route
       },
     );
   }
 }
 
-// These are all singleton objects and should be initialized at the beginning
+// Initialize backend services
 void initializeData() async {
-  //initialize backend services
-  // ignore: unused_local_variable
   S3Bucket s3 = S3Bucket();
   CameraManager cm = CameraManager();
   await PermissionManager.requestInitialPermissions();
