@@ -8,6 +8,7 @@ import 'package:sherpa_onnx/sherpa_onnx.dart' as sherpa_onnx;
 
 import './utils.dart';
 import './online_model.dart';
+import './offline_model.dart';
 
 Future<sherpa_onnx.OnlineRecognizer> createOnlineRecognizer() async {
   final type = 4;
@@ -21,27 +22,104 @@ Future<sherpa_onnx.OnlineRecognizer> createOnlineRecognizer() async {
   return sherpa_onnx.OnlineRecognizer(config);
 }
 
+Future<sherpa_onnx.OfflineRecognizer> createOfflineRecognizer() async {
+  final type = 0;
+
+  final modelConfig = await getOfflineModelConfig(type: type);
+  final config = sherpa_onnx.OfflineRecognizerConfig(
+    model: modelConfig
+  );
+
+  return sherpa_onnx.OfflineRecognizer(config);
+}
+
+class AudioSegment {
+  final Float32List samples;
+  final int sampleRate;
+  final String streamingText;
+  
+  AudioSegment({
+    required this.samples,
+    required this.sampleRate,
+    required this.streamingText,
+  });
+}
+
 class SpeechState extends ChangeNotifier {
   final TextEditingController controller = TextEditingController();
   final AudioRecorder audioRecorder = AudioRecorder();
   
   RecordState recordState = RecordState.stop;
   bool isInitialized = false;
-  String last = '';
+  String streamingText = '';
   int index = 0;
   
-  sherpa_onnx.OnlineRecognizer? recognizer;
-  sherpa_onnx.OnlineStream? stream;
+  // First pass - streaming recognition
+  sherpa_onnx.OnlineRecognizer? onlineRecognizer;
+  sherpa_onnx.OnlineStream? onlineStream;
+
+  // Second pass - Whisper offline recognition
+  sherpa_onnx.OfflineRecognizer? offlineRecognizer;
+
+  // Buffer for collecting samples between endpoints
+  List<Float32List> currentSegmentSamples = [];
   final int sampleRate = 16000;
+
+  // Store segments that need offline processing
+  List<AudioSegment> pendingSegments = [];
+  bool isProcessingOffline = false;
 
   Future<void> initialize() async {
     if (!isInitialized) {
+      // init online recognizer
       sherpa_onnx.initBindings();
-      recognizer = await createOnlineRecognizer();
-      stream = recognizer?.createStream();
+      onlineRecognizer = await createOnlineRecognizer();
+      onlineStream = onlineRecognizer?.createStream();
+      // init offline recognizer
+      offlineRecognizer = await createOfflineRecognizer();
+
       isInitialized = true;
       notifyListeners();
     }
+  }
+
+Future<void> processSegmentOffline(AudioSegment segment) async {
+    final offlineStream = offlineRecognizer!.createStream();
+    
+    offlineStream.acceptWaveform(
+      samples: segment.samples,
+      sampleRate: segment.sampleRate
+    );
+    
+    offlineRecognizer!.decode(offlineStream);
+    final result = offlineRecognizer!.getResult(offlineStream);
+    
+    // Replace the streaming result with the offline result
+    final oldText = segment.streamingText;
+    final newText = result.text;
+    
+    final currentText = controller.text;
+    final updatedText = currentText.replaceAll(oldText, newText);
+    
+    controller.value = TextEditingValue(
+      text: updatedText,
+      selection: TextSelection.collapsed(offset: updatedText.length),
+    );
+    
+    offlineStream.free();
+  }
+
+  Future<void> processPendingSegments() async {
+    if (pendingSegments.isEmpty || isProcessingOffline) return;
+    
+    isProcessingOffline = true;
+    
+    for (final segment in pendingSegments) {
+      await processSegmentOffline(segment);
+    }
+    
+    pendingSegments.clear();
+    isProcessingOffline = false;
   }
 
   Future<void> toggleRecording() async {
@@ -69,59 +147,98 @@ class SpeechState extends ChangeNotifier {
 
         final recordStream = await audioRecorder.startStream(config);
         recordState = RecordState.record;
+        currentSegmentSamples.clear();
         notifyListeners();
 
         recordStream.listen(
           (data) {
             final samplesFloat32 = convertBytesToFloat32(Uint8List.fromList(data));
             
-            stream!.acceptWaveform(
+            // Add samples to current segment buffer
+            currentSegmentSamples.add(samplesFloat32);
+
+            onlineStream!.acceptWaveform(
               samples: samplesFloat32, 
               sampleRate: sampleRate
             );
             
-            while (recognizer!.isReady(stream!)) {
-              recognizer!.decode(stream!);
+            while (onlineRecognizer!.isReady(onlineStream!)) {
+              onlineRecognizer!.decode(onlineStream!);
             }
             
-            final text = recognizer!.getResult(stream!).text;
-            String textToDisplay = last;
-            
+            final text = onlineRecognizer!.getResult(onlineStream!).text;
+
             if (text.isNotEmpty) {
-              if (last.isEmpty) {
-                textToDisplay = '$index: $text';
-              } else {
-                textToDisplay = '$index: $text\n$last';
-              }
+              streamingText = '$index: $text';
+              controller.value = TextEditingValue(
+                text: streamingText,
+                selection: TextSelection.collapsed(offset: streamingText.length),
+              );
             }
 
-            if (recognizer!.isEndpoint(stream!)) {
-              recognizer!.reset(stream!);
-              if (text.isNotEmpty) {
-                last = textToDisplay;
-                index += 1;
-              }
-            }
+            if (onlineRecognizer!.isEndpoint(onlineStream!)) {
+              // Store the current segment for offline processing
+              if (currentSegmentSamples.isNotEmpty && streamingText.isNotEmpty) {
+                // Combine all Float32Lists into a single one
+                final combinedSamples = Float32List(currentSegmentSamples.fold<int>(
+                  0, (sum, list) => sum + list.length));
+                var offset = 0;
+                for (var samples in currentSegmentSamples) {
+                  combinedSamples.setRange(offset, offset + samples.length, samples);
+                  offset += samples.length;
+                }
 
-            controller.value = TextEditingValue(
-              text: textToDisplay,
-              selection: TextSelection.collapsed(offset: textToDisplay.length),
-            );
+                pendingSegments.add(AudioSegment(
+                  samples: combinedSamples,
+                  sampleRate: sampleRate,
+                  streamingText: streamingText,
+                ));
+                
+                // Process with Whisper in the background
+                processPendingSegments();
+              }
+              
+              // Reset for next segment
+              onlineRecognizer!.reset(onlineStream!);
+              currentSegmentSamples.clear();
+              index += 1;
+            }
           },
         );
       }
     } catch (e) {
-      if (kDebugMode) {
-        print('Error starting recording: $e');
-      }
+      debugPrint('Error starting recording: $e');
     }
   }
 
   Future<void> stopRecording() async {
-    stream!.free();
-    stream = recognizer?.createStream();
+    // Process any remaining audio with Whisper
+    if (currentSegmentSamples.isNotEmpty && streamingText.isNotEmpty) {
+      // Combine all Float32Lists into a single one
+      final combinedSamples = Float32List(currentSegmentSamples.fold<int>(
+        0, (sum, list) => sum + list.length));
+      var offset = 0;
+      for (var samples in currentSegmentSamples) {
+        combinedSamples.setRange(offset, offset + samples.length, samples);
+        offset += samples.length;
+      }
+
+      pendingSegments.add(AudioSegment(
+        samples: combinedSamples,
+        sampleRate: sampleRate,
+        streamingText: streamingText,
+      ));
+    }
+
+    onlineStream!.free();
+    onlineStream = onlineRecognizer?.createStream();
     await audioRecorder.stop();
     recordState = RecordState.stop;
+
+    // Process final segments
+    await processPendingSegments();
+
+    currentSegmentSamples.clear();
     notifyListeners();
   }
 
@@ -129,8 +246,9 @@ class SpeechState extends ChangeNotifier {
   void dispose() {
     controller.dispose();
     audioRecorder.dispose();
-    stream?.free();
-    recognizer?.free();
+    onlineStream?.free();
+    onlineRecognizer?.free();
+    offlineRecognizer?.free();
     super.dispose();
   }
 }
