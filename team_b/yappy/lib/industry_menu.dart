@@ -91,6 +91,7 @@ class IndustryMenu extends StatelessWidget {
               icon: Icon(Icons.delete),
               onPressed: () {
                 // Add your delete functionality here
+                // Add your delete functionality here
               },
             ),
           ],
@@ -341,6 +342,21 @@ class IndustryMenu extends StatelessWidget {
                         },
                       );
                     },
+                  ),
+                ),
+                // Add an upload bar at the bottom
+                Padding(
+                  padding: const EdgeInsets.only(top: 16.0),
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      // Add your upload functionality here
+                    },
+                    icon: Icon(Icons.upload),
+                    label: Text('Upload Transcript'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color.fromARGB(255, 26, 26, 27),
+                      foregroundColor: const Color.fromARGB(255, 229, 217, 217),
+                    ),
                   ),
                 ),
               ],
