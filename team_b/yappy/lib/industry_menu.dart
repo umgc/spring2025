@@ -3,6 +3,12 @@ import 'package:record/record.dart';
 import 'package:yappy/speech_state.dart';
 import 'package:yappy/services/database_helper.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
+import 'dart:convert';
+import 'package:yappy/services/file_handler.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter/services.dart';
 
 class IndustryMenu extends StatelessWidget {
   final String title;
@@ -35,8 +41,53 @@ class IndustryMenu extends StatelessWidget {
             ),
             IconButton(
               icon: Icon(Icons.download),
-              onPressed: () {
-                // Add your download functionality here
+              onPressed: () async {
+                try {
+                  // Request storage permission
+                  if (await Permission.storage.request().isGranted ||
+                      await Permission.manageExternalStorage
+                          .request()
+                          .isGranted) {
+                    // Attempt to find the Downloads directory
+                    final directories = await getExternalStorageDirectories(
+                        type: StorageDirectory.downloads);
+                    final downloadsDirectory = directories?.first;
+
+                    if (downloadsDirectory != null) {
+                      final filePath = '${downloadsDirectory.path}/$title.txt';
+                      final file = File(filePath);
+                      await file.writeAsBytes(utf8.encode(content),
+                          flush: true);
+
+                      await MethodChannel('com.yourcompany.yappy/files')
+                          .invokeMethod('scanFile', {'filePath': filePath});
+
+                      FileHandler fileHandler = FileHandler();
+                      await fileHandler.addDocument(file);
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                            content: Text('Transcript saved to $filePath')),
+                      );
+                      print('File saved at: $filePath');
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                            content:
+                                Text('Failed to find Downloads directory')),
+                      );
+                    }
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Storage permission denied')),
+                    );
+                  }
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Failed to save file: $e')),
+                  );
+                  print('Failed to save file: $e');
+                }
               },
             ),
             IconButton(
@@ -73,18 +124,18 @@ class IndustryMenu extends StatelessWidget {
                   Navigator.of(context).pop();
                 }
               },
-              ),
-            ],
             ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text('Close'),
-          ),
-        ],
-      );
-    }
+          ],
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: Text('Close'),
+        ),
+      ],
+    );
+  }
 
   Future<List<Map<String, dynamic>>> _fetchTranscripts() async {
     DatabaseHelper dbHelper = DatabaseHelper();
@@ -106,21 +157,19 @@ class IndustryMenu extends StatelessWidget {
           Center(
             // Creates the text box above the icons
             child: Container(
-                width: screenWidth * .75,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  color: const Color.fromARGB(255, 67, 67, 67),
+              width: screenWidth * .75,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: const Color.fromARGB(255, 67, 67, 67),
+              ),
+              padding: EdgeInsets.all(12),
+              child: Center(
+                child: Text(
+                  title,
+                  style: TextStyle(fontSize: 24, color: Colors.white),
                 ),
-                padding: EdgeInsets.all(12),
-                child: Center(
-                  child: Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 24,
-                      color: Colors.white
-                    ),
-                  ),
-                )),
+              ),
+            ),
           ),
           SizedBox(height: screenHeight * .03),
 
@@ -245,10 +294,10 @@ class IndustryMenu extends StatelessWidget {
   void _showTranscriptsBottomSheet(BuildContext context) async {
     // Fetch transcripts first
     List<Map<String, dynamic>> transcripts = await _fetchTranscripts();
-    
+
     // Check if the context is still valid
     if (!context.mounted) return;
-    
+
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
@@ -278,7 +327,11 @@ class IndustryMenu extends StatelessWidget {
                             showModalBottomSheet(
                               context: context,
                               builder: (BuildContext context) {
-                                return KanbanBoard(tasks: ['Cheeseburger no lettuce', 'Rootbeer', 'Water with lemon and a large cheese pizza']);
+                                return KanbanBoard(tasks: [
+                                  'Cheeseburger no lettuce',
+                                  'Rootbeer',
+                                  'Water with lemon and a large cheese pizza'
+                                ]);
                               },
                             );
                           } else {
@@ -295,7 +348,7 @@ class IndustryMenu extends StatelessWidget {
                               },
                             );
                           }
-                        }, 
+                        },
                       );
                     },
                   ),
@@ -312,10 +365,10 @@ class IndustryMenu extends StatelessWidget {
   void _showTranscriptsHistoryBottomSheet(BuildContext context) async {
     // Fetch transcripts first
     List<Map<String, dynamic>> transcripts = await _fetchTranscripts();
-    
+
     // Check if the context is still valid
     if (!context.mounted) return;
-    
+
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
@@ -359,6 +412,21 @@ class IndustryMenu extends StatelessWidget {
                     },
                   ),
                 ),
+                // Add an upload bar at the bottom
+                Padding(
+                  padding: const EdgeInsets.only(top: 16.0),
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      // Add your upload functionality here
+                    },
+                    icon: Icon(Icons.upload),
+                    label: Text('Upload Transcript'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color.fromARGB(255, 26, 26, 27),
+                      foregroundColor: const Color.fromARGB(255, 229, 217, 217),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -386,9 +454,8 @@ class KanbanBoardState extends State<KanbanBoard> {
     tasks = widget.tasks;
   }
 
-
-//creates the kanban board sytle widget for the restaurant
-//need to allow the user to edit the order by holding the card
+  //creates the kanban board sytle widget for the restaurant
+  //need to allow the user to edit the order by holding the card
 
   @override
   Widget build(BuildContext context) {
@@ -439,7 +506,8 @@ class KanbanBoardState extends State<KanbanBoard> {
                           IconButton(
                             icon: Icon(Icons.edit),
                             onPressed: () {
-                              TextEditingController controller = TextEditingController(text: tasks[index]);
+                              TextEditingController controller =
+                                  TextEditingController(text: tasks[index]);
                               showDialog(
                                 context: context,
                                 builder: (BuildContext context) {
@@ -447,7 +515,8 @@ class KanbanBoardState extends State<KanbanBoard> {
                                     title: Text('Edit Task'),
                                     content: TextField(
                                       controller: controller,
-                                      decoration: InputDecoration(hintText: 'Enter new task'),
+                                      decoration: InputDecoration(
+                                          hintText: 'Enter new task'),
                                     ),
                                     actions: [
                                       TextButton(
@@ -486,8 +555,7 @@ class KanbanBoardState extends State<KanbanBoard> {
               child: Text('Close'),
             ),
 
-                // Add your save to database functionality here
-
+            // Add your save to database functionality here
           ],
         ),
       ),
