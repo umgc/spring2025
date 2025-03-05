@@ -27,6 +27,7 @@ class _LessonPlanState extends State {
   // String? selectedLLM;
   LlmType? selectedLLM;
   bool isSubmitDisabled = false; 
+  String? selectedGradeLevel;
 
 
 
@@ -82,7 +83,7 @@ class _LessonPlanState extends State {
         aiModel = LlmApi(LocalStorageService.getPerplexityKey());
       }
 
-      String prompt = "Generate a lesson plan for ${lessonPlanNameController.text} covering key topics like ${manualEntryController.text}.";
+      String prompt = "Generate an all text (no diagrams) lesson for ${lessonPlanNameController.text} for grade $selectedGradeLevel covering key topics like ${manualEntryController.text}. This lesson is WHAT THE STUDENT WILL SEE! This lesson will be viewed by students and students will use it to study from (which will help them write essays and take quizzes).";
       var result = await aiModel.postToLlm(prompt);
 
       setState(() {
@@ -182,6 +183,24 @@ class _LessonPlanState extends State {
                         ),
                       ),
                       SizedBox(height: 10),
+                      DropdownButtonFormField<String>( // Changed LlmType to String
+                        decoration: const InputDecoration(
+                          labelText: 'Select Grade Level',
+                          border: OutlineInputBorder(),
+                          ),
+                        value: selectedGradeLevel, // This is where you bind to the selected value
+                        items: <String>['9', '10', '11', '12'].map((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            selectedGradeLevel = newValue;
+                          });
+                        },
+                      ),
                       TextField(
                         controller: manualEntryController,
                         maxLines: 8,
