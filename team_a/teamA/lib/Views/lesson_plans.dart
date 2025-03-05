@@ -369,10 +369,11 @@ class _LessonPlanState extends State {
                           ElevatedButton(
                             onPressed: isEditing
                                 ? () async {
+                                    String manualEntryToHtml = _convertTextToHtml(manualEntryController.text);
                                     await MoodleLmsService().updateLessonPlan(
                                       lessonId: selectedLessonPlan!.id,
                                       name: lessonPlanNameController.text,
-                                      intro: manualEntryController.text,
+                                      intro: manualEntryToHtml,
                                       available: 1672531200, //dummy value
                                       deadline: 1675132800, //dummy value
                                     );
