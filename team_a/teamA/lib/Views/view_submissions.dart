@@ -103,9 +103,7 @@ class SubmissionListState extends State<SubmissionList> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: CustomAppBar(
-            title: 'Submissions',
-            userprofileurl: LmsFactory.getLmsService().profileImage ?? ''),
+        
         body: Column(
 children: [
             // Filter Row
