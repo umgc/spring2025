@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:record/record.dart';
+import 'package:yappy/speech_state.dart';
 import 'package:yappy/services/database_helper.dart';
 import 'package:share_plus/share_plus.dart';
 
 class IndustryMenu extends StatelessWidget {
   final String title;
   final IconData icon;
+  final SpeechState speechState;
 
-  const IndustryMenu({required this.title, required this.icon, super.key});
-    Widget generateTranscript(BuildContext context, String title, String content) {
+  
+
+  const IndustryMenu({required this.title, required this.icon, required this.speechState, super.key}); 
+    Widget generateTranscript(BuildContext context, String title, String content, int transcript) {
       return AlertDialog(
         title: Text(title),
         content: SingleChildScrollView(
@@ -36,8 +41,37 @@ class IndustryMenu extends StatelessWidget {
             ),
             IconButton(
               icon: Icon(Icons.delete),
-              onPressed: () {
+                onPressed: () async {
                 // Add your delete functionality here
+                bool confirmDelete = await showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: Text('Confirm Delete'),
+                    content: Text('Are you sure you want to delete this transcript?'),
+                    actions: [
+                    TextButton(
+                      onPressed: () {
+                      Navigator.of(context).pop(false);
+                      },
+                      child: Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                      Navigator.of(context).pop(true);
+                      },
+                      child: Text('Delete'),
+                    ),
+                    ],
+                  );
+                  },
+                );
+
+                if (confirmDelete) {
+                  // Perform the delete operation
+                    await DatabaseHelper().deleteTranscript(transcript);
+                  Navigator.of(context).pop();
+                }
               },
               ),
             ],
@@ -54,7 +88,6 @@ class IndustryMenu extends StatelessWidget {
 
   Future<List<Map<String, dynamic>>> _fetchTranscripts() async {
     DatabaseHelper dbHelper = DatabaseHelper();
-    
     return await dbHelper.getAllTranscripts();
   }
 
@@ -97,41 +130,74 @@ class IndustryMenu extends StatelessWidget {
             children: [
               // Creates the chat button for each menu
               Container(
-                decoration:
-                    BoxDecoration(shape: BoxShape.circle, color: Colors.grey),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: speechState.recordState == RecordState.stop ? Colors.grey : Colors.red
+                ),
                 padding: EdgeInsets.all(5),
                 child: IconButton(
                   icon: Icon(
-                    Icons.chat,
+                    speechState.recordState == RecordState.stop ? Icons.mic : Icons.stop,
                     color: Colors.white,
                     size: screenHeight * .05,
                   ),
-                  onPressed: () {
-                    //add Bernhards code here
-                  },
+                  onPressed: () async {
+                    await speechState.toggleRecording();
+                    // When speechState.stop happens it needs to store the text in the database
+                    // The new text file needs to get the USERID, create a new Transcript ID,
+                    // The user will be asked to edit the text to ensure accuracy. After hitting save, the text will be saved to the database in the transcript table using the same transcript ID
+                    if (speechState.recordState == RecordState.stop) {
+                      // Fetch the recorded text
+                      String recordedText = await speechState.getRecordedText();
+
+                      // Get the user ID (assuming you have a method to get the current user ID)
+                        int userId = 0001;
+
+                      // Create a new transcript ID 
+                          int transcriptId = DateTime.now().millisecondsSinceEpoch;
+
+                      // Show a dialog to edit the text
+                      TextEditingController controller = TextEditingController(text: recordedText);
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Text('Edit Transcript'),
+                            content: TextField(
+                              controller: controller,
+                              decoration: InputDecoration(hintText: 'Edit the transcript text'),
+                              maxLines: null,
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () async {
+                                  // Save the edited text to the database
+                                  await DatabaseHelper().saveTranscript(
+                                    userId: userId,
+                                    transcriptId: transcriptId,
+                                    text: controller.text,
+                                  );
+                                  Navigator.of(context).pop();
+                                },
+                                child: Text('Save'),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: Text('Cancel'),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    }
+                  }
+                )
+
                 ),
-              ),
+              
                 SizedBox(width: screenWidth * .06),
-
-                // Creates a refine data button
-                //after the transcipt is done it will go to this button to be edited. 
-                //after the edits post it to the database
-                Container(
-                decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.grey),
-                padding: EdgeInsets.all(5),
-                child: IconButton(
-                  icon: Icon(
-                  Icons.edit,
-                  color: Colors.white,
-                  size: screenHeight * .05,
-                  ),
-                  onPressed: () {
-                  // Add your refine data functionality here
-                  },
-                ),
-                ),
-
-              SizedBox(width: screenWidth * .06),
 
               // Creates a industry specific icon based on user input
               Container(
@@ -145,14 +211,12 @@ class IndustryMenu extends StatelessWidget {
                     size: screenHeight * .05,
                   ),
 
-                  
                   onPressed: () {
                     _showTranscriptsBottomSheet(context);
                   },
                 ),
               ),
               SizedBox(width: screenWidth * .06),
-
 
               // Creates a transcript history button
               Container(
@@ -226,6 +290,7 @@ class IndustryMenu extends StatelessWidget {
                                   context,
                                   'Transcript',
                                   transcript['transcript_text_data'] ?? 'No content available',
+                                  transcript['transcript_id'],
                                 );
                               },
                             );
@@ -273,7 +338,7 @@ class IndustryMenu extends StatelessWidget {
                           'Transcript ${transcript['transcript_id']}',
                           style: TextStyle(
                             color: Colors.white
-                          ),
+                          ), 
                         ),
                         onTap: () {
                           Navigator.pop(context);
@@ -284,6 +349,8 @@ class IndustryMenu extends StatelessWidget {
                                 context,
                                 'Transcript',
                                 transcript['transcript_text_data'] ?? 'No content available',
+                                transcript['transcript_id'],
+                                
                               );
                             },
                           );
