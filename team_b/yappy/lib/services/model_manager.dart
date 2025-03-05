@@ -196,6 +196,11 @@ class ModelManager {
       },
     ) ?? false; // Default to false if dialog is dismissed
   }
+
+  // Check if downloads are currently in progress
+  bool isDownloadInProgress() {
+    return _toastService.isToastVisible;
+  }
   
   // Download all models
   Future<bool> downloadModels(BuildContext context) async {

@@ -14,6 +14,9 @@ class ToastService {
   final _successController = StreamController<String>.broadcast();
   final _errorController = StreamController<String>.broadcast();
   
+  // Track toast visibility
+  bool _isToastVisible = false;
+  
   // Stream getters
   Stream<String> get messageStream => _messageController.stream;
   Stream<double> get progressStream => _progressController.stream;
@@ -21,11 +24,15 @@ class ToastService {
   Stream<String> get successStream => _successController.stream;
   Stream<String> get errorStream => _errorController.stream;
   
+  // Check if toast is visible (i.e., download in progress)
+  bool get isToastVisible => _isToastVisible;
+  
   // Methods to control the toast
   void showToast(String message, {double progress = 0.0}) {
     _messageController.add(message);
     _progressController.add(progress);
     _visibilityController.add(true);
+    _isToastVisible = true;
   }
   
   void updateProgress(double progress) {
@@ -38,6 +45,7 @@ class ToastService {
   
   void hideToast() {
     _visibilityController.add(false);
+    _isToastVisible = false;
   }
   
   void showSuccess(String message) {

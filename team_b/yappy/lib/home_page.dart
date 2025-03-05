@@ -30,6 +30,11 @@ class _HomePageState extends State<HomePage> {
   
   Future<void> _checkModelsExist() async {
     try {
+      // Skip check if downloads are already in progress
+      if (_modelManager.isDownloadInProgress()) {
+        return;
+      }
+      
       final modelsExist = await _modelManager.modelsExist();
       if (!modelsExist && mounted) {
         // Models don't exist, prompt for download
