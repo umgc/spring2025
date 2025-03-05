@@ -1,11 +1,15 @@
 import "package:flutter/material.dart";
+import "package:intl/intl.dart";
 import "package:learninglens_app/Api/lms/factory/lms_factory.dart";
 import "package:learninglens_app/Controller/essay_generator.dart";
+import "package:learninglens_app/Views/view_submissions.dart";
 import "package:learninglens_app/beans/assignment.dart";
+import "package:learninglens_app/beans/participant.dart";
 import 'package:learninglens_app/beans/quiz.dart';
 import 'package:learninglens_app/beans/course.dart';
 import 'package:learninglens_app/beans/question.dart';
 import "package:learninglens_app/Controller/custom_appbar.dart";
+import "package:learninglens_app/beans/submission_with_grade.dart";
 import "package:learninglens_app/content_carousel.dart";
 
 //The Page
@@ -19,6 +23,9 @@ class EssaysView extends StatefulWidget {
 class _EssaysState extends State<EssaysView> {
   late Future<List<Assignment>> essays;
   Assignment? selectedEssay;
+  late Future<List<SubmissionWithGrade>> futureSubmissionsWithGrades;
+  late Future<List<Participant>> futureParticipants;
+  List<Map<String, dynamic>> submissionsData = [];
 
   @override
   void initState() {
@@ -99,6 +106,16 @@ class _EssaysState extends State<EssaysView> {
                                     onTap: () {
                                       setState(() {
                                         selectedEssay = essay;
+                                        futureSubmissionsWithGrades =
+                                            LmsFactory.getLmsService()
+                                                .getSubmissionsWithGrades(
+                                                    selectedEssay?.id ?? 0);
+                                        futureParticipants =
+                                            LmsFactory.getLmsService()
+                                                .getCourseParticipants(
+                                                    selectedEssay?.courseId
+                                                            .toString() ??
+                                                        "");
                                       });
                                     },
                                   );
@@ -155,25 +172,161 @@ class _EssaysState extends State<EssaysView> {
                                                 BorderRadius.circular(8.0),
                                           ),
                                           margin: EdgeInsets.all(8.0),
-                                          child: Center(
-                                            child: Padding(
-                                              padding:
-                                                  const EdgeInsets.all(16.0),
-                                              child: Column(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  Padding(
-                                                      padding:
-                                                          const EdgeInsets.all(
-                                                              8.0),
-                                                      child: Text(
-                                                          'Student Submissions',
-                                                          style: TextStyle(
-                                                              fontSize: 20))),
-                                                  Text(
-                                                      '${selectedEssay?.submissionsWithGrades == null ? "No submissions found." : selectedEssay?.submissionsWithGrades.toString()}')
-                                                ],
-                                              ),
+                                          child: Padding(
+                                            padding: const EdgeInsets.all(16.0),
+                                            child: Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                Padding(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            8.0),
+                                                    child: Text(
+                                                        'Student Submissions',
+                                                        style: TextStyle(
+                                                            fontSize: 20))),
+                                                ConstrainedBox(
+                                                  constraints: BoxConstraints(
+                                                      maxHeight:
+                                                          250), //testing width
+                                                  child: FutureBuilder<
+                                                      List<
+                                                          SubmissionWithGrade>>(
+                                                    future:
+                                                        futureSubmissionsWithGrades,
+                                                    builder: (BuildContext
+                                                            context,
+                                                        AsyncSnapshot<
+                                                                List<
+                                                                    SubmissionWithGrade>>
+                                                            submissionSnapshot) {
+                                                      if (submissionSnapshot
+                                                              .connectionState ==
+                                                          ConnectionState
+                                                              .waiting) {
+                                                        return Center(
+                                                            child:
+                                                                CircularProgressIndicator());
+                                                      } else if (submissionSnapshot
+                                                          .hasError) {
+                                                        return Center(
+                                                            child: Text(
+                                                                'Error: ${submissionSnapshot.error}'));
+                                                      } else if (!submissionSnapshot
+                                                              .hasData ||
+                                                          submissionSnapshot
+                                                              .data!.isEmpty) {
+                                                        return Center(
+                                                            child: Text(
+                                                                'No submissions found'));
+                                                      } else {
+                                                        List<SubmissionWithGrade>
+                                                            submissionsWithGrades =
+                                                            submissionSnapshot
+                                                                    .data ??
+                                                                [];
+                                                        submissionsData =
+                                                            submissionsWithGrades
+                                                                .map(
+                                                                    (submission) {
+                                                          return {
+                                                            'studentName':
+                                                                submission
+                                                                    .submission
+                                                                    .userid,
+                                                            'submittedDate':
+                                                                submission
+                                                                    .submission
+                                                                    .submissionTime
+                                                                    .toLocal(),
+                                                            'status': submission
+                                                                .submission
+                                                                .gradingStatus,
+                                                            'response':
+                                                                submission
+                                                                    .submission
+                                                                    .onlineText,
+                                                            'grade': submission
+                                                                .grade?.grade,
+                                                          };
+                                                        }).toList();
+
+                                                        return Container(
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            border: Border.all(
+                                                                color: Colors
+                                                                    .grey),
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .circular(
+                                                                        8.0),
+                                                          ),
+                                                          margin:
+                                                              EdgeInsets.all(
+                                                                  8.0),
+                                                          child:
+                                                              SingleChildScrollView(
+                                                            scrollDirection:
+                                                                Axis.horizontal,
+                                                            child: DataTable(
+                                                              headingRowColor: MaterialStateProperty
+                                                                  .all(Theme.of(
+                                                                          context)
+                                                                      .colorScheme
+                                                                      .primary
+                                                                      .withOpacity(
+                                                                          0.1)),
+                                                              columns: const [
+                                                                DataColumn(
+                                                                    label: Text(
+                                                                        'Student')),
+                                                                DataColumn(
+                                                                    label: Text(
+                                                                        'Submitted Date')),
+                                                                DataColumn(
+                                                                    label: Text(
+                                                                        'Status')),
+                                                                DataColumn(
+                                                                    label: Text(
+                                                                        'Grade')),
+                                                                DataColumn(
+                                                                    label: Text(
+                                                                        'Response')),
+                                                              ],
+                                                              rows:
+                                                                  submissionsData
+                                                                      .map(
+                                                                          (row) {
+                                                                return DataRow(
+                                                                    cells: [
+                                                                      DataCell(Text(
+                                                                          row['studentName']
+                                                                              .toString())),
+                                                                      DataCell(Text(DateFormat(
+                                                                              'M/dd/yy')
+                                                                          .format(
+                                                                              row['submittedDate'])
+                                                                          .toString())),
+                                                                      DataCell(Text(
+                                                                          row['status']
+                                                                              .toString())),
+                                                                      DataCell(Text(
+                                                                          row['grade']
+                                                                              .toString())),
+                                                                      DataCell(Text(
+                                                                          row['response']
+                                                                              .toString())),
+                                                                    ]);
+                                                              }).toList(),
+                                                            ),
+                                                          ),
+                                                        );
+                                                      }
+                                                    },
+                                                  ),
+                                                ),
+                                              ],
                                             ),
                                           ),
                                         ),
