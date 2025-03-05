@@ -1,56 +1,90 @@
 import 'package:flutter/material.dart';
+import 'package:record/record.dart';
+import 'package:yappy/speech_state.dart';
 import 'package:yappy/services/database_helper.dart';
 import 'package:share_plus/share_plus.dart';
+import 'services/model_manager.dart';
 
-class IndustryMenu extends StatelessWidget {
+class IndustryMenu extends StatefulWidget {
   final String title;
   final IconData icon;
+  final SpeechState speechState;
+  final ModelManager modelManager; // Add model manager
 
-  const IndustryMenu({required this.title, required this.icon, super.key});
-    Widget generateTranscript(BuildContext context, String title, String content) {
-      return AlertDialog(
-        title: Text(title),
-        content: SingleChildScrollView(
-          child: Text(content),
-        ),
-        actions: [
-          //add export capes
-            Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              IconButton(
-              icon: Icon(Icons.share),
-              onPressed: () {
-                // Add your share functionality here
-                Share.share(
-                  content,
-                  subject: title,
-                );
-              },
-            ),
-            IconButton(
-              icon: Icon(Icons.download),
-              onPressed: () {
-                // Add your download functionality here
-              },
-            ),
-            IconButton(
-              icon: Icon(Icons.delete),
-              onPressed: () {
-                // Add your delete functionality here
-              },
-              ),
-            ],
-            ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text('Close'),
-          ),
-        ],
-      );
+  const IndustryMenu({
+    required this.title, 
+    required this.icon, 
+    required this.speechState,
+    required this.modelManager, // Add to constructor 
+    super.key
+  });
+
+  @override
+  State<IndustryMenu> createState() => _IndustryMenuState();
+}
+
+class _IndustryMenuState extends State<IndustryMenu> {
+  bool modelsExist = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkModels();
+  }
+
+  Future<void> _checkModels() async {
+    final exist = await widget.modelManager.modelsExist();
+    if (mounted) {
+      setState(() {
+        modelsExist = exist;
+      });
     }
+  }
+
+  Widget generateTranscript(BuildContext context, String title, String content) {
+    return AlertDialog(
+      title: Text(title),
+      content: SingleChildScrollView(
+        child: Text(content),
+      ),
+      actions: [
+        //add export capes
+          Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            IconButton(
+            icon: Icon(Icons.share),
+            onPressed: () {
+              // Add your share functionality here
+              Share.share(
+                content,
+                subject: title,
+              );
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.download),
+            onPressed: () {
+              // Add your download functionality here
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.delete),
+            onPressed: () {
+              // Add your delete functionality here
+            },
+            ),
+          ],
+          ),
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: Text('Close'),
+        ),
+      ],
+    );
+  }
 
   Future<List<Map<String, dynamic>>> _fetchTranscripts() async {
     DatabaseHelper dbHelper = DatabaseHelper();
@@ -81,7 +115,7 @@ class IndustryMenu extends StatelessWidget {
                 padding: EdgeInsets.all(12),
                 child: Center(
                   child: Text(
-                    title,
+                    widget.title,
                     style: TextStyle(
                       fontSize: 24,
                       color: Colors.white
@@ -97,18 +131,25 @@ class IndustryMenu extends StatelessWidget {
             children: [
               // Creates the chat button for each menu
               Container(
-                decoration:
-                    BoxDecoration(shape: BoxShape.circle, color: Colors.grey),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: !modelsExist 
+                    ? Color.fromRGBO(128, 128, 128, 0.5)
+                    : (widget.speechState.recordState == RecordState.stop ? Colors.grey : Colors.red)
+                ),
                 padding: EdgeInsets.all(5),
-                child: IconButton(
-                  icon: Icon(
-                    Icons.chat,
-                    color: Colors.white,
-                    size: screenHeight * .05,
+                child: Tooltip(
+                  message: !modelsExist 
+                    ? "Download required models to enable recording"
+                    : (widget.speechState.recordState == RecordState.stop ? "Start recording" : "Stop recording"),
+                  child: IconButton(
+                    icon: Icon(
+                      widget.speechState.recordState == RecordState.stop ? Icons.mic : Icons.stop,
+                      color: !modelsExist ? Color.fromRGBO(255, 255, 255, 0.5) : Colors.white,
+                      size: screenHeight * .05,
+                    ),
+                    onPressed: !modelsExist ? null : () => widget.speechState.toggleRecording(),
                   ),
-                  onPressed: () {
-                    //add Bernhards code here
-                  },
                 ),
               ),
                 SizedBox(width: screenWidth * .06),
@@ -140,7 +181,7 @@ class IndustryMenu extends StatelessWidget {
                 padding: EdgeInsets.all(5),
                 child: IconButton(
                   icon: Icon(
-                    icon,
+                    widget.icon,
                     color: Colors.white,
                     size: screenHeight * .05,
                   ),
@@ -209,7 +250,7 @@ class IndustryMenu extends StatelessWidget {
                         ),
                         onTap: () {
                           Navigator.pop(context);
-                          if (title == 'Restaurant') {
+                          if (widget.title == 'Restaurant') {
                             // Show Kanban style list for restaurant
                             showModalBottomSheet(
                               context: context,
