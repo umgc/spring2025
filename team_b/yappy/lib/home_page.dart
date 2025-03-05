@@ -7,11 +7,42 @@ import 'package:yappy/medical_patient.dart';
 import 'package:yappy/restaurant.dart';
 import 'package:yappy/tool_bar.dart';
 import 'package:yappy/settings_page.dart';
+import './services/model_manager.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
-//Creates the home page of the app
-//The page will contain buttons that will navigate to different industries
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  final ModelManager _modelManager = ModelManager();
+  
+  @override
+  void initState() {
+    super.initState();
+    // Check if models exist after the first frame is rendered
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkModelsExist();
+    });
+  }
+  
+  Future<void> _checkModelsExist() async {
+    try {
+      final modelsExist = await _modelManager.modelsExist();
+      if (!modelsExist && mounted) {
+        // Models don't exist, prompt for download
+        final shouldDownload = await _modelManager.showDownloadDialog(context);
+        if (shouldDownload && mounted) {
+          await _modelManager.downloadModels(context);
+        }
+      }
+    } catch (e) {
+      debugPrint('Error checking models: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -60,4 +91,3 @@ class HomePage extends StatelessWidget {
     );
   }
 }
-
