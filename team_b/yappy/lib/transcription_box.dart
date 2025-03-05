@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:yappy/streaming_asr.dart';
 
 void main() {
   runApp(TranscriptionBox());
