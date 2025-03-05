@@ -6,6 +6,8 @@ class IndustryMenu extends StatelessWidget {
   final String title;
   final IconData icon;
 
+  
+
   const IndustryMenu({required this.title, required this.icon, super.key});
     Widget generateTranscript(BuildContext context, String title, String content) {
       return AlertDialog(
@@ -38,8 +40,9 @@ class IndustryMenu extends StatelessWidget {
               icon: Icon(Icons.delete),
               onPressed: () {
                 // Add your delete functionality here
+              // Add your delete functionality here
               },
-              ),
+            ),
             ],
             ),
           TextButton(
@@ -57,6 +60,8 @@ class IndustryMenu extends StatelessWidget {
     
     return await dbHelper.getAllTranscripts();
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -251,6 +256,9 @@ class IndustryMenu extends StatelessWidget {
     // Check if the context is still valid
     if (!context.mounted) return;
     
+
+
+    
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
@@ -263,35 +271,50 @@ class IndustryMenu extends StatelessWidget {
           child: Center(
             child: Column(
               children: [
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: transcripts.length,
-                    itemBuilder: (context, index) {
-                      Map<String, dynamic> transcript = transcripts[index];
-                      return ListTile(
-                        title: Text(
-                          'Transcript ${transcript['transcript_id']}',
-                          style: TextStyle(
-                            color: Colors.white
-                          ),
-                        ),
-                        onTap: () {
-                          Navigator.pop(context);
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return generateTranscript(
-                                context,
-                                'Transcript',
-                                transcript['transcript_text_data'] ?? 'No content available',
-                              );
-                            },
-                          );
-                        },
-                      );
-                    },
-                  ),
-                ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: transcripts.length,
+              itemBuilder: (context, index) {
+                Map<String, dynamic> transcript = transcripts[index];
+                return ListTile(
+            title: Text(
+              'Transcript ${transcript['transcript_id']}',
+              style: TextStyle(
+                color: Colors.white
+              ),
+            ),
+            onTap: () {
+              Navigator.pop(context);
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return generateTranscript(
+              context,
+              'Transcript',
+              transcript['transcript_text_data'] ?? 'No content available',
+                  );
+                },
+              );
+            },
+                );
+              },
+            ),
+          ),
+          // Add an upload bar at the bottom
+          Padding(
+            padding: const EdgeInsets.only(top: 16.0),
+            child: ElevatedButton.icon(
+              onPressed: () {
+                // Add your upload functionality here
+              },
+              icon: Icon(Icons.upload),
+              label: Text('Upload Transcript'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color.fromARGB(255, 26, 26, 27),
+                foregroundColor: const Color.fromARGB(255, 229, 217, 217),
+              ),
+            ),
+          ),
               ],
             ),
           ),
