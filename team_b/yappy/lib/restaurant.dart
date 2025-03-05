@@ -3,6 +3,10 @@ import 'package:yappy/tool_bar.dart';
 import 'package:yappy/industry_menu.dart';
 import 'package:yappy/transcription_box.dart';
 import 'package:yappy/speech_state.dart';
+<<<<<<< HEAD
+=======
+import 'services/model_manager.dart';
+>>>>>>> developer
 
 class RestaurantApp extends StatelessWidget {
   const RestaurantApp({super.key});
@@ -19,6 +23,10 @@ class RestaurantApp extends StatelessWidget {
 class RestaurantPage extends StatelessWidget {
   RestaurantPage({super.key});
   final speechState = SpeechState();
+<<<<<<< HEAD
+=======
+  final modelManager = ModelManager();
+>>>>>>> developer
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +46,10 @@ class RestaurantPage extends StatelessWidget {
                 title: "Restaurant", 
                 icon: Icons.restaurant_menu,
                 speechState: speechState,
+<<<<<<< HEAD
+=======
+                modelManager: modelManager,
+>>>>>>> developer
               ),
               Expanded(
                 child: Padding(

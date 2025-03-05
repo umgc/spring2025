@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:yappy/speech_state.dart';
+import 'package:yappy/speech_state.dart';
 import 'package:yappy/tool_bar.dart';
 import 'package:yappy/industry_menu.dart';
 import 'package:yappy/transcription_box.dart';
-
+import 'services/model_manager.dart';
 
 class MedicalPatientApp extends StatelessWidget {
   const MedicalPatientApp({super.key});
@@ -20,6 +21,7 @@ class MedicalPatientApp extends StatelessWidget {
 class MedicalPatientPage extends StatelessWidget {
   MedicalPatientPage({super.key});
   final speechState = SpeechState();
+  final modelManager = ModelManager();
 
   @override
   Widget build(BuildContext context) {
@@ -39,6 +41,7 @@ class MedicalPatientPage extends StatelessWidget {
                 title: "Medical Patient",
                 icon: Icons.local_pharmacy,
                 speechState: speechState,
+                modelManager: modelManager,
               ),
               Expanded(
                 child: Padding(
