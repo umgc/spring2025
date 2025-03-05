@@ -6,6 +6,7 @@ import "package:learninglens_app/Controller/custom_appbar.dart";
 import "package:learninglens_app/Views/lesson.dart";
 import "package:learninglens_app/beans/course.dart";
 import "package:learninglens_app/beans/lesson_plan.dart";
+import 'package:learninglens_app/Api/llm/enum/llm_enum.dart';
 import 'package:learninglens_app/Api/llm/openai_api.dart';
 import 'package:learninglens_app/Api/llm/grok_api.dart';
 import 'package:learninglens_app/Api/llm/llm_api.dart';
@@ -23,7 +24,8 @@ class _LessonPlanState extends State {
   LessonPlan? selectedLessonPlan;
   bool isEditing = false;
   bool useAiGeneration = false;
-  String? selectedLLM;
+  // String? selectedLLM;
+  LlmType? selectedLLM;
   bool isSubmitDisabled = false; 
 
 
@@ -59,18 +61,25 @@ class _LessonPlanState extends State {
   }
 
   Future<void> generateLessonPlanWithAI() async {
-    final openApiKey = LocalStorageService.getOpenAIKey();
-    final grokApiKey = LocalStorageService.getGrokKey();
-    final perplexityApiKey = LocalStorageService.getPerplexityKey();
+    // final openApiKey = LocalStorageService.getOpenAIKey();
+    // final grokApiKey = LocalStorageService.getGrokKey();
+    // final perplexityApiKey = LocalStorageService.getPerplexityKey();
 
     try {
       final aiModel;
-      if (selectedLLM == 'ChatGPT') {
-        aiModel = OpenAiLLM(openApiKey);
-      } else if (selectedLLM == 'Grok') {
-        aiModel = GrokLLM(grokApiKey);
+      // if (selectedLLM == 'ChatGPT') {
+      //   aiModel = OpenAiLLM(openApiKey);
+      // } else if (selectedLLM == 'Grok') {
+      //   aiModel = GrokLLM(grokApiKey);
+      // } else {
+      //   aiModel = LlmApi(perplexityApiKey);
+      // }
+      if (selectedLLM == LlmType.CHATGPT) {
+        aiModel = OpenAiLLM(LocalStorageService.getOpenAIKey());
+      } else if (selectedLLM == LlmType.GROK) {
+        aiModel = GrokLLM(LocalStorageService.getGrokKey());
       } else {
-        aiModel = LlmApi(perplexityApiKey);
+        aiModel = LlmApi(LocalStorageService.getPerplexityKey());
       }
 
       String prompt = "Generate a lesson plan for ${lessonPlanNameController.text} covering key topics like ${manualEntryController.text}.";
@@ -196,18 +205,24 @@ class _LessonPlanState extends State {
                         },
                       ),
 
-                      DropdownButtonFormField<String>(
+                      DropdownButtonFormField<LlmType>(
                         value: selectedLLM,
                         decoration: const InputDecoration(labelText: "Select AI Model"),
-                        onChanged: useAiGeneration ? (String? newValue) {
+                        onChanged: useAiGeneration ? (LlmType? newValue) {
                           setState(() {
                             selectedLLM = newValue;
                           });
                         } : null, // Disables interaction when checkbox is unchecked
-                        items: ['ChatGPT', 'Grok', 'Perplexity'].map((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value),
+                        // items: ['ChatGPT', 'Grok', 'Perplexity'].map((String value) {
+                        //   return DropdownMenuItem<String>(
+                        //     value: value,
+                        //     child: Text(value),
+                        //   );
+                        // }).toList(),
+                        items: LlmType.values.map((LlmType llm) {
+                          return DropdownMenuItem<LlmType>(
+                            value: llm,
+                            child: Text(llm.displayName),
                           );
                         }).toList(),
                         disabledHint: Text("Enable AI to select a model"), // Greyed-out text when disabled

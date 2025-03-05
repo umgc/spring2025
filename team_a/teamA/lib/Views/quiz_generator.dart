@@ -10,6 +10,7 @@ import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/Api/llm/claudeai_api.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
 import 'edit_questions.dart';
+import 'package:learninglens_app/Api/llm/enum/llm_enum.dart';
 import 'package:learninglens_app/Api/llm/openai_api.dart';
 import 'package:learninglens_app/Api/llm/grok_api.dart';
 
@@ -36,7 +37,9 @@ class _AssessmentState extends State<CreateAssessment> {
   double paddingHeight = 16.0, paddingWidth=32;
   bool isAdvancedModeOnGetFromGlobalVarsLater = false;
   final _formKey = GlobalKey<FormState>();
-  String? selectedLLM, selectedSubject, selectedGradeLevel;
+  // String? selectedLLM, selectedSubject, selectedGradeLevel;
+  String? selectedSubject, selectedGradeLevel;
+  LlmType? selectedLLM;
   List<String> _gradeLevels = ['9th','10th','11th','12th'];
   List<String> _subjects = ['Math', 'Science', 'Language Arts', 'Social Studies', 'Health', 'Art', 'Music'];
   bool _isLoading = false;
@@ -60,22 +63,23 @@ class _AssessmentState extends State<CreateAssessment> {
   }
 
   Future<void> generateQuestions(AssignmentForm af) async {
-    final perplexityApiKey = LocalStorageService.getPerplexityKey();
-    final openApiKey = LocalStorageService.getOpenAIKey();
-    final claudApiKey =  LocalStorageService.getClaudeKey();
-    final grokApiKey = LocalStorageService.getGrokKey();
+    // final perplexityApiKey = LocalStorageService.getPerplexityKey();
+    // final openApiKey = LocalStorageService.getOpenAIKey();
+    // final claudApiKey =  LocalStorageService.getClaudeKey();
+    // final grokApiKey = LocalStorageService.getGrokKey();
     try {
       setState((){_isLoading=true;});
       final aiModel;
-      if (selectedLLM == 'ChatGPT') {
-        aiModel = OpenAiLLM(openApiKey);        
-      } else if (selectedLLM == 'Grok') {
-        aiModel = GrokLLM(grokApiKey);
-      } else if (selectedLLM == 'Perplexity') {
+      if (selectedLLM == LlmType.CHATGPT) {
+        aiModel = OpenAiLLM(LocalStorageService.getOpenAIKey());
+      } else if (selectedLLM == LlmType.GROK) {
+        aiModel = GrokLLM(LocalStorageService.getGrokKey());
+      } else if (selectedLLM == LlmType.PERPLEXITY) {
         // aiModel = OpenAiLLM(perplexityApiKey); 
-        aiModel = LlmApi(perplexityApiKey);
+        aiModel = LlmApi(LocalStorageService.getPerplexityKey());
       } else {
-        aiModel = ClaudeAiAPI(claudApiKey);
+        // default
+        aiModel = OpenAiLLM(LocalStorageService.getOpenAIKey());
       }
       var result = await aiModel.postToLlm(PromptEngine.generatePrompt(af));
       if (result.isNotEmpty) {
@@ -186,18 +190,24 @@ class _AssessmentState extends State<CreateAssessment> {
                         SizedBox(height: paddingHeight),
                         Text("Choose a total number of questions equal to four or five times the number of students in the course to guarantee unique quizzes per student"),
                         SizedBox(height: paddingHeight),
-                        DropdownButtonFormField<String>(
+                        DropdownButtonFormField<LlmType>(
                           value: selectedLLM,
                           decoration: const InputDecoration(labelText: "Select Model"),
-                          onChanged: (String? newValue) {
+                          onChanged: (LlmType? newValue) {
                             setState(() {
                               selectedLLM = newValue;
                             });
                           },
-                          items: ['ChatGPT', 'CLAUDE', 'Perplexity', 'Grok'].map((String value) {
-                            return DropdownMenuItem<String>(
-                              value: value,
-                              child: Text(value),
+                          // items: ['ChatGPT', 'CLAUDE', 'Perplexity', 'Grok'].map((String value) {
+                          //   return DropdownMenuItem<String>(
+                          //     value: value,
+                          //     child: Text(value),
+                          //   );
+                          // }).toList()
+                          items: LlmType.values.map((LlmType llm) {
+                            return DropdownMenuItem<LlmType>(
+                              value: llm,
+                              child: Text(llm.displayName),
                             );
                           }).toList()
                         ),
