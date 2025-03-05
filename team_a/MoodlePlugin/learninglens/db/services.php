@@ -133,4 +133,12 @@ $functions = [
         'capabilities' => 'mod/lesson:manage',
         'services'    => [MOODLE_OFFICIAL_MOBILE_SERVICE]
     ],
+    'local_learninglens_get_overrides_from_quiz' => [
+        'classname'   => 'local_learninglens\external\get_overrides_from_quiz',
+        'description' => 'Gets overrides for a given quiz id',
+        'type'        => 'read',
+        'ajax'        => true,
+        'capabilities' => 'mod/quiz:view',
+        'services'    => [MOODLE_OFFICIAL_MOBILE_SERVICE]
+    ],
 ];

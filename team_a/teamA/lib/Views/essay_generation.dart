@@ -8,6 +8,8 @@ import 'package:learninglens_app/services/local_storage_service.dart';
 import 'dart:convert';
 import '../Api/llm/llm_api.dart';
 import 'package:learninglens_app/Api/llm/openai_api.dart';
+import 'package:learninglens_app/Api/llm/grok_api.dart';
+import 'package:learninglens_app/Api/llm/enum/llm_enum.dart';
 
 
 // Required Components:
@@ -33,7 +35,8 @@ class _EssayGenerationState extends State<EssayGeneration>
   String _selectedGradeLevel =
       '12th grade'; // Default value for GradeLevelDropdown
   bool _isLoading = false;
-  String? selectedLLM = 'Perplexity'; // default
+  // String? selectedLLM = 'Perplexity'; // default
+  LlmType? selectedLLM;
 
   // llm options
   final List<String> llmOptions = ['ChatGPT', 'CLAUDE', 'Perplexity'];
@@ -50,9 +53,9 @@ class _EssayGenerationState extends State<EssayGeneration>
   dynamic rubricasjson;
 
   // api keys
-  final perplexityApiKey = LocalStorageService.getPerplexityKey();
-  final openApiKey = LocalStorageService.getOpenAIKey();
-  final claudeApiKey =  LocalStorageService.getClaudeKey();
+  // final perplexityApiKey = LocalStorageService.getPerplexityKey();
+  // final openApiKey = LocalStorageService.getOpenAIKey();
+  // final claudeApiKey =  LocalStorageService.getClaudeKey();
 
   // event handlers
   void _handlePointScaleChanged(int? newValue) {
@@ -73,7 +76,7 @@ class _EssayGenerationState extends State<EssayGeneration>
   }
 
   // Handle LLM Selection
-  void _handleLLMChanged(String? newValue) {
+  void _handleLLMChanged(LlmType? newValue) {
     setState(() {
       if (newValue != null) {
         selectedLLM = newValue;
@@ -84,12 +87,14 @@ class _EssayGenerationState extends State<EssayGeneration>
   // Get api key for selected LLM
   String getApiKey() {
     switch (selectedLLM) {
-      case 'OpenAI':
-        return openApiKey;
-      case 'Claude':
-        return claudeApiKey;
+      case LlmType.CHATGPT:
+        return LocalStorageService.getOpenAIKey();
+      case LlmType.GROK:
+        return LocalStorageService.getGrokKey();
+      case LlmType.PERPLEXITY:
+        return LocalStorageService.getPerplexityKey();
       default:
-        return perplexityApiKey;
+        return LocalStorageService.getOpenAIKey();
     }
   }
 
@@ -107,12 +112,12 @@ class _EssayGenerationState extends State<EssayGeneration>
 
       // Dynamically instantiate the appropriate LLM class based on the selectedLLM
       dynamic llmInstance;
-      if (selectedLLM == 'OpenAI') {
-        llmInstance = OpenAiLLM(openApiKey);
-      } else if (selectedLLM == 'Claude') {
-        llmInstance = ClaudeAiAPI(claudeApiKey);
-      } else if (selectedLLM == 'Perplexity') {
-        llmInstance = LlmApi(perplexityApiKey); // Perplexity API class
+      if (selectedLLM == LlmType.CHATGPT) {
+        llmInstance = OpenAiLLM(getApiKey());
+      } else if (selectedLLM == LlmType.GROK) {
+        llmInstance = GrokLLM(getApiKey());
+      } else if (selectedLLM == LlmType.PERPLEXITY) {
+        llmInstance = LlmApi(getApiKey()); // Perplexity API class
       } else {
         throw Exception('Invalid LLM selected.');
       }
@@ -214,16 +219,22 @@ class _EssayGenerationState extends State<EssayGeneration>
                   const SizedBox(height: 16),
 
                   // LLM Selection Dropdown
-                  DropdownButton<String>(
+                  DropdownButton<LlmType>(
                     value: selectedLLM,
                     onChanged: _handleLLMChanged,
-                    items: <String>['Perplexity', 'OpenAI', 'Claude']
-                        .map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
+                    // items: <String>['Perplexity', 'OpenAI', 'Claude']
+                    //     .map<DropdownMenuItem<String>>((String value) {
+                    //   return DropdownMenuItem<String>(
+                    //     value: value,
+                    //     child: Text(value),
+                    //   );
+                    // }).toList(),
+                    items: LlmType.values.map((LlmType llm) {
+                      return DropdownMenuItem<LlmType>(
+                        value: llm,
+                        child: Text(llm.displayName),
                       );
-                    }).toList(),
+                    }).toList()
                   ),
 
                   const SizedBox(height: 16),
