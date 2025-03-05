@@ -7,6 +7,7 @@ import 'package:archive/archive.dart';
 import 'package:path/path.dart' as path;
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import './toast_manager.dart';
 
 class ModelManager {
   // Base directory for storing models
@@ -36,10 +37,9 @@ class ModelManager {
     ),
   ];
   
-  // Variables to store dialog information
+  // Variables to store progress information
   String _progressMessage = 'Starting download...';
   double _progressValue = 0.0;
-  StateSetter? _progressSetState;
   
   ModelManager() {
     _modelDirPath = _initModelDir();
@@ -216,20 +216,22 @@ class ModelManager {
       }
     }
     
-    // Create a completer for the progress dialog
-    late Completer<void> progressDialogCompleter;
-    
     try {
-      // Show the download progress dialog and get the completer
-      progressDialogCompleter = _showDownloadProgressDialog(scaffoldContext);
+      // Show initial toast notification
+      _updateDownloadProgress(
+        context: scaffoldContext,
+        message: 'Starting downloads...',
+        progress: 0.0,
+      );
       
       final modelDir = await _modelDirPath;
       int completedModels = 0;
       
       // Process each model
       for (var model in _models) {
-        // Update progress dialog
+        // Update progress
         _updateDownloadProgress(
+          context: scaffoldContext, 
           message: 'Downloading ${model.name}...',
           progress: completedModels / _models.length,
         );
@@ -242,8 +244,9 @@ class ModelManager {
         
         // Process based on file type
         if (model.isCompressed) {
-          // Update progress dialog
+          // Update progress
           _updateDownloadProgress(
+            context: scaffoldContext,
             message: 'Extracting ${model.name}...',
             progress: completedModels / _models.length,
           );
@@ -262,6 +265,7 @@ class ModelManager {
         
         completedModels++;
         _updateDownloadProgress(
+          context: scaffoldContext,
           progress: completedModels / _models.length,
         );
       }
@@ -270,18 +274,16 @@ class ModelManager {
       final markerFile = File('$modelDir/models_installed.txt');
       await markerFile.writeAsString('Models installed on ${DateTime.now()}');
       
-      // Complete the progress dialog
-      progressDialogCompleter.complete();
-      
-      // Show success message
-      await _showDownloadCompleteDialog(scaffoldContext);
+      // Hide toast and show success toast
+      ToastManager.hideToast();
+      _showDownloadCompleteToast(scaffoldContext);
       
       return true;
     } catch (e) {
       debugPrint('Error downloading models: $e');
       
-      // Complete the progress dialog to close it
-      progressDialogCompleter.complete();
+      // Hide progress toast
+      ToastManager.hideToast();
       
       // Show error dialog
       await showDialog(
@@ -302,58 +304,9 @@ class ModelManager {
     }
   }
   
-  // Show download progress dialog
-  Completer<void> _showDownloadProgressDialog(BuildContext context) {
-    final completer = Completer<void>();
-    
-    // Reset progress values
-    _progressMessage = 'Starting download...';
-    _progressValue = 0.0;
-    
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext dialogContext) {
-        return WillPopScope(
-          onWillPop: () async => false, // Prevent back button
-          child: AlertDialog(
-            title: const Text('Downloading Models'),
-            content: StatefulBuilder(
-              builder: (context, setState) {
-                // Store setState for later use
-                _progressSetState = setState;
-                
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const CircularProgressIndicator(),
-                    const SizedBox(height: 16),
-                    Text(_progressMessage),
-                    const SizedBox(height: 8),
-                    LinearProgressIndicator(value: _progressValue),
-                  ],
-                );
-              },
-            ),
-          ),
-        );
-      },
-    );
-    
-    // When download is complete
-    completer.future.then((_) {
-      // Check if dialog is still showing (context is valid)
-      if (_progressSetState != null) {
-        Navigator.of(context, rootNavigator: true).pop();
-        _progressSetState = null; // Clear reference
-      }
-    });
-    
-    return completer;
-  }
-  
-  // Update download progress dialog
+  // Update download progress toast
   void _updateDownloadProgress({
+    required BuildContext context,
     String? message,
     required double progress,
   }) {
@@ -363,30 +316,23 @@ class ModelManager {
     }
     _progressValue = progress;
     
-    // Update dialog if setState is available
-    if (_progressSetState != null) {
-      _progressSetState!(() {});
-    }
+    // Show or update toast
+    ToastManager.showPersistentToast(
+      context: context,
+      message: _progressMessage,
+      progress: _progressValue,
+    );
   }
   
-  // Show download complete dialog
-  Future<void> _showDownloadCompleteDialog(BuildContext context) {
-    return showDialog(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: const Text('Download Complete'),
-          content: const Text('All models have been downloaded successfully.'),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Continue'),
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-              },
-            ),
-          ],
-        );
-      },
+  // Show temporary download complete toast
+  void _showDownloadCompleteToast(BuildContext context) {
+    // Show a success toast
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('All models have been downloaded successfully.'),
+        backgroundColor: Colors.green,
+        duration: Duration(seconds: 3),
+      ),
     );
   }
   
