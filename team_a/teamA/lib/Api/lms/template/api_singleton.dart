@@ -217,5 +217,11 @@ class ApiSingleton implements LmsInterface {
     // TODO: implement getRubric
     throw UnimplementedError();
   }
+  //Get Lesson Plan
+    @override
+  Future<LessonPlan>getLessonPlan(String courseId){
+    //\TODO: implement getLessonPlan
+    throw UnimplementedError();
+  }
 
 }

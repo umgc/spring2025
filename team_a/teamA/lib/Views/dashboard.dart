@@ -6,6 +6,7 @@ import 'package:learninglens_app/Views/analytics_page.dart';
 import 'package:learninglens_app/Views/assessments_view.dart';
 import 'package:learninglens_app/Views/course_list.dart';
 import 'package:learninglens_app/Views/essays_view.dart';
+import 'package:learninglens_app/Views/g_lesson_plan.dart';
 import 'package:learninglens_app/Views/iep_page.dart';
 import 'package:learninglens_app/Views/lesson_plans.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
@@ -15,7 +16,6 @@ class TeacherDashboard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Check if the user can access the app (logged in + has an LLM key)
     final bool canAccessApp = canUserAccessApp(context);
 
     return Scaffold(
@@ -26,8 +26,6 @@ class TeacherDashboard extends StatelessWidget {
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: Column(
         children: [
-          // 1) The Banner:
-          // Show this banner if the user doesn't meet the access requirements
           if (!canAccessApp)
             Container(
               color: Colors.red[700],
@@ -46,17 +44,12 @@ class TeacherDashboard extends StatelessWidget {
                 ],
               ),
             ),
-
-          // 2) The Main Content:
-          // Use Expanded so the LayoutBuilder can fill the rest of the screen.
           Expanded(
             child: LayoutBuilder(
               builder: (context, constraints) {
                 if (constraints.maxWidth > 600) {
-                  // Large screen (desktop or large tablet)
                   return _buildDesktopLayout(context, constraints);
                 } else {
-                  // Small screen (mobile)
                   return _buildMobileLayout(context, constraints);
                 }
               },
@@ -67,7 +60,6 @@ class TeacherDashboard extends StatelessWidget {
     );
   }
 
-  /// Checks if user is logged in and has an LLM key
   bool canUserAccessApp(BuildContext context) {
     bool isLoggedIn = LocalStorageService.isLoggedIntoMoodle();
     bool hasLLMKey = LocalStorageService.hasLLMKey();
@@ -78,21 +70,22 @@ class TeacherDashboard extends StatelessWidget {
     return LocalStorageService.getSelectedClassroom() == LmsType.MOODLE ? 'Moodle' : 'Google';
   }
 
-  // ---------- DESKTOP LAYOUT ----------
+  bool isMoodle() {
+    print(LocalStorageService.getSelectedClassroom());
+    return LocalStorageService.getSelectedClassroom() == LmsType.MOODLE;
+  }
+
   Widget _buildDesktopLayout(BuildContext context, BoxConstraints constraints) {
     final double screenWidth = constraints.maxWidth;
 
-    // Base sizes for left and right buttons
     double baseButtonSize = screenWidth * 0.15;
     double baseButtonFontSize = screenWidth * 0.015;
     double baseDescriptionFontSize = screenWidth * 0.015;
 
-    // Sizes for the middle button (20% larger)
     double middleButtonSize = baseButtonSize * 1.2;
     double middleButtonFontSize = baseButtonFontSize * 1.2;
     double middleDescriptionFontSize = baseDescriptionFontSize * 1.1;
 
-    // Clamp the sizes to reasonable min/max
     baseButtonSize = baseButtonSize.clamp(80.0, 150.0);
     baseButtonFontSize = baseButtonFontSize.clamp(12.0, 18.0);
     baseDescriptionFontSize = baseDescriptionFontSize.clamp(12.0, 18.0);
@@ -101,78 +94,18 @@ class TeacherDashboard extends StatelessWidget {
     middleButtonFontSize = middleButtonFontSize.clamp(14.0, 20.0);
     middleDescriptionFontSize = middleDescriptionFontSize.clamp(13.0, 20.0);
 
-    // Title font size
     double titleFontSize = screenWidth * 0.03;
     titleFontSize = titleFontSize.clamp(20.0, 32.0);
 
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Teacher ${getClassroom()} Dashboard',
-              style: TextStyle(
-                fontSize: titleFontSize,
-                fontWeight: FontWeight.normal,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Welcome, ${LmsFactory.getLmsService().firstName ?? 'User'}',
-              style: TextStyle(
-                fontSize: titleFontSize * 0.7,
-                fontWeight: FontWeight.normal,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-            ),
-            const SizedBox(height: 20),
-            _buildGridLayout(context, constraints),
-          ],
-        ),
-      ),
-    ); 
-  }
-
-  // ---------- MOBILE LAYOUT ----------
-  Widget _buildMobileLayout(BuildContext context, BoxConstraints constraints) {
-    final double screenWidth = constraints.maxWidth;
-
-    // Base sizes for buttons
-    double baseButtonSize = screenWidth * 0.4;
-    double baseButtonFontSize = screenWidth * 0.045;
-    double baseDescriptionFontSize = screenWidth * 0.04;
-
-    // Sizes for the middle button (10% larger)
-    double middleButtonSize = baseButtonSize * 1.1;
-    double middleButtonFontSize = baseButtonFontSize * 1.1;
-    double middleDescriptionFontSize = baseDescriptionFontSize * 1.05;
-
-    // Clamp the sizes
-    baseButtonSize = baseButtonSize.clamp(80.0, 140.0);
-    baseButtonFontSize = baseButtonFontSize.clamp(12.0, 16.0);
-    baseDescriptionFontSize = baseDescriptionFontSize.clamp(12.0, 16.0);
-
-    middleButtonSize = middleButtonSize.clamp(88.0, 154.0);
-    middleButtonFontSize = middleButtonFontSize.clamp(13.0, 18.0);
-    middleDescriptionFontSize = middleDescriptionFontSize.clamp(13.0, 17.0);
-
-    // Title font size
-    double titleFontSize = screenWidth * 0.06;
-    titleFontSize = titleFontSize.clamp(18.0, 24.0);
-
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(16.0),
       child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 600),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Teacher Dashboard',
+                'Teacher ${getClassroom()} Dashboard',
                 style: TextStyle(
                   fontSize: titleFontSize,
                   fontWeight: FontWeight.normal,
@@ -197,24 +130,76 @@ class TeacherDashboard extends StatelessWidget {
     );
   }
 
-  // ---------- GRID LAYOUT (Shared by Desktop & Mobile) ----------
+  Widget _buildMobileLayout(BuildContext context, BoxConstraints constraints) {
+    final double screenWidth = constraints.maxWidth;
+
+    double baseButtonSize = screenWidth * 0.35; // Reduced from 0.4
+    double baseButtonFontSize = screenWidth * 0.04; // Reduced from 0.045
+    double baseDescriptionFontSize = screenWidth * 0.035; // Reduced from 0.04
+
+    double middleButtonSize = baseButtonSize * 1.1;
+    double middleButtonFontSize = baseButtonFontSize * 1.1;
+    double middleDescriptionFontSize = baseDescriptionFontSize * 1.05;
+
+    baseButtonSize = baseButtonSize.clamp(70.0, 120.0); // Reduced max size
+    baseButtonFontSize = baseButtonFontSize.clamp(10.0, 14.0); // Reduced max size
+    baseDescriptionFontSize = baseDescriptionFontSize.clamp(10.0, 14.0); // Reduced max size
+
+    middleButtonSize = middleButtonSize.clamp(77.0, 132.0);
+    middleButtonFontSize = middleButtonFontSize.clamp(11.0, 16.0);
+    middleDescriptionFontSize = middleDescriptionFontSize.clamp(11.0, 15.0);
+
+    double titleFontSize = screenWidth * 0.06;
+    titleFontSize = titleFontSize.clamp(16.0, 22.0); // Reduced max size
+
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(12.0), // Reduced from 16.0
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'Teacher Dashboard',
+                style: TextStyle(
+                  fontSize: titleFontSize,
+                  fontWeight: FontWeight.normal,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 8), // Reduced from 12
+              Text(
+                'Welcome, ${LmsFactory.getLmsService().firstName ?? 'User'}',
+                style: TextStyle(
+                  fontSize: titleFontSize * 0.7,
+                  fontWeight: FontWeight.normal,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+              const SizedBox(height: 12), // Reduced from 20
+              _buildGridLayout(context, constraints),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildGridLayout(BuildContext context, BoxConstraints constraints) {
     final double screenWidth = constraints.maxWidth;
 
-    // Base sizes
     double baseButtonSize = screenWidth * 0.15;
     double baseButtonFontSize = screenWidth * 0.015;
     double baseDescriptionFontSize = screenWidth * 0.015;
 
-    // Clamp the sizes
-    baseButtonSize = baseButtonSize.clamp(80.0, 150.0);
-    baseButtonFontSize = baseButtonFontSize.clamp(12.0, 18.0);
-    baseDescriptionFontSize = baseDescriptionFontSize.clamp(12.0, 18.0);
+    baseButtonSize = baseButtonSize.clamp(70.0, 130.0); // Reduced max size
+    baseButtonFontSize = baseButtonFontSize.clamp(10.0, 16.0); // Reduced max size
+    baseDescriptionFontSize = baseDescriptionFontSize.clamp(10.0, 16.0); // Reduced max size
 
-    // Determine if user can access the app
     bool canAccessApp = canUserAccessApp(context);
+    bool isMoodleSelected = isMoodle();
 
-    // Original button data (6 items)
     List<Map<String, dynamic>> buttonData = [
       {
         'title': 'Courses',
@@ -237,28 +222,34 @@ class TeacherDashboard extends StatelessWidget {
       {
         'title': 'IEP',
         'description': 'Manage Individualized Education Plans.',
-        'onPressed': !canAccessApp 
-            ? null 
+        'onPressed': !canAccessApp || !isMoodleSelected
+            ? null
             : () => Navigator.push(
-                    context, MaterialPageRoute(builder: (context) => IepPage())), // Add navigation
-        'color': Colors.green,
+                context, MaterialPageRoute(builder: (context) => IepPage())),
+        'color': !isMoodleSelected ? Colors.grey : Colors.green,
       },
       {
         'title': 'Analytics',
         'description': 'View performance analytics.',
-        'onPressed': !canAccessApp 
-            ? null 
+        'onPressed': !canAccessApp || !isMoodleSelected
+            ? null
             : () => Navigator.push(
-                    context, MaterialPageRoute(builder: (context) => AnalyticsPage())), // Add navigation
-        'color': Colors.cyan,
+                context, MaterialPageRoute(builder: (context) => AnalyticsPage())),
+        'color': !isMoodleSelected ? Colors.grey : Colors.cyan,
       },
       {
         'title': 'Lesson Plan',
         'description': 'Create and manage lesson plans.',
-        'onPressed': !canAccessApp 
-            ? null 
+        'onPressed': !canAccessApp
+            ? null
             : () => Navigator.push(
-                    context, MaterialPageRoute(builder: (context) => LessonPlans())), // Add navigation
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => !isMoodleSelected
+                        ? GoogleLessonPlans()
+                        : LessonPlans(),
+                  ),
+                ),
         'color': Colors.purple,
       },
       {
@@ -272,12 +263,10 @@ class TeacherDashboard extends StatelessWidget {
       },
     ];
 
-    // The 3x2 grid
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(12.0), // Reduced from 16.0
       child: Column(
         children: [
-          // Row 1: (Courses, Essays)
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -293,7 +282,7 @@ class TeacherDashboard extends StatelessWidget {
                   buttonData[0]['color'],
                 ),
               ),
-              const SizedBox(width: 20),
+              const SizedBox(width: 12), // Reduced from 20
               Expanded(
                 child: _buildResponsiveColumn(
                   context,
@@ -308,9 +297,7 @@ class TeacherDashboard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 20),
-
-          // Row 2: (IEP, Analytics)
+          const SizedBox(height: 12), // Reduced from 20
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -326,7 +313,7 @@ class TeacherDashboard extends StatelessWidget {
                   buttonData[2]['color'],
                 ),
               ),
-              const SizedBox(width: 20),
+              const SizedBox(width: 12), // Reduced from 20
               Expanded(
                 child: _buildResponsiveColumn(
                   context,
@@ -341,9 +328,7 @@ class TeacherDashboard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 20),
-
-          // Row 3: (Lesson Plan, Assessments)
+          const SizedBox(height: 12), // Reduced from 20
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -359,7 +344,7 @@ class TeacherDashboard extends StatelessWidget {
                   buttonData[4]['color'],
                 ),
               ),
-              const SizedBox(width: 20),
+              const SizedBox(width: 12), // Reduced from 20
               Expanded(
                 child: _buildResponsiveColumn(
                   context,
@@ -379,7 +364,6 @@ class TeacherDashboard extends StatelessWidget {
     );
   }
 
-  // Helper widget to build a text description + circular button
   Widget _buildResponsiveColumn(
     BuildContext context,
     String description,
@@ -391,9 +375,10 @@ class TeacherDashboard extends StatelessWidget {
     Color buttonColor,
   ) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         SizedBox(
-          width: buttonSize * 1.5, // Ensures text doesn't overflow
+          width: buttonSize * 1.5,
           child: Text(
             description,
             textAlign: TextAlign.center,
@@ -403,7 +388,7 @@ class TeacherDashboard extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8), // Reduced from 10
         _buildDashboardButton(
           context,
           title,
@@ -416,7 +401,6 @@ class TeacherDashboard extends StatelessWidget {
     );
   }
 
-  // Circular button builder
   Widget _buildDashboardButton(
     BuildContext context,
     String title,
@@ -430,7 +414,7 @@ class TeacherDashboard extends StatelessWidget {
       width: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: buttonColor, // Outer color
+        color: buttonColor,
         boxShadow: [
           BoxShadow(
             color: Colors.grey[500]!,
@@ -441,10 +425,10 @@ class TeacherDashboard extends StatelessWidget {
         ],
       ),
       child: Container(
-        margin: EdgeInsets.all(size * 0.1), // Outer ring
+        margin: EdgeInsets.all(size * 0.1),
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: Colors.white, // Inner color
+          color: Colors.white,
           boxShadow: [
             BoxShadow(
               color: Colors.grey[600]!,
@@ -466,6 +450,7 @@ class TeacherDashboard extends StatelessWidget {
             fit: BoxFit.scaleDown,
             child: Text(
               title,
+              textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: fontSize,
                 fontWeight: FontWeight.bold,

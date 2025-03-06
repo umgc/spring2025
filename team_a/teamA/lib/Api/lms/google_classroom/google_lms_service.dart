@@ -90,7 +90,10 @@ class GoogleLmsService extends LmsInterface {
         'https://www.googleapis.com/auth/classroom.coursework.me',
         'https://www.googleapis.com/auth/classroom.courses.readonly',
         'https://www.googleapis.com/auth/forms.body',
-        'https://www.googleapis.com/auth/forms.responses.readonly'
+        'https://www.googleapis.com/auth/forms.responses.readonly',
+        'https://www.googleapis.com/auth/classroom.courseworkmaterials.readonly',
+        'https://www.googleapis.com/auth/classroom.courseworkmaterials',
+        
       ],
     );
 
