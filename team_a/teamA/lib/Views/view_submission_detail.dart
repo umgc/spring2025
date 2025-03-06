@@ -6,6 +6,7 @@ import 'package:learninglens_app/Views/view_submissions.dart';
 import 'package:learninglens_app/beans/participant.dart';
 import 'package:learninglens_app/beans/submission.dart';
 import 'package:learninglens_app/beans/moodle_rubric.dart';
+import 'package:learninglens_app/Views/essays_view.dart';
 import '../Api/lms/moodle/moodle_lms_service.dart';
 import 'dart:math';
 
@@ -105,10 +106,7 @@ class SubmissionDetailState extends State<SubmissionDetail> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => SubmissionList(
-                assignmentId: widget.submission.assignmentId,
-                courseId: widget.courseId,
-              ),
+              builder: (context) => EssaysView(),
             ),
           );
         }
