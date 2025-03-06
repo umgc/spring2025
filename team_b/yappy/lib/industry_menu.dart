@@ -93,29 +93,36 @@ class _IndustryMenuState extends State<IndustryMenu> {
 
                       FileHandler fileHandler = FileHandler();
                       await fileHandler.addDocument(file);
-
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                            content: Text('Transcript saved to $filePath')),
-                      );
-                      print('File saved at: $filePath');
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content: Text('Transcript saved to $filePath')),
+                        );
+                      }
+                      debugPrint('File saved at: $filePath');
                     } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                            content:
-                                Text('Failed to find Downloads directory')),
-                      );
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content:
+                                  Text('Failed to find Downloads directory')),
+                        );
+                      }
                     }
                   } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Storage permission denied')),
-                    );
+                      if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Storage permission denied')),
+                      );
+                    }
                   }
                 } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Failed to save file: $e')),
-                  );
-                  print('Failed to save file: $e');
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Failed to save file: $e')),
+                    );
+                  }
+                  debugPrint('Failed to save file: $e');
                 }
               },
             ),
