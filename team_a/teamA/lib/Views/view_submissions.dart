@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:learninglens_app/Api/llm/enum/llm_enum.dart';
 import 'package:learninglens_app/Api/llm/grok_api.dart';
 import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
 import 'package:learninglens_app/Api/lms/lms_interface.dart';
@@ -29,7 +30,7 @@ class SubmissionList extends StatefulWidget {
 class SubmissionListState extends State<SubmissionList> {
   LmsInterface api = LmsFactory.getLmsService();
   Map<int, bool> isLoadingMap = {}; // Track loading state for each participant
-  Map<int, String> llmSelectionMap =
+  Map<int, LlmType> llmSelectionMap =
       {}; // Track LLM selection for each participant
 
   late Future<List<SubmissionWithGrade>> futureSubmissionsWithGrades =
@@ -38,23 +39,25 @@ class SubmissionListState extends State<SubmissionList> {
       api.getCourseParticipants(widget.courseId);
 
   // Default LLM selection
-  final String defaultLlm = 'Perplexity';
+  final LlmType defaultLlm = LlmType.PERPLEXITY;
 
   // API keys
   final perplexityApiKey = LocalStorageService.getPerplexityKey();
   final openApiKey = LocalStorageService.getOpenAIKey();
   final grokApiKey =  LocalStorageService.getGrokKey();
 
+  LlmType? selectedLLM;
+
   // Filter state
   String filterOption = 'All'; // Options: 'All', 'With Submission', 'Without Submission'
   String fullNameFilter = ''; // Last name filter
 
   // Get API key for selected LLM
-  String getApiKey(String selectedLlm) {
-    switch (selectedLlm) {
-      case 'OpenAI':
+  String getApiKey(LlmType selectedLLM) {
+    switch (selectedLLM) {
+      case LlmType.CHATGPT:
         return openApiKey;
-      case 'Grok':
+      case LlmType.GROK:
         return grokApiKey;
       default:
         return perplexityApiKey;
@@ -77,7 +80,7 @@ class SubmissionListState extends State<SubmissionList> {
   }
 
   // Handle LLM selection change for a specific participant
-  void _handleLLMChanged(int participantId, String? newValue) {
+  void _handleLLMChanged(int participantId, LlmType? newValue) {
     setState(() {
       if (newValue != null) {
         llmSelectionMap[participantId] = newValue;
@@ -225,13 +228,9 @@ children: [
 
                                     bool isLoading =
                                         isLoadingMap[participant.id] ?? false;
-                                    String selectedLlm =
-                                        llmSelectionMap[participant.id] ??
-                                            defaultLlm;
-
+                                    LlmType selectedLLM = llmSelectionMap[participant.id] ?? defaultLlm;
                                     return SizedBox(
-                                      width: MediaQuery.of(context).size.width <
-                                              450
+                                      width: MediaQuery.of(context).size.width < 450
                                           ? double.infinity
                                           : 450,
                                       child: Container(
@@ -303,28 +302,36 @@ children: [
                                                       //   ),
                                                       // ),
 
-                                                      DropdownButton<String>(
-                                                        value: selectedLlm,
+                                                      DropdownButton<LlmType>(
+                                                        value: selectedLLM,
                                                         onChanged: (newValue) =>
                                                             _handleLLMChanged(
                                                                 participant.id,
                                                                 newValue),
-                                                        items: <String>[
-                                                          'Perplexity',
-                                                          'OpenAI',
-                                                          'Grok'
-                                                        ].map<
-                                                            DropdownMenuItem<
-                                                                String>>((String
-                                                            value) {
-                                                          return DropdownMenuItem<
-                                                              String>(
-                                                            value: value,
-                                                            child: Text(value),
+                                                        // items: <String>[
+                                                        //   'Perplexity',
+                                                        //   'OpenAI',
+                                                        //   'Grok'].map<
+                                                        //     DropdownMenuItem<
+                                                        //         String>>((String
+                                                        //     value) {
+                                                        //   return DropdownMenuItem<
+                                                        //       String>(
+                                                        //     value: value,
+                                                        //     child: Text(value),
+                                                        //   );
+                                                        // }).toList(),
+                                                        items: LlmType.values.map((LlmType llm) {
+                                                          return DropdownMenuItem<LlmType>(
+                                                            value: llm,
+                                                            enabled: LocalStorageService.userHasLlmKey(llm),
+                                                            child: Text(llm.displayName, style: TextStyle(
+                                                              color: LocalStorageService.userHasLlmKey(llm) ? Colors.black87 : Colors.grey,
+                                                              ),
+                                                            ),
                                                           );
-                                                        }).toList(),
+                                                        }).toList()
                                                       ),
-
                                                       SizedBox(height: 4),
                                                       // Text(
                                                       //   'Comments: ${submissionWithGrade.submission.comments.isNotEmpty ? "Available" : "No comments."}',
@@ -495,16 +502,15 @@ children: [
 
                                                                   String
                                                                       apiKey =
-                                                                      getApiKey(
-                                                                          selectedLlm);
+                                                                      getApiKey(selectedLLM);
                                                                   dynamic
                                                                       llmInstance;
-                                                                  if (selectedLlm ==
+                                                                  if (selectedLLM ==
                                                                       'OpenAI') {
                                                                     llmInstance =
                                                                         OpenAiLLM(
                                                                             apiKey);
-                                                                  } else if (selectedLlm ==
+                                                                  } else if (selectedLLM ==
                                                                       'Grok') {
                                                                     llmInstance =
                                                                         GrokLLM(
