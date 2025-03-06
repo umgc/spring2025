@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:learninglens_app/Api/lms/factory/lms_factory.dart";
+import "package:learninglens_app/Views/view_quiz.dart";
 import 'package:learninglens_app/beans/quiz.dart';
 import 'package:learninglens_app/beans/course.dart';
 import 'package:learninglens_app/beans/question.dart';
@@ -114,89 +115,9 @@ class _AssessmentsState extends State<AssessmentsView> {
                                 ? Center(
                                     child:
                                         Text('Select a quiz to view details'))
-                                : Column(
-                                    children: [
-                                      Text('Questions',
-                                          style: TextStyle(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold)),
-                                      FutureBuilder<List<QuestionType>?>(
-                                        future: LmsFactory.getLmsService()
-                                            .getQuestionsFromQuiz(
-                                                selectedQuiz?.id ?? 0),
-                                        builder: (context, snapshot) {
-                                          if (snapshot.connectionState ==
-                                              ConnectionState.waiting) {
-                                            return Center(
-                                                child:
-                                                    CircularProgressIndicator());
-                                          } else if (snapshot.hasError) {
-                                            return Center(
-                                                child: Text(
-                                                    'Error loading questions'));
-                                          } else if (!snapshot.hasData ||
-                                              snapshot.data!.isEmpty) {
-                                            return Center(
-                                                child:
-                                                    Text('No questions found'));
-                                          } else {
-                                            final questionList = snapshot.data!;
-                                            questionsData =
-                                                questionList.map((question) {
-                                              return {
-                                                'questionNumber': question.name,
-                                                'questionType':
-                                                    question.questionType,
-                                                'questionText':
-                                                    question.questionText,
-                                              };
-                                            }).toList();
-
-                                            return Container(
-                                              decoration: BoxDecoration(
-                                                border: Border.all(
-                                                    color: Colors.grey),
-                                                borderRadius:
-                                                    BorderRadius.circular(8.0),
-                                              ),
-                                              margin: EdgeInsets.all(8.0),
-                                              child: DataTable(
-                                                headingRowColor:
-                                                    MaterialStateProperty.all(
-                                                        Theme.of(context)
-                                                            .colorScheme
-                                                            .primary
-                                                            .withOpacity(0.1)),
-                                                columns: const [
-                                                  DataColumn(
-                                                      label: Text(
-                                                          'Question Number')),
-                                                  DataColumn(
-                                                      label: Text('Type')),
-                                                  DataColumn(
-                                                      label: Text(
-                                                          'Question Text')),
-                                                ],
-                                                rows: questionsData.map((row) {
-                                                  return DataRow(cells: [
-                                                    DataCell(Text(
-                                                        row['questionNumber']
-                                                            .toString())),
-                                                    DataCell(Text(
-                                                        row['questionType']
-                                                            .toString())),
-                                                    DataCell(Text(
-                                                        row['questionText']
-                                                            .toString())),
-                                                  ]);
-                                                }).toList(),
-                                              ),
-                                            );
-                                          }
-                                        },
-                                      ),
-                                    ],
-                                  ),
+                                : ViewQuiz(
+                                    showAppBar: false,
+                                    quizId: selectedQuiz?.id ?? 0),
                           ),
                         ],
                       );
