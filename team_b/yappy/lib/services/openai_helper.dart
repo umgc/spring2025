@@ -38,6 +38,7 @@ class OpenAIHelper {
     ''';
   
   Future<String> summarizeTranscription(Industry industry, String transcriptId) async {
+    // TODO: getTranscriptById(int transcriptId) // pull the transcript text from the database
     // TODO: remove after testing
     FileHandler fileHandler = FileHandler();
     String transcript = await fileHandler.loadTextFile('${(await getApplicationDocumentsDirectory()).path}/sample_restaurant_order_transcript.txt');
@@ -69,6 +70,7 @@ class OpenAIHelper {
         .create(model: "gpt-4o-mini", messages: messages);
 
     print(completion.choices[0].message.content);
+    // TODO: updateTranscript(Map<String, dynamic> transcript) // add to the ai response property to the same transcript in the database
     return completion.choices[0].message.content.toString();
   }
 }
