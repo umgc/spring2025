@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
-import 'package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/Controller/main_controller.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:learninglens_app/Views/g_assignment_create.dart';
 import 'package:learninglens_app/Views/g_assignment_details.dart';
-import 'package:learninglens_app/Views/g_assignment_list.dart';
 import 'package:learninglens_app/Views/g_quiz_generator.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
 

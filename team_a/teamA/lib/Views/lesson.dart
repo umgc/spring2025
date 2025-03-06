@@ -7,8 +7,7 @@ class Lesson {
   final String lessonPlanName;
   final String? content; // Content is now explicitly the lesson description
 
-  Lesson(
-      {required this.lessonPlanName, required this.courseId, this.content});
+  Lesson({required this.lessonPlanName, required this.courseId, this.content});
 
   /// Convert lesson plan to JSON for storage or API submission
   Map<String, dynamic> toJson() {
@@ -23,7 +22,7 @@ class Lesson {
   Future<void> saveLessonLocally() async {
     final prefs = await SharedPreferences.getInstance();
     final List<String> savedPlans = prefs.getStringList('lessonPlans') ?? [];
-    savedPlans.add(jsonEncode(this.toJson()));
+    savedPlans.add(jsonEncode(toJson()));
     await prefs.setStringList('lessonPlans', savedPlans);
   }
 
@@ -44,7 +43,7 @@ class Lesson {
 
   /// Submit lesson plan and automatically create a Moodle lesson
   Future<bool> submitLesson() async {
-    final lessonPlanJson = this.toJson();
+    final lessonPlanJson = toJson();
     print("Submitting lesson plan with data: $lessonPlanJson");
     var courseId = lessonPlanJson['courseId'];
     var lessonPlanName = lessonPlanJson['lessonPlanName'];

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:learninglens_app/Api/lms/enum/lms_enum.dart';
 import 'package:learninglens_app/Views/dashboard.dart';
-import 'package:learninglens_app/Views/g_dashboard.dart';
 import 'package:learninglens_app/Views/user_settings.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
 
 class ClassroomSelection {
-  static LmsType selectedClassroom = LocalStorageService.getSelectedClassroom() == LmsType.MOODLE
-      ? LmsType.MOODLE
-      : LmsType.GOOGLE;
+  static LmsType selectedClassroom =
+      LocalStorageService.getSelectedClassroom() == LmsType.MOODLE
+          ? LmsType.MOODLE
+          : LmsType.GOOGLE;
 }
 
 class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
@@ -16,7 +16,8 @@ class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
   final String userprofileurl;
   final VoidCallback? onRefresh; // Optional refresh callback
 
-  CustomAppBar({required this.title, required this.userprofileurl, this.onRefresh});
+  CustomAppBar(
+      {required this.title, required this.userprofileurl, this.onRefresh});
 
   @override
   _CustomAppBarState createState() => _CustomAppBarState();
@@ -89,11 +90,14 @@ class _CustomAppBarState extends State<CustomAppBar> {
                     }
                   }
                 : null,
-            items: LmsType.values.map<DropdownMenuItem<LmsType>>((LmsType value) {
+            items:
+                LmsType.values.map<DropdownMenuItem<LmsType>>((LmsType value) {
               return DropdownMenuItem<LmsType>(
                 value: value,
                 child: Text(
-                  value == LmsType.GOOGLE ? 'Google Classroom' : 'Moodle Classroom',
+                  value == LmsType.GOOGLE
+                      ? 'Google Classroom'
+                      : 'Moodle Classroom',
                 ),
               );
             }).toList(),
@@ -151,10 +155,11 @@ class _CustomAppBarState extends State<CustomAppBar> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => ClassroomSelection.selectedClassroom == LmsType.GOOGLE
-            // ? GoogleTeacherDashboard()
-            ? TeacherDashboard()
-            : TeacherDashboard(),
+        builder: (context) =>
+            ClassroomSelection.selectedClassroom == LmsType.GOOGLE
+                // ? GoogleTeacherDashboard()
+                ? TeacherDashboard()
+                : TeacherDashboard(),
       ),
     );
   }

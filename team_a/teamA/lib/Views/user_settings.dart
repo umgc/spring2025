@@ -3,8 +3,6 @@ import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/Controller/main_controller.dart';
-import 'package:learninglens_app/Views/dashboard.dart';
-import 'package:learninglens_app/Views/g_courses.dart';
 import 'package:learninglens_app/Views/g_dashboard.dart';
 import 'package:learninglens_app/notifiers/login_notifier.dart';
 import 'package:learninglens_app/notifiers/theme_notifier.dart';
@@ -159,20 +157,20 @@ class UserSettingsState extends State<UserSettings> {
                 _moodleUrlController.text,
               );
             },
-            child: Text('Login to Moodle'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.green,
               foregroundColor: Colors.white,
             ),
+            child: Text('Login to Moodle'),
           ),
         if (loginNotifier.isLoggedIn)
           ElevatedButton(
             onPressed: loginNotifier.logout,
-            child: Text('Logout from Moodle'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
             ),
+            child: Text('Logout from Moodle'),
           ),
       ],
     );
@@ -198,11 +196,11 @@ class UserSettingsState extends State<UserSettings> {
             // _handleSignIn(loginNotifier);
             loginNotifier.signInWithGoogle();
           },
-          child: Text('Login to Google Classroom'),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.blue,
             foregroundColor: Colors.white,
           ),
+          child: Text('Login to Google Classroom'),
         ),
       ],
     );
@@ -305,11 +303,11 @@ class UserSettingsState extends State<UserSettings> {
           onPressed: () {
             loginNotifier.saveLLMKey(keyType, controller.text);
           },
-          child: Text('Save'),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.blue,
             foregroundColor: Colors.white,
           ),
+          child: Text('Save'),
         ),
         Divider(),
       ],

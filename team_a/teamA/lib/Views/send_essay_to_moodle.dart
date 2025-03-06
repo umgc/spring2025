@@ -4,7 +4,6 @@ import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/beans/course.dart';
 import 'package:learninglens_app/Views/dashboard.dart';
 import 'dart:convert';
-import '../Api/lms/moodle/moodle_lms_service.dart';
 
 class EssayAssignmentSettings extends StatefulWidget {
   final String updatedJson;
@@ -448,7 +447,8 @@ class EssayAssignmentSettingsState extends State<EssayAssignmentSettings> {
                                     _assignmentNameController.text;
                                 String sectionNumber =
                                     _assignmentSectionController.text;
-                                String description = _descriptionController.text.trim();
+                                String description =
+                                    _descriptionController.text.trim();
                                 String dueDate =
                                     '$selectedDayDue $selectedMonthDue $selectedYearDue $selectedHourDue:$selectedMinuteDue';
                                 String allowSubmissionFrom =
@@ -464,28 +464,26 @@ class EssayAssignmentSettingsState extends State<EssayAssignmentSettings> {
                                   description,
                                 );
 
-
-                      if (mounted) {
-                  
-                          final snackBar = SnackBar(
-                            content: Text('Assignment submitted successfully!'),
-                            duration: Duration(seconds: 2),
-                          );
-                          ScaffoldMessenger.of(context).showSnackBar(snackBar);
-                          await Future.delayed(snackBar.duration);
-                          if (mounted) {
-                            Navigator.pop(context);
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => TeacherDashboard(),
-                              ),
-                            );
-                          }
-
-                          }
-
-
+                                if (mounted) {
+                                  final snackBar = SnackBar(
+                                    content: Text(
+                                        'Assignment submitted successfully!'),
+                                    duration: Duration(seconds: 2),
+                                  );
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(snackBar);
+                                  await Future.delayed(snackBar.duration);
+                                  if (mounted) {
+                                    Navigator.pop(context);
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            TeacherDashboard(),
+                                      ),
+                                    );
+                                  }
+                                }
                               } else {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(

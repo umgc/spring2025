@@ -827,13 +827,11 @@ class MoodleLmsService implements LmsInterface {
     return MoodleRubric.empty().fromMoodleJson(responseData.first);
   }
 
-
   // ****************************************************************************************
-  // TODO: add the method below to the lms_interface. 
+  // TODO: add the method below to the lms_interface.
   // ****************************************************************************************
-  /**
-   * Fetches all the questions from a quiz.
-   */
+  /// Fetches all the questions from a quiz.
+  @override
   Future<List<QuestionType>> getQuestionsFromQuiz(int quizId) async {
     if (_userToken == null) throw StateError('User not logged in to Moodle');
 
@@ -849,7 +847,7 @@ class MoodleLmsService implements LmsInterface {
       },
     );
 
-    print("all Questions " + response.body);
+    print("all Questions ${response.body}");
     if (response.statusCode == 200) {
       final List<dynamic> jsonList = json.decode(response.body);
 
@@ -903,9 +901,7 @@ class MoodleLmsService implements LmsInterface {
     }
   }
 
-/**
- * Fetches all lesson plans associated with a given course ID.
- */
+  /// Fetches all lesson plans associated with a given course ID.
   Future<List<LessonPlan>> getLessonPlans(int? courseId) async {
     if (_userToken == null) throw StateError('User not logged in to Moodle');
 
@@ -995,9 +991,7 @@ class MoodleLmsService implements LmsInterface {
     }
   }
 
-  /**
-  * Deletes a lesson plan from Moodle by its lesson ID.
-  */
+  /// Deletes a lesson plan from Moodle by its lesson ID.
   Future<bool> deleteLessonPlan(int lessonId) async {
     if (_userToken == null) throw StateError('User not logged in to Moodle');
 
@@ -1031,9 +1025,7 @@ class MoodleLmsService implements LmsInterface {
     }
   }
 
-  /**
- * Updates a lesson plan in Moodle by its lesson ID.
- */
+  /// Updates a lesson plan in Moodle by its lesson ID.
   Future<bool> updateLessonPlan({
     required int lessonId,
     String? name,

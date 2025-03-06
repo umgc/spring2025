@@ -1,20 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:memoryminder/services/caregiver_notification_service.dart';
 
-void main() {
-  runApp(STMLApp());
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+
+  FirebaseMessaging.onBackgroundMessage(
+      CaregiverNotificationService.backgroundMessageHandler);
+
+  final notificationService = CaregiverNotificationService();
+  await notificationService.initialize();
+
+  runApp(const STMLApp());
 }
 
 class STMLApp extends StatelessWidget {
+  const STMLApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: WelcomePage(),
+      home: const WelcomePage(),
     );
   }
 }
 
 class WelcomePage extends StatelessWidget {
+  const WelcomePage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -25,43 +41,48 @@ class WelcomePage extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
+              const Text(
                 'Welcome to [STML App]',
                 style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
-              SizedBox(height: 20),
-              Image.asset('assets/welcome_image.png',
-                  height: 200), // Add a nice image
-              SizedBox(height: 40),
+              const SizedBox(height: 20),
+              Image.asset('assets/welcome_image.png', height: 200),
+              const SizedBox(height: 40),
               ElevatedButton(
                 onPressed: () {
                   // Navigate to Login Page
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
-                  padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                child: Text('Log In',
-                    style: TextStyle(fontSize: 18, color: Colors.white)),
+                child: const Text(
+                  'Log In',
+                  style: TextStyle(fontSize: 18, color: Colors.white),
+                ),
               ),
-              SizedBox(height: 15),
+              const SizedBox(height: 15),
               OutlinedButton(
                 onPressed: () {
                   // Navigate to Create Account Page
                 },
                 style: OutlinedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  side: BorderSide(color: Colors.blue, width: 2),
+                  side: const BorderSide(color: Colors.blue, width: 2),
                 ),
-                child: Text('Create Account',
-                    style: TextStyle(fontSize: 18, color: Colors.blue)),
+                child: const Text(
+                  'Create Account',
+                  style: TextStyle(fontSize: 18, color: Colors.blue),
+                ),
               ),
             ],
           ),

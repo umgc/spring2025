@@ -60,10 +60,20 @@ dependencies:
     external_path: ^2.0.1
     gallery_saver: ^2.3.2
     url_launcher: ^6.0.12
+    firebase_messaging: ^15.2.4
+    mockito: ^5.4.5
+    http: ^0.13.6
+    flutter_local_notifications: ^18.0.1
+    firebase_messaging: ^latest_version  
+    flutter_local_notifications: ^latest_version  
+    logging: ^latest_version  
+    firebase_core: ^latest_version  
+    firebase_messaging: ^latest_version  
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
+  build_runner: ^2.4.8  
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your

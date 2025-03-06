@@ -3,7 +3,6 @@ import "package:learninglens_app/Api/lms/factory/lms_factory.dart";
 import "package:learninglens_app/Controller/custom_appbar.dart";
 import "package:learninglens_app/Views/lesson.dart";
 import "package:learninglens_app/beans/course.dart";
-import "package:learninglens_app/beans/lesson_plan.dart";
 
 ///
 /// Template for views
@@ -57,7 +56,7 @@ class _LessonPlanState extends State {
 
   Future<void> _loadCourses() async {
     // Fetch courses from the API
-    var userCourses = await LmsFactory.getLmsService().courses;
+    var userCourses = LmsFactory.getLmsService().courses;
     setState(() {
       courses = userCourses;
     });

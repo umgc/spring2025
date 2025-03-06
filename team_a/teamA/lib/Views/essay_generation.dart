@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
-import 'package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/Views/essay_edit_page.dart';
 import 'package:learninglens_app/Api/llm/claudeai_api.dart';
@@ -8,7 +7,6 @@ import 'package:learninglens_app/services/local_storage_service.dart';
 import 'dart:convert';
 import '../Api/llm/llm_api.dart';
 import 'package:learninglens_app/Api/llm/openai_api.dart';
-
 
 // Required Components:
 // 2 Dropdowns: 1 for the Grade Level and 1 for the Point Scale
@@ -26,9 +24,8 @@ class EssayGeneration extends StatefulWidget {
   State<EssayGeneration> createState() => _EssayGenerationState();
 }
 
-class _EssayGenerationState extends State<EssayGeneration> 
-{
-    //Holds values for user input fields
+class _EssayGenerationState extends State<EssayGeneration> {
+  //Holds values for user input fields
   int _selectedPointScale = 3; // Default value
   String _selectedGradeLevel =
       '12th grade'; // Default value for GradeLevelDropdown
@@ -52,7 +49,7 @@ class _EssayGenerationState extends State<EssayGeneration>
   // api keys
   final perplexityApiKey = LocalStorageService.getPerplexityKey();
   final openApiKey = LocalStorageService.getOpenAIKey();
-  final claudeApiKey =  LocalStorageService.getClaudeKey();
+  final claudeApiKey = LocalStorageService.getClaudeKey();
 
   // event handlers
   void _handlePointScaleChanged(int? newValue) {
@@ -174,12 +171,15 @@ class _EssayGenerationState extends State<EssayGeneration>
     _additionalCustomizationController.dispose();
     super.dispose();
   }
+
   _EssayGenerationState();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(title: 'Create Essay Rubric', userprofileurl: LmsFactory.getLmsService().profileImage ?? ''),
+      appBar: CustomAppBar(
+          title: 'Create Essay Rubric',
+          userprofileurl: LmsFactory.getLmsService().profileImage ?? ''),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Row(
@@ -407,8 +407,9 @@ class _EssayGenerationState extends State<EssayGeneration>
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) =>
-                                    EssayEditPage(rubricasjson, _assignmentDescriptionController.text),
+                                builder: (context) => EssayEditPage(
+                                    rubricasjson,
+                                    _assignmentDescriptionController.text),
                               ),
                             );
                           }
@@ -513,12 +514,12 @@ class TextBoxState extends State<TextBox> {
       decoration: InputDecoration(
         labelText: widget.label,
         // prefixIcon: Column(
-          // mainAxisAlignment: MainAxisAlignment.center,
-          // children: [
-          //   Icon(widget.icon),
-          //   SizedBox(height: 4),
-          //   Icon(widget.secondaryIcon),
-          // ],
+        // mainAxisAlignment: MainAxisAlignment.center,
+        // children: [
+        //   Icon(widget.icon),
+        //   SizedBox(height: 4),
+        //   Icon(widget.secondaryIcon),
+        // ],
         // ),
       ),
     );
@@ -531,10 +532,10 @@ class PointScaleDropdown extends StatelessWidget {
   final ValueChanged<int?> onChanged;
 
   const PointScaleDropdown({
-    Key? key,
+    super.key,
     required this.selectedPointScale,
     required this.onChanged,
-  }) : super(key: key);
+  });
 
   void _handleValueChanged(int? newValue) {
     // Additional Logic
@@ -563,10 +564,10 @@ class GradeLevelDropdown extends StatelessWidget {
   final ValueChanged<String?> onChanged;
 
   const GradeLevelDropdown({
-    Key? key,
+    super.key,
     required this.selectedGradeLevel,
     required this.onChanged,
-  }) : super(key: key);
+  });
 
   void _handleTextChanged(String? newValue) {
     // Additional Logic

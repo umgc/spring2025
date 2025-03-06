@@ -1,4 +1,4 @@
-import 'dart:convert'; // For utf8 encoding
+// For utf8 encoding
 import 'dart:io' show File; // For non-web file I/O
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
@@ -7,25 +7,20 @@ import 'package:file_picker/file_picker.dart'; // For file saving on non-web pla
 import 'dart:html' as html;
 
 import 'package:pdf/widgets.dart' as pw; // PDF package
-import 'package:pdf/pdf.dart'; // PDF package
+// PDF package
 import 'package:excel/excel.dart'; // Excel package
 
 // Import the LMS services using prefixes so that type checks work correctly.
-import 'package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart' as moodle;
-import 'package:learninglens_app/Api/lms/google_classroom/google_lms_service.dart' as google;
+import 'package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart'
+    as moodle;
 
 import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/Controller/main_controller.dart';
-import 'package:learninglens_app/Views/dashboard.dart';
-import 'package:learninglens_app/Views/g_courses.dart';
-import 'package:learninglens_app/Views/user_settings.dart';
-import 'package:learninglens_app/Views/g_dashboard.dart';
 
 import 'package:learninglens_app/beans/course.dart';
 import 'package:learninglens_app/beans/assignment.dart';
 import 'package:learninglens_app/beans/participant.dart';
-import 'package:learninglens_app/beans/grade.dart';
 
 /// Enum to represent export formats.
 enum ExportFormat { pdf, excel }
@@ -36,7 +31,7 @@ enum ExportFormat { pdf, excel }
 ///  - Export the generated report as a valid PDF or Excel file to a chosen location
 ///    (using proper PDF/Excel libraries)
 ///  - View tables in fixed-height containers with visible scrollbars.
-///  
+///
 /// Additionally, each student's name in the student breakdown table is underlined
 /// (as a hyperlink). When clicked, a detail panel appears on the right showing that
 /// student's individual grades in detail.
@@ -120,16 +115,21 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       // Set default selected course.
       if (_coursesData.isNotEmpty) {
         _selectedCourse = _coursesData.first;
-        _selectedSubject = _selectedCourse?.subject; // assuming Course has a 'subject'
+        _selectedSubject =
+            _selectedCourse?.subject; // assuming Course has a 'subject'
         // Fetch assignments and participants for the selected course.
         _assignmentsData = await lmsService.getEssays(_selectedCourse!.id);
-        _participantsData = await lmsService.getCourseParticipants(_selectedCourse!.id.toString());
+        _participantsData = await lmsService
+            .getCourseParticipants(_selectedCourse!.id.toString());
       }
       setState(() {
         analyticsData = {
-          'source': lmsService is moodle.MoodleLmsService ? 'Moodle' : 'Google Classroom',
+          'source': lmsService is moodle.MoodleLmsService
+              ? 'Moodle'
+              : 'Google Classroom',
           'totalCourses': totalCourses,
-          'studentPerformance': 'Live Performance Data', // Replace with actual metrics if available
+          'studentPerformance':
+              'Live Performance Data', // Replace with actual metrics if available
           'iepProgress': 'Live IEP Data',
           'courseEngagement': 'Live Engagement Metrics',
         };
@@ -166,7 +166,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       // Build generated report rows from assignments.
       _generatedReport = _assignmentsData.map((assignment) {
         return {
-          'questionNumber': assignment.id, // Using assignment ID as placeholder.
+          'questionNumber':
+              assignment.id, // Using assignment ID as placeholder.
           'type': assignment.name ?? 'Unknown',
           'timeSec': 0, // Real timing data may not be available.
           'percentCorrect': 'N/A', // Replace with actual data if available.
@@ -177,12 +178,14 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       // Build student breakdown from participants.
       _studentBreakdown = _participantsData.map((participant) {
         // Convert avgGrade (double?) to int; if null, default to 75.
-        int grade = participant.avgGrade != null ? participant.avgGrade!.toInt() : 75;
+        int grade =
+            participant.avgGrade != null ? participant.avgGrade!.toInt() : 75;
         return {
           'studentName': participant.fullname,
           'avgGrade': '$grade%',
           'classRank': 0, // To be computed later
-          'nationalComparison': 'N/A' // Replace with actual comparison if available.
+          'nationalComparison':
+              'N/A' // Replace with actual comparison if available.
         };
       }).toList();
 
@@ -279,12 +282,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       ]);
     }
     Sheet studentSheet = excel['Student Breakdown'];
-    studentSheet.appendRow([
-      'Student Name',
-      'Average Grade',
-      'Class Rank',
-      'National Comparison'
-    ]);
+    studentSheet.appendRow(
+        ['Student Name', 'Average Grade', 'Class Rank', 'National Comparison']);
     for (var student in _studentBreakdown) {
       studentSheet.appendRow([
         student['studentName'],
@@ -302,7 +301,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       builder: (context) {
         return AlertDialog(
           title: const Text('Select Export Format'),
-          content: const Text('Would you like to export the report as PDF or Excel?'),
+          content: const Text(
+              'Would you like to export the report as PDF or Excel?'),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, ExportFormat.pdf),
@@ -351,7 +351,9 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       anchor.remove();
       html.Url.revokeObjectUrl(url);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Report exported as $extension via browser download.')),
+        SnackBar(
+            content:
+                Text('Report exported as $extension via browser download.')),
       );
     } else {
       final savePath = await _pickFileLocation(defaultName);
@@ -401,7 +403,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             items: _coursesData.map((course) {
               return DropdownMenuItem<Course>(
                 value: course,
-                child: Text(course.fullName ?? course.shortName ?? 'Unknown Course'),
+                child: Text(
+                    course.fullName ?? course.shortName ?? 'Unknown Course'),
               );
             }).toList(),
             onChanged: (val) async {
@@ -412,7 +415,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               if (_selectedCourse != null) {
                 // When a course is selected, fetch assignments for that course.
                 final lmsService = LmsFactory.getLmsService();
-                _assignmentsData = await lmsService.getEssays(_selectedCourse!.id);
+                _assignmentsData =
+                    await lmsService.getEssays(_selectedCourse!.id);
                 setState(() {});
               }
             },
@@ -639,7 +643,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               ],
             ),
           );
-        }).toList(),
+        }),
       ],
     );
   }
@@ -663,7 +667,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const Text('Generated Report',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      style:
+                          TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                   const SizedBox(height: 8),
                   Container(
                     color: Colors.white,
@@ -716,7 +721,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                     style: const TextStyle(fontSize: 16)),
                 Text('Total Courses: ${analyticsData!['totalCourses']}',
                     style: const TextStyle(fontSize: 16)),
-                Text('Student Performance: ${analyticsData!['studentPerformance']}',
+                Text(
+                    'Student Performance: ${analyticsData!['studentPerformance']}',
                     style: const TextStyle(fontSize: 16)),
                 Text('IEP Progress: ${analyticsData!['iepProgress']}',
                     style: const TextStyle(fontSize: 16)),

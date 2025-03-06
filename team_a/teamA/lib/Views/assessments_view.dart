@@ -2,7 +2,6 @@ import "package:flutter/material.dart";
 import "package:learninglens_app/Api/lms/factory/lms_factory.dart";
 import 'package:learninglens_app/beans/quiz.dart';
 import 'package:learninglens_app/beans/course.dart';
-import 'package:learninglens_app/beans/question.dart';
 import "package:learninglens_app/Controller/custom_appbar.dart";
 import "package:learninglens_app/beans/quiz_type.dart";
 import "package:learninglens_app/content_carousel.dart";
@@ -162,7 +161,7 @@ class _AssessmentsState extends State<AssessmentsView> {
                                               margin: EdgeInsets.all(8.0),
                                               child: DataTable(
                                                 headingRowColor:
-                                                    MaterialStateProperty.all(
+                                                    WidgetStateProperty.all(
                                                         Theme.of(context)
                                                             .colorScheme
                                                             .primary

@@ -33,12 +33,7 @@ class EditQuestionsState extends State<EditQuestions> {
   void initState() {
     super.initState();
     myQuiz = Quiz.fromXmlString(widget.questionXML);
-    if (apikey != null) {
-      openai = OpenAiLLM(apikey!);
-    } else {
-      // Handle the case where the API key is null
-      throw Exception('API key is not set in the environment variables');
-    }
+    openai = OpenAiLLM(apikey);
     myQuiz.name = CreateAssessment.nameController.text;
     myQuiz.description = CreateAssessment.descriptionController.text;
 
@@ -49,10 +44,10 @@ class EditQuestionsState extends State<EditQuestions> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-  appBar: CustomAppBar(
-    title: 'Edit Questions',
-    userprofileurl: LmsFactory.getLmsService().profileImage ?? '',
-  ),
+      appBar: CustomAppBar(
+        title: 'Edit Questions',
+        userprofileurl: LmsFactory.getLmsService().profileImage ?? '',
+      ),
       body: Column(
         children: [
           Expanded(
@@ -68,7 +63,7 @@ class EditQuestionsState extends State<EditQuestions> {
                         color: Theme.of(context).colorScheme.scrim,
                         child: Align(
                           alignment: Alignment.centerLeft,
-                            child: Padding(
+                          child: Padding(
                             padding: const EdgeInsets.only(left: 16),
                             child: Icon(
                               Icons.refresh,
@@ -79,11 +74,11 @@ class EditQuestionsState extends State<EditQuestions> {
                       ),
                       if (_isLoading)
                         Center(
-                            child: CircularProgressIndicator(
+                          child: CircularProgressIndicator(
                             valueColor: AlwaysStoppedAnimation<Color>(
                               Theme.of(context).colorScheme.surface,
                             ),
-                            ), // Spinner behind the item
+                          ), // Spinner behind the item
                         ),
                     ],
                   ),
@@ -160,13 +155,11 @@ class EditQuestionsState extends State<EditQuestions> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => QuizMoodle(quiz: myQuiz)
-                    ),
+                        builder: (context) => QuizMoodle(quiz: myQuiz)),
                   );
                 },
                 child: const Text('Send to Moodle Set up'),
               ),
-              
             ],
           )
         ],
