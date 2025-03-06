@@ -164,10 +164,8 @@ class _EssaysState extends State<EssaysView> {
                                         flex: 1,
                                         child: Container(
                                           decoration: BoxDecoration(
-                                            border:
-                                                Border.all(color: Colors.grey),
-                                            borderRadius:
-                                                BorderRadius.circular(8.0),
+                                            border: Border.all(color: Colors.grey),
+                                            borderRadius: BorderRadius.circular(8.0),
                                           ),
                                           margin: EdgeInsets.all(8.0),
                                           child: Padding(
@@ -176,18 +174,17 @@ class _EssaysState extends State<EssaysView> {
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
                                                 Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            8.0),
-                                                    child: Text(
-                                                        'Student Submissions',
-                                                        style: TextStyle(
-                                                            fontSize: 20))),
+                                                  padding: const EdgeInsets.all(8.0),
+                                                  child: Text('Student Submissions', style: TextStyle(fontSize: 20)),
+                                                ),
                                                 Expanded(
-                                                  child: SubmissionList(
-                                                    assignmentId: selectedEssay!.id ?? 0,
-                                                    courseId: selectedEssay!.courseId.toString(),
-                                                  ),
+                                                  child: selectedEssay == null
+                                                      ? Center(child: Text('No essay selected'))
+                                                      : SubmissionList(
+                                                          key: ValueKey(selectedEssay!.id), // Add a Key to force rebuild
+                                                          assignmentId: selectedEssay?.id ?? 0,
+                                                          courseId: selectedEssay!.courseId.toString(),
+                                                        ),
                                                 ),
                                               ],
                                             ),

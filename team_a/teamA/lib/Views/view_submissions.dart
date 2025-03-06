@@ -17,9 +17,10 @@ class SubmissionList extends StatefulWidget {
   final String courseId;
 
   SubmissionList({
+    Key? key,
     required this.assignmentId,
     required this.courseId,
-  });
+  }) : super(key: key);
 
   @override
   SubmissionListState createState() => SubmissionListState();
