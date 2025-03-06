@@ -31,6 +31,7 @@ dependencies:
   flutter:
     sdk: flutter
 
+  audio_waveforms: ^1.2.0
   cupertino_icons: ^1.0.8
   flutter_launcher_icons: ^0.14.3
   sqflite: ^2.4.1
@@ -46,6 +47,7 @@ dependencies:
   permission_handler: ^11.4.0 # For storage permissions
   archive: ^4.0.4             # For BZ2 decompression
   file_picker: ^9.0.2
+  flutter_audio_waveforms: ^1.2.1+8
 
 dev_dependencies:
   flutter_test:
