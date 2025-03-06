@@ -164,20 +164,14 @@ class _IndustryMenuState extends State<IndustryMenu> {
               ),
               padding: EdgeInsets.all(12),
               child: Center(
-                child: Text(
-                  title,
-                  style: TextStyle(fontSize: 24, color: Colors.white),
-                ),
-                padding: EdgeInsets.all(12),
                 child: Center(
                   child: Text(
                     widget.title,
-                    style: TextStyle(
-                      fontSize: 24,
-                      color: Colors.white
-                    ),
+                    style: TextStyle(fontSize: 24, color: Colors.white),
                   ),
-                )),
+                ),
+             ),
+            ),
           ),
 
           SizedBox(height: screenHeight * .03),
@@ -375,8 +369,8 @@ class _IndustryMenuState extends State<IndustryMenu> {
                                 return generateTranscript(
                                   context,
                                   'Transcript',
-                                  transcript['transcript_text_data'] ??
-                                      'No content available',
+                                  transcript['transcript_text_data'] ?? 'No content available',
+                                  transcript['transcript_id'],
                                 );
                               },
                             );
@@ -392,9 +386,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
         );
       },
     );
-  }    - assets/sherpa-onnx-streaming-zipformer-en-20M-2023-02-17-mobile/
-    - assets/sherpa-onnx-whisper-tiny.en/
-    - assets/3dspeaker_speech_eres2net_sv_en_voxceleb_16k.onnx
+  }    
 
   // Extract the functionality to show transcript history into a separate method
   void _showTranscriptsHistoryBottomSheet(BuildContext context) async {
@@ -434,8 +426,8 @@ class _IndustryMenuState extends State<IndustryMenu> {
                               return generateTranscript(
                                 context,
                                 'Transcript',
-                                transcript['transcript_text_data'] ??
-                                    'No content available',
+                                transcript['transcript_text_data'] ?? 'No content available',
+                                transcript['transcript_id'],
                               );
                             },
                           );
