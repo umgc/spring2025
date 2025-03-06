@@ -164,14 +164,12 @@ class _IndustryMenuState extends State<IndustryMenu> {
               ),
               padding: EdgeInsets.all(12),
               child: Center(
-                child: Center(
-                  child: Text(
-                    widget.title,
-                    style: TextStyle(fontSize: 24, color: Colors.white),
-                  ),
+                child: Text(
+                  widget.title,
+                  style: TextStyle(fontSize: 24, color: Colors.white),
                 ),
-             ),
-            ),
+              ),
+            )
           ),
 
           SizedBox(height: screenHeight * .03),
