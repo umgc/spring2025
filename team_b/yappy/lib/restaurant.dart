@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:yappy/audiowave_widget.dart';
 import 'package:yappy/tool_bar.dart';
 import 'package:yappy/industry_menu.dart';
 import 'package:yappy/transcription_box.dart';
@@ -45,9 +46,18 @@ class RestaurantPage extends StatelessWidget {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: TranscriptionBox(
-                    controller: speechState.controller,
-                  ),
+                  child: Column(children: [
+                    AudioWaveform(
+                      audioSamples: speechState.allAudioSamples, 
+                      sampleRate: speechState.sampleRate,
+                      height: 100, 
+                      width: MediaQuery.of(context).size.width, 
+                    ),
+                    TranscriptionBox(
+                      controller: speechState.controller,
+                    ),
+                  ],)
+
                 ),
               ),
             ],
