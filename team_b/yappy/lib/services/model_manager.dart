@@ -340,20 +340,21 @@ class ModelManager {
       final directory = Directory(modelDir);
       
       if (await directory.exists()) {
-        // Delete all contents of the directory
-        await for (var entity in directory.list(recursive: true)) {
-          if (entity is File) {
-            await entity.delete();
-          } else if (entity is Directory) {
-            // Only delete subdirectories, not the base model directory
-            if (entity.path != modelDir) {
-              await entity.delete(recursive: true);
-            }
+        // Get all immediate children first
+        List<FileSystemEntity> children = await directory.list().toList();
+        
+        // Delete each child recursively
+        for (var entity in children) {
+          try {
+            await entity.delete(recursive: true);
+          } catch (e) {
+            // Log but continue with other deletions
+            debugPrint('Error deleting ${entity.path}: $e');
           }
         }
       }
       
-      // Delete the installation marker file
+      // Double-check the marker file
       final markerFile = File('$modelDir/models_installed.txt');
       if (await markerFile.exists()) {
         await markerFile.delete();
