@@ -222,7 +222,7 @@ class ModelManager {
   Future<bool> downloadModels(BuildContext context) async {
     // Check connectivity first - still need context for initial dialogs
     final canDownload = await _checkConnectivity();
-    if (!canDownload) {
+    if (!canDownload && context.mounted) {
       final changeSettings = await _showConnectivityWarning(context);
       if (changeSettings) {
         // User wants to change settings
@@ -427,7 +427,7 @@ class ModelManager {
   // Trigger model download from settings page
   Future<bool> downloadModelsFromSettings(BuildContext context) async {
     final shouldDownload = await showDownloadDialog(context);
-    if (shouldDownload) {
+    if (shouldDownload && context.mounted) {
       return await downloadModels(context);
     }
     return false;
