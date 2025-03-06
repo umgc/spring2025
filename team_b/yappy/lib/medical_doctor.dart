@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yappy/industry_menu.dart';
 import 'package:yappy/speech_state.dart';
-import 'package:yappy/speech_state.dart';
 import 'package:yappy/tool_bar.dart';
 import 'package:yappy/transcription_box.dart';
 import 'services/model_manager.dart';
