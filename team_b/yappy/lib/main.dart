@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:yappy/home_page.dart';
 import 'package:yappy/services/database_helper.dart';
+import './toast_widget.dart';
 
 // Create a global instance of DatabaseHelper
 final DatabaseHelper dbHelper = DatabaseHelper();
@@ -18,7 +19,16 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const HomePage(),
+      title: 'Your App',
+      theme: ThemeData(
+        primarySwatch: Colors.lightGreen,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      home: HomePage(), // Your main app page
+      builder: (context, child) {
+        // Wrap every screen with ToastWidget
+        return ToastWidget(child: child ?? Container());
+      },
     );
   }
 }

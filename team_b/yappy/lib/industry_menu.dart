@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:record/record.dart';
+import 'package:yappy/speech_state.dart';
 import 'package:yappy/services/database_helper.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
@@ -7,15 +9,45 @@ import 'dart:convert';
 import 'package:yappy/services/file_handler.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/services.dart';
+import 'services/model_manager.dart';
 
-class IndustryMenu extends StatelessWidget {
+class IndustryMenu extends StatefulWidget {
   final String title;
   final IconData icon;
+  final SpeechState speechState;
+  final ModelManager modelManager; // Add model manager
 
-  const IndustryMenu({required this.title, required this.icon, super.key});
+  const IndustryMenu({
+    required this.title, 
+    required this.icon, 
+    required this.speechState,
+    required this.modelManager, // Add to constructor 
+    super.key
+  });
 
-  Widget generateTranscript(
-      BuildContext context, String title, String content) {
+  @override
+  State<IndustryMenu> createState() => _IndustryMenuState();
+}
+
+class _IndustryMenuState extends State<IndustryMenu> {
+  bool modelsExist = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkModels();
+  }
+
+  Future<void> _checkModels() async {
+    final exist = await widget.modelManager.modelsExist();
+    if (mounted) {
+      setState(() {
+        modelsExist = exist;
+      });
+    }
+  }
+
+  Widget generateTranscript(BuildContext context, String title, String content) {
     return AlertDialog(
       title: Text(title),
       content: SingleChildScrollView(
@@ -91,7 +123,6 @@ class IndustryMenu extends StatelessWidget {
               icon: Icon(Icons.delete),
               onPressed: () {
                 // Add your delete functionality here
-                // Add your delete functionality here
               },
             ),
           ],
@@ -137,8 +168,16 @@ class IndustryMenu extends StatelessWidget {
                   title,
                   style: TextStyle(fontSize: 24, color: Colors.white),
                 ),
-              ),
-            ),
+                padding: EdgeInsets.all(12),
+                child: Center(
+                  child: Text(
+                    widget.title,
+                    style: TextStyle(
+                      fontSize: 24,
+                      color: Colors.white
+                    ),
+                  ),
+                )),
           ),
           SizedBox(height: screenHeight * .03),
 
@@ -148,18 +187,25 @@ class IndustryMenu extends StatelessWidget {
             children: [
               // Creates the chat button for each menu
               Container(
-                decoration:
-                    BoxDecoration(shape: BoxShape.circle, color: Colors.grey),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: !modelsExist 
+                    ? Color.fromRGBO(128, 128, 128, 0.5)
+                    : (widget.speechState.recordState == RecordState.stop ? Colors.grey : Colors.red)
+                ),
                 padding: EdgeInsets.all(5),
-                child: IconButton(
-                  icon: Icon(
-                    Icons.chat,
-                    color: Colors.white,
-                    size: screenHeight * .05,
+                child: Tooltip(
+                  message: !modelsExist 
+                    ? "Download required models to enable recording"
+                    : (widget.speechState.recordState == RecordState.stop ? "Start recording" : "Stop recording"),
+                  child: IconButton(
+                    icon: Icon(
+                      widget.speechState.recordState == RecordState.stop ? Icons.mic : Icons.stop,
+                      color: !modelsExist ? Color.fromRGBO(255, 255, 255, 0.5) : Colors.white,
+                      size: screenHeight * .05,
+                    ),
+                    onPressed: !modelsExist ? null : () => widget.speechState.toggleRecording(),
                   ),
-                  onPressed: () {
-                    //add Bernhards code here
-                  },
                 ),
               ),
               SizedBox(width: screenWidth * .06),
@@ -191,7 +237,7 @@ class IndustryMenu extends StatelessWidget {
                 padding: EdgeInsets.all(5),
                 child: IconButton(
                   icon: Icon(
-                    icon,
+                    widget.icon,
                     color: Colors.white,
                     size: screenHeight * .05,
                   ),
@@ -257,7 +303,7 @@ class IndustryMenu extends StatelessWidget {
                         ),
                         onTap: () {
                           Navigator.pop(context);
-                          if (title == 'Restaurant') {
+                          if (widget.title == 'Restaurant') {
                             // Show Kanban style list for restaurant
                             showModalBottomSheet(
                               context: context,
@@ -294,7 +340,9 @@ class IndustryMenu extends StatelessWidget {
         );
       },
     );
-  }
+  }    - assets/sherpa-onnx-streaming-zipformer-en-20M-2023-02-17-mobile/
+    - assets/sherpa-onnx-whisper-tiny.en/
+    - assets/3dspeaker_speech_eres2net_sv_en_voxceleb_16k.onnx
 
   // Extract the functionality to show transcript history into a separate method
   void _showTranscriptsHistoryBottomSheet(BuildContext context) async {
