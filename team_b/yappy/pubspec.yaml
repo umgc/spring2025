@@ -30,6 +30,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  permission_handler: ^10.0.0
+  file_picker: ^9.0.2
 
   cupertino_icons: ^1.0.8
   flutter_launcher_icons: ^0.14.3
