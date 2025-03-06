@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:yappy/industry_menu.dart';
+import 'package:yappy/speech_state.dart';
 import 'package:yappy/tool_bar.dart';
 import 'package:yappy/transcription_box.dart';
-
+import 'services/model_manager.dart';
 
 class MedicalDoctorApp extends StatelessWidget {
   const MedicalDoctorApp({super.key});
@@ -17,7 +18,9 @@ class MedicalDoctorApp extends StatelessWidget {
 //Creates a page for the Medical Doctor industry
 //The page will contain the industry menu and the transcription box
 class MedicalDoctorPage extends StatelessWidget {
-  const MedicalDoctorPage({super.key});
+  MedicalDoctorPage({super.key});
+  final speechState = SpeechState();
+  final modelManager = ModelManager();
 
   @override
   Widget build(BuildContext context) {
@@ -28,16 +31,28 @@ class MedicalDoctorPage extends StatelessWidget {
         child: ToolBar()
       ),
       drawer: HamburgerDrawer(),
-      body: Column(
-        children: [
-        IndustryMenu(title: "Medical Doctor", icon: Icons.medical_services),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: TranscriptionBox(),
-            ),
-          ),
-        ],
+      body: ListenableBuilder(
+        listenable: speechState,
+        builder: (context, child) {
+          return Column(
+            children: [
+              IndustryMenu(
+                title: "Medical Doctor",
+                icon: Icons.medical_services,
+                speechState: speechState,
+                modelManager: modelManager,
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: TranscriptionBox(
+                    controller: speechState.controller,
+                  ),
+                ),
+              ),
+            ],
+          );
+        }
       ),
     );
   }
