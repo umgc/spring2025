@@ -93,29 +93,36 @@ class _IndustryMenuState extends State<IndustryMenu> {
 
                       FileHandler fileHandler = FileHandler();
                       await fileHandler.addDocument(file);
-
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                            content: Text('Transcript saved to $filePath')),
-                      );
-                      print('File saved at: $filePath');
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content: Text('Transcript saved to $filePath')),
+                        );
+                      }
+                      debugPrint('File saved at: $filePath');
                     } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                            content:
-                                Text('Failed to find Downloads directory')),
-                      );
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content:
+                                  Text('Failed to find Downloads directory')),
+                        );
+                      }
                     }
                   } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Storage permission denied')),
-                    );
+                      if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Storage permission denied')),
+                      );
+                    }
                   }
                 } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Failed to save file: $e')),
-                  );
-                  print('Failed to save file: $e');
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Failed to save file: $e')),
+                    );
+                  }
+                  debugPrint('Failed to save file: $e');
                 }
               },
             ),
@@ -165,20 +172,13 @@ class _IndustryMenuState extends State<IndustryMenu> {
               padding: EdgeInsets.all(12),
               child: Center(
                 child: Text(
-                  title,
+                  widget.title,
                   style: TextStyle(fontSize: 24, color: Colors.white),
                 ),
-                padding: EdgeInsets.all(12),
-                child: Center(
-                  child: Text(
-                    widget.title,
-                    style: TextStyle(
-                      fontSize: 24,
-                      color: Colors.white
-                    ),
-                  ),
-                )),
+              ),
+            )
           ),
+
           SizedBox(height: screenHeight * .03),
 
           // Creates a row of clickable menu icons
@@ -340,9 +340,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
         );
       },
     );
-  }    - assets/sherpa-onnx-streaming-zipformer-en-20M-2023-02-17-mobile/
-    - assets/sherpa-onnx-whisper-tiny.en/
-    - assets/3dspeaker_speech_eres2net_sv_en_voxceleb_16k.onnx
+  }
 
   // Extract the functionality to show transcript history into a separate method
   void _showTranscriptsHistoryBottomSheet(BuildContext context) async {

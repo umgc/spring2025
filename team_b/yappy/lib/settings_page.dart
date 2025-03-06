@@ -175,7 +175,7 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Future<void> _handleModelDownload(BuildContext context) async {
-    final result = await _modelManager.downloadModelsFromSettings(context);
+    await _modelManager.downloadModelsFromSettings(context);
     
     if (!mounted) return;
     
