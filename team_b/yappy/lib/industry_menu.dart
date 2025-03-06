@@ -261,26 +261,6 @@ class _IndustryMenuState extends State<IndustryMenu> {
               ),
               SizedBox(width: screenWidth * .06),
 
-              // Creates a refine data button
-              //after the transcipt is done it will go to this button to be edited.
-              //after the edits post it to the database
-              Container(
-                decoration:
-                    BoxDecoration(shape: BoxShape.circle, color: Colors.grey),
-                padding: EdgeInsets.all(5),
-                child: IconButton(
-                  icon: Icon(
-                    Icons.edit,
-                    color: Colors.white,
-                    size: screenHeight * .05,
-                  ),
-                  onPressed: () {
-                    // Add your refine data functionality here
-                  },
-                ),
-              ),
-              SizedBox(width: screenWidth * .06),
-
               // Creates a industry specific icon based on user input
               Container(
                 decoration:
