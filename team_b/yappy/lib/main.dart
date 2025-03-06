@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-// import 'package:shared_preferences/shared_preferences.dart';
 import 'package:yappy/home_page.dart';
 import 'package:yappy/services/database_helper.dart';
 import 'package:dart_openai/dart_openai.dart';
@@ -9,25 +8,59 @@ import 'package:yappy/services/openai_helper.dart';
 
 // Create a global instance of DatabaseHelper
 final DatabaseHelper dbHelper = DatabaseHelper();
+// final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Env file setup for local development
   String apiKey = Env.apiKey;
   if (apiKey.isNotEmpty) {
     OpenAI.apiKey = apiKey;
-    print('Env API Key found and set'); // TODO: Temp
+    print('Env API Key found and set');
   } else {
     print('Env API Key not found');
   }
+
   await dbHelper.database;
   final fileHandler = FileHandler();
-  // await fileHandler.copyAssetToLocalStorage('assets/test_document.txt', 'test_document.txt');
-  await fileHandler.copyAssetToLocalStorage('assets/sample_mechanic_transcript.txt', 'sample_mechanic_transcript.txt');
-  await fileHandler.copyAssetToLocalStorage('assets/sample_medical_transcript.txt', 'sample_medical_transcript.txt');
+  // await fileHandler.copyAssetToLocalStorage('assets/example_sherpa_transcript.txt', 'example_sherpa_transcript.txt');
+  // await fileHandler.copyAssetToLocalStorage('assets/sample_mechanic_transcript.txt', 'sample_mechanic_transcript.txt');
+  // await fileHandler.copyAssetToLocalStorage('assets/sample_medical_transcript.txt', 'sample_medical_transcript.txt');
   await fileHandler.copyAssetToLocalStorage('assets/sample_restaurant_order_transcript.txt', 'sample_restaurant_order_transcript.txt');
   // await fileHandler.moveFileToDatabase(dbHelper, 'test_document.txt', 1);
+
+  // runApp(const MyApp());
+
+  // WidgetsBinding.instance.addPostFrameCallback((_) {
+    // Shows dialog requesting an OpenAI API key if not set
+    // if (apiKey.isEmpty) {
+    //   showDialog(
+    //     context: navigatorKey.currentContext!,
+    //     builder: (BuildContext context) {
+    //       return AlertDialog(
+    //         title: Text('OpenAI API Key Required'),
+    //         content: Text('Please add an OpenAI API key via the Settings menu.'),
+    //         actions: <Widget>[
+    //           TextButton(
+    //             child: Text('OK'),
+    //             onPressed: () {
+    //               Navigator.of(context).pop();
+    //             },
+    //           ),
+    //         ],
+    //       );
+    //     },
+    //   );
+    // }
+  // });
+
+  
+  // TODO: code for Sherpa to call after completion:
   var openAIService = OpenAIHelper();
-  openAIService.summarizeTranscription();
+  // openAIService.summarizeTranscription();
+  openAIService.summarizeTranscription(Industry.restaurant, '1');
+  // TODO: ---
   runApp(const MyApp());
 }
 
@@ -37,13 +70,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      // navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
       home: const HomePage(),
     );
   }
 }
-
-// Future<String?> getApiKey() async {
-//   final SharedPreferences prefs = await SharedPreferences.getInstance();
-//   return prefs.getString('openai_api_key');
-// }

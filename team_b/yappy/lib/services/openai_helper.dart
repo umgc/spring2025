@@ -1,10 +1,9 @@
-import 'dart:io';
-
 import 'package:dart_openai/dart_openai.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:yappy/services/file_handler.dart';
 
-class OpenAIHelper {    
+enum Industry { restaurant, medical, mechanic }
+class OpenAIHelper {
   final List<Map<String, String>> messages = [];
 
   final String restaurantContextPrompt =
@@ -37,30 +36,38 @@ class OpenAIHelper {
 
       Audio Transcript:
     ''';
-
-  // TODO: needs to take in industry name and transcript ID from Sherpa to then pull from DB
-  Future<String> summarizeTranscription() async {
-    // OpenAI.apiKey = Env.apiKey; // currently handled in main.dart
-    // File storedFile = File('${(await getApplicationDocumentsDirectory()).path}/sample_restaurant_order_transcript.txt');
-
+  
+  Future<String> summarizeTranscription(Industry industry, String transcriptId) async {
+    // TODO: remove after testing
     FileHandler fileHandler = FileHandler();
     String transcript = await fileHandler.loadTextFile('${(await getApplicationDocumentsDirectory()).path}/sample_restaurant_order_transcript.txt');
-    print(transcript);
+    // String transcript = await fileHandler.loadTextFile('/data/user/0/com.spring2025.yappy/app_flutter/sample_restaurant_order_transcript.txt');
+    // TODO: ---
 
-    String restaurantPromptToSend = restaurantContextPrompt + transcript;
+    String contextPrompt;
+    switch (industry) {
+      case Industry.restaurant:
+        contextPrompt = restaurantContextPrompt;
+        break;
+      case Industry.medical:
+        contextPrompt = medicalContextPrompt;
+        break;
+      case Industry.mechanic:
+        contextPrompt = mechanicContextPrompt;
+        break;
+    }
 
-    // ignore: avoid_print TODO: remove
-    print(restaurantPromptToSend);
+    String fullPromptToSend = contextPrompt + transcript;
+    print(fullPromptToSend);
 
     List<OpenAIChatCompletionChoiceMessageModel> messages = [
       OpenAIChatCompletionChoiceMessageModel(
-          role: OpenAIChatMessageRole.user, content: [OpenAIChatCompletionChoiceMessageContentItemModel.text(restaurantPromptToSend)])
+          role: OpenAIChatMessageRole.user, content: [OpenAIChatCompletionChoiceMessageContentItemModel.text(fullPromptToSend)])
     ];
 
     final completion = await OpenAI.instance.chat
         .create(model: "gpt-4o-mini", messages: messages);
 
-    // ignore: avoid_print TODO: remove
     print(completion.choices[0].message.content);
     return completion.choices[0].message.content.toString();
   }

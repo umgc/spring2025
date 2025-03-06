@@ -98,7 +98,6 @@ class FileHandler {
       String fileContent = await rootBundle.loadString(filePath);
       return fileContent;
     } catch (e) {
-      // ignore: avoid_print TODO: remove
       print("Error reading text file: $e");
       return "Error loading file";
     }
