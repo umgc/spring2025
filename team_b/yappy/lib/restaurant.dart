@@ -47,12 +47,7 @@ class RestaurantPage extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(children: [
-                    AudioWaveform(
-                      audioSamples: speechState.allAudioSamples, 
-                      sampleRate: speechState.sampleRate,
-                      height: 100, 
-                      width: MediaQuery.of(context).size.width, 
-                    ),
+                    AudiowaveWidget(speechState: speechState),
                     TranscriptionBox(
                       controller: speechState.controller,
                     ),
