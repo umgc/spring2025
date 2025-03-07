@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.spring2025.yappy"
-    compileSdkVersion 34 // Latest stable version
+    compileSdkVersion 35 // Latest stable version
     ndkVersion = flutter.ndkVersion
 
     compileOptions {

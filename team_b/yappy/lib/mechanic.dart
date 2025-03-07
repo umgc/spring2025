@@ -3,6 +3,7 @@ import 'package:yappy/industry_menu.dart';
 import 'package:yappy/tool_bar.dart';
 import 'package:yappy/transcription_box.dart';
 import 'package:yappy/speech_state.dart';
+import 'services/model_manager.dart';
 
 void main() {
   runApp(MechanicalAidApp());
@@ -23,6 +24,7 @@ class MechanicalAidApp extends StatelessWidget {
 class MechanicalAidPage extends StatelessWidget {
   MechanicalAidPage({super.key});
   final speechState = SpeechState();
+  final modelManager = ModelManager();
 
   @override
   Widget build(BuildContext context) {
@@ -42,6 +44,7 @@ class MechanicalAidPage extends StatelessWidget {
                 title: "Vehicle Maintenance",
                 icon: Icons.directions_car,
                 speechState: speechState,
+                modelManager: modelManager,
               ),
               Expanded(
                 child: Padding(

@@ -9,27 +9,56 @@ import 'dart:convert';
 import 'package:yappy/services/file_handler.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/services.dart';
+import 'services/model_manager.dart';
 
-class IndustryMenu extends StatelessWidget {
+class IndustryMenu extends StatefulWidget {
   final String title;
   final IconData icon;
   final SpeechState speechState;
+  final ModelManager modelManager;
 
-  
+  const IndustryMenu({
+    required this.title, 
+    required this.icon,
+    required this.speechState,
+    required this.modelManager,
+    super.key
+  }); 
 
-  const IndustryMenu({required this.title, required this.icon, required this.speechState, super.key}); 
-    Widget generateTranscript(BuildContext context, String title, String content, int transcript) {
-      return AlertDialog(
-        title: Text(title),
-        content: SingleChildScrollView(
-          child: Text(content),
-        ),
-        actions: [
-          //add export capes
-            Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              IconButton(
+  @override
+  State<IndustryMenu> createState() => _IndustryMenuState();
+}
+
+class _IndustryMenuState extends State<IndustryMenu> {
+  bool modelsExist = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkModels();
+  }
+
+  Future<void> _checkModels() async {
+    final exist = await widget.modelManager.modelsExist();
+    if (mounted) {
+      setState(() {
+        modelsExist = exist;
+      });
+    }
+  }
+
+  Widget generateTranscript(BuildContext context, String title, String content, int transcript) {
+    return AlertDialog(
+      title: Text(title),
+      content: SingleChildScrollView(
+        child: Text(content),
+      ),
+      actions: [
+        //add export capes
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            IconButton(
               icon: Icon(Icons.share),
               onPressed: () {
                 // Add your share functionality here
@@ -64,29 +93,36 @@ class IndustryMenu extends StatelessWidget {
 
                       FileHandler fileHandler = FileHandler();
                       await fileHandler.addDocument(file);
-
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                            content: Text('Transcript saved to $filePath')),
-                      );
-                      print('File saved at: $filePath');
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content: Text('Transcript saved to $filePath')),
+                        );
+                      }
+                      debugPrint('File saved at: $filePath');
                     } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                            content:
-                                Text('Failed to find Downloads directory')),
-                      );
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content:
+                                  Text('Failed to find Downloads directory')),
+                        );
+                      }
                     }
                   } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Storage permission denied')),
-                    );
+                      if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Storage permission denied')),
+                      );
+                    }
                   }
                 } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Failed to save file: $e')),
-                  );
-                  print('Failed to save file: $e');
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Failed to save file: $e')),
+                    );
+                  }
+                  debugPrint('Failed to save file: $e');
                 }
               },
             ),
@@ -165,12 +201,13 @@ class IndustryMenu extends StatelessWidget {
               padding: EdgeInsets.all(12),
               child: Center(
                 child: Text(
-                  title,
+                  widget.title,
                   style: TextStyle(fontSize: 24, color: Colors.white),
                 ),
               ),
-            ),
+            )
           ),
+
           SizedBox(height: screenHeight * .03),
 
           // Creates a row of clickable menu icons
@@ -181,29 +218,35 @@ class IndustryMenu extends StatelessWidget {
               Container(
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: speechState.recordState == RecordState.stop ? Colors.grey : Colors.red
+                  color: !modelsExist 
+                    ? Color.fromRGBO(128, 128, 128, 0.5)
+                    : (widget.speechState.recordState == RecordState.stop ? Colors.grey : Colors.red)
                 ),
                 padding: EdgeInsets.all(5),
-                child: IconButton(
-                  icon: Icon(
-                    speechState.recordState == RecordState.stop ? Icons.mic : Icons.stop,
-                    color: Colors.white,
-                    size: screenHeight * .05,
-                  ),
-                  onPressed: () async {
-                    await speechState.toggleRecording();
-                    // When speechState.stop happens it needs to store the text in the database
-                    // The new text file needs to get the USERID, create a new Transcript ID,
-                    // The user will be asked to edit the text to ensure accuracy. After hitting save, the text will be saved to the database in the transcript table using the same transcript ID
-                    if (speechState.recordState == RecordState.stop) {
-                      // Fetch the recorded text
-                      String recordedText = await speechState.getRecordedText();
+                child: Tooltip(
+                  message: !modelsExist 
+                    ? "Download required models to enable recording"
+                    : (widget.speechState.recordState == RecordState.stop ? "Start recording" : "Stop recording"),
+                  child: IconButton(
+                    icon: Icon(
+                      widget.speechState.recordState == RecordState.stop ? Icons.mic : Icons.stop,
+                      color: !modelsExist ? Color.fromRGBO(255, 255, 255, 0.5) : Colors.white,
+                      size: screenHeight * .05,
+                    ),
+                    onPressed: !modelsExist ? null : () async {
+                      await widget.speechState.toggleRecording();
+                      // When speechState.stop happens it needs to store the text in the database
+                      // The new text file needs to get the USERID, create a new Transcript ID,
+                      // The user will be asked to edit the text to ensure accuracy. After hitting save, the text will be saved to the database in the transcript table using the same transcript ID
+                      if (widget.speechState.recordState == RecordState.stop) {
+                        // Fetch the recorded text
+                        String recordedText = await widget.speechState.getRecordedText();
 
-                      // Get the user ID (assuming you have a method to get the current user ID)
-                        int userId = 0001;
+                        // Get the user ID (assuming you have a method to get the current user ID)
+                          int userId = 0001;
 
-                      // Create a new transcript ID 
-                          int transcriptId = DateTime.now().millisecondsSinceEpoch;
+                        // Create a new transcript ID 
+                            int transcriptId = DateTime.now().millisecondsSinceEpoch;
 
                       // Show a dialog to edit the text
                       TextEditingController controller = TextEditingController(text: recordedText);
@@ -264,7 +307,7 @@ class IndustryMenu extends StatelessWidget {
                 padding: EdgeInsets.all(5),
                 child: IconButton(
                   icon: Icon(
-                    icon,
+                    widget.icon,
                     color: Colors.white,
                     size: screenHeight * .05,
                   ),
@@ -333,7 +376,7 @@ class IndustryMenu extends StatelessWidget {
                         ),
                         onTap: () {
                           Navigator.pop(context);
-                          if (title == 'Restaurant') {
+                          if (widget.title == 'Restaurant') {
                             // Show Kanban style list for restaurant
                             showModalBottomSheet(
                               context: context,
@@ -369,7 +412,7 @@ class IndustryMenu extends StatelessWidget {
         );
       },
     );
-  }
+  }    
 
   // Extract the functionality to show transcript history into a separate method
   void _showTranscriptsHistoryBottomSheet(BuildContext context) async {
