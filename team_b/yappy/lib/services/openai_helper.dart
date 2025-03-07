@@ -1,6 +1,5 @@
 import 'package:dart_openai/dart_openai.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:yappy/services/file_handler.dart';
+import 'package:yappy/main.dart';
 
 enum Industry { restaurant, medical, mechanic }
 class OpenAIHelper {
@@ -37,13 +36,13 @@ class OpenAIHelper {
       Audio Transcript:
     ''';
   
-  Future<String> summarizeTranscription(Industry industry, String transcriptId) async {
-    // TODO: getTranscriptById(int transcriptId) // pull the transcript text from the database
-    // TODO: remove after testing
-    FileHandler fileHandler = FileHandler();
-    String transcript = await fileHandler.loadTextFile('${(await getApplicationDocumentsDirectory()).path}/sample_restaurant_order_transcript.txt');
-    // String transcript = await fileHandler.loadTextFile('/data/user/0/com.spring2025.yappy/app_flutter/sample_restaurant_order_transcript.txt');
-    // TODO: ---
+  Future<void> summarizeTranscription(int userId, Industry industry, int transcriptId) async {
+    // Pulls the transcript text from the database
+    Map<String, dynamic>? transcript = await dbHelper.getTranscriptById(transcriptId);
+    if (transcript == null) {
+      throw Exception('Transcript with given ID not found');
+    }
+    print(transcript['transcript_text_data']);
 
     String contextPrompt;
     switch (industry) {
@@ -58,7 +57,7 @@ class OpenAIHelper {
         break;
     }
 
-    String fullPromptToSend = contextPrompt + transcript;
+    String fullPromptToSend = contextPrompt + transcript['transcript_text_data'];
     print(fullPromptToSend);
 
     List<OpenAIChatCompletionChoiceMessageModel> messages = [
@@ -69,8 +68,11 @@ class OpenAIHelper {
     final completion = await OpenAI.instance.chat
         .create(model: "gpt-4o-mini", messages: messages);
 
-    print(completion.choices[0].message.content);
-    // TODO: updateTranscript(Map<String, dynamic> transcript) // add to the ai response property to the same transcript in the database
-    return completion.choices[0].message.content.toString();
+    print(completion.choices[0].message.content.toString());
+    // Adds the AI response to the previously saved transcript in the database
+    await dbHelper.saveTranscriptAiResponse(userId: userId,
+      transcriptId: transcriptId,
+      text: transcript['transcript_text_data'],
+      aiResponse: completion.choices[0].message.content.toString());
   }
 }

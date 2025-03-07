@@ -32,29 +32,30 @@ class FileHandler {
     }
   }
 
-  // Future<void> moveFileToDatabase(DatabaseHelper dbHelper, String fileName, int transcriptId) async {
-  //   try {
-  //     final path = await localStoragePath;
-  //     final file = File(join(path, fileName));
-  //     if (await file.exists()) {
-  //       final bytes = await file.readAsBytes();
-  //       await dbHelper.insertDocument(transcriptId, fileName, bytes);
+  // Commented out this method as it was used for testing purposes
+  /*Future<void> moveFileToDatabase(DatabaseHelper dbHelper, String fileName, int transcriptId) async {
+    try {
+      final path = await localStoragePath;
+      final file = File(join(path, fileName));
+      if (await file.exists()) {
+        final bytes = await file.readAsBytes();
+        await dbHelper.insertDocument(transcriptId, fileName, bytes);
 
-  //       await file.delete();
-  //       if (kDebugMode) {
-  //         print('File moved to database and deleted from local storage: $fileName');
-  //       }
-  //     } else {
-  //       if (kDebugMode) {
-  //         print('File not found in local storage: $fileName');
-  //       }
-  //     }
-  //   } catch (e) {
-  //     if (kDebugMode) {
-  //       print('Error moving file to database: $e');
-  //     }
-  //   }
-  // }
+        await file.delete();
+        if (kDebugMode) {
+          print('File moved to database and deleted from local storage: $fileName');
+        }
+      } else {
+        if (kDebugMode) {
+          print('File not found in local storage: $fileName');
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error moving file to database: $e');
+      }
+    }
+  }*/
 
   Future<void> deleteFile(String fileName) async {
     try {
@@ -89,17 +90,6 @@ class FileHandler {
       if (kDebugMode) {
         print('Error copying file from assets to local storage: $e');
       }
-    }
-  }
-
-  // TODO: function to pull transcript text from database instead
-  Future<String> loadTextFile(String filePath) async {
-    try {
-      String fileContent = await rootBundle.loadString(filePath);
-      return fileContent;
-    } catch (e) {
-      print("Error reading text file: $e");
-      return "Error loading file";
     }
   }
 }

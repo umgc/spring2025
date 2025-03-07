@@ -3,16 +3,11 @@ import 'package:yappy/home_page.dart';
 import 'package:yappy/services/database_helper.dart';
 import 'package:dart_openai/dart_openai.dart';
 import 'package:yappy/env.dart';
-import 'package:yappy/services/file_handler.dart';
-import 'package:yappy/services/openai_helper.dart';
 import './toast_widget.dart';
 
 // Create a global instance of DatabaseHelper
 final DatabaseHelper dbHelper = DatabaseHelper();
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-// Create a global instance of OpenAIHelper
-// final OpenAIHelper openAIHelper = OpenAIHelper(); // TODO: this better up here?
-// final FileHandler fileHandler = FileHandler(); // TODO: this better up here?
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
@@ -27,14 +22,6 @@ void main() async{
   }
 
   await dbHelper.database;
-  final fileHandler = FileHandler();
-  // await fileHandler.copyAssetToLocalStorage('assets/example_sherpa_transcript.txt', 'example_sherpa_transcript.txt');
-  // await fileHandler.copyAssetToLocalStorage('assets/sample_mechanic_transcript.txt', 'sample_mechanic_transcript.txt');
-  // await fileHandler.copyAssetToLocalStorage('assets/sample_medical_transcript.txt', 'sample_medical_transcript.txt');
-  await fileHandler.copyAssetToLocalStorage('assets/sample_restaurant_order_transcript.txt', 'sample_restaurant_order_transcript.txt');
-  // await fileHandler.moveFileToDatabase(dbHelper, 'test_document.txt', 1);
-
-  // runApp(const MyApp());
 
   WidgetsBinding.instance.addPostFrameCallback((_) {
     // Shows dialog requesting an OpenAI API key if not set
@@ -59,12 +46,6 @@ void main() async{
     }
   });
 
-  
-  // TODO: code for Sherpa to call after completion:
-  var openAIHelper = OpenAIHelper();
-  // openAIHelper.summarizeTranscription();
-  await openAIHelper.summarizeTranscription(Industry.restaurant, '1');
-  // TODO: ---
   runApp(const MyApp());
 }
 
