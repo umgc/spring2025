@@ -1,113 +1,69 @@
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'dart:math';
+import 'package:yappy/speech_state.dart';
 
-class AudioWaveform extends StatefulWidget {
-  final List<Float32List> audioSamples;
-  final int sampleRate;
-  final int height;
-  final double width;
+class AudiowaveWidget extends StatelessWidget {
+  final SpeechState speechState;
 
-  const AudioWaveform({
-    required this.audioSamples,
-    required this.sampleRate,
-    required this.height,
-    required this.width,
-    Key? key,
-  }) : super(key: key);
-
-  @override
-  _AudioWaveformState createState() => _AudioWaveformState();
-}
-
-class _AudioWaveformState extends State<AudioWaveform> {
-  late List<double> _waveformData;
-
-  @override
-  void initState() {
-    super.initState();
-    _generateWaveformData();
-  }
-
-  @override
-  void didUpdateWidget(covariant AudioWaveform oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.audioSamples != widget.audioSamples) {
-      _generateWaveformData();
-    }
-  }
-
-  // Generate waveform data by processing audio samples
-  void _generateWaveformData() {
-    _waveformData = [];
-
-    // Process all audio samples
-    final int sampleCount = widget.audioSamples.fold<int>(0, (sum, list) => sum + list.length);
-    final int samplesPerPixel = (sampleCount / widget.width).round();
-
-    int sampleIndex = 0;
-
-    for (double i = 0.0; i < widget.width; i++) {
-      double maxAmplitude = 0.0;
-      for (int j = 0; j < samplesPerPixel; j++) {
-        if (sampleIndex < widget.audioSamples.length) {
-          final sample = widget.audioSamples[sampleIndex];
-          maxAmplitude = maxAmplitude < sample.reduce((a, b) => a > b ? a : b)
-              ? sample.reduce((a, b) => a > b ? a : b)
-              : maxAmplitude;
-        }
-        sampleIndex++;
-      }
-
-      _waveformData.add(maxAmplitude);
-    }
-  }
+  const AudiowaveWidget({Key? key, required this.speechState}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: widget.width,
-      height: widget.height.toDouble(), // Ensure height is cast to double
-      decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: CustomPaint(
-        painter: _WaveformPainter(_waveformData, widget.height.toDouble()), // Cast height to double here too
-      ),
+
+    // Listens for the change in data
+    return ValueListenableBuilder<List<int>>(
+      valueListenable: speechState.audioSamplesNotifier,
+      builder: (context, samples, child) {
+        return SizedBox(
+          height: 100,
+          width: MediaQuery.of(context).size.width,
+          child: CustomPaint(
+            // Paints the audiowave 
+            painter: _WaveformPainter(
+              samples.isNotEmpty 
+                  ? samples 
+                  : List.generate(100, (index) => (index % 2 == 0) ? 1000 : -1000),
+              Colors.deepPurpleAccent,
+            ),
+          ),
+        );
+      },
     );
   }
 }
 
 class _WaveformPainter extends CustomPainter {
-  final List<double> waveformData;
-  final double height;
+  final List<int> audioSamples;
+  final Color waveColor;
 
-  _WaveformPainter(this.waveformData, this.height);
+  _WaveformPainter(this.audioSamples, this.waveColor);
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.deepPurpleAccent
-      ..strokeWidth = 1.0
-      ..style = PaintingStyle.stroke;
+    final Paint paint = Paint()
+      ..color = waveColor
+      ..strokeWidth = 2.0
+      ..strokeCap = StrokeCap.round;
 
-    final double centerY = height / 2;
+    // Centers the waves on the screen
+    final double midY = size.height / 2;
 
-    for (int i = 0; i < waveformData.length; i++) {
-      final x = i.toDouble();
-      final amplitude = waveformData[i];
+    // Creates spacing
+    final double sampleSpacing = size.width / max(audioSamples.length, 1);
 
-      // Draw the waveform
-      canvas.drawLine(
-        Offset(x, centerY - (amplitude * centerY)),
-        Offset(x, centerY + (amplitude * centerY)),
-        paint,
-      );
+    // Actually paints the individual lines
+    for (int i = 0; i < audioSamples.length; i++) {
+      final double x = i * sampleSpacing;
+      final double normalizedSample = (audioSamples[i].toDouble() / 32768.0) * size.height;
+      final double yStart = midY - normalizedSample / 2;
+      final double yEnd = midY + normalizedSample / 2;
+
+      canvas.drawLine(Offset(x, yStart), Offset(x, yEnd), paint);
     }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return false;
+  bool shouldRepaint(covariant _WaveformPainter oldDelegate) {
+    return oldDelegate.audioSamples != audioSamples;
   }
 }
