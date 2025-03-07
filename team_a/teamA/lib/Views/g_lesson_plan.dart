@@ -8,7 +8,7 @@ import "package:learninglens_app/beans/course.dart";
 import "package:learninglens_app/services/local_storage_service.dart";
 import 'package:learninglens_app/Api/llm/openai_api.dart';
 import 'package:learninglens_app/Api/llm/grok_api.dart';
-import 'package:learninglens_app/Api/llm/llm_api.dart';
+import 'package:learninglens_app/Api/llm/perplexity_api.dart';
 import 'package:logging/logging.dart';
 
 class GoogleLessonPlans extends StatefulWidget {
@@ -127,11 +127,11 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
           ? OpenAiLLM(openApiKey)
           : selectedLLM == 'Grok'
               ? GrokLLM(grokApiKey)
-              : LlmApi(perplexityApiKey);
+              : PerplexityLLM(perplexityApiKey);
 
       String prompt =
           "Generate a lesson plan for ${selectedGradeLevel}th grade ${lessonPlanNameController.text} covering key topics like ${manualEntryController.text} within 500 words.";
-      var result = await (aiModel as LlmApi).postToLlm(prompt);
+      var result = await (aiModel as PerplexityLLM).postToLlm(prompt);
       setState(() {
         manualEntryController.text = result;
       });

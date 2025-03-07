@@ -124,4 +124,33 @@ class OpenAiLLM {
     print("In queryAI - content :  $retResponse");
     return retResponse;
   }
+
+  Future<String> getChatResponse(String prompt) async {
+
+    final postHeaders = getPostHeaders();
+    final postBody = getPostBody(prompt);
+    final httpPackageUrl = getPostUrl();
+
+    try {
+      // Make the POST request to the chat completions endpoint
+      var response = await ApiService().httpPost(httpPackageUrl, headers: postHeaders, body: postBody);
+
+      // Check for successful response
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        return data['choices'][0]['message']['content']
+            .trim(); // Return the chat response
+      } else {
+        // Log the error response and handle failure cases
+        print('Failed to fetch response. Status code: ${response.statusCode}');
+        print('Response body: ${response.body}');
+        return 'Sorry, I couldn’t fetch a response. Please try again.';
+      }
+    } catch (error) {
+      // Log and handle connection or parsing errors
+      print('Error occurred: $error');
+      return 'An error occurred. Please check your internet connection and try again.';
+    }
+  }
+
 }

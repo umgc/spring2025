@@ -3,7 +3,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:learninglens_app/Api/llm/prompt_engine.dart';
-import 'package:learninglens_app/Api/llm/llm_api.dart';
+import 'package:learninglens_app/Api/llm/perplexity_api.dart';
 import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
 import 'package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart';
 import 'package:learninglens_app/beans/assignment_form.dart';
@@ -82,7 +82,7 @@ class _AssessmentState extends State<CreateAssessmentGoogle> {
         aiModel = ClaudeAiAPI(perplexityApiKey);
       } else {
         // aiModel = OpenAiLLM(perplexityApiKey);
-        aiModel = LlmApi(perplexityApiKey);
+        aiModel = PerplexityLLM(perplexityApiKey);
       }
       var result = await aiModel.postToLlm(PromptEngine.generatePrompt(af));
       if (result.isNotEmpty) {
