@@ -712,4 +712,12 @@ class SpeechState extends ChangeNotifier {
     speakerManager?.free();
     super.dispose();
   }
+
+  getRecordedText() {
+    if (lastConversation != null) {
+      return lastConversation!.getTranscript();
+    } else {
+      return "No recording available.";
+    }
+  }
 }
