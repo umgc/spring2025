@@ -26,22 +26,48 @@ import 'package:learninglens_app/beans/course.dart';
 import 'package:learninglens_app/beans/assignment.dart';
 import 'package:learninglens_app/beans/participant.dart';
 import 'package:learninglens_app/beans/grade.dart';
+import 'package:learninglens_app/beans/quiz.dart';
+import 'package:learninglens_app/beans/quiz_type.dart';
 
 /// Enum to represent export formats.
 enum ExportFormat { pdf, excel }
 
 /// AnalyticsPage displays the Analytics Dashboard where teachers can:
 ///  - View overall analytics data (live data fetched from the LMS)
-///  - Generate a detailed report (assignment breakdown + student breakdown)
-///  - Export the generated report as a valid PDF or Excel file to a chosen location
+///  - Generate a detailed report for essay assignments only (quizzes are omitted)
+///  - Export the generated report as a valid PDF or Excel file
 ///    (using proper PDF/Excel libraries)
 ///  - View tables in fixed-height containers with visible scrollbars.
-///  
-/// Additionally, each student's name in the student breakdown table is underlined
-/// (as a hyperlink). When clicked, a detail panel appears on the right showing that
-/// student's individual grades in detail.
+///
+/// When a student is clicked in the breakdown table, a detail panel appears
+/// on the right showing that student's assignment details (non-editable).
+/// A simple wrapper to hold either an essay assignment or a quiz assignment.
+/// The `type` property distinguishes between the two.
+class Assessment {
+  final dynamic assessment; // Either an Assignment (essay) or a Quiz.
+  final String type; // "essay" or "quiz"
+
+  Assessment({required this.assessment, required this.type});
+
+  String get name {
+    if (type == "essay") {
+      return (assessment as Assignment).name;
+    } else {
+      return (assessment as Quiz).name ?? 'Unknown Quiz';
+    }
+  }
+
+  int get id {
+    if (type == "essay") {
+      return (assessment as Assignment).id ?? 0;
+    } else {
+      return (assessment as Quiz).id ?? 0;
+    }
+  }
+}
+
 class AnalyticsPage extends StatefulWidget {
-  const AnalyticsPage({super.key});
+  const AnalyticsPage({Key? key}) : super(key: key);
 
   @override
   _AnalyticsPageState createState() => _AnalyticsPageState();
@@ -55,56 +81,55 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
   // Live data for dropdowns.
   List<Course> _coursesData = [];
-  List<Assignment> _assignmentsData = [];
+  List<Assessment> _assessmentsData = [];
   List<Participant> _participantsData = [];
 
   // Selections from dropdowns.
   Course? _selectedCourse;
-  // For subject, we assume each Course has a 'subject' property.
+  // Use the course's subject if available; otherwise default to "General".
   String? _selectedSubject;
-  Assignment? _selectedAssignment;
+  Assessment? _selectedAssessment;
 
-  // Report data built from live LMS data.
-  List<Map<String, dynamic>> _generatedReport = [];
+  // Student breakdown report built from live LMS participant data.
   List<Map<String, dynamic>> _studentBreakdown = [];
   Map<String, dynamic>? _selectedStudent;
+
+  // For quiz assessments, question breakdown data.
+  List<QuestionType> _questionBreakdown = [];
 
   // LMS selection (from the AppBar dropdown).
   String _selectedLMS = "Moodle Classroom";
 
-  // Scroll controllers for the tables.
-  late ScrollController _verticalReportController;
-  late ScrollController _horizontalReportController;
+  // Scroll controllers for tables.
   late ScrollController _verticalStudentController;
   late ScrollController _horizontalStudentController;
+  late ScrollController _verticalQuestionController;
+  late ScrollController _horizontalQuestionController;
 
   @override
   void initState() {
     super.initState();
-    _verticalReportController = ScrollController();
-    _horizontalReportController = ScrollController();
     _verticalStudentController = ScrollController();
     _horizontalStudentController = ScrollController();
-    // Auto-fetch live analytics data on initialization.
+    _verticalQuestionController = ScrollController();
+    _horizontalQuestionController = ScrollController();
     _fetchAnalyticsData();
   }
 
   @override
   void dispose() {
-    _verticalReportController.dispose();
-    _horizontalReportController.dispose();
     _verticalStudentController.dispose();
     _horizontalStudentController.dispose();
+    _verticalQuestionController.dispose();
+    _horizontalQuestionController.dispose();
     super.dispose();
   }
 
   // ---------------------------------------------------------------------------
   // _fetchAnalyticsData:
-  // Live API Call Code.
-  // This block fetches live data from the LMS using the appropriate API.
-  // If the teacher is logged into Moodle, it fetches courses, assignments, and
-  // participants from Moodle.
-  // If logged into Google Classroom, it fetches data from Google Classroom.
+  // Fetches live data from the LMS.
+  // It retrieves courses and, for the first course, fetches essays and quizzes,
+  // combines them into an assessment list, and fetches participants.
   // ---------------------------------------------------------------------------
   Future<void> _fetchAnalyticsData() async {
     setState(() {
@@ -112,24 +137,36 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       errorMsg = '';
     });
     try {
-      final controller = MainController();
       final lmsService = LmsFactory.getLmsService();
-      // Fetch courses from LMS.
       _coursesData = await lmsService.getUserCourses();
       int totalCourses = _coursesData.length;
-      // Set default selected course.
       if (_coursesData.isNotEmpty) {
         _selectedCourse = _coursesData.first;
-        _selectedSubject = _selectedCourse?.subject; // assuming Course has a 'subject'
-        // Fetch assignments and participants for the selected course.
-        _assignmentsData = await lmsService.getEssays(_selectedCourse!.id);
+        _selectedSubject = _selectedCourse!.subject ?? "General";
+        // Fetch essays.
+        List<Assignment> essayList = await lmsService.getEssays(_selectedCourse!.id);
+        // Fetch quizzes (if available).
+        List<Quiz> quizList = [];
+        try {
+          quizList = await (lmsService as dynamic).getQuizzes(_selectedCourse!.id);
+        } catch (e) {
+          print("getQuizzes not available or failed: $e");
+        }
+        _assessmentsData = [
+          ...essayList.map((a) => Assessment(assessment: a, type: "essay")),
+          ...quizList.map((q) => Assessment(assessment: q, type: "quiz"))
+        ];
+        if (_assessmentsData.isNotEmpty) {
+          _selectedAssessment = _assessmentsData.first;
+        }
+        // Fetch participants.
         _participantsData = await lmsService.getCourseParticipants(_selectedCourse!.id.toString());
       }
       setState(() {
         analyticsData = {
           'source': lmsService is moodle.MoodleLmsService ? 'Moodle' : 'Google Classroom',
           'totalCourses': totalCourses,
-          'studentPerformance': 'Live Performance Data', // Replace with actual metrics if available
+          'studentPerformance': 'Live Performance Data',
           'iepProgress': 'Live IEP Data',
           'courseEngagement': 'Live Engagement Metrics',
         };
@@ -147,54 +184,45 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
   // ---------------------------------------------------------------------------
   // _generateReport:
-  // Generates report data using live assignments and participant data.
-  // For assignments, it builds a row for each Assignment from the LMS.
-  // For student breakdown, it uses real participant data and sorts by average grade.
-  // (Assumes that each Participant object has an 'avgGrade' property.)
+  // Builds the student breakdown report from live participant data.
+  // If the selected assessment is a quiz, it also fetches its question breakdown.
   // ---------------------------------------------------------------------------
   Future<void> _generateReport() async {
     if (_selectedCourse == null) return;
     setState(() {
       isLoading = true;
       errorMsg = '';
-      _generatedReport.clear();
       _studentBreakdown.clear();
+      _questionBreakdown.clear();
       _selectedStudent = null;
     });
     try {
-      final lmsService = LmsFactory.getLmsService();
-      // Build generated report rows from assignments.
-      _generatedReport = _assignmentsData.map((assignment) {
-        return {
-          'questionNumber': assignment.id, // Using assignment ID as placeholder.
-          'type': assignment.name ?? 'Unknown',
-          'timeSec': 0, // Real timing data may not be available.
-          'percentCorrect': 'N/A', // Replace with actual data if available.
-          'percentPartiallyCorrect': 'N/A'
-        };
-      }).toList();
-
-      // Build student breakdown from participants.
       _studentBreakdown = _participantsData.map((participant) {
-        // Convert avgGrade (double?) to int; if null, default to 75.
-        int grade = participant.avgGrade != null ? participant.avgGrade!.toInt() : 75;
+        int grade = participant.avgGrade != null ? participant.avgGrade!.toInt() : 0;
+        String displayGrade = (participant.avgGrade != null && grade > 0)
+            ? '$grade%'
+            : 'Not Submitted';
         return {
+          'id': participant.id,
           'studentName': participant.fullname,
-          'avgGrade': '$grade%',
-          'classRank': 0, // To be computed later
-          'nationalComparison': 'N/A' // Replace with actual comparison if available.
+          'avgGrade': displayGrade,
+          'classRank': 0,
+          'nationalComparison': 'N/A'
         };
       }).toList();
-
-      // Sort students by average grade (assuming numeric value).
       _studentBreakdown.sort((a, b) {
         int aGrade = int.tryParse(a['avgGrade'].replaceAll('%', '')) ?? 0;
         int bGrade = int.tryParse(b['avgGrade'].replaceAll('%', '')) ?? 0;
         return bGrade.compareTo(aGrade);
       });
-      // Assign ranking.
       for (int i = 0; i < _studentBreakdown.length; i++) {
         _studentBreakdown[i]['classRank'] = i + 1;
+      }
+      // If the selected assessment is a quiz, fetch its question breakdown.
+      if (_selectedAssessment != null && _selectedAssessment!.type == "quiz") {
+        final lmsService = LmsFactory.getLmsService();
+        _questionBreakdown = await (lmsService as dynamic)
+            .getQuestionsFromQuiz(_selectedAssessment!.assessment.id);
       }
     } catch (e) {
       setState(() {
@@ -208,129 +236,11 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   }
 
   // ---------------------------------------------------------------------------
-  // The export methods (_exportReportAsPdf, _exportReportAsExcel, _chooseExportFormat,
-  // _pickFileLocation, and _saveReport) remain unchanged.
+  // _saveReport:
+  // Exports the generated report as PDF or Excel and saves it.
+  // On web, triggers a download via an AnchorElement;
+  // on non-web, writes to the chosen location.
   // ---------------------------------------------------------------------------
-  Future<List<int>> _exportReportAsPdf() async {
-    final pdf = pw.Document();
-    pdf.addPage(
-      pw.MultiPage(
-        build: (pw.Context context) => [
-          pw.Header(level: 0, child: pw.Text("Generated Report")),
-          pw.Table.fromTextArray(
-            headers: [
-              'Question Number',
-              'Type',
-              'Time (sec)',
-              'Percent Correct',
-              'Percent Partially Correct'
-            ],
-            data: _generatedReport
-                .map((row) => [
-                      row['questionNumber'].toString(),
-                      row['type'],
-                      row['timeSec'].toString(),
-                      row['percentCorrect'],
-                      row['percentPartiallyCorrect']
-                    ])
-                .toList(),
-          ),
-          pw.SizedBox(height: 20),
-          pw.Header(level: 0, child: pw.Text("Student Breakdown")),
-          pw.Table.fromTextArray(
-            headers: [
-              'Student Name',
-              'Average Grade',
-              'Class Rank',
-              'National Comparison'
-            ],
-            data: _studentBreakdown
-                .map((student) => [
-                      student['studentName'],
-                      student['avgGrade'],
-                      student['classRank'].toString(),
-                      student['nationalComparison']
-                    ])
-                .toList(),
-          ),
-        ],
-      ),
-    );
-    return pdf.save();
-  }
-
-  Future<List<int>> _exportReportAsExcel() async {
-    var excel = Excel.createExcel();
-    Sheet reportSheet = excel['Generated Report'];
-    reportSheet.appendRow([
-      'Question Number',
-      'Type',
-      'Time (sec)',
-      'Percent Correct',
-      'Percent Partially Correct'
-    ]);
-    for (var row in _generatedReport) {
-      reportSheet.appendRow([
-        row['questionNumber'],
-        row['type'],
-        row['timeSec'],
-        row['percentCorrect'],
-        row['percentPartiallyCorrect']
-      ]);
-    }
-    Sheet studentSheet = excel['Student Breakdown'];
-    studentSheet.appendRow([
-      'Student Name',
-      'Average Grade',
-      'Class Rank',
-      'National Comparison'
-    ]);
-    for (var student in _studentBreakdown) {
-      studentSheet.appendRow([
-        student['studentName'],
-        student['avgGrade'],
-        student['classRank'],
-        student['nationalComparison']
-      ]);
-    }
-    return excel.encode()!;
-  }
-
-  Future<ExportFormat?> _chooseExportFormat() async {
-    return showDialog<ExportFormat>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Select Export Format'),
-          content: const Text('Would you like to export the report as PDF or Excel?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context, ExportFormat.pdf),
-              child: const Text('PDF'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, ExportFormat.excel),
-              child: const Text('Excel'),
-            ),
-            TextButton(
-              onPressed: () => Navigator.pop(context, null),
-              child: const Text('Cancel'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<String?> _pickFileLocation(String defaultName) async {
-    if (kIsWeb) return null;
-    final result = await FilePicker.platform.saveFile(
-      dialogTitle: 'Save Report',
-      fileName: defaultName,
-    );
-    return result;
-  }
-
   Future<void> _saveReport() async {
     final format = await _chooseExportFormat();
     if (format == null) return;
@@ -378,10 +288,133 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   }
 
   // ---------------------------------------------------------------------------
+  // _exportReportAsPdf:
+  // Uses the pdf package to generate a PDF document containing the student breakdown
+  // and, if applicable, the question breakdown.
+  // ---------------------------------------------------------------------------
+  Future<List<int>> _exportReportAsPdf() async {
+    final pdf = pw.Document();
+    pdf.addPage(
+      pw.MultiPage(
+        build: (pw.Context context) => [
+          pw.Header(level: 0, child: pw.Text("Student Breakdown Report")),
+          pw.Table.fromTextArray(
+            headers: [
+              'Student Name',
+              'Average Grade',
+              'Class Rank',
+              'National Comparison'
+            ],
+            data: _studentBreakdown
+                .map((student) => [
+                      student['studentName'],
+                      student['avgGrade'],
+                      student['classRank'].toString(),
+                      student['nationalComparison']
+                    ])
+                .toList(),
+          ),
+          if (_selectedAssessment != null && _selectedAssessment!.type == "quiz")
+            pw.Column(children: [
+              pw.SizedBox(height: 20),
+              pw.Header(level: 0, child: pw.Text("Question Breakdown")),
+              pw.Table.fromTextArray(
+                headers: ['Q#', 'Type', 'Text'],
+                data: _questionBreakdown
+                    .map((q) => [q.id.toString(), q.questionType, q.questionText])
+                    .toList(),
+              ),
+            ]),
+        ],
+      ),
+    );
+    return pdf.save();
+  }
+
+  // ---------------------------------------------------------------------------
+  // _exportReportAsExcel:
+  // Uses the excel package to generate an Excel file containing the student breakdown
+  // and, if applicable, the question breakdown.
+  // ---------------------------------------------------------------------------
+  Future<List<int>> _exportReportAsExcel() async {
+    var excel = Excel.createExcel();
+    Sheet studentSheet = excel['Student Breakdown'];
+    studentSheet.appendRow([
+      'Student Name',
+      'Average Grade',
+      'Class Rank',
+      'National Comparison'
+    ]);
+    for (var student in _studentBreakdown) {
+      studentSheet.appendRow([
+        student['studentName'],
+        student['avgGrade'],
+        student['classRank'],
+        student['nationalComparison']
+      ]);
+    }
+    if (_selectedAssessment != null && _selectedAssessment!.type == "quiz") {
+      Sheet questionSheet = excel['Question Breakdown'];
+      questionSheet.appendRow(['Q#', 'Type', 'Text']);
+      for (var q in _questionBreakdown) {
+        questionSheet.appendRow([
+          q.id,
+          q.questionType,
+          q.questionText,
+        ]);
+      }
+    }
+    return excel.encode()!;
+  }
+
+  // ---------------------------------------------------------------------------
+  // _chooseExportFormat:
+  // Prompts the user to select whether to export the report as PDF or Excel.
+  // ---------------------------------------------------------------------------
+  Future<ExportFormat?> _chooseExportFormat() async {
+    return showDialog<ExportFormat>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Select Export Format'),
+          content: const Text('Would you like to export the report as PDF or Excel?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, ExportFormat.pdf),
+              child: const Text('PDF'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, ExportFormat.excel),
+              child: const Text('Excel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.pop(context, null),
+              child: const Text('Cancel'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // _pickFileLocation:
+  // For non-web platforms, uses FilePicker to let the user choose a save location.
+  // On web, file saving is handled via an AnchorElement.
+  // ---------------------------------------------------------------------------
+  Future<String?> _pickFileLocation(String defaultName) async {
+    if (kIsWeb) return null;
+    final result = await FilePicker.platform.saveFile(
+      dialogTitle: 'Save Report',
+      fileName: defaultName,
+    );
+    return result;
+  }
+
+  // ---------------------------------------------------------------------------
   // _buildReportForm:
-  // Displays dropdowns for selecting course, subject, and assignment,
+  // Displays dropdowns for selecting course, subject, and assessment,
   // along with Generate and Export buttons.
-  // The dropdowns are now populated from live LMS data.
   // ---------------------------------------------------------------------------
   Widget _buildReportForm() {
     return Container(
@@ -401,53 +434,69 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             items: _coursesData.map((course) {
               return DropdownMenuItem<Course>(
                 value: course,
-                child: Text(course.fullName ?? course.shortName ?? 'Unknown Course'),
+                child: Text(course.fullName.isNotEmpty
+                    ? course.fullName
+                    : course.shortName),
               );
             }).toList(),
             onChanged: (val) async {
               setState(() {
                 _selectedCourse = val;
-                _selectedSubject = val?.subject;
+                _selectedSubject = val?.subject ?? "General";
               });
               if (_selectedCourse != null) {
-                // When a course is selected, fetch assignments for that course.
                 final lmsService = LmsFactory.getLmsService();
-                _assignmentsData = await lmsService.getEssays(_selectedCourse!.id);
+                // Fetch essays and quizzes, then combine them.
+                List<Assignment> essays = await lmsService.getEssays(_selectedCourse!.id);
+                List<Quiz> quizzes = [];
+                try {
+                  quizzes = await (lmsService as dynamic).getQuizzes(_selectedCourse!.id);
+                } catch (e) {
+                  print("getQuizzes not available or failed: $e");
+                }
+                _assessmentsData = [
+                  ...essays.map((a) => Assessment(assessment: a, type: "essay")),
+                  ...quizzes.map((q) => Assessment(assessment: q, type: "quiz"))
+                ];
+                if (_assessmentsData.isNotEmpty) {
+                  _selectedAssessment = _assessmentsData.first;
+                }
                 setState(() {});
               }
             },
           ),
-          // Subject dropdown: using the subject property of the selected course.
-          DropdownButtonFormField<String>(
-            value: _selectedSubject,
-            decoration: const InputDecoration(labelText: 'Subject'),
-            items: _selectedCourse != null && _selectedCourse!.subject != null
-                ? [
-                    DropdownMenuItem(
-                      value: _selectedCourse!.subject,
-                      child: Text(_selectedCourse!.subject!),
-                    )
-                  ]
-                : [],
-            onChanged: (val) {
-              setState(() {
-                _selectedSubject = val;
-              });
-            },
-          ),
-          // Assignment dropdown populated from live assignments.
-          DropdownButtonFormField<Assignment>(
-            value: _selectedAssignment,
-            decoration: const InputDecoration(labelText: 'Assignment'),
-            items: _assignmentsData.map((assignment) {
-              return DropdownMenuItem<Assignment>(
-                value: assignment,
-                child: Text(assignment.name ?? 'Unknown Assignment'),
+          // Subject dropdown: only if the selected course provides a subject.
+          if (_selectedCourse != null)
+            DropdownButtonFormField<String>(
+              value: _selectedSubject,
+              decoration: const InputDecoration(labelText: 'Subject'),
+              items: [
+                DropdownMenuItem(
+                  value: _selectedSubject,
+                  child: Text(_selectedSubject ?? "General"),
+                )
+              ],
+              onChanged: (val) {
+                setState(() {
+                  _selectedSubject = val;
+                });
+              },
+            ),
+          // Assessment dropdown populated from live assessments.
+          DropdownButtonFormField<Assessment>(
+            value: _selectedAssessment,
+            decoration: const InputDecoration(labelText: 'Assessment'),
+            items: _assessmentsData.map((assessment) {
+              return DropdownMenuItem<Assessment>(
+                value: assessment,
+                child: Text('${assessment.name} (${assessment.type.toUpperCase()})'),
               );
             }).toList(),
             onChanged: (val) {
               setState(() {
-                _selectedAssignment = val;
+                _selectedAssessment = val;
+                // Clear question breakdown when assessment changes.
+                _questionBreakdown.clear();
               });
             },
           ),
@@ -460,7 +509,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               ),
               const SizedBox(width: 8),
               ElevatedButton(
-                onPressed: _generatedReport.isNotEmpty ? _saveReport : null,
+                onPressed: _studentBreakdown.isNotEmpty ? _saveReport : null,
                 child: const Text('Export'),
               ),
             ],
@@ -471,46 +520,43 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   }
 
   // ---------------------------------------------------------------------------
-  // _buildGeneratedReport:
-  // Displays the assignment breakdown table with live data in a fixed-height container.
+  // _buildQuestionBreakdown:
+  // Displays the question breakdown table for quiz assessments.
+  // This is shown only when a quiz is selected.
   // ---------------------------------------------------------------------------
-  Widget _buildGeneratedReport() {
-    if (_generatedReport.isEmpty && !isLoading) {
-      return const Center(child: Text('No report generated yet.'));
+  Widget _buildQuestionBreakdown() {
+    if (_selectedAssessment == null || _selectedAssessment!.type != "quiz") {
+      return const SizedBox.shrink();
     }
-    if (isLoading) {
-      return const Center(child: CircularProgressIndicator());
+    if (_questionBreakdown.isEmpty) {
+      return const Center(child: Text('No question breakdown available.'));
     }
     return SizedBox(
-      height: 300,
+      height: 200,
       child: Scrollbar(
         thumbVisibility: true,
-        controller: _verticalReportController,
+        controller: _verticalQuestionController,
         child: SingleChildScrollView(
-          controller: _verticalReportController,
+          controller: _verticalQuestionController,
           scrollDirection: Axis.vertical,
           child: Scrollbar(
             thumbVisibility: true,
-            controller: _horizontalReportController,
+            controller: _horizontalQuestionController,
             notificationPredicate: (notification) => notification.depth == 2,
             child: SingleChildScrollView(
-              controller: _horizontalReportController,
+              controller: _horizontalQuestionController,
               scrollDirection: Axis.horizontal,
               child: DataTable(
                 columns: const [
-                  DataColumn(label: Text('Question Number')),
+                  DataColumn(label: Text('Q#')),
                   DataColumn(label: Text('Type')),
-                  DataColumn(label: Text('Time (sec)')),
-                  DataColumn(label: Text('Percent Correct')),
-                  DataColumn(label: Text('Percent Partially Correct')),
+                  DataColumn(label: Text('Text')),
                 ],
-                rows: _generatedReport.map((row) {
+                rows: _questionBreakdown.map((q) {
                   return DataRow(cells: [
-                    DataCell(Text(row['questionNumber'].toString())),
-                    DataCell(Text(row['type'].toString())),
-                    DataCell(Text(row['timeSec'].toString())),
-                    DataCell(Text(row['percentCorrect'].toString())),
-                    DataCell(Text(row['percentPartiallyCorrect'].toString())),
+                    DataCell(Text(q.id.toString())),
+                    DataCell(Text(q.questionType)),
+                    DataCell(Text(q.questionText)),
                   ]);
                 }).toList(),
               ),
@@ -583,14 +629,12 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         ),
       ),
     );
-
     Widget detailPanel = Container(
       width: 300,
       padding: const EdgeInsets.all(16),
       color: Colors.grey[100],
       child: _buildStudentDetail(),
     );
-
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -603,7 +647,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
   // ---------------------------------------------------------------------------
   // _buildStudentDetail:
-  // Displays detailed grade information for the selected student.
+  // Displays detailed (non-editable) assignment grade information for the selected student.
+  // For each assessment, it shows its name and a placeholder for grade.
   // ---------------------------------------------------------------------------
   Widget _buildStudentDetail() {
     if (_selectedStudent == null) {
@@ -614,12 +659,14 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         ),
       );
     }
-    List<Map<String, String>> detailData = List.generate(5, (index) {
+    List<Map<String, String>> detailData = _assessmentsData.map((assessment) {
+      // Fetch the actual grade for this student, otherwise dislay 'Not Submitted'.
+      String grade = "Not Submitted";
       return {
-        'Assignment': 'Assignment ${index + 1}',
-        'Grade': '${80 + index}%',
+        'Assignment': assessment.name,
+        'Grade': grade,
       };
-    });
+    }).toList();
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -646,35 +693,17 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
   // ---------------------------------------------------------------------------
   // _buildReportGeneratorSection:
-  // Combines the report form with the generated report and student breakdown.
+  // Combines the report form, optional question breakdown (if quiz), and student breakdown.
   // ---------------------------------------------------------------------------
   Widget _buildReportGeneratorSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _buildReportForm(),
-            const SizedBox(width: 20),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const Text('Generated Report',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                  const SizedBox(height: 8),
-                  Container(
-                    color: Colors.white,
-                    padding: const EdgeInsets.all(8),
-                    child: _buildGeneratedReport(),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+        _buildReportForm(),
+        const SizedBox(height: 30),
+        // Show question breakdown only if a quiz assessment is selected.
+        if (_selectedAssessment != null && _selectedAssessment!.type == "quiz")
+          _buildQuestionBreakdown(),
         const SizedBox(height: 30),
         const Text('Student Breakdown',
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
@@ -690,7 +719,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
   // ---------------------------------------------------------------------------
   // _buildContent:
-  // Builds the overall page content.
+  // Builds the overall page content including analytics summary and report generator.
   // ---------------------------------------------------------------------------
   Widget _buildContent() {
     if (isLoading && analyticsData == null && errorMsg.isEmpty) {
@@ -708,7 +737,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           const SizedBox(height: 16),
-          // Centered analytics summary.
+          // Analytics summary.
           Center(
             child: Column(
               children: [
@@ -726,7 +755,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             ),
           ),
           const SizedBox(height: 20),
-          // Report generator section.
           _buildReportGeneratorSection(),
           const SizedBox(height: 30),
         ],
@@ -736,8 +764,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
   // ---------------------------------------------------------------------------
   // build:
-  // Sets up the Scaffold using the shared CustomAppBar (which now includes a refresh button)
-  // and the main content.
+  // Sets up the Scaffold using the shared CustomAppBar and the main content.
   // ---------------------------------------------------------------------------
   @override
   Widget build(BuildContext context) {
