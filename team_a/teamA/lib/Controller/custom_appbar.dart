@@ -122,12 +122,13 @@ class _CustomAppBarState extends State<CustomAppBar> {
                   shape: BoxShape.circle,
                 ),
                 child: ClipOval(
-                  child: Image.network(
-                    widget.userprofileurl,
-                    height: 50,
-                    width: 50,
-                    fit: BoxFit.cover,
-                  ),
+                  // remove me for now, this is causing a error in the terminal
+                  // child: Image.network(
+                  //   widget.userprofileurl,
+                  //   height: 50,
+                  //   width: 50,
+                  //   fit: BoxFit.cover,
+                  // ),
                 ),
               ),
             ),
