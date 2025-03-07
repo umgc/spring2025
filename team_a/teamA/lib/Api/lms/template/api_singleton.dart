@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:learninglens_app/beans/course.dart';
+import 'package:learninglens_app/beans/lesson_plan.dart';
 import 'package:learninglens_app/beans/quiz.dart';
 import 'package:learninglens_app/beans/quiz_type.dart';
 import 'package:learninglens_app/beans/assignment.dart';
