@@ -225,6 +225,7 @@ class IndustryMenu extends StatelessWidget {
                                     userId: userId,
                                     transcriptId: transcriptId,
                                     text: controller.text,
+                                    industry: title,
                                   );
                                   Navigator.of(context).pop();
                                 },
@@ -241,6 +242,14 @@ class IndustryMenu extends StatelessWidget {
                         },
                       );
                     }
+                    //take the Transcript_ID and give it to the LLM
+                    // I would create its own class or function
+                    
+                    //take the LLM data and store it in the Transcript_AI_Response 
+                    // I would create its own class or function
+
+
+
                   }
                 )
 
@@ -317,6 +326,8 @@ class IndustryMenu extends StatelessWidget {
                       Map<String, dynamic> transcript = transcripts[index];
                       return ListTile(
                         title: Text(
+                          // get the transcipts for the industry 
+                          transcript['industry'] == title ? 'Transcript ${transcript['transcript_id']}' : ''
                           'Transcript ${transcript['transcript_id']}',
                           style: TextStyle(color: Colors.white),
                         ),
@@ -328,9 +339,8 @@ class IndustryMenu extends StatelessWidget {
                               context: context,
                               builder: (BuildContext context) {
                                 return KanbanBoard(tasks: [
-                                  'Cheeseburger no lettuce',
-                                  'Rootbeer',
-                                  'Water with lemon and a large cheese pizza'
+                                  // get the order_transcript from the restaurant table if industy is restaurant
+
                                 ]);
                               },
                             );

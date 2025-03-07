@@ -80,15 +80,18 @@ class DatabaseHelper {
       )
     ''');
 
+
+
     // Create Transcript table if it doesn't exist
     await db.execute('''
       CREATE TABLE IF NOT EXISTS Transcript (
-        transcript_id INTEGER PRIMARY KEY AUTOINCREMENT,
-        user_id INTEGER,
-        transcript_text_data TEXT,
-        transcript_timestamp DATETIME,
-        transcript_ai_response TEXT,  -- Added transcript_ai_response column
-        FOREIGN KEY (user_id) REFERENCES Users(user_id)
+      transcript_id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER,
+      transcript_text_data TEXT,
+      transcript_timestamp DATETIME,
+      transcript_ai_response TEXT,  -- Added transcript_ai_response column
+      industry TEXT,
+      FOREIGN KEY (user_id) REFERENCES Users(user_id)
       )
     ''');
 
@@ -489,19 +492,17 @@ class DatabaseHelper {
     return results.map((result) => result['item_id'] as int).toList(); 
   }
 
-  saveTranscript({required int userId, required int transcriptId, required String text}) {
+  saveTranscript({required int userId, required int transcriptId, required String text, required String industry}) async {
     // Save the new transcript to the database using the provided information
     Map<String, dynamic> transcript = {
       'user_id': userId,
       'transcript_id': transcriptId,
       'transcript_text_data': text,
       'transcript_timestamp': DateTime.now().toIso8601String(),
-      'transcript_ai_response': ''
+      'transcript_ai_response': '',
+      'industry': industry,
     };
-    insertTranscript(transcript);
-
-
-
+    await insertTranscript(transcript);
   }
 
   getTranscriptCountForDate(String date) {
