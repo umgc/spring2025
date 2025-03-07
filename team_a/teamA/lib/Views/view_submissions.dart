@@ -9,7 +9,7 @@ import 'package:learninglens_app/services/local_storage_service.dart';
 import 'package:learninglens_app/beans/submission_with_grade.dart';
 import 'package:learninglens_app/beans/participant.dart';
 import 'view_submission_detail.dart';
-import '../Api/llm/llm_api.dart';
+import '../Api/llm/perplexity_api.dart';
 import 'dart:convert';
 import 'package:intl/intl.dart';
 
@@ -517,7 +517,7 @@ children: [
                                                                             apiKey);
                                                                   } else {
                                                                     llmInstance =
-                                                                        LlmApi(
+                                                                        PerplexityLLM(
                                                                             apiKey);
                                                                   }
                                                                   dynamic

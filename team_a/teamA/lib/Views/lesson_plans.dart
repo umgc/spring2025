@@ -9,7 +9,7 @@ import "package:learninglens_app/beans/lesson_plan.dart";
 import 'package:learninglens_app/Api/llm/enum/llm_enum.dart';
 import 'package:learninglens_app/Api/llm/openai_api.dart';
 import 'package:learninglens_app/Api/llm/grok_api.dart';
-import 'package:learninglens_app/Api/llm/llm_api.dart';
+import 'package:learninglens_app/Api/llm/perplexity_api.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
 
 class LessonPlans extends StatefulWidget {
@@ -80,7 +80,7 @@ class _LessonPlanState extends State {
       } else if (selectedLLM == LlmType.GROK) {
         aiModel = GrokLLM(LocalStorageService.getGrokKey());
       } else {
-        aiModel = LlmApi(LocalStorageService.getPerplexityKey());
+        aiModel = PerplexityLLM(LocalStorageService.getPerplexityKey());
       }
 
       String prompt = "Generate an all text (no diagrams) lesson for ${lessonPlanNameController.text} for grade $selectedGradeLevel covering key topics like ${manualEntryController.text}. This lesson is WHAT THE STUDENT WILL SEE! This lesson will be viewed by students and students will use it to study from (which will help them write essays and take quizzes).";

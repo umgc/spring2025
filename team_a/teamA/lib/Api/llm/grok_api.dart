@@ -11,22 +11,6 @@ class GrokLLM {
     return (json.decode(httpResponseString) as Map<String, dynamic>);
   }
 
-//   curl https://api.x.ai/v1/chat/completions -H "Content-Type: application/json" -H "Authorization: Bearer grokKey" -d '{
-//   "messages": [
-//     {
-//       "role": "system",
-//       "content": "You are a test assistant."
-//     },
-//     {
-//       "role": "user",
-//       "content": "Testing. Just say hi and hello world and nothing else."
-//     }
-//   ],
-//   "model": "grok-2-latest",
-//   "stream": false,
-//   "temperature": 0
-// }'
-
   ///
   ///
   ///
@@ -141,4 +125,33 @@ class GrokLLM {
     print("In queryAI - content :  $retResponse");
     return retResponse;
   }
+
+  Future<String> getChatResponse(String prompt) async {
+
+    final postHeaders = getPostHeaders();
+    final postBody = getPostBody(prompt);
+    final httpPackageUrl = getPostUrl();
+
+    try {
+      // Make the POST request to the chat completions endpoint
+      var response = await ApiService().httpPost(httpPackageUrl, headers: postHeaders, body: postBody);
+
+      // Check for successful response
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        return data['choices'][0]['message']['content']
+            .trim(); // Return the chat response
+      } else {
+        // Log the error response and handle failure cases
+        print('Failed to fetch response. Status code: ${response.statusCode}');
+        print('Response body: ${response.body}');
+        return 'Sorry, I couldn’t fetch a response. Please try again.';
+      }
+    } catch (error) {
+      // Log and handle connection or parsing errors
+      print('Error occurred: $error');
+      return 'An error occurred. Please check your internet connection and try again.';
+    }
+  }
+  
 }

@@ -6,7 +6,7 @@ import 'package:learninglens_app/Views/essay_edit_page.dart';
 import 'package:learninglens_app/Api/llm/claudeai_api.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
 import 'dart:convert';
-import '../Api/llm/llm_api.dart';
+import '../Api/llm/perplexity_api.dart';
 import 'package:learninglens_app/Api/llm/openai_api.dart';
 import 'package:learninglens_app/Api/llm/grok_api.dart';
 import 'package:learninglens_app/Api/llm/enum/llm_enum.dart';
@@ -117,7 +117,7 @@ class _EssayGenerationState extends State<EssayGeneration>
       } else if (selectedLLM == LlmType.GROK) {
         llmInstance = GrokLLM(getApiKey());
       } else if (selectedLLM == LlmType.PERPLEXITY) {
-        llmInstance = LlmApi(getApiKey()); // Perplexity API class
+        llmInstance = PerplexityLLM(getApiKey()); // Perplexity API class
       } else {
         throw Exception('Invalid LLM selected.');
       }

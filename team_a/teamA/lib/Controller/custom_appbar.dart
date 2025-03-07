@@ -3,6 +3,7 @@ import 'package:learninglens_app/Api/lms/enum/lms_enum.dart';
 import 'package:learninglens_app/Views/dashboard.dart';
 import 'package:learninglens_app/Views/g_dashboard.dart';
 import 'package:learninglens_app/Views/user_settings.dart';
+import 'package:learninglens_app/Views/chat_screen.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
 
 class ClassroomSelection {
@@ -35,8 +36,10 @@ class _CustomAppBarState extends State<CustomAppBar> {
         textAlign: TextAlign.center,
       ),
       centerTitle: true,
+      leadingWidth: 120,
       leading: Row(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           Flexible(
             child: IconButton(
@@ -56,6 +59,19 @@ class _CustomAppBarState extends State<CustomAppBar> {
                   : () {
                       navigateToSelectedDashboard(context);
                     },
+            ),
+          ),
+          Flexible(
+            child: IconButton(
+              icon: Icon(Icons.chat_rounded),
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ChatScreen()
+                  )
+                );
+              },
             ),
           ),
         ],
