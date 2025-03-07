@@ -1,24 +1,64 @@
 import 'package:flutter/material.dart';
+import 'package:record/record.dart';
+import 'package:yappy/speech_state.dart';
 import 'package:yappy/services/database_helper.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
+import 'dart:convert';
+import 'package:yappy/services/file_handler.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter/services.dart';
+import 'services/model_manager.dart';
 
-class IndustryMenu extends StatelessWidget {
+class IndustryMenu extends StatefulWidget {
   final String title;
   final IconData icon;
+  final SpeechState speechState;
+  final ModelManager modelManager;
 
-  const IndustryMenu({required this.title, required this.icon, super.key});
-    Widget generateTranscript(BuildContext context, String title, String content) {
-      return AlertDialog(
-        title: Text(title),
-        content: SingleChildScrollView(
-          child: Text(content),
-        ),
-        actions: [
-          //add export capes
-            Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              IconButton(
+  const IndustryMenu({
+    required this.title, 
+    required this.icon,
+    required this.speechState,
+    required this.modelManager,
+    super.key
+  }); 
+
+  @override
+  State<IndustryMenu> createState() => _IndustryMenuState();
+}
+
+class _IndustryMenuState extends State<IndustryMenu> {
+  bool modelsExist = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkModels();
+  }
+
+  Future<void> _checkModels() async {
+    final exist = await widget.modelManager.modelsExist();
+    if (mounted) {
+      setState(() {
+        modelsExist = exist;
+      });
+    }
+  }
+
+  Widget generateTranscript(BuildContext context, String title, String content, int transcript) {
+    return AlertDialog(
+      title: Text(title),
+      content: SingleChildScrollView(
+        child: Text(content),
+      ),
+      actions: [
+        //add export capes
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            IconButton(
               icon: Icon(Icons.share),
               onPressed: () {
                 // Add your share functionality here
@@ -30,8 +70,60 @@ class IndustryMenu extends StatelessWidget {
             ),
             IconButton(
               icon: Icon(Icons.download),
-              onPressed: () {
-                // Add your download functionality here
+              onPressed: () async {
+                try {
+                  // Request storage permission
+                  if (await Permission.storage.request().isGranted ||
+                      await Permission.manageExternalStorage
+                          .request()
+                          .isGranted) {
+                    // Attempt to find the Downloads directory
+                    final directories = await getExternalStorageDirectories(
+                        type: StorageDirectory.downloads);
+                    final downloadsDirectory = directories?.first;
+
+                    if (downloadsDirectory != null) {
+                      final filePath = '${downloadsDirectory.path}/$title.txt';
+                      final file = File(filePath);
+                      await file.writeAsBytes(utf8.encode(content),
+                          flush: true);
+
+                      await MethodChannel('com.yourcompany.yappy/files')
+                          .invokeMethod('scanFile', {'filePath': filePath});
+
+                      FileHandler fileHandler = FileHandler();
+                      await fileHandler.addDocument(file);
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content: Text('Transcript saved to $filePath')),
+                        );
+                      }
+                      debugPrint('File saved at: $filePath');
+                    } else {
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content:
+                                  Text('Failed to find Downloads directory')),
+                        );
+                      }
+                    }
+                  } else {
+                      if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Storage permission denied')),
+                      );
+                    }
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Failed to save file: $e')),
+                    );
+                  }
+                  debugPrint('Failed to save file: $e');
+                }
               },
             ),
             IconButton(
@@ -39,22 +131,21 @@ class IndustryMenu extends StatelessWidget {
               onPressed: () {
                 // Add your delete functionality here
               },
-              ),
-            ],
             ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            child: Text('Close'),
-          ),
-        ],
-      );
-    }
+          ],
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: Text('Close'),
+        ),
+      ],
+    );
+  }
 
   Future<List<Map<String, dynamic>>> _fetchTranscripts() async {
     DatabaseHelper dbHelper = DatabaseHelper();
-    
     return await dbHelper.getAllTranscripts();
   }
 
@@ -73,22 +164,21 @@ class IndustryMenu extends StatelessWidget {
           Center(
             // Creates the text box above the icons
             child: Container(
-                width: screenWidth * .75,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  color: const Color.fromARGB(255, 67, 67, 67),
+              width: screenWidth * .75,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: const Color.fromARGB(255, 67, 67, 67),
+              ),
+              padding: EdgeInsets.all(12),
+              child: Center(
+                child: Text(
+                  widget.title,
+                  style: TextStyle(fontSize: 24, color: Colors.white),
                 ),
-                padding: EdgeInsets.all(12),
-                child: Center(
-                  child: Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 24,
-                      color: Colors.white
-                    ),
-                  ),
-                )),
+              ),
+            )
           ),
+
           SizedBox(height: screenHeight * .03),
 
           // Creates a row of clickable menu icons
@@ -97,40 +187,78 @@ class IndustryMenu extends StatelessWidget {
             children: [
               // Creates the chat button for each menu
               Container(
-                decoration:
-                    BoxDecoration(shape: BoxShape.circle, color: Colors.grey),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: !modelsExist 
+                    ? Color.fromRGBO(128, 128, 128, 0.5)
+                    : (widget.speechState.recordState == RecordState.stop ? Colors.grey : Colors.red)
+                ),
                 padding: EdgeInsets.all(5),
-                child: IconButton(
-                  icon: Icon(
-                    Icons.chat,
-                    color: Colors.white,
-                    size: screenHeight * .05,
+                child: Tooltip(
+                  message: !modelsExist 
+                    ? "Download required models to enable recording"
+                    : (widget.speechState.recordState == RecordState.stop ? "Start recording" : "Stop recording"),
+                  child: IconButton(
+                    icon: Icon(
+                      widget.speechState.recordState == RecordState.stop ? Icons.mic : Icons.stop,
+                      color: !modelsExist ? Color.fromRGBO(255, 255, 255, 0.5) : Colors.white,
+                      size: screenHeight * .05,
+                    ),
+                    onPressed: !modelsExist ? null : () async {
+                      await widget.speechState.toggleRecording();
+                      // When speechState.stop happens it needs to store the text in the database
+                      // The new text file needs to get the USERID, create a new Transcript ID,
+                      // The user will be asked to edit the text to ensure accuracy. After hitting save, the text will be saved to the database in the transcript table using the same transcript ID
+                      if (widget.speechState.recordState == RecordState.stop) {
+                        // Fetch the recorded text
+                        String recordedText = await widget.speechState.getRecordedText();
+
+                        // Get the user ID (assuming you have a method to get the current user ID)
+                          int userId = 0001;
+
+                        // Create a new transcript ID 
+                            int transcriptId = DateTime.now().millisecondsSinceEpoch;
+
+                        // Show a dialog to edit the text
+                        TextEditingController controller = TextEditingController(text: recordedText);
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text('Edit Transcript'),
+                              content: TextField(
+                                controller: controller,
+                                decoration: InputDecoration(hintText: 'Edit the transcript text'),
+                                maxLines: null,
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () async {
+                                    // Save the edited text to the database
+                                    await DatabaseHelper().saveTranscript(
+                                      userId: userId,
+                                      transcriptId: transcriptId,
+                                      text: controller.text,
+                                    );
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: Text('Save'),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: Text('Cancel'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      }
+                    }
                   ),
-                  onPressed: () {
-                    //add Bernhards code here
-                  },
                 ),
               ),
-                SizedBox(width: screenWidth * .06),
-
-                // Creates a refine data button
-                //after the transcipt is done it will go to this button to be edited. 
-                //after the edits post it to the database
-                Container(
-                decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.grey),
-                padding: EdgeInsets.all(5),
-                child: IconButton(
-                  icon: Icon(
-                  Icons.edit,
-                  color: Colors.white,
-                  size: screenHeight * .05,
-                  ),
-                  onPressed: () {
-                  // Add your refine data functionality here
-                  },
-                ),
-                ),
-
               SizedBox(width: screenWidth * .06),
 
               // Creates a industry specific icon based on user input
@@ -140,19 +268,16 @@ class IndustryMenu extends StatelessWidget {
                 padding: EdgeInsets.all(5),
                 child: IconButton(
                   icon: Icon(
-                    icon,
+                    widget.icon,
                     color: Colors.white,
                     size: screenHeight * .05,
                   ),
-
-                  
                   onPressed: () {
                     _showTranscriptsBottomSheet(context);
                   },
                 ),
               ),
               SizedBox(width: screenWidth * .06),
-
 
               // Creates a transcript history button
               Container(
@@ -181,10 +306,10 @@ class IndustryMenu extends StatelessWidget {
   void _showTranscriptsBottomSheet(BuildContext context) async {
     // Fetch transcripts first
     List<Map<String, dynamic>> transcripts = await _fetchTranscripts();
-    
+
     // Check if the context is still valid
     if (!context.mounted) return;
-    
+
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
@@ -209,12 +334,16 @@ class IndustryMenu extends StatelessWidget {
                         ),
                         onTap: () {
                           Navigator.pop(context);
-                          if (title == 'Restaurant') {
+                          if (widget.title == 'Restaurant') {
                             // Show Kanban style list for restaurant
                             showModalBottomSheet(
                               context: context,
                               builder: (BuildContext context) {
-                                return KanbanBoard(tasks: ['Cheeseburger no lettuce', 'Rootbeer', 'Water with lemon and a large cheese pizza']);
+                                return KanbanBoard(tasks: [
+                                  'Cheeseburger no lettuce',
+                                  'Rootbeer',
+                                  'Water with lemon and a large cheese pizza'
+                                ]);
                               },
                             );
                           } else {
@@ -226,11 +355,12 @@ class IndustryMenu extends StatelessWidget {
                                   context,
                                   'Transcript',
                                   transcript['transcript_text_data'] ?? 'No content available',
+                                  transcript['transcript_id'],
                                 );
                               },
                             );
                           }
-                        }, 
+                        },
                       );
                     },
                   ),
@@ -241,16 +371,16 @@ class IndustryMenu extends StatelessWidget {
         );
       },
     );
-  }
+  }    
 
   // Extract the functionality to show transcript history into a separate method
   void _showTranscriptsHistoryBottomSheet(BuildContext context) async {
     // Fetch transcripts first
     List<Map<String, dynamic>> transcripts = await _fetchTranscripts();
-    
+
     // Check if the context is still valid
     if (!context.mounted) return;
-    
+
     showModalBottomSheet(
       context: context,
       builder: (BuildContext context) {
@@ -271,9 +401,7 @@ class IndustryMenu extends StatelessWidget {
                       return ListTile(
                         title: Text(
                           'Transcript ${transcript['transcript_id']}',
-                          style: TextStyle(
-                            color: Colors.white
-                          ),
+                          style: TextStyle(color: Colors.white),
                         ),
                         onTap: () {
                           Navigator.pop(context);
@@ -284,12 +412,28 @@ class IndustryMenu extends StatelessWidget {
                                 context,
                                 'Transcript',
                                 transcript['transcript_text_data'] ?? 'No content available',
+                                transcript['transcript_id'],
                               );
                             },
                           );
                         },
                       );
                     },
+                  ),
+                ),
+                // Add an upload bar at the bottom
+                Padding(
+                  padding: const EdgeInsets.only(top: 16.0),
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      // Add your upload functionality here
+                    },
+                    icon: Icon(Icons.upload),
+                    label: Text('Upload Transcript'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color.fromARGB(255, 26, 26, 27),
+                      foregroundColor: const Color.fromARGB(255, 229, 217, 217),
+                    ),
                   ),
                 ),
               ],
@@ -319,9 +463,8 @@ class KanbanBoardState extends State<KanbanBoard> {
     tasks = widget.tasks;
   }
 
-
-//creates the kanban board sytle widget for the restaurant
-//need to allow the user to edit the order by holding the card
+  //creates the kanban board sytle widget for the restaurant
+  //need to allow the user to edit the order by holding the card
 
   @override
   Widget build(BuildContext context) {
@@ -372,7 +515,8 @@ class KanbanBoardState extends State<KanbanBoard> {
                           IconButton(
                             icon: Icon(Icons.edit),
                             onPressed: () {
-                              TextEditingController controller = TextEditingController(text: tasks[index]);
+                              TextEditingController controller =
+                                  TextEditingController(text: tasks[index]);
                               showDialog(
                                 context: context,
                                 builder: (BuildContext context) {
@@ -380,7 +524,8 @@ class KanbanBoardState extends State<KanbanBoard> {
                                     title: Text('Edit Task'),
                                     content: TextField(
                                       controller: controller,
-                                      decoration: InputDecoration(hintText: 'Enter new task'),
+                                      decoration: InputDecoration(
+                                          hintText: 'Enter new task'),
                                     ),
                                     actions: [
                                       TextButton(
@@ -419,8 +564,7 @@ class KanbanBoardState extends State<KanbanBoard> {
               child: Text('Close'),
             ),
 
-                // Add your save to database functionality here
-
+            // Add your save to database functionality here
           ],
         ),
       ),

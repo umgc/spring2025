@@ -5,6 +5,7 @@ import 'package:dart_openai/dart_openai.dart';
 import 'package:yappy/env.dart';
 import 'package:yappy/services/file_handler.dart';
 import 'package:yappy/services/openai_helper.dart';
+import './toast_widget.dart';
 
 // Create a global instance of DatabaseHelper
 final DatabaseHelper dbHelper = DatabaseHelper();
@@ -69,13 +70,22 @@ void main() async{
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
-// This widget is the root of your application.
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       // navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
-      home: const HomePage(),
+      title: 'Your App',
+      theme: ThemeData(
+        primarySwatch: Colors.lightGreen,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      home: HomePage(),
+      builder: (context, child) {
+        // Wrap every screen with ToastWidget
+        return ToastWidget(child: child ?? Container());
+      },
     );
   }
 }
