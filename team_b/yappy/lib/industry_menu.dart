@@ -15,15 +15,15 @@ class IndustryMenu extends StatefulWidget {
   final String title;
   final IconData icon;
   final SpeechState speechState;
-  final ModelManager modelManager; // Add model manager
+  final ModelManager modelManager;
 
   const IndustryMenu({
     required this.title, 
-    required this.icon, 
+    required this.icon,
     required this.speechState,
-    required this.modelManager, // Add to constructor 
+    required this.modelManager,
     super.key
-  });
+  }); 
 
   @override
   State<IndustryMenu> createState() => _IndustryMenuState();
@@ -47,7 +47,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
     }
   }
 
-  Widget generateTranscript(BuildContext context, String title, String content) {
+  Widget generateTranscript(BuildContext context, String title, String content, int transcript) {
     return AlertDialog(
       title: Text(title),
       content: SingleChildScrollView(
@@ -204,28 +204,59 @@ class _IndustryMenuState extends State<IndustryMenu> {
                       color: !modelsExist ? Color.fromRGBO(255, 255, 255, 0.5) : Colors.white,
                       size: screenHeight * .05,
                     ),
-                    onPressed: !modelsExist ? null : () => widget.speechState.toggleRecording(),
-                  ),
-                ),
-              ),
-              SizedBox(width: screenWidth * .06),
+                    onPressed: !modelsExist ? null : () async {
+                      await widget.speechState.toggleRecording();
+                      // When speechState.stop happens it needs to store the text in the database
+                      // The new text file needs to get the USERID, create a new Transcript ID,
+                      // The user will be asked to edit the text to ensure accuracy. After hitting save, the text will be saved to the database in the transcript table using the same transcript ID
+                      if (widget.speechState.recordState == RecordState.stop) {
+                        // Fetch the recorded text
+                        String recordedText = await widget.speechState.getRecordedText();
 
-              // Creates a refine data button
-              //after the transcipt is done it will go to this button to be edited.
-              //after the edits post it to the database
-              Container(
-                decoration:
-                    BoxDecoration(shape: BoxShape.circle, color: Colors.grey),
-                padding: EdgeInsets.all(5),
-                child: IconButton(
-                  icon: Icon(
-                    Icons.edit,
-                    color: Colors.white,
-                    size: screenHeight * .05,
+                        // Get the user ID (assuming you have a method to get the current user ID)
+                          int userId = 0001;
+
+                        // Create a new transcript ID 
+                            int transcriptId = DateTime.now().millisecondsSinceEpoch;
+
+                        // Show a dialog to edit the text
+                        TextEditingController controller = TextEditingController(text: recordedText);
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text('Edit Transcript'),
+                              content: TextField(
+                                controller: controller,
+                                decoration: InputDecoration(hintText: 'Edit the transcript text'),
+                                maxLines: null,
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () async {
+                                    // Save the edited text to the database
+                                    await DatabaseHelper().saveTranscript(
+                                      userId: userId,
+                                      transcriptId: transcriptId,
+                                      text: controller.text,
+                                    );
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: Text('Save'),
+                                ),
+                                TextButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                  },
+                                  child: Text('Cancel'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      }
+                    }
                   ),
-                  onPressed: () {
-                    // Add your refine data functionality here
-                  },
                 ),
               ),
               SizedBox(width: screenWidth * .06),
@@ -323,8 +354,8 @@ class _IndustryMenuState extends State<IndustryMenu> {
                                 return generateTranscript(
                                   context,
                                   'Transcript',
-                                  transcript['transcript_text_data'] ??
-                                      'No content available',
+                                  transcript['transcript_text_data'] ?? 'No content available',
+                                  transcript['transcript_id'],
                                 );
                               },
                             );
@@ -340,7 +371,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
         );
       },
     );
-  }
+  }    
 
   // Extract the functionality to show transcript history into a separate method
   void _showTranscriptsHistoryBottomSheet(BuildContext context) async {
@@ -380,8 +411,8 @@ class _IndustryMenuState extends State<IndustryMenu> {
                               return generateTranscript(
                                 context,
                                 'Transcript',
-                                transcript['transcript_text_data'] ??
-                                    'No content available',
+                                transcript['transcript_text_data'] ?? 'No content available',
+                                transcript['transcript_id'],
                               );
                             },
                           );
