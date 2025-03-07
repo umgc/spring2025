@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
+import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/beans/quiz_type.dart';
 
 class ViewQuiz extends StatelessWidget {
@@ -12,8 +13,9 @@ class ViewQuiz extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: showAppBar
-          ? AppBar(
-              title: Text('View Quiz'),
+          ? CustomAppBar(
+              title: 'Assessments',
+              userprofileurl: LmsFactory.getLmsService().profileImage ?? '',
             )
           : null,
       body: Column(
