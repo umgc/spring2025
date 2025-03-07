@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
 import 'package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart';
 import 'package:learninglens_app/Views/essay_generation.dart';
+import 'package:learninglens_app/Views/essays_view.dart';
 import 'package:learninglens_app/Views/quiz_generator.dart';
 import 'package:learninglens_app/Views/view_quiz.dart';
 import 'package:learninglens_app/Views/view_submissions.dart';
@@ -102,15 +103,7 @@ class _ContentState extends State<ContentCarousel> {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => SubmissionList(
-                                  assignmentId:
-                                      (children[value] as CarouselCard).id,
-                                  courseId: (children[value] as CarouselCard)
-                                          .courseId
-                                          ?.toString() ??
-                                      '',
-                                  // courseId.toString()),
-                                )));
+                            builder: (context) => EssaysView()));
                   }
                 },
                 children: children,
