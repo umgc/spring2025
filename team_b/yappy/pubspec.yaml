@@ -80,11 +80,6 @@ flutter:
   assets:
     - assets/icon/app_icon.png
     - assets/yappy_database.db
-    - assets/test_document.txt
-    - assets/sample_medical_transcript.txt
-    - assets/sample_restaurant_order_transcript.txt
-    - assets/sample_mechanic_transcript.txt
-    - assets/example_sherpa_transcript.txt
     - assets/
   # To add assets to your application, add an assets section, like this:
   # assets:
