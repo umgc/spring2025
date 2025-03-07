@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:isolate';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
@@ -8,6 +9,21 @@ import 'package:path/path.dart' as path;
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'toast_service.dart';
+
+// Data class for passing to isolate
+class ExtractionData {
+  final List<int> fileBytes;
+  final String modelDir;
+  final List<String> keepPaths;
+  final SendPort sendPort;
+
+  ExtractionData({
+    required this.fileBytes,
+    required this.modelDir,
+    required this.keepPaths,
+    required this.sendPort,
+  });
+}
 
 class ModelManager {
   // Base directory for storing models
@@ -206,7 +222,7 @@ class ModelManager {
   Future<bool> downloadModels(BuildContext context) async {
     // Check connectivity first - still need context for initial dialogs
     final canDownload = await _checkConnectivity();
-    if (!canDownload) {
+    if (!canDownload && context.mounted) {
       final changeSettings = await _showConnectivityWarning(context);
       if (changeSettings) {
         // User wants to change settings
@@ -255,8 +271,8 @@ class ModelManager {
             progress: completedModels / _models.length,
           );
           
-          // Handle compressed .bz2 file
-          await _processCompressedFile(
+          // Handle compressed .bz2 file - now using isolate
+          await _processCompressedFileInIsolate(
             response.bodyBytes,
             modelDir,
             model.keepPaths ?? [],
@@ -290,46 +306,88 @@ class ModelManager {
     }
   }
   
-  // Process compressed .bz2 file
-  Future<void> _processCompressedFile(
+  // Process compressed file in a separate isolate
+  Future<void> _processCompressedFileInIsolate(
     List<int> fileBytes,
     String modelDir,
     List<String> keepPaths,
   ) async {
-    // Decompress bz2
-    final archive = BZip2Decoder().decodeBytes(fileBytes);
+    // Create a ReceivePort for communication
+    final receivePort = ReceivePort();
     
-    // Extract tar archive
-    final tarArchive = TarDecoder().decodeBytes(archive);
+    // Prepare data to send to isolate
+    final data = ExtractionData(
+      fileBytes: fileBytes,
+      modelDir: modelDir,
+      keepPaths: keepPaths,
+      sendPort: receivePort.sendPort,
+    );
     
-    // Process each file in the archive
-    for (final file in tarArchive) {
-      // Check if this file/directory should be kept
-      bool shouldKeep = keepPaths.isEmpty;
-      for (final keepPath in keepPaths) {
-        if (file.name.startsWith(keepPath)) {
-          shouldKeep = true;
-          break;
+    // Spawn the isolate
+    await Isolate.spawn(_extractInIsolate, data);
+    
+    // Wait for a result from the isolate
+    await for (final message in receivePort) {
+      if (message == 'done') {
+        // Extraction completed
+        break;
+      } else if (message is String && message.startsWith('error:')) {
+        // Error occurred in isolate
+        throw Exception(message.substring(6));
+      }
+    }
+    
+    // Close the port when done
+    receivePort.close();
+  }
+  
+  // Isolate entry point for extraction
+  static Future<void> _extractInIsolate(ExtractionData data) async {
+    try {
+      // Decompress bz2
+      final archive = BZip2Decoder().decodeBytes(data.fileBytes);
+      
+      // Extract tar archive
+      final tarArchive = TarDecoder().decodeBytes(archive);
+      
+      // Process each file in the archive
+      for (final file in tarArchive) {
+        // Check if this file/directory should be kept
+        bool shouldKeep = data.keepPaths.isEmpty;
+        for (final keepPath in data.keepPaths) {
+          if (file.name.startsWith(keepPath)) {
+            shouldKeep = true;
+            break;
+          }
+        }
+        
+        if (shouldKeep) {
+          final filePath = '${data.modelDir}/${file.name}';
+          
+          if (file.isFile) {
+            // Create parent directories if needed
+            final parentDir = Directory(path.dirname(filePath));
+            if (!await parentDir.exists()) {
+              await parentDir.create(recursive: true);
+            }
+            
+            // Write file
+            await File(filePath).writeAsBytes(file.content as List<int>);
+          } else {
+            // Create directory
+            await Directory(filePath).create(recursive: true);
+          }
         }
       }
       
-      if (shouldKeep) {
-        final filePath = '$modelDir/${file.name}';
-        
-        if (file.isFile) {
-          // Create parent directories if needed
-          final parentDir = Directory(path.dirname(filePath));
-          if (!await parentDir.exists()) {
-            await parentDir.create(recursive: true);
-          }
-          
-          // Write file
-          await File(filePath).writeAsBytes(file.content as List<int>);
-        } else {
-          // Create directory
-          await Directory(filePath).create(recursive: true);
-        }
-      }
+      // Signal completion
+      data.sendPort.send('done');
+    } catch (e) {
+      // Send error back to main isolate
+      data.sendPort.send('error: $e');
+    } finally {
+      // Terminate the isolate
+      Isolate.exit();
     }
   }
   
@@ -370,7 +428,7 @@ class ModelManager {
   // Trigger model download from settings page
   Future<bool> downloadModelsFromSettings(BuildContext context) async {
     final shouldDownload = await showDownloadDialog(context);
-    if (shouldDownload) {
+    if (shouldDownload && context.mounted) {
       return await downloadModels(context);
     }
     return false;
