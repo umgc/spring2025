@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
 import 'package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart';
+import 'package:learninglens_app/Views/assessments_view.dart';
 import 'package:learninglens_app/Views/essay_generation.dart';
 import 'package:learninglens_app/Views/essays_view.dart';
 import 'package:learninglens_app/Views/quiz_generator.dart';
@@ -92,18 +93,16 @@ class _ContentState extends State<ContentCarousel> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => ViewQuiz(
-                            showAppBar: true,
-                            quizId: (children[value] as CarouselCard).id),
-                      ),
+                          builder: (context) => AssessmentsView(
+                              quizID: (children[value] as CarouselCard).id,
+                              courseID:
+                                  (children[value] as CarouselCard).courseId)),
                     );
                   } else if (type == 'essay') {
                     print(
                         (children[value] as CarouselCard).courseId?.toString());
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => EssaysView()));
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (context) => EssaysView()));
                   }
                 },
                 children: children,

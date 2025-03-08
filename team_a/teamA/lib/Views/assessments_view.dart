@@ -10,7 +10,10 @@ import "package:learninglens_app/content_carousel.dart";
 
 //The Page
 class AssessmentsView extends StatefulWidget {
-  AssessmentsView({super.key});
+  AssessmentsView({super.key, this.quizID = 0, this.courseID = 0});
+
+  final int quizID;
+  final int? courseID;
 
   @override
   _AssessmentsState createState() => _AssessmentsState();
@@ -19,12 +22,13 @@ class AssessmentsView extends StatefulWidget {
 class _AssessmentsState extends State<AssessmentsView> {
   late Future<List<Quiz>?> quizzes;
   Quiz? selectedQuiz;
+
   List<Map<String, dynamic>> questionsData = [];
 
   @override
   void initState() {
     super.initState();
-    quizzes = getAllQuizzes();
+    quizzes = getAllQuizzes(widget.courseID);
   }
 
   @override
@@ -34,7 +38,7 @@ class _AssessmentsState extends State<AssessmentsView> {
         title: 'Assessments',
         onRefresh: () {
           setState(() {
-            quizzes = getAllQuizzes();
+            quizzes = getAllQuizzes(widget.courseID);
           });
         },
         userprofileurl: LmsFactory.getLmsService().profileImage ?? '',
@@ -79,6 +83,9 @@ class _AssessmentsState extends State<AssessmentsView> {
                                   final quiz = quizList[index];
                                   final activeCourse =
                                       getCourse(quiz.coursedId);
+                                  if (quiz.id == widget.quizID) {
+                                    selectedQuiz = quiz;
+                                  }
 
                                   return ListTile(
                                     title: Text(
@@ -111,13 +118,13 @@ class _AssessmentsState extends State<AssessmentsView> {
                           // Right-side course details (quiz questions)
                           Expanded(
                             flex: 2,
-                            child: selectedQuiz == null
+                            child: selectedQuiz == null && widget.quizID == 0
                                 ? Center(
                                     child:
                                         Text('Select a quiz to view details'))
                                 : ViewQuiz(
                                     showAppBar: false,
-                                    quizId: selectedQuiz?.id ?? 0),
+                                    quizId: selectedQuiz?.id ?? widget.quizID),
                           ),
                         ],
                       );
@@ -134,10 +141,14 @@ class _AssessmentsState extends State<AssessmentsView> {
 }
 
 //Helper function that pulls the quizzes from all the user's courses
-Future<List<Quiz>> getAllQuizzes() async {
+Future<List<Quiz>> getAllQuizzes(int? courseID) async {
   List<Quiz> result = [];
   for (Course c in LmsFactory.getLmsService().courses ?? []) {
-    result.addAll(c.quizzes ?? []);
+    if (courseID == 0 ||
+        courseID == null ||
+        c.courseId == courseID.toString()) {
+      result.addAll(c.quizzes ?? []);
+    }
   }
   return result;
 }
