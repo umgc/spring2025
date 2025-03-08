@@ -50,6 +50,10 @@ jobs:
       #   run: flutter analyze
       #   working-directory: team_a/teamA
 
+      # Copy the .example.env over to a .env file.
+      - name: Create .env file from example
+        run: cp .example.env .env
+
       # Run Flutter unit tests in the 'team_a/teamA' folder
       - name: Run Flutter Tests
         run: flutter test
