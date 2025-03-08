@@ -101,8 +101,13 @@ class _ContentState extends State<ContentCarousel> {
                   } else if (type == 'essay') {
                     print(
                         (children[value] as CarouselCard).courseId?.toString());
-                    Navigator.push(context,
-                        MaterialPageRoute(builder: (context) => EssaysView()));
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => EssaysView(
+                                essayID: (children[value] as CarouselCard).id,
+                                courseID: (children[value] as CarouselCard)
+                                    .courseId)));
                   }
                 },
                 children: children,

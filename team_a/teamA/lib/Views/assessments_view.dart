@@ -3,9 +3,7 @@ import "package:learninglens_app/Api/lms/factory/lms_factory.dart";
 import "package:learninglens_app/Views/view_quiz.dart";
 import 'package:learninglens_app/beans/quiz.dart';
 import 'package:learninglens_app/beans/course.dart';
-import 'package:learninglens_app/beans/question.dart';
 import "package:learninglens_app/Controller/custom_appbar.dart";
-import "package:learninglens_app/beans/quiz_type.dart";
 import "package:learninglens_app/content_carousel.dart";
 
 //The Page
@@ -144,9 +142,7 @@ class _AssessmentsState extends State<AssessmentsView> {
 Future<List<Quiz>> getAllQuizzes(int? courseID) async {
   List<Quiz> result = [];
   for (Course c in LmsFactory.getLmsService().courses ?? []) {
-    if (courseID == 0 ||
-        courseID == null ||
-        c.courseId == courseID.toString()) {
+    if (courseID == 0 || courseID == null || c.id == courseID) {
       result.addAll(c.quizzes ?? []);
     }
   }

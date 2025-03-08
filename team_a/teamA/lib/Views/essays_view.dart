@@ -14,7 +14,9 @@ import "package:learninglens_app/content_carousel.dart";
 
 // The Page
 class EssaysView extends StatefulWidget {
-  EssaysView({super.key});
+  EssaysView({super.key, this.essayID = 0, this.courseID = 0});
+  final int essayID;
+  final int? courseID;
 
   @override
   _EssaysState createState() => _EssaysState();
@@ -29,7 +31,7 @@ class _EssaysState extends State<EssaysView> {
   @override
   void initState() {
     super.initState();
-    essays = getAllEssays();
+    essays = getAllEssays(widget.courseID);
   }
 
   @override
@@ -39,7 +41,7 @@ class _EssaysState extends State<EssaysView> {
         title: 'Essays',
         onRefresh: () {
           setState(() {
-            essays = getAllEssays();
+            essays = getAllEssays(widget.courseID);
           });
         },
         userprofileurl: LmsFactory.getLmsService().profileImage ?? '',
@@ -82,8 +84,11 @@ class _EssaysState extends State<EssaysView> {
                                 itemCount: essayList.length,
                                 itemBuilder: (context, index) {
                                   final essay = essayList[index];
-                                  final activeCourse = getCourse(essay.courseId);
-
+                                  final activeCourse =
+                                      getCourse(essay.courseId);
+                                  if (essay.id == widget.essayID) {
+                                    selectedEssay = essay;
+                                  }
                                   return ListTile(
                                     title: Text(
                                         '${essay.name} (${activeCourse.shortName}${activeCourse.courseId})'),
@@ -125,7 +130,7 @@ class _EssaysState extends State<EssaysView> {
                           // Right-side course details (quiz questions)
                           Expanded(
                             flex: 2,
-                            child: selectedEssay == null
+                            child: selectedEssay == null && widget.essayID == 0
                                 ? Center(
                                     child:
                                         Text('Select an essay to view details'))
@@ -164,8 +169,10 @@ class _EssaysState extends State<EssaysView> {
                                         flex: 1,
                                         child: Container(
                                           decoration: BoxDecoration(
-                                            border: Border.all(color: Colors.grey),
-                                            borderRadius: BorderRadius.circular(8.0),
+                                            border:
+                                                Border.all(color: Colors.grey),
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
                                           ),
                                           margin: EdgeInsets.all(8.0),
                                           child: Padding(
@@ -174,16 +181,36 @@ class _EssaysState extends State<EssaysView> {
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
                                                 Padding(
-                                                  padding: const EdgeInsets.all(8.0),
-                                                  child: Text('Student Submissions', style: TextStyle(fontSize: 20)),
+                                                  padding:
+                                                      const EdgeInsets.all(8.0),
+                                                  child: Text(
+                                                      'Student Submissions',
+                                                      style: TextStyle(
+                                                          fontSize: 20)),
                                                 ),
                                                 Expanded(
-                                                  child: selectedEssay == null
-                                                      ? Center(child: Text('No essay selected'))
+                                                  child: selectedEssay ==
+                                                              null &&
+                                                          widget.essayID == 0
+                                                      ? Center(
+                                                          child: Text(
+                                                              'No essay selected'))
                                                       : SubmissionList(
-                                                          key: ValueKey(selectedEssay!.id), // Add a Key to force rebuild
-                                                          assignmentId: selectedEssay?.id ?? 0,
-                                                          courseId: selectedEssay!.courseId.toString(),
+                                                          key: ValueKey(
+                                                              selectedEssay
+                                                                      ?.id ??
+                                                                  widget
+                                                                      .essayID), // Add a Key to force rebuild
+                                                          assignmentId:
+                                                              selectedEssay
+                                                                      ?.id ??
+                                                                  widget
+                                                                      .essayID,
+                                                          courseId: selectedEssay
+                                                                  ?.courseId
+                                                                  .toString() ??
+                                                              widget.courseID
+                                                                  .toString(),
                                                         ),
                                                 ),
                                               ],
@@ -209,10 +236,12 @@ class _EssaysState extends State<EssaysView> {
 }
 
 // Helper function that pulls the quizzes from all the user's courses
-Future<List<Assignment>> getAllEssays() async {
+Future<List<Assignment>> getAllEssays(int? courseID) async {
   List<Assignment> result = [];
   for (Course c in LmsFactory.getLmsService().courses ?? []) {
-    result.addAll(c.essays ?? []);
+    if (courseID == 0 || courseID == null || c.id == courseID) {
+      result.addAll(c.essays ?? []);
+    }
   }
   return result;
 }
