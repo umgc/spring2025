@@ -243,8 +243,19 @@ class _IndustryMenuState extends State<IndustryMenu> {
                                     );
                                     // Kick off the AI summarization process
                                     var openAIHelper = OpenAIHelper();
-                                    await openAIHelper.summarizeTranscription(userId, Industry.restaurant, transcriptId);
-                                    // Place API hook here to parse AI response and populate additional information based on industry:
+                                    String aiResponse = '';
+                                    try {
+                                      // TODO: needs specific industry => match enum to page title?
+                                      aiResponse = await openAIHelper.summarizeTranscription(userId, Industry.restaurant, transcriptId);
+                                    } catch (e) {
+                                      // Lets the user know that transcription summarization failed (likely because of a lack of OpenAI API key)
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(content: Text('Failed to summarize transcription: $e')),
+                                        );
+                                      }
+                                    }
+                                    // Place API hook here to parse aiResponse String and populate additional information based on industry:
 
                                     Navigator.of(context).pop();
                                   },

@@ -36,7 +36,7 @@ class OpenAIHelper {
       Audio Transcript:
     ''';
   
-  Future<void> summarizeTranscription(int userId, Industry industry, int transcriptId) async {
+  Future<String> summarizeTranscription(int userId, Industry industry, int transcriptId) async {
     // Pulls the transcript text from the database
     Map<String, dynamic>? transcript = await dbHelper.getTranscriptById(transcriptId);
     if (transcript == null) {
@@ -65,14 +65,19 @@ class OpenAIHelper {
           role: OpenAIChatMessageRole.user, content: [OpenAIChatCompletionChoiceMessageContentItemModel.text(fullPromptToSend)])
     ];
 
-    final completion = await OpenAI.instance.chat
+    try {
+      final completion = await OpenAI.instance.chat
         .create(model: "gpt-4o-mini", messages: messages);
-
-    print(completion.choices[0].message.content.toString());
-    // Adds the AI response to the previously saved transcript in the database
-    await dbHelper.saveTranscriptAiResponse(userId: userId,
-      transcriptId: transcriptId,
-      text: transcript['transcript_text_data'],
-      aiResponse: completion.choices[0].message.content.toString());
+      print(completion.choices[0].message.content.toString());
+      print(completion.choices[0].message.content.toString());
+      // Adds the AI response to the previously saved transcript in the database
+      await dbHelper.saveTranscriptAiResponse(userId: userId,
+        transcriptId: transcriptId,
+        text: transcript['transcript_text_data'],
+        aiResponse: completion.choices[0].message.content.toString());
+      return completion.choices[0].message.content.toString();
+    } catch (e) {
+      rethrow;
+    }
   }
 }

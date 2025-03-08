@@ -6,5 +6,7 @@ part 'env.g.dart';
 @Envied(path: '.env')
 abstract class Env {
   @EnviedField(varName: 'OPENAI_API_KEY')
-  static String apiKey = _Env.apiKey;
+  // Use this value instead for local testing: "_Env.apiKey;"
+  // Otherwise, provide an API key within the application's settings while running
+  static String apiKey = '';
 }

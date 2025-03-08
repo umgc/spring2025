@@ -16,9 +16,6 @@ void main() async{
   String apiKey = Env.apiKey;
   if (apiKey.isNotEmpty) {
     OpenAI.apiKey = apiKey;
-    print('Env API Key found and set');
-  } else {
-    print('Env API Key not found');
   }
 
   await dbHelper.database;
@@ -31,7 +28,7 @@ void main() async{
         builder: (BuildContext context) {
           return AlertDialog(
             title: Text('OpenAI API Key Required'),
-            content: Text('Please add an OpenAI API key via the Settings menu.'),
+            content: Text('Please add a valid OpenAI API key via the Settings menu.'),
             actions: <Widget>[
               TextButton(
                 child: Text('OK'),
@@ -55,9 +52,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      // navigatorKey: navigatorKey,
+      navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
-      title: 'Your App',
+      title: 'Yappy',
       theme: ThemeData(
         primarySwatch: Colors.lightGreen,
         visualDensity: VisualDensity.adaptivePlatformDensity,
