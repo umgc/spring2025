@@ -1,6 +1,7 @@
+import 'package:dart_openai/dart_openai.dart';
 import 'package:flutter/material.dart';
-import './services/model_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import './services/model_manager.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -71,7 +72,9 @@ class _SettingsPageState extends State<SettingsPage> {
                       TextButton(
                         child: const Text('OK'),
                         onPressed: () {
-                          Navigator.of(context).pop();
+                          if (mounted) {
+                            Navigator.of(context).pop();
+                          }
                         },
                       ),
                     ],
@@ -103,10 +106,13 @@ class _SettingsPageState extends State<SettingsPage> {
                       ),
                       TextButton(
                         child: const Text('Save'),
-                        onPressed: () {
-                          // Save the API key to env.dart file
-                          // String apiKey = apiKeyController.text;
-                          // Add your logic to save the API key here
+                        onPressed: () async {
+                          // Save the API key
+                          String apiKey = apiKeyController.text;
+                          SharedPreferences prefs = await SharedPreferences.getInstance();
+                          await prefs.setString('openai_api_key', apiKey);
+                          OpenAI.apiKey = apiKey;
+                          if (!context.mounted) return;
                           Navigator.of(context).pop();
                         },
                       ),

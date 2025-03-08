@@ -1,5 +1,5 @@
 name: yappy
-description: "A new Flutter project."
+description: "Yappy! is an application that allows you to store transcripts in different industry contexts."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -48,6 +48,7 @@ dependencies:
   archive: ^4.0.4             # For BZ2 decompression
   file_picker: ^9.0.2
   flutter_audio_waveforms: ^1.2.1+8
+  dart_openai: ^5.1.0
 
 dev_dependencies:
   flutter_test:
@@ -81,7 +82,6 @@ flutter:
   assets:
     - assets/icon/app_icon.png
     - assets/yappy_database.db
-    - assets/test_document.txt
     - assets/
   # To add assets to your application, add an assets section, like this:
   # assets:
