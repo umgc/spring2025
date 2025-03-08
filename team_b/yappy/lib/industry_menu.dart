@@ -266,11 +266,11 @@ class _IndustryMenuState extends State<IndustryMenu> {
                               TextButton(
                                 onPressed: () async {
                                   // Save the edited text to the database
-                                  await DatabaseHelper().saveTranscriptTextData(
+                                  await DatabaseHelper().saveTranscript(
                                     userId: userId,
                                     transcriptId: transcriptId,
                                     text: controller.text,
-                                    industry: title,
+                                    industry: widget.title,
                                   );
                                     // Kick off the AI summarization process
                                     var openAIHelper = OpenAIHelper();
@@ -298,26 +298,26 @@ class _IndustryMenuState extends State<IndustryMenu> {
                                   Navigator.of(context).pop();
                                 },
                                 child: Text('Cancel'),
+
                               ),
                             ],
                           );
                         },
                       );
                     }
+                  },
+                ),
+              ),
+            ),
+            SizedBox(width: screenWidth * .06),
+
                     //take the Transcript_ID and give it to the LLM
                     // I would create its own class or function
                     
                     //take the LLM data and store it in the Transcript_AI_Response 
                     // I would create its own class or function
-
-
-
-                  }
-                )
-
-                ),
               
-                SizedBox(width: screenWidth * .06),
+
 
               // Creates a industry specific icon based on user input
               Container(
@@ -389,7 +389,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
                       return ListTile(
                         title: Text(
                           // get the transcipts for the industry 
-                          transcript['industry'] == title ? 'Transcript ${transcript['transcript_id']}' : ''
+                          transcript['industry'] == widget.title ? 'Transcript ${transcript['transcript_id']}' : ''
                           'Transcript ${transcript['transcript_id']}',
                           style: TextStyle(color: Colors.white),
                         ),

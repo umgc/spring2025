@@ -517,21 +517,16 @@ class DatabaseHelper {
     };
     updateTranscript(transcript);
   }
-}
-
-  // Commented out this method for future use
-  /* getTranscriptCountForDate(String date) {
-    // Get the number of transcripts for a given date
-    Future<int> getTranscriptCountForDate(String date) async {
-        final db = await database;
-        List<Map<String, dynamic>> results = await db.rawQuery(
-          'SELECT COUNT(*) as count FROM Transcript WHERE DATE(transcript_timestamp) = ?',
-          [date],
-        );
-        if (results.isNotEmpty) {
-          return results.first['count'] as int;
-        }
-        return 0;
-      }
+  // Get the number of transcripts for any given date
+  Future<int> getTranscriptCountForDate(String date) async {
+    final db = await database;
+    List<Map<String, dynamic>> results = await db.rawQuery(
+      'SELECT COUNT(*) as count FROM Transcript WHERE DATE(transcript_timestamp) = ?',
+      [date],
+    );
+    if (results.isNotEmpty) {
+      return results.first['count'] as int;
     }
-  }*/
+    return 0;
+  }
+}
