@@ -64,7 +64,7 @@ dependencies:
     mockito: ^5.4.5
     http: ^0.13.6
     flutter_local_notifications: ^18.0.1
-    firebase_messaging: ^latest_version  
+    firebase_crashlytics: ^latest_version
     flutter_local_notifications: ^latest_version  
     logging: ^latest_version  
     firebase_core: ^latest_version  

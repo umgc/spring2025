@@ -2,17 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yappy/industry_menu.dart';
 import 'package:yappy/speech_state.dart';
-import 'package:yappy/services/model_manager.dart';
 
 void main() {
 
   final SpeechState speechState = SpeechState();
-  final ModelManager modelManager = ModelManager();
   testWidgets('IndustryMenu displays title and icons', (WidgetTester tester) async {
     // Build the IndustryMenu widget.
     await tester.pumpWidget(MaterialApp(
       home: Scaffold(
-        body: IndustryMenu(title: 'Industry Title', icon: Icons.business, speechState: speechState, modelManager: modelManager),
+        body: IndustryMenu(title: 'Industry Title', icon: Icons.business, speechState: speechState),
       ),
     ));
 
@@ -33,7 +31,7 @@ void main() {
     // Build the IndustryMenu widget.
     await tester.pumpWidget(MaterialApp(
       home: Scaffold(
-        body: IndustryMenu(title: 'Industry Title', icon: Icons.business, speechState: speechState, modelManager: modelManager),
+        body: IndustryMenu(title: 'Industry Title', icon: Icons.business, speechState: speechState),
       ),
     ));
 

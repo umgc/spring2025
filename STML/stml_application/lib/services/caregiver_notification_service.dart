@@ -5,6 +5,7 @@ import 'package:logging/logging.dart';
 import 'package:memoryminder/models/caregiver.dart';
 import 'package:memoryminder/services/navigation_service.dart';
 import 'dart:convert';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';  
 
 enum EmergencyType {
   help,
@@ -44,8 +45,7 @@ class CaregiverNotificationService {
     Logger.root.onRecord.listen((record) {
       _logger.info('${record.level.name}: ${record.time}: ${record.message}');
       if (record.level >= Level.SEVERE) {
-        // Implement crash reporting service here (e.g., Crashlytics)
-        // FirebaseCrashlytics.instance.recordError(record.error, record.stackTrace);
+        
       }
     });
   }
