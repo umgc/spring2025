@@ -72,7 +72,9 @@ class _SettingsPageState extends State<SettingsPage> {
                       TextButton(
                         child: const Text('OK'),
                         onPressed: () {
-                          Navigator.of(context).pop();
+                          if (mounted) {
+                            Navigator.of(context).pop();
+                          }
                         },
                       ),
                     ],

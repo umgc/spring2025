@@ -42,7 +42,6 @@ class OpenAIHelper {
     if (transcript == null) {
       throw Exception('Transcript with given ID not found');
     }
-    print(transcript['transcript_text_data']);
 
     String contextPrompt;
     switch (industry) {
@@ -58,7 +57,6 @@ class OpenAIHelper {
     }
 
     String fullPromptToSend = contextPrompt + transcript['transcript_text_data'];
-    print(fullPromptToSend);
 
     List<OpenAIChatCompletionChoiceMessageModel> messages = [
       OpenAIChatCompletionChoiceMessageModel(
@@ -68,8 +66,6 @@ class OpenAIHelper {
     try {
       final completion = await OpenAI.instance.chat
         .create(model: "gpt-4o-mini", messages: messages);
-      print(completion.choices[0].message.content.toString());
-      print(completion.choices[0].message.content.toString());
       // Adds the AI response to the previously saved transcript in the database
       await dbHelper.saveTranscriptAiResponse(userId: userId,
         transcriptId: transcriptId,
