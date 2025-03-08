@@ -50,6 +50,8 @@ class _IepPageState extends State{
     }
   }
 
+
+
   @override
   Widget build(BuildContext context){
     return Scaffold(
@@ -311,6 +313,8 @@ class _IepPageState extends State{
                     child: ElevatedButton(
                       onPressed: () {
                         quizOver(epochTime, quizId, userId, selectedAttempt);
+                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => IepPage()),
+                        );
                       },
                       child: Text('Submit')
                     )
