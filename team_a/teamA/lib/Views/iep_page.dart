@@ -19,6 +19,7 @@ class IepPage extends StatefulWidget{
 }
 
 class _IepPageState extends State{
+  TextEditingController _dateController = TextEditingController();
   bool? isChecked1 = false;
   bool? isChecked2 = false;
   String? selectedCourse;
@@ -32,6 +33,20 @@ class _IepPageState extends State{
   Future<List<Assignment>>? essay;
   Future<List<Quiz>>? quiz;
   List<String> type = ['Quiz', 'Essay'];
+  double? epochTime;
+  List<String> attempts = ['Unlimited', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
+  int? selectedAttempt;
+
+ void _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime(2000), lastDate: DateTime(2100),);
+    if (picked!= null && picked != DateTime.now()) {
+      setState(() {
+        _dateController.text = "${picked.toLocal()}".split(' ')[0];
+        epochTime = picked.millisecondsSinceEpoch/1000.round();
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context){
     return Scaffold(
@@ -108,6 +123,16 @@ class _IepPageState extends State{
                         hintText: 'Select Participants',
                         width: 500,
                         dropdownMenuEntries: dropdownEntries,
+                        onSelected: (String? selectedParticipant) {
+                          setState(() {
+                            if (selectedParticipant != null) {
+                              userId = int.parse(selectedParticipant);
+                            }
+                            else {
+                              print('No Participants were selected');
+                            }
+                          });
+                        },
                       );
                       } else {
                         return DropdownMenu(
@@ -121,7 +146,7 @@ class _IepPageState extends State{
                 ),
                 ),
                 Visibility (
-                  visible: selectedCourse != null,
+                  visible: userId != null,
                   child: DropdownMenu(
                   width: 500,
                   helperText: 'Assignment',
@@ -192,8 +217,8 @@ class _IepPageState extends State{
                       } else if (snapshot.hasData) {
                         List<DropdownMenuEntry<String>> dropdownEntries = snapshot.data!.map((Quiz quiz){
                           return DropdownMenuEntry<String>(
-                            value: quiz.name!,
-                            label: quiz.id.toString()! + ' ' + quiz.timeClose.toString() + ' ' + quiz.name!,
+                            value: quiz.id.toString(),
+                            label: quiz.name!,
                           );
                         }).toList();
                       return DropdownMenu(
@@ -201,6 +226,16 @@ class _IepPageState extends State{
                         hintText: 'Select Quiz',
                         width: 500,
                         dropdownMenuEntries: dropdownEntries,
+                        onSelected: (String? selectedQuizId) {
+                          setState(() {
+                            if (selectedQuizId != null) {
+                              quizId = int.parse(selectedQuizId);
+                            }
+                            else {
+                              print ('Quiz Id is null');
+                            }
+                          });
+                        },
                       );
                       } else {
                         return DropdownMenu(
@@ -213,61 +248,70 @@ class _IepPageState extends State{
                   },
                 ),
                 ),
-                Row(
-                  children: [
-                    Checkbox(
-                      value: isChecked1,
-                      onChanged: (newBool) {
-                        setState((){
-                          isChecked1 = newBool;
-                        });
+                Visibility(
+                  visible: quizId != null,
+                  child: DropdownMenu(
+                    width: 300,
+                    helperText: 'Attempts',
+                    hintText: 'Select Number of Attempts',
+                    dropdownMenuEntries: attempts.map<DropdownMenuEntry<String>>((String attempts) {
+                      return DropdownMenuEntry<String>(
+                        value: attempts,
+                        label: attempts,
+                    );
+                  }).toList(),
+                  onSelected: (String? selectedValue) {
+                    setState(() {
+                      if (selectedValue == 'Unlimited') {
+                        selectedAttempt = 0;
                       }
-                    ),
-                    Text('Requires more time on essay.')
-                  ]
-                ),
-                Row(
-                  children: [
-                    Checkbox(
-                      value: isChecked2,
-                      onChanged: (newBool) {
-                        setState((){
-                          isChecked2 = newBool;
-                        });
+                      else {
+                        selectedAttempt = int.parse(selectedValue!);
                       }
-                    ),
-                    Text('Requires more time on quizzes.')
-                  ]
+                    });
+                  },
                 ),
-                Container(
-                  width: 500,
-                  padding: EdgeInsets.only(bottom: 5),
-                  child: TextField(
-                    decoration: InputDecoration(
-                      labelText: 'Additional Comments (Optional)',
-                      border: OutlineInputBorder()
+              ),
+                Visibility(
+                  visible: selectedAttempt != null,
+                  child: Row (children: [
+                    Container(
+                      width: 325,
+                      margin: EdgeInsets.only(right: 20),
+                      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.black),
+                      ),
+                      child: Text(_dateController.text, style: TextStyle(fontSize: 20)),
+                    ),
+                    GestureDetector(
+                      onTap:() => _selectDate(context),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(vertical: 15, horizontal: 40),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.black),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          'Select Date',
+                        ),
+                      ),
+                    ),
+                    ] ,
+                  ), 
+                ),
+                Visibility(
+                  visible: epochTime != null,
+                  child: Container(                  
+                    padding: EdgeInsets.only(top: 50, left: 200),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        quizOver(epochTime, quizId, userId, selectedAttempt);
+                      },
+                      child: Text('Submit')
                     )
                   )
-                ),
-                Container(
-                  padding: EdgeInsets.only(top: 0, left: 400),
-                  child: ElevatedButton(
-                    onPressed: () {
-                      quizOver();
-                    },
-                    child: Text('Submit')  
-                  )
-                ),
-                GestureDetector(
-                  onTap:() => _selectDate(context),
-                  child: Container(
-                    padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.black),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(selectedDate),
-                  ),
                 ),
               ]
             ),
@@ -309,15 +353,6 @@ class _IepPageState extends State{
                     )
                   ),
                 ),
-                Container(
-                  padding: EdgeInsets.only(top: 10, left: 1000),
-                  child: ElevatedButton(
-                    onPressed: () {
-                      print('Deleted');
-                    },
-                    child: Text('Delete Selected IEP')  
-                  )
-                )
               ]
             )
           ]
@@ -388,10 +423,7 @@ Future<List<Quiz>> handleQuizSelection(int? courseID) async {
   }
 }
 
-void quizOver() async {
-  QuizOverride override = await MoodleLmsService().addQuizOverride(quizId:10, userId:15, timeClose: 500000);
+void quizOver(epochTime, quizId, userId, attempts) async {
+  QuizOverride override = await MoodleLmsService().addQuizOverride(quizId: quizId, userId: userId, timeClose: epochTime, attempts: attempts);
 }
 
-void _selectDate(BuildContext context) async {
-  DateTime? pickedDate = await showDatePicker(context: context, firstDate: DateTime(2000), lastDate: DateTime(2100),);
-}
