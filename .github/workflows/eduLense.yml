@@ -20,6 +20,9 @@ on:
     paths:
       - "team_a/teamA/**"
 
+  # Allow manual trigger on any branch
+  workflow_dispatch:
+
 jobs:
   build:
     # Define the environment the job will run on (Ubuntu latest version)
@@ -30,19 +33,23 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Setup Dart environment for running the tests and analysis
-      - name: Setup Dart Environment
-        uses: dart-lang/setup-dart@v1
+      # Setup Flutter environment for running the tests and analysis
+      - name: Setup Flutter Environment
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "stable"
 
-      # Install project dependencies using Dart package manager
+      # Install Flutter dependencies using pub
       - name: Install Dependencies
-        run: dart pub get
+        run: flutter pub get
+        working-directory: team_a/teamA  # Ensure commands run in the correct folder
 
-      # Analyze the Dart project to check for any issues in the code
-      # Restricts analysis only to files inside 'team_a/teamA'
+      # Analyze the Flutter project to check for any issues in the code
       - name: Analyze Project Source
-        run: dart analyze team_a/teamA
+        run: flutter analyze
+        working-directory: team_a/teamA
 
-      # Run unit tests in the 'team_a/teamA' folder
-      - name: Run Tests
-        run: dart test team_a/teamA
+      # Run Flutter unit tests in the 'team_a/teamA' folder
+      - name: Run Flutter Tests
+        run: flutter test
+        working-directory: team_a/teamA
