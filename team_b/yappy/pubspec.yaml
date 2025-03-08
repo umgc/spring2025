@@ -31,6 +31,7 @@ dependencies:
   flutter:
     sdk: flutter
 
+  intl: ^0.17.0
   cupertino_icons: ^1.0.8
   flutter_launcher_icons: ^0.14.3
   sqflite: ^2.4.1

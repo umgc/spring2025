@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:record/record.dart';
 import 'package:yappy/services/openai_helper.dart';
 import 'package:yappy/speech_state.dart';
@@ -378,42 +379,47 @@ class _IndustryMenuState extends State<IndustryMenu> {
                     itemCount: transcripts.length,
                     itemBuilder: (context, index) {
                       Map<String, dynamic> transcript = transcripts[index];
-                      return ListTile(
-                        title: Text(
-                          // get the transcipts for the industry 
-                          transcript['industry'] == widget.title ? 'Transcript ${transcript['transcript_id']}' : ''
-                          'Transcript ${transcript['transcript_id']}',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        onTap: () {
-                          Navigator.pop(context);
-                          if (widget.title == 'Restaurant') {
-                            // Show Kanban style list for restaurant
-                            showModalBottomSheet(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return KanbanBoard(tasks: [
-                                  // get the order_transcript from the restaurant table if industy is restaurant
+                      if (transcript['industry'] == widget.title) {
+                        return ListTile(
+                          title: Text(                           
+                            // Format the transcript ID to Day Month Year Time
+                            DateFormat('dd MMM yyyy HH:mm').format(
+                            DateTime.fromMillisecondsSinceEpoch(transcript['transcript_id'])
+                            ),
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          onTap: () {
+                            Navigator.pop(context);
+                            if (widget.title == 'Restaurant') {
+                              // Show Kanban style list for restaurant
+                              showModalBottomSheet(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return KanbanBoard(tasks: [
+                                    // get the order_transcript from the restaurant table if industy is restaurant
 
-                                ]);
-                              },
-                            );
-                          } else {
-                            // Show regular transcript for other industries
-                            showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return generateTranscript(
-                                  context,
-                                  'Transcript',
-                                  transcript['transcript_text_data'] ?? 'No content available',
-                                  transcript['transcript_id'],
-                                );
-                              },
-                            );
-                          }
-                        },
-                      );
+                                  ]);
+                                },
+                              );
+                            } else {
+                              // Show regular transcript for other industries
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return generateTranscript(
+                                    context,
+                                    'Transcript',
+                                    transcript['transcript_text_data'] ?? 'No content available',
+                                    transcript['transcript_id'],
+                                  );
+                                },  
+                              );
+                            }
+                          },
+                        );
+                      } else {
+                        return SizedBox.shrink();
+                      }
                     },
                   ),
                 ),
@@ -423,7 +429,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
         );
       },
     );
-  }    
+  }
 
   // Extract the functionality to show transcript history into a separate method
   void _showTranscriptsHistoryBottomSheet(BuildContext context) async {
@@ -453,7 +459,10 @@ class _IndustryMenuState extends State<IndustryMenu> {
                       if (transcript['industry'] == widget.title) {
                       return ListTile(
                         title: Text(
-                        'Transcript ${transcript['transcript_id']}',
+                          // Format the transcript ID to Day Month Year Time
+                          DateFormat('dd MMM yyyy HH:mm').format(
+                          DateTime.fromMillisecondsSinceEpoch(transcript['transcript_id'])
+                          ),
                         style: TextStyle(color: Colors.white),
                         ),
                         onTap: () {
