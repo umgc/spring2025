@@ -502,21 +502,36 @@ class DatabaseHelper {
       'transcript_ai_response': '',
       'industry': industry,
     };
-    await insertTranscript(transcript);
+    insertTranscript(transcript);
   }
 
-  getTranscriptCountForDate(String date) {
-// Get the number of transcripts for a given date
-  Future<int> getTranscriptCountForDate(String date) async {
-      final db = await database;
-      List<Map<String, dynamic>> results = await db.rawQuery(
-        'SELECT COUNT(*) as count FROM Transcript WHERE DATE(transcript_timestamp) = ?',
-        [date],
-      );
-      if (results.isNotEmpty) {
-        return results.first['count'] as int;
-      }
-      return 0;
-    }
+  saveTranscriptAiResponse({required int userId, required int transcriptId, 
+    required String text, required String aiResponse}) {
+    // Save the new transcript to the database using the provided information
+    Map<String, dynamic> transcript = {
+      'user_id': userId,
+      'transcript_id': transcriptId,
+      'transcript_text_data': text,
+      'transcript_timestamp': DateTime.now().toIso8601String(),
+      'transcript_ai_response': aiResponse
+    };
+    updateTranscript(transcript);
   }
 }
+
+  // Commented out this method for future use
+  /* getTranscriptCountForDate(String date) {
+    // Get the number of transcripts for a given date
+    Future<int> getTranscriptCountForDate(String date) async {
+        final db = await database;
+        List<Map<String, dynamic>> results = await db.rawQuery(
+          'SELECT COUNT(*) as count FROM Transcript WHERE DATE(transcript_timestamp) = ?',
+          [date],
+        );
+        if (results.isNotEmpty) {
+          return results.first['count'] as int;
+        }
+        return 0;
+      }
+    }
+  }*/

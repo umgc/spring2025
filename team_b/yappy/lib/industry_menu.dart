@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:record/record.dart';
+import 'package:yappy/services/openai_helper.dart';
 import 'package:yappy/speech_state.dart';
 import 'package:yappy/services/database_helper.dart';
 import 'package:share_plus/share_plus.dart';
@@ -243,13 +244,14 @@ class _IndustryMenuState extends State<IndustryMenu> {
                         String recordedText = await widget.speechState.getRecordedText();
 
                         // Get the user ID (assuming you have a method to get the current user ID)
-                          int userId = 0001;
+                        int userId = 0001;
 
                         // Create a new transcript ID 
-                            int transcriptId = DateTime.now().millisecondsSinceEpoch;
+                        int transcriptId = DateTime.now().millisecondsSinceEpoch;
 
                       // Show a dialog to edit the text
                       TextEditingController controller = TextEditingController(text: recordedText);
+                        if (!context.mounted) return;
                       showDialog(
                         context: context,
                         builder: (BuildContext context) {
@@ -264,12 +266,29 @@ class _IndustryMenuState extends State<IndustryMenu> {
                               TextButton(
                                 onPressed: () async {
                                   // Save the edited text to the database
-                                  await DatabaseHelper().saveTranscript(
+                                  await DatabaseHelper().saveTranscriptTextData(
                                     userId: userId,
                                     transcriptId: transcriptId,
                                     text: controller.text,
                                     industry: title,
                                   );
+                                    // Kick off the AI summarization process
+                                    var openAIHelper = OpenAIHelper();
+                                    String aiResponse = '';
+                                    try {
+                                      aiResponse = await openAIHelper.summarizeTranscription(userId, Industry.restaurant, transcriptId);
+                                    } catch (e) {
+                                      // Lets the user know that transcription summarization failed (likely because of a lack of OpenAI API key)
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(content: Text('Failed to summarize transcription: $e')),
+                                        );
+                                      }
+                                    }
+                                    // Place API hook here to parse aiResponse String and populate additional information based on industry:
+                                    debugPrint(aiResponse); // not a necessary statement after implementation
+
+                                    if (!context.mounted) return;
                                   Navigator.of(context).pop();
                                 },
                                 child: Text('Save'),
