@@ -222,6 +222,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
 
                         // Show a dialog to edit the text
                         TextEditingController controller = TextEditingController(text: recordedText);
+                        if (!context.mounted) return;
                         showDialog(
                           context: context,
                           builder: (BuildContext context) {
@@ -245,7 +246,6 @@ class _IndustryMenuState extends State<IndustryMenu> {
                                     var openAIHelper = OpenAIHelper();
                                     String aiResponse = '';
                                     try {
-                                      // TODO: needs specific industry => match enum to page title?
                                       aiResponse = await openAIHelper.summarizeTranscription(userId, Industry.restaurant, transcriptId);
                                     } catch (e) {
                                       // Lets the user know that transcription summarization failed (likely because of a lack of OpenAI API key)
@@ -256,7 +256,9 @@ class _IndustryMenuState extends State<IndustryMenu> {
                                       }
                                     }
                                     // Place API hook here to parse aiResponse String and populate additional information based on industry:
+                                    debugPrint(aiResponse); // not a necessary statement after implementation
 
+                                    if (!context.mounted) return;
                                     Navigator.of(context).pop();
                                   },
                                   child: Text('Save'),

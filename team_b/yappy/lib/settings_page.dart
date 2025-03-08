@@ -112,6 +112,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           SharedPreferences prefs = await SharedPreferences.getInstance();
                           await prefs.setString('openai_api_key', apiKey);
                           OpenAI.apiKey = apiKey;
+                          if (!context.mounted) return;
                           Navigator.of(context).pop();
                         },
                       ),
