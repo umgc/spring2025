@@ -53,7 +53,7 @@ Future<sherpa_onnx.SpeakerEmbeddingExtractor> createSpeakerExtractor() async {
 class Conversation {
   final List<RecognizedSegment> segments;
   final String audioFilePath;
-  
+
   Conversation({
     required this.segments,
     required this.audioFilePath,
@@ -161,13 +161,18 @@ class AudioSegment {
 class SpeechState extends ChangeNotifier {
   final TextEditingController controller = TextEditingController();
   final AudioRecorder audioRecorder = AudioRecorder();
-  
+
+  ValueNotifier<List<int>> audioSamplesNotifier = ValueNotifier<List<int>>([]);
+
   RecordState recordState = RecordState.stop;
   bool isInitialized = false;
   int currentIndex = 0;
   double currentTimestamp = 0.0;
   int currentSpeakerCount = 0;
   
+  void updateAudioSamples(List<int> newSamples) {
+    audioSamplesNotifier.value = newSamples;
+  }
   // Store all recognized segments
   final List<RecognizedSegment> recognizedSegments = [];
 
@@ -433,13 +438,18 @@ class SpeechState extends ChangeNotifier {
         recordStream.listen(
           (data) {
             final samplesFloat32 = convertBytesToFloat32(Uint8List.fromList(data));
-            
+
             // Add samples to current segment buffer
             currentSegmentSamples.add(samplesFloat32);
             allAudioSamples.add(samplesFloat32);
 
             // Update current timestamp based on number of samples
             currentTimestamp += samplesFloat32.length / sampleRate;
+
+            // ALYS CODE TO HELP UPDATE THE AUDIOWAVE SAMPLES
+            audioSamplesNotifier.value = samplesFloat32
+                .map((e) => (e * 100000).toInt())
+                .toList();
 
             onlineStream!.acceptWaveform(
               samples: samplesFloat32, 
