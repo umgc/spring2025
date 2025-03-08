@@ -37,7 +37,7 @@ jobs:
       - name: Setup Flutter Environment
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "stable"
+          channel: 'stable'
 
       # Install Flutter dependencies using pub
       - name: Install Dependencies
