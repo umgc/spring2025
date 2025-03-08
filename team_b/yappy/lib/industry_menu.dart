@@ -47,7 +47,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
       });
     }
   }
-
+  // This method generates a transcript dialog including the options for sharing, downloading, and deleting the transcript
   Widget generateTranscript(BuildContext context, String title, String content, int transcript) {
     return AlertDialog(
       title: Text(title),
@@ -173,12 +173,12 @@ class _IndustryMenuState extends State<IndustryMenu> {
       ],
     );
   }
-
+  // This method fetches all transcripts from the database
   Future<List<Map<String, dynamic>>> _fetchTranscripts() async {
     DatabaseHelper dbHelper = DatabaseHelper();
     return await dbHelper.getAllTranscripts();
   }
-
+  // This method builds the industry menu widget where the user can record, view transcripts, and view transcript history
   @override
   Widget build(BuildContext context) {
     // Gets the width and height of the current screen
@@ -310,14 +310,6 @@ class _IndustryMenuState extends State<IndustryMenu> {
               ),
             ),
             SizedBox(width: screenWidth * .06),
-
-                    //take the Transcript_ID and give it to the LLM
-                    // I would create its own class or function
-                    
-                    //take the LLM data and store it in the Transcript_AI_Response 
-                    // I would create its own class or function
-              
-
 
               // Creates a industry specific icon based on user input
               Container(
@@ -454,33 +446,34 @@ class _IndustryMenuState extends State<IndustryMenu> {
             child: Column(
               children: [
                 Expanded(
-                  child: ListView.builder(
+                    child: ListView.builder(
                     itemCount: transcripts.length,
                     itemBuilder: (context, index) {
                       Map<String, dynamic> transcript = transcripts[index];
+                      if (transcript['industry'] == widget.title) {
                       return ListTile(
                         title: Text(
-                          'Transcript ${transcript['transcript_id']}',
-                          style: TextStyle(
-                            color: Colors.white
-                          ), 
+                        'Transcript ${transcript['transcript_id']}',
+                        style: TextStyle(color: Colors.white),
                         ),
                         onTap: () {
-                          Navigator.pop(context);
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return generateTranscript(
-                                context,
-                                'Transcript',
-                                transcript['transcript_text_data'] ?? 'No content available',
-                                transcript['transcript_id'],
-                                
-                              );
-                            },
+                        Navigator.pop(context);
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                          return generateTranscript(
+                            context,
+                            'Transcript',
+                            transcript['transcript_text_data'] ?? 'No content available',
+                            transcript['transcript_id'],
                           );
+                          },
+                        );
                         },
                       );
+                      } else {
+                      return SizedBox.shrink();
+                      }
                     },
                   ),
                 ),
@@ -626,8 +619,6 @@ class KanbanBoardState extends State<KanbanBoard> {
               },
               child: Text('Close'),
             ),
-
-            // Add your save to database functionality here
           ],
         ),
       ),
