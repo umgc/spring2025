@@ -1,0 +1,56 @@
+name: EduLense
+
+# Define when the workflow should run
+on:
+  push:
+    # Trigger the workflow when pushing to these branches
+    branches: 
+      - "developer"
+      - "dev/eduLense/milestone3"
+    # Only run the workflow when changes are made in this specific folder
+    paths:
+      - "team_a/teamA/**"
+
+  pull_request:
+    # Trigger the workflow when a pull request is opened or updated for these branches
+    branches: 
+      - "developer"
+      - "dev/eduLense/milestone3"
+    # Only run the workflow when changes are made in this specific folder
+    paths:
+      - "team_a/teamA/**"
+
+  # Allow manual trigger on any branch
+  workflow_dispatch:
+
+jobs:
+  build:
+    # Define the environment the job will run on (Ubuntu latest version)
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository to the runner machine
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Setup Flutter environment for running the tests and analysis
+      - name: Setup Flutter Environment
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      # Install Flutter dependencies using pub
+      - name: Install Dependencies
+        run: flutter pub get
+        working-directory: team_a/teamA  # Ensure commands run in the correct folder
+
+      # Analyze the Flutter project to check for any issues in the code
+      # TODO: lint the team A codebase (dart fix --apply)
+      # - name: Analyze Project Source
+      #   run: flutter analyze
+      #   working-directory: team_a/teamA
+
+      # Run Flutter unit tests in the 'team_a/teamA' folder
+      - name: Run Flutter Tests
+        run: flutter test
+        working-directory: team_a/teamA

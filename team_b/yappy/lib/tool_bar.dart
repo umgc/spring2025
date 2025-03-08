@@ -6,6 +6,7 @@ import 'package:yappy/help.dart';
 import 'package:yappy/medical_patient.dart';
 import 'package:yappy/medical_doctor.dart';
 import 'package:yappy/mechanic.dart';
+import 'package:yappy/settings_page.dart';
 
 // Defines a reusable Hamburger Menu Widget (AppBar + Drawer)
 class ToolBar extends StatelessWidget {
@@ -102,6 +103,7 @@ class HamburgerDrawer extends StatelessWidget {
             _buildDrawerItem('Medical Patient', context, MedicalPatientPage()),
             _buildDrawerItem('Help', context, HelpPage()),
             _buildDrawerItem('Contact', context, ContactPage()),
+            _buildDrawerItem('Settings', context, SettingsPage()),
           ],
         ),
       ),
