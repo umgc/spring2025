@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:learninglens_app/Api/lms/enum/lms_enum.dart';
 import 'package:learninglens_app/Views/dashboard.dart';
-import 'package:learninglens_app/Views/g_dashboard.dart';
 import 'package:learninglens_app/Views/user_settings.dart';
 import 'package:learninglens_app/Views/chat_screen.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
@@ -138,13 +137,17 @@ class _CustomAppBarState extends State<CustomAppBar> {
                   shape: BoxShape.circle,
                 ),
                 child: ClipOval(
-                  // remove me for now, this is causing a error in the terminal
-                  // child: Image.network(
-                  //   widget.userprofileurl,
-                  //   height: 50,
-                  //   width: 50,
-                  //   fit: BoxFit.cover,
-                  // ),
+                  child: Image.network(
+                    widget.userprofileurl,
+                    height: 50,
+                    width: 50,
+                    fit: BoxFit.cover,
+                    errorBuilder: (BuildContext context, Object error, StackTrace? stackTrace) {
+                      // print('Image load error: $error');
+                      // Just display the account_circle icon be default
+                      return Icon(Icons.account_circle, size: 50);
+                    },
+                  ),
                 ),
               ),
             ),
@@ -168,10 +171,11 @@ class _CustomAppBarState extends State<CustomAppBar> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => ClassroomSelection.selectedClassroom == LmsType.GOOGLE
-            // ? GoogleTeacherDashboard()
-            ? TeacherDashboard()
-            : TeacherDashboard(),
+        builder: (context) => TeacherDashboard(),
+        // builder: (context) => ClassroomSelection.selectedClassroom == LmsType.GOOGLE
+        //     // ? GoogleTeacherDashboard()
+        //     ? TeacherDashboard()
+        //     : TeacherDashboard(),
       ),
     );
   }

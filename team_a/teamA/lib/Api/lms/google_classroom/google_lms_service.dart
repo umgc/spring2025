@@ -93,7 +93,7 @@ class GoogleLmsService extends LmsInterface {
         'https://www.googleapis.com/auth/forms.responses.readonly',
         'https://www.googleapis.com/auth/classroom.courseworkmaterials.readonly',
         'https://www.googleapis.com/auth/classroom.courseworkmaterials',
-        
+        'https://www.googleapis.com/auth/classroom.profile.photos',
       ],
     );
 
@@ -111,6 +111,8 @@ class GoogleLmsService extends LmsInterface {
 
       firstName = nameParts.isNotEmpty ? nameParts.first : "";
       lastName = nameParts.length > 1 ? nameParts.sublist(1).join(" ") : "";
+
+      profileImage = googleUser.photoUrl;
 
       print('Welcome, ${firstName ?? 'User'}');
 
