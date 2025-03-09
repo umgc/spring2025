@@ -1,5 +1,7 @@
 // ignore_for_file: avoid_print, prefer_const_constructors
 /// Importing required packages and screens.
+library;
+
 import 'package:memoryminder/src/data_service.dart';
 import 'package:memoryminder/src/database/model/audio.dart';
 import 'package:memoryminder/src/s3_connection.dart';
@@ -31,6 +33,8 @@ final API_KEY = dotenv.env['OPEN_AI_API_KEY']; // Replace with your API key
 
 /// AudioScreen widget provides the main interface for audio recording.
 class AudioScreen extends StatefulWidget {
+  const AudioScreen({super.key});
+
   @override
   _AudioScreenState createState() => _AudioScreenState();
 }
@@ -94,25 +98,25 @@ class _AudioScreenState extends State<AudioScreen> {
     showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text("Permission Required"),
-          content: const Text(
-              "The CogniOpen Audio recording features require access to your device's microphone. Please allow Microphone access in your device settings."),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Cancel'),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-            TextButton(
-              child: const Text('Settings'),
-              onPressed: () {
-                Navigator.pop(context);
-                openAppSettings();
-              },
-            ),
-          ],
-        ));
+              title: const Text("Permission Required"),
+              content: const Text(
+                  "The CogniOpen Audio recording features require access to your device's microphone. Please allow Microphone access in your device settings."),
+              actions: <Widget>[
+                TextButton(
+                  child: const Text('Cancel'),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+                TextButton(
+                  child: const Text('Settings'),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    openAppSettings();
+                  },
+                ),
+              ],
+            ));
   }
 
   /// This function initializes the recorder by checking necessary permissions.
@@ -155,7 +159,7 @@ class _AudioScreenState extends State<AudioScreen> {
     Directory appDocDirectory = await getApplicationDocumentsDirectory();
     key2 = DateTime.now().millisecondsSinceEpoch.toString();
     _pathToSaveRecording =
-    '${appDocDirectory.path}/files/audios/$key2.wav'; // creates unique name
+        '${appDocDirectory.path}/files/audios/$key2.wav'; // creates unique name
     debugPrint('initial app directory $appDocDirectory');
 
     await _recorder!
@@ -184,7 +188,7 @@ class _AudioScreenState extends State<AudioScreen> {
     _timer?.cancel();
     // Call Transcription after stopping the recording
     final s3UploadUrl =
-    await s3Connection.addAudioToS3(key2, _pathToSaveRecording!);
+        await s3Connection.addAudioToS3(key2, _pathToSaveRecording!);
     _transcribeAudio(s3UploadUrl);
   }
 
@@ -249,7 +253,7 @@ class _AudioScreenState extends State<AudioScreen> {
         settings: trans.Settings(
           showSpeakerLabels: true,
           maxSpeakerLabels:
-          2, // specify the number of speakers you expect, adjust as needed
+              2, // specify the number of speakers you expect, adjust as needed
         ),
       );
       setState(() {
@@ -283,7 +287,7 @@ class _AudioScreenState extends State<AudioScreen> {
                 if (item['type'] == 'pronunciation' &&
                     item.containsKey('speaker_label')) {
                   String speakerLabel =
-                  _getCustomSpeakerLabel(item['speaker_label']);
+                      _getCustomSpeakerLabel(item['speaker_label']);
                   if (currentSpeaker != speakerLabel) {
                     fullTranscription += '\n$speakerLabel: ';
                     currentSpeaker = speakerLabel;
@@ -307,7 +311,7 @@ class _AudioScreenState extends State<AudioScreen> {
             break;
           }
         } else if (jobResponse.transcriptionJob?.transcriptionJobStatus
-            .toString() ==
+                .toString() ==
             'TranscriptionJobStatus.failed') {
           print('Transcription job failed');
           _isTranscribing = false;
@@ -389,7 +393,7 @@ class _AudioScreenState extends State<AudioScreen> {
       // Read file content
       final directory = await getApplicationDocumentsDirectory();
       final file =
-      File('${directory.path}/files/audios/transcripts/$fileName.txt');
+          File('${directory.path}/files/audios/transcripts/$fileName.txt');
       String content = await file.readAsString();
 
       // Send to OpenAI for Summarization
@@ -444,7 +448,7 @@ class _AudioScreenState extends State<AudioScreen> {
         extendBodyBehindAppBar: true,
         extendBody: true,
         appBar: AppBar(
-          backgroundColor: const Color(0x440000),
+          backgroundColor: const Color(0x00440000),
           elevation: 0,
           centerTitle: true,
           leading: const BackButton(color: Colors.black54),
@@ -486,24 +490,24 @@ class _AudioScreenState extends State<AudioScreen> {
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     crossAxisAlignment:
-                                    CrossAxisAlignment.center,
+                                        CrossAxisAlignment.center,
                                     children: [
                                       TextButton(
                                         style: ButtonStyle(
-                                            shape: MaterialStateProperty.all<
-                                                RoundedRectangleBorder>(
+                                            shape: WidgetStateProperty.all<
+                                                    RoundedRectangleBorder>(
                                                 RoundedRectangleBorder(
-                                                  borderRadius:
-                                                  BorderRadius.circular(75.0),
-                                                ))),
+                                          borderRadius:
+                                              BorderRadius.circular(75.0),
+                                        ))),
                                         onPressed: () async {
                                           await _stopRecording();
                                         },
                                         child: const Column(
                                           mainAxisAlignment:
-                                          MainAxisAlignment.center,
+                                              MainAxisAlignment.center,
                                           crossAxisAlignment:
-                                          CrossAxisAlignment.center,
+                                              CrossAxisAlignment.center,
                                           children: [
                                             Icon(Icons.stop,
                                                 size: 65, color: Colors.red),
@@ -544,9 +548,9 @@ class _AudioScreenState extends State<AudioScreen> {
                                       IconButton(
                                         icon: _isPlaying
                                             ? Icon(Icons.pause,
-                                            size: 40, color: Colors.blue)
+                                                size: 40, color: Colors.blue)
                                             : Icon(Icons.play_arrow,
-                                            size: 40, color: Colors.blue),
+                                                size: 40, color: Colors.blue),
                                         onPressed: _isPlaying
                                             ? _startPlayback
                                             : _startPlayback,
@@ -568,7 +572,7 @@ class _AudioScreenState extends State<AudioScreen> {
                                           setState(() {
                                             _pathToSaveRecording = null;
                                             _duration =
-                                            const Duration(seconds: 0);
+                                                const Duration(seconds: 0);
                                             transcription = '';
                                           });
                                         },
@@ -585,7 +589,7 @@ class _AudioScreenState extends State<AudioScreen> {
                                           setState(() {
                                             _pathToSaveRecording = null;
                                             _duration =
-                                            const Duration(seconds: 0);
+                                                const Duration(seconds: 0);
                                             transcription = '';
                                           });
                                           // Notify user that the recording has been deleted
@@ -593,7 +597,7 @@ class _AudioScreenState extends State<AudioScreen> {
                                               .showSnackBar(
                                             const SnackBar(
                                                 content:
-                                                Text('Recording Deleted!')),
+                                                    Text('Recording Deleted!')),
                                           );
                                         },
                                         style: ElevatedButton.styleFrom(
@@ -638,11 +642,11 @@ class _AudioScreenState extends State<AudioScreen> {
                               child: TextButton(
                                 onPressed: _startRecording,
                                 style: ButtonStyle(
-                                    shape: MaterialStateProperty.all<
-                                        RoundedRectangleBorder>(
+                                    shape: WidgetStateProperty.all<
+                                            RoundedRectangleBorder>(
                                         RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(75.0),
-                                        ))),
+                                  borderRadius: BorderRadius.circular(75.0),
+                                ))),
                                 child: const Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   crossAxisAlignment: CrossAxisAlignment.center,

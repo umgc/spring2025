@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:memoryminder/models/emergency_request.dart';
+import 'package:memoryminder/models/emergency_type.dart';
 import 'package:mockito/mockito.dart';
 import 'package:http/http.dart' as http;
 import 'package:memoryminder/services/emergency_service.dart';
@@ -42,7 +43,7 @@ void main() {
           ));
 
       final result = await emergencyService.createEmergencyRequest(
-        type: EmergencyType.help,
+        type: EmergencyType.urgent,
         location: 'test',
         userId: 'user123',
       );
@@ -54,7 +55,7 @@ void main() {
       )).called(1);
 
       expect(result.id, '123');
-      expect(result.type, EmergencyType.help);
+      expect(result.type, EmergencyType.urgent);
       expect(result.location, 'test');
       expect(result.userId, 'user123');
     });
@@ -70,7 +71,7 @@ void main() {
 
       expect(
         () => emergencyService.createEmergencyRequest(
-          type: EmergencyType.help,
+          type: EmergencyType.urgent,
           location: 'test',
           userId: 'user123',
         ),

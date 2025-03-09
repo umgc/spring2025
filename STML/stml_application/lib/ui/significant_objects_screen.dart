@@ -17,7 +17,7 @@ import 'package:memoryminder/src/camera_manager.dart';
 import 'package:memoryminder/src/data_service.dart';
 
 class SignificantObjectScreen extends StatefulWidget {
-  SignificantObjectScreen({super.key});
+  const SignificantObjectScreen({super.key});
 
   @override
   State<SignificantObjectScreen> createState() => _GalleryPageState();
@@ -83,6 +83,7 @@ class _GalleryPageState extends State<SignificantObjectScreen> {
   List<dynamic> listImagePath = <dynamic>[];
   var _permissionStatus;
 
+  @override
   void initState() {
     super.initState();
     _listenForPermissionStatus();
@@ -98,7 +99,8 @@ class _GalleryPageState extends State<SignificantObjectScreen> {
         extendBody: true,
         //backgroundColor: const Color(0xFFB3E5FC), // Set background color
         appBar: AppBar(
-          backgroundColor: const Color(0x440000), // Set appbar background color
+          backgroundColor:
+              const Color(0x00440000), // Set appbar background color
           elevation: 0.0,
           centerTitle: true, // This centers the title
           automaticallyImplyLeading: true,
@@ -179,6 +181,7 @@ class _GalleryPageState extends State<SignificantObjectScreen> {
                                   BorderRadius.circular(10.0), // Square border
                             ),
                           ),
+                          key: const Key("UploadFromGalleryButtonKey"),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -191,7 +194,6 @@ class _GalleryPageState extends State<SignificantObjectScreen> {
                               const Text(' Upload Image'),
                             ],
                           ),
-                          key: const Key("UploadFromGalleryButtonKey"),
                         ),
                       ],
                     ),
@@ -276,7 +278,7 @@ class _GalleryPageState extends State<SignificantObjectScreen> {
     List<dynamic> listImage = <dynamic>[];
     dir.list().forEach((element) {
       RegExp regExp =
-          new RegExp("\.(gif|jpe?g|tiff?|png|webp|bmp)", caseSensitive: false);
+          RegExp(".(gif|jpe?g|tiff?|png|webp|bmp)", caseSensitive: false);
       // Only add in List if path is an image
       if (regExp.hasMatch('$element')) listImage.add(element);
       setState(() {

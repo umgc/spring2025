@@ -43,7 +43,7 @@ class Onboarding {
       case OnboardingState.GET_NAME:
         return "Hello and welcome! My name is Cora. What's your name?";
       case OnboardingState.GET_ACTIVITY:
-        return "Nice to meet you, ${userName}! Can you also tell me a little about yourself? What are your favorite things to do?";
+        return "Nice to meet you, $userName! Can you also tell me a little about yourself? What are your favorite things to do?";
       case OnboardingState.GET_MEMORY:
         return "That sounds fun! My favorite activities include interacting with people and learning new things. Last question, what's one of your favorite memories?";
       case OnboardingState.SUMMARY:
@@ -155,10 +155,11 @@ class Onboarding {
   }
 
   String generateSummary() {
-    final dateTime = DateTime.fromMillisecondsSinceEpoch(int.parse(DateTime.now().millisecondsSinceEpoch.toString()));
+    final dateTime = DateTime.fromMillisecondsSinceEpoch(
+        int.parse(DateTime.now().millisecondsSinceEpoch.toString()));
     final dateFormat = DateFormat('dd/MM/yyyy HH:mm:ss');
     final date = dateFormat.format(dateTime);
-    return "On ${date}, you had an introductory conversation with Cora, the Virtual Assistant. You shared that you enjoy $userFavoriteActivity and reminisced about your favorite memory, which was $userFavoriteMemory.";
+    return "On $date, you had an introductory conversation with Cora, the Virtual Assistant. You shared that you enjoy $userFavoriteActivity and reminisced about your favorite memory, which was $userFavoriteMemory.";
   }
 
   String getLastPageMessage() {

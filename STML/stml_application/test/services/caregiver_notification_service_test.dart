@@ -3,6 +3,7 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:memoryminder/models/emergency_type.dart';
 import 'package:mockito/mockito.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
@@ -104,7 +105,7 @@ void main() {
       final result = await notificationService.sendEmergencyAlert(
         caregiver: caregiver,
         patientLocation: 'Home',
-        emergencyType: EmergencyType.help,
+        emergencyType: EmergencyType.urgent,
       );
 
       // Assert
@@ -189,7 +190,7 @@ void main() {
       final result = await notificationService.sendEmergencyAlert(
         caregiver: caregiver,
         patientLocation: 'Home',
-        emergencyType: EmergencyType.help,
+        emergencyType: EmergencyType.urgent,
       );
 
       // Assert
