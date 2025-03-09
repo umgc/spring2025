@@ -5,34 +5,46 @@ class TranscriptionBox extends StatelessWidget {
 
   const TranscriptionBox({
     required this.controller,
-    super.key
+    super.key,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    double screenHeight = MediaQuery.of(context).size.height;
+
+    // Wraps the UI in a sized box so that it can be adjusted to the screen's height
+    return SizedBox(
+      height: screenHeight *.4, // Adjust height as needed
+      child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8.0),
-          color: const Color.fromARGB(255, 67, 67, 67)
+          color: const Color.fromARGB(255, 67, 67, 67),
         ),
-        child: TextField(
-          controller: controller,
-          maxLines: null,
-          readOnly: true,
-          decoration: InputDecoration(
-            hintText: 'AI Transcript will go here',
-            hintStyle: TextStyle(
-              color: Colors.white,
+        // Wraps the UI in a scrollbar so that the transcription data is scrollable and won't overflow
+        child: Scrollbar(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: TextField(
+              controller: controller,
+              maxLines: null,
+              readOnly: true,
+              decoration: InputDecoration(
+                hintText: 'AI Transcript will go here',
+                hintStyle: TextStyle(
+                  color: Colors.white,
+                ),
+                border: InputBorder.none,
+                contentPadding: EdgeInsets.all(10),
+              ),
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+              ),
             ),
-            border: InputBorder.none,
-            contentPadding: EdgeInsets.all(10),
           ),
-          style: TextStyle(
-            color: Colors.white,
-            fontSize: 18,  
-          ),
-
         ),
-      );
+      ),
+    );
   }
 }
+
