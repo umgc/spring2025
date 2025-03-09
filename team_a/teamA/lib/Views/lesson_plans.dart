@@ -22,8 +22,8 @@ class _LessonPlanState extends State<LessonPlans> {
   List<LessonPlan> lessonPlans = [];
   LessonPlan? selectedLessonPlan;
   bool isEditing = false;
-  bool useAiGeneration = false; // Tracks whether AI generation is enabled
-  bool useManualGeneration = false; // Tracks whether manual generation is enabled
+  bool useAiGeneration = false;
+  bool useManualGeneration = false;
   LlmType? selectedLLM;
   bool isSubmitDisabled = false;
   String? selectedGradeLevel;
@@ -42,14 +42,18 @@ class _LessonPlanState extends State<LessonPlans> {
   @override
   void initState() {
     super.initState();
-    _loadCourses();
+    _loadCourses(); // Load courses when the widget initializes
   }
 
   Future<void> _loadCourses() async {
-    var userCourses = await LmsFactory.getLmsService().courses;
-    setState(() {
-      courses = userCourses;
-    });
+    try {
+      var userCourses = await LmsFactory.getLmsService().courses;
+      setState(() {
+        courses = userCourses; // Update the state with fetched courses
+      });
+    } catch (e) {
+      print("Error loading courses: $e");
+    }
   }
 
   void _fetchLessonPlans(int courseId) async {
@@ -124,17 +128,332 @@ class _LessonPlanState extends State<LessonPlans> {
     return Scaffold(
       appBar: CustomAppBar(
           title: 'Lesson Plans',
-          onRefresh: _loadCourses,
+          onRefresh: _loadCourses, // Refresh courses when the app bar is refreshed
           userprofileurl: LmsFactory.getLmsService().profileImage ?? ''),
       body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            bool isNarrowScreen = constraints.maxWidth <= 805; // Breakpoint for narrow screens
+            bool isMediumScreen = constraints.maxWidth > 805 && constraints.maxWidth <= 1170; // Breakpoint for medium screens
+
+            return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Column(
+                // Add New Lesson Plan Section
+                if (!isNarrowScreen)
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Add New Lesson Plan',
+                                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                            SizedBox(height: 10),
+                            DropdownButtonFormField<String>(
+                              value: selectedCourse,
+                              items: courses?.map<DropdownMenuItem<String>>((course) {
+                                    return DropdownMenuItem<String>(
+                                      value: course.id.toString(),
+                                      child: Text(course.fullName),
+                                    );
+                                  }).toList() ?? [],
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedCourse = value;
+                                  _fetchLessonPlans(int.parse(value!));
+                                });
+                              },
+                              decoration: InputDecoration(
+                                labelText: 'Course',
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                            SizedBox(height: 10),
+                            TextField(
+                              controller: lessonPlanNameController,
+                              decoration: InputDecoration(
+                                labelText: 'Lesson Plan Name',
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                            SizedBox(height: 10),
+                            DropdownButtonFormField<String>(
+                              decoration: const InputDecoration(
+                                labelText: 'Select Grade Level',
+                                border: OutlineInputBorder(),
+                              ),
+                              value: selectedGradeLevel,
+                              items: <String>['9', '10', '11', '12'].map((String value) {
+                                return DropdownMenuItem<String>(
+                                  value: value,
+                                  child: Text(value),
+                                );
+                              }).toList(),
+                              onChanged: (String? newValue) {
+                                setState(() {
+                                  selectedGradeLevel = newValue;
+                                });
+                              },
+                            ),
+                            SizedBox(height: 20),
+
+                            // AI and Manual Generation Options
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                CheckboxListTile(
+                                  title: Text("Generate Lesson Plan with AI"),
+                                  value: useAiGeneration,
+                                  onChanged: (bool? value) {
+                                    setState(() {
+                                      useAiGeneration = value!;
+                                      useManualGeneration = false; // Ensure only one option is selected
+                                      if (!useAiGeneration) {
+                                        selectedLLM = null; // Reset dropdown when unchecked
+                                      }
+                                    });
+                                  },
+                                ),
+                                CheckboxListTile(
+                                  title: Text("Generate Lesson Plan without AI"),
+                                  value: useManualGeneration,
+                                  onChanged: (bool? value) {
+                                    setState(() {
+                                      useManualGeneration = value!;
+                                      useAiGeneration = false; // Ensure only one option is selected
+                                    });
+                                  },
+                                ),
+                                if (useAiGeneration)
+                                  DropdownButtonFormField<LlmType>(
+                                    value: selectedLLM,
+                                    decoration: const InputDecoration(labelText: "Select AI Model"),
+                                    onChanged: (LlmType? newValue) {
+                                      setState(() {
+                                        selectedLLM = newValue;
+                                      });
+                                    },
+                                    items: LlmType.values.map((LlmType llm) {
+                                      return DropdownMenuItem<LlmType>(
+                                        value: llm,
+                                        enabled: LocalStorageService.userHasLlmKey(llm),
+                                        child: Text(llm.displayName, style: TextStyle(
+                                          color: LocalStorageService.userHasLlmKey(llm) ? Colors.black87 : Colors.grey,
+                                        )),
+                                      );
+                                    }).toList(),
+                                    disabledHint: Text("Enable AI to select a model"),
+                                  ),
+                              ],
+                            ),
+                            SizedBox(height: 20),
+
+                            // Textbox for Lesson Plan Content
+                            TextField(
+                              controller: manualEntryController,
+                              maxLines: 8,
+                              decoration: InputDecoration(
+                                labelText: useAiGeneration
+                                    ? "Enter any additional prompts for the AI model to customize your lesson"
+                                    : "Enter Lesson Plan Manually",
+                                border: OutlineInputBorder(),
+                              ),
+                            ),
+                            SizedBox(height: 20),
+
+                            // Submit Button
+                            ElevatedButton(
+                              onPressed: isSubmitDisabled || isSubmitting
+                                  ? null
+                                  : () async {
+                                      setState(() {
+                                        isSubmitting = true;
+                                      });
+
+                                      if (selectedCourse != null) {
+                                        if (useAiGeneration) {
+                                          await generateLessonPlanWithAI();
+                                        }
+                                        Lesson newLp = Lesson(
+                                          lessonPlanName: lessonPlanNameController.text,
+                                          courseId: int.parse(selectedCourse!),
+                                          content: _convertTextToHtml(manualEntryController.text),
+                                        );
+                                        newLp.saveLessonLocally();
+                                        bool success = await newLp.submitLesson();
+                                        print(success ? 'Lesson plan sent successfully' : 'Lesson plan send failed');
+                                        _fetchLessonPlans(int.parse(selectedCourse!));
+                                        lessonPlanNameController.clear();
+                                        manualEntryController.clear();
+                                      }
+
+                                      setState(() {
+                                        isSubmitting = false;
+                                      });
+                                    },
+                              child: isSubmitting
+                                  ? SizedBox(
+                                      width: 24,
+                                      height: 24,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                      ),
+                                    )
+                                  : Text('Submit'),
+                            ),
+                          ],
+                        ),
+                      ),
+                      SizedBox(width: 20),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Existing Lesson Plans',
+                                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                            SizedBox(height: 10),
+                            Container(
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey),
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                              child: SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: DataTable(
+                                  columnSpacing: 10,
+                                  columns: [
+                                    DataColumn(
+                                      label: SizedBox(
+                                        width: 100,
+                                        child: Text('Name', style: TextStyle(fontWeight: FontWeight.bold)),
+                                      ),
+                                    ),
+                                    if (!isMediumScreen) // Hide Lesson Plan column for medium screens
+                                      DataColumn(
+                                        label: SizedBox(
+                                          width: 200,
+                                          child: Text('Lesson Plan', style: TextStyle(fontWeight: FontWeight.bold)),
+                                        ),
+                                      ),
+                                    DataColumn(label: Text('Select', style: TextStyle(fontWeight: FontWeight.bold))),
+                                    DataColumn(label: Text('View', style: TextStyle(fontWeight: FontWeight.bold))),
+                                  ],
+                                  rows: lessonPlans.map((plan) {
+                                    bool isSelected = selectedLessonPlan == plan;
+                                    return DataRow(
+                                      cells: [
+                                        DataCell(
+                                          ConstrainedBox(
+                                            constraints: BoxConstraints(maxWidth: 150),
+                                            child: Text(
+                                              plan.name,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ),
+                                        if (!isMediumScreen) // Hide Lesson Plan column for medium screens
+                                          DataCell(
+                                            ConstrainedBox(
+                                              constraints: BoxConstraints(maxWidth: 250),
+                                              child: SingleChildScrollView(
+                                                scrollDirection: Axis.vertical,
+                                                child: Text(
+                                                  _stripHtmlTags(plan.intro),
+                                                  maxLines: 3,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        DataCell(Checkbox(
+                                          value: isSelected,
+                                          onChanged: (bool? selected) {
+                                            setState(() {
+                                              selectedLessonPlan = selected! ? plan : null;
+                                            });
+                                          },
+                                        )),
+                                        DataCell(
+                                          ElevatedButton(
+                                            onPressed: () {
+                                              _showLessonPlanDialog(plan);
+                                            },
+                                            child: Text("View"),
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  }).toList(),
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 20),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                ElevatedButton(
+                                  onPressed: selectedLessonPlan != null
+                                      ? () async {
+                                          await MoodleLmsService().deleteLessonPlan(selectedLessonPlan!.id);
+                                          _fetchLessonPlans(int.parse(selectedCourse!));
+                                          setState(() {
+                                            selectedLessonPlan = null;
+                                          });
+                                        }
+                                      : null,
+                                  child: Text('Delete Selected'),
+                                ),
+                                ElevatedButton(
+                                  onPressed: selectedLessonPlan != null
+                                      ? () {
+                                          setState(() {
+                                            isEditing = true;
+                                            lessonPlanNameController.text = selectedLessonPlan!.name;
+                                            manualEntryController.text = _stripHtmlTags(selectedLessonPlan!.intro);
+                                            isSubmitDisabled = true;
+                                          });
+                                        }
+                                      : null,
+                                  child: Text('Edit Selected'),
+                                ),
+                                ElevatedButton(
+                                  onPressed: isEditing
+                                      ? () async {
+                                          String manualEntryToHtml = _convertTextToHtml(manualEntryController.text);
+                                          await MoodleLmsService().updateLessonPlan(
+                                            lessonId: selectedLessonPlan!.id,
+                                            name: lessonPlanNameController.text,
+                                            intro: manualEntryToHtml,
+                                            available: 1672531200, //dummy value
+                                            deadline: 1675132800, //dummy value
+                                          );
+                                          _fetchLessonPlans(int.parse(selectedCourse!));
+                                          lessonPlanNameController.clear();
+                                          manualEntryController.clear();
+
+                                          setState(() {
+                                            selectedLessonPlan = null;
+                                            isEditing = false;
+                                            isSubmitDisabled = false;
+                                          });
+                                        }
+                                      : null,
+                                  child: Text('Save Edits'),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+
+                // For Narrow Screens (805px or less)
+                if (isNarrowScreen)
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text('Add New Lesson Plan',
@@ -147,8 +466,7 @@ class _LessonPlanState extends State<LessonPlans> {
                                 value: course.id.toString(),
                                 child: Text(course.fullName),
                               );
-                            }).toList() ??
-                            [],
+                            }).toList() ?? [],
                         onChanged: (value) {
                           setState(() {
                             selectedCourse = value;
@@ -173,7 +491,7 @@ class _LessonPlanState extends State<LessonPlans> {
                         decoration: const InputDecoration(
                           labelText: 'Select Grade Level',
                           border: OutlineInputBorder(),
-                          ),
+                        ),
                         value: selectedGradeLevel,
                         items: <String>['9', '10', '11', '12'].map((String value) {
                           return DropdownMenuItem<String>(
@@ -189,7 +507,7 @@ class _LessonPlanState extends State<LessonPlans> {
                       ),
                       SizedBox(height: 20),
 
-                      // Moved "Generate Lesson Plan with AI" and "Select AI Model" here
+                      // AI and Manual Generation Options
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -231,8 +549,7 @@ class _LessonPlanState extends State<LessonPlans> {
                                   enabled: LocalStorageService.userHasLlmKey(llm),
                                   child: Text(llm.displayName, style: TextStyle(
                                     color: LocalStorageService.userHasLlmKey(llm) ? Colors.black87 : Colors.grey,
-                                    ),
-                                  ),
+                                  )),
                                 );
                               }).toList(),
                               disabledHint: Text("Enable AI to select a model"),
@@ -241,7 +558,7 @@ class _LessonPlanState extends State<LessonPlans> {
                       ),
                       SizedBox(height: 20),
 
-                      // Updated textbox label based on selection
+                      // Textbox for Lesson Plan Content
                       TextField(
                         controller: manualEntryController,
                         maxLines: 8,
@@ -254,6 +571,7 @@ class _LessonPlanState extends State<LessonPlans> {
                       ),
                       SizedBox(height: 20),
 
+                      // Submit Button
                       ElevatedButton(
                         onPressed: isSubmitDisabled || isSubmitting
                             ? null
@@ -294,14 +612,9 @@ class _LessonPlanState extends State<LessonPlans> {
                               )
                             : Text('Submit'),
                       ),
-                    ],
-                  ),
-                ),
-                SizedBox(width: 20),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+                      SizedBox(height: 20),
+
+                      // Existing Lesson Plans Section for Narrow Screens
                       Text('Existing Lesson Plans',
                           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                       SizedBox(height: 10),
@@ -378,7 +691,6 @@ class _LessonPlanState extends State<LessonPlans> {
                           ),
                         ),
                       ),
-
                       SizedBox(height: 20),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -404,7 +716,6 @@ class _LessonPlanState extends State<LessonPlans> {
                                       manualEntryController.text = _stripHtmlTags(selectedLessonPlan!.intro);
                                       isSubmitDisabled = true;
                                     });
-                                    
                                   }
                                 : null,
                             child: Text('Edit Selected'),
@@ -423,7 +734,7 @@ class _LessonPlanState extends State<LessonPlans> {
                                     _fetchLessonPlans(int.parse(selectedCourse!));
                                     lessonPlanNameController.clear();
                                     manualEntryController.clear();
-                                    
+
                                     setState(() {
                                       selectedLessonPlan = null;
                                       isEditing = false;
@@ -437,10 +748,9 @@ class _LessonPlanState extends State<LessonPlans> {
                       ),
                     ],
                   ),
-                ),
               ],
-            ),
-          ],
+            );
+          },
         ),
       ),
     );
