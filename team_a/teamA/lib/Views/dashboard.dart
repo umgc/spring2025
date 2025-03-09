@@ -6,6 +6,7 @@ import 'package:learninglens_app/Views/analytics_page.dart';
 import 'package:learninglens_app/Views/assessments_view.dart';
 import 'package:learninglens_app/Views/course_list.dart';
 import 'package:learninglens_app/Views/essays_view.dart';
+import 'package:learninglens_app/Views/about_page.dart';
 import 'package:learninglens_app/Views/g_lesson_plan.dart';
 import 'package:learninglens_app/Views/iep_page.dart';
 import 'package:learninglens_app/Views/lesson_plans.dart';
@@ -53,6 +54,20 @@ class TeacherDashboard extends StatelessWidget {
                   return _buildMobileLayout(context, constraints);
                 }
               },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 20),
+            child: Center(
+              child: TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => AboutPage()),
+                  );
+                },
+                child: const Text("About Learning Lens"),
+              ),
             ),
           ),
         ],
