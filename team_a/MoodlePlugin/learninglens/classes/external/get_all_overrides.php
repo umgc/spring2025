@@ -30,34 +30,46 @@ class get_all_overrides extends external_api {
 
         $sql = "
             SELECT
-                id AS override_id,
+                qo.id AS override_id,
                 'quiz' AS assignment_type,
-                quiz AS assignment_id,
-                groupid,
-                userid,
-                timeopen AS start_time,
-                timeclose AS end_time,
-                timelimit,
+                qo.quiz AS assignment_id,
+                q.name AS assignment_name,
+                q.course AS course_id,
+                c.fullname AS course_name,
+                qo.userid,
+                u.username,
+                qo.timeopen AS start_time,
+                qo.timeclose AS end_time,
+                qo.timelimit,
                 NULL AS cutoff_time,
-                attempts,
-                password,
+                qo.attempts,
+                qo.password,
                 NULL AS sortorder
-            FROM mdl_quiz_overrides
+            FROM mdl_quiz_overrides qo
+            LEFT JOIN mdl_quiz q ON qo.quiz = q.id
+            LEFT JOIN mdl_course c ON q.course = c.id
+            LEFT JOIN mdl_user u ON qo.userid = u.id
             UNION ALL
             SELECT
-                id AS override_id,
+                ao.id AS override_id,
                 'essay' AS assignment_type,
-                assignid AS assignment_id,
-                groupid,
-                userid,
-                allowsubmissionsfromdate AS start_time,
-                duedate AS end_time,
-                timelimit,
-                cutoffdate AS cutoff_time,
+                ao.assignid AS assignment_id,
+                a.name AS assignment_name,
+                a.course AS course_id,
+                c.fullname AS course_name,
+                ao.userid,
+                u.username,
+                ao.allowsubmissionsfromdate AS start_time,
+                ao.duedate AS end_time,
+                ao.timelimit,
+                ao.cutoffdate AS cutoff_time,
                 NULL AS attempts,
                 NULL AS password,
-                sortorder
-            FROM mdl_assign_overrides;
+                ao.sortorder
+            FROM mdl_assign_overrides ao
+            LEFT JOIN mdl_assign a ON ao.assignid = a.id
+            LEFT JOIN mdl_course c ON a.course = c.id
+            LEFT JOIN mdl_user u ON ao.userid = u.id;
             ";
 
         return $DB->get_records_sql($sql);
@@ -69,8 +81,11 @@ class get_all_overrides extends external_api {
                 'override_id' => new external_value(PARAM_INT, 'Override ID'),
                 'assignment_type' => new external_value(PARAM_TEXT, 'Assignment Type'),
                 'assignment_id' => new external_value(PARAM_INT, 'Assignment ID'),
-                'groupid' => new external_value(PARAM_INT, 'Group ID'),
+                'assignment_name' => new external_value(PARAM_TEXT, 'Assignment ID'),
+                'course_id' => new external_value(PARAM_INT, 'Assignment ID'),
+                'course_name' => new external_value(PARAM_TEXT, 'Assignment ID'),
                 'userid' => new external_value(PARAM_INT, 'User ID'),
+                'username' => new external_value(PARAM_TEXT, 'Assignment ID'),
                 'start_time' => new external_value(PARAM_INT, 'Time Open'),
                 'end_time' => new external_value(PARAM_INT, 'Time Close'),
                 'timelimit' => new external_value(PARAM_INT, 'Time Limit'),

@@ -109,6 +109,14 @@ $functions = [
         'capabilities'=> 'mod/quiz:manage',
         'services'    => [MOODLE_OFFICIAL_MOBILE_SERVICE],
     ],
+    'local_learninglens_add_essay_override' => [
+        'classname'   => 'local_learninglens\external\add_essay_override',
+        'description' => 'Adds an override to a essay for a user or group.',
+        'type'        => 'write',
+        'ajax'        => true,
+        'capabilities'=> 'mod/assign:manage',
+        'services'    => [MOODLE_OFFICIAL_MOBILE_SERVICE],
+    ],
     'local_learninglens_get_lesson_plans_by_course' => [
         'classname'   => 'local_learninglens\external\get_lesson_plans_by_course',
         'description' => 'Retrieves lesson plans associated with a given course ID.',

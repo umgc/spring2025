@@ -4,6 +4,7 @@ import 'package:learninglens_app/Api/lms/lms_interface.dart';
 import 'package:learninglens_app/beans/course.dart';
 import 'package:learninglens_app/beans/lesson_plan.dart';
 import 'package:learninglens_app/beans/quiz.dart';
+import 'package:learninglens_app/beans/override.dart';
 import 'package:learninglens_app/beans/assignment.dart';
 import 'package:learninglens_app/beans/participant.dart';
 import 'package:learninglens_app/beans/quiz_override';
@@ -57,6 +58,8 @@ class MoodleLmsService implements LmsInterface {
   @override
   List<Course>? courses;
 
+  List<Override>? overrides;
+
   // ****************************************************************************************
   // Auth / Login
   // ****************************************************************************************
@@ -105,7 +108,7 @@ class MoodleLmsService implements LmsInterface {
 
     // 4) Optionally load user courses right away
     courses = await getUserCourses();
-  
+    overrides = await getAssignmentOverrides();
   }
 
   @override
@@ -227,6 +230,41 @@ class MoodleLmsService implements LmsInterface {
       c.essays = await getEssays(c.id);
     }
     return userCourses;
+  }
+
+  Future<List<Override>> getAssignmentOverrides() async {
+    // Returns courses the user is enrolled in
+    if (_userToken == null) throw StateError('User not logged in to Moodle');
+
+    final response =
+        await ApiService().httpPost(Uri.parse(apiURL + serverUrl), body: {
+      'wstoken': _userToken,
+      'wsfunction': 'local_learninglens_get_all_overrides',
+      'moodlewsrestformat': 'json',
+    });
+
+    if (response.statusCode != 200) {
+      throw HttpException(response.body);
+    }
+
+    final decodedJson = jsonDecode(response.body);
+    List<Override> assignmentOverrides;
+    
+    if (decodedJson is List) {
+      assignmentOverrides =
+          decodedJson.map((i) => Override.empty().fromMoodleJson(i)).toList();
+    } else if (decodedJson is Map<String, dynamic>) {
+      final courseList = decodedJson['courses'] as List<dynamic>;
+      assignmentOverrides =
+          courseList.map((i) => Override.empty().fromMoodleJson(i)).toList();
+    } else {
+      throw StateError('Unexpected response format from Moodle');
+    }
+
+    print(assignmentOverrides);
+
+    return assignmentOverrides;
+
   }
 
   @override
@@ -899,6 +937,48 @@ class MoodleLmsService implements LmsInterface {
 
     if (response.statusCode == 200 && responseData is Map<String, dynamic>) {
       return QuizOverride.empty().fromMoodleJson(responseData);
+    } else {
+      throw Exception("Failed to create quiz override: ${response.body}");
+    }
+  }
+
+  Future<String> addEssayOverride({
+    required int assignid,
+    int? userId,
+    int? groupId,
+    int? allowsubmissionsfromdate,
+    int? dueDate,
+    int? cutoffDate,
+    int? timelimit,
+    int? sortorder,
+  }) async {
+    if (_userToken == null) throw StateError('User not logged in to Moodle');
+
+    final url = Uri.parse('$apiURL$serverUrl');
+
+    // Dynamically build request body, removing null values
+    final Map<String, String> body = {
+      'wstoken': _userToken!,
+      'wsfunction': 'local_learninglens_add_essay_override',
+      'moodlewsrestformat': 'json',
+      'quizid': assignid.toString(),
+    };
+
+    // Add only non-null fields
+    if (userId != null) body['userid'] = userId.toString();
+    if (groupId != null) body['groupid'] = groupId.toString();
+    if (allowsubmissionsfromdate != null) body['allowsubmissionsfromdate'] = allowsubmissionsfromdate.toString();
+    if (dueDate != null) body['dueDate'] = dueDate.toString();
+    if (cutoffDate != null) body['cutoffDate'] = cutoffDate.toString();
+    if (timelimit != null) body['timelimit'] = timelimit.toString();
+    if (sortorder != null) body['sortorder'] = sortorder.toString();
+
+    final response = await ApiService().httpPost(url, body: body);
+
+    final responseData = json.decode(response.body);
+
+    if (response.statusCode == 200 && responseData is Map<String, dynamic>) {
+      return 'Override: ${responseData['override_id']}';
     } else {
       throw Exception("Failed to create quiz override: ${response.body}");
     }
