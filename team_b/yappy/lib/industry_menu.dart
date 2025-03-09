@@ -158,7 +158,8 @@ class _IndustryMenuState extends State<IndustryMenu> {
 
                 if (confirmDelete) {
                   // Perform the delete operation
-                    await DatabaseHelper().deleteTranscript(transcript);
+                  await DatabaseHelper().deleteTranscript(transcript);
+                  if (!context.mounted) return;
                   Navigator.of(context).pop();
                 }
               },
@@ -252,7 +253,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
 
                       // Show a dialog to edit the text
                       TextEditingController controller = TextEditingController(text: recordedText);
-                        if (!context.mounted) return;
+                      if (!context.mounted) return;
                       showDialog(
                         context: context,
                         builder: (BuildContext context) {
@@ -277,7 +278,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
                                     var openAIHelper = OpenAIHelper();
                                     String aiResponse = '';
                                     try {
-                                      aiResponse = await openAIHelper.summarizeTranscription(userId, Industry.restaurant, transcriptId);
+                                      aiResponse = await openAIHelper.summarizeTranscription(userId, widget.title, transcriptId);
                                     } catch (e) {
                                       // Lets the user know that transcription summarization failed (likely because of a lack of OpenAI API key)
                                       if (context.mounted) {

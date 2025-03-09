@@ -267,7 +267,10 @@ class DatabaseHelper {
   // Retrieve all transcripts
   Future<List<Map<String, dynamic>>> getAllTranscripts() async {
     final db = await database;
-    return await db.query('Transcript');
+    return await db.query(
+      'Transcript',
+      orderBy: 'transcript_timestamp DESC',
+    );
   }
 
   // Retrieve a specific transcript by ID
