@@ -30,8 +30,7 @@ class TranscriptionBox extends StatelessWidget {
               maxLines: null,
               readOnly: true,
               decoration: InputDecoration(
-                hintText: 'AI Transcript will go here',
-                hintStyle: TextStyle(
+                  hintStyle: TextStyle(
                   color: Colors.white,
                 ),
                 border: InputBorder.none,
