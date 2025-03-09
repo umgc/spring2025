@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:learninglens_app/Api/lms/lms_interface.dart';
 import 'package:learninglens_app/beans/course.dart';
+import 'package:learninglens_app/beans/essay_override.dart';
 import 'package:learninglens_app/beans/lesson_plan.dart';
 import 'package:learninglens_app/beans/quiz.dart';
 import 'package:learninglens_app/beans/override.dart';
