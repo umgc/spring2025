@@ -45,7 +45,7 @@ class DatabaseHelper {
       path,
       version: 2,
       onCreate: _onCreate,
-      onUpgrade: _onUpgrade,
+      //onUpgrade: _onUpgrade,
       onOpen: (db) async {
         // Check if the tables exist and create them if they don't
         await _createTablesIfNotExists(db);
@@ -58,13 +58,13 @@ class DatabaseHelper {
     await _createTablesIfNotExists(db);
   }
 
-  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-      if (oldVersion < 2) {
-        await db.execute('''
-          ALTER TABLE Transcript ADD COLUMN industry TEXT;
-    ''');
-      }
-  }
+  // Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+  //     if (oldVersion < 2) {
+  //       await db.execute('''
+  //         ALTER TABLE Transcript ADD COLUMN industry TEXT;
+  //   ''');
+  //     }
+  // }
 
   Future<void> _createTablesIfNotExists(Database db) async {
     // Create Users table if it doesn't exist
