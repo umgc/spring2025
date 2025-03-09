@@ -63,6 +63,10 @@ class _IepPageState extends State{
     }
   }
 
+  void _getAssignmentOverride() async {
+    await MoodleLmsService().getAssignmentOverrides();
+  }
+
 
   @override
   Widget build(BuildContext context){
@@ -304,7 +308,7 @@ class _IepPageState extends State{
                   visible: selectedAttempt != null,
                   child: Row (children: [
                     Container(
-                      width: 325,
+                      width: 250,
                       margin: EdgeInsets.only(right: 20),
                       padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
                       decoration: BoxDecoration(
@@ -316,7 +320,7 @@ class _IepPageState extends State{
                     GestureDetector(
                       onTap:() => _selectDate(context),
                       child: Container(
-                        padding: EdgeInsets.symmetric(vertical: 15, horizontal: 40),
+                        padding: EdgeInsets.symmetric(vertical: 15, horizontal: 10),
                         decoration: BoxDecoration(
                           border: Border.all(color: Colors.black),
                           borderRadius: BorderRadius.circular(8),
@@ -395,10 +399,12 @@ class _IepPageState extends State{
                       onPressed: () {
                         if(selectedAssignment == 'Quiz') {
                           quizOver(epochTime, quizId, userId, selectedAttempt);
+                          //_getAssignmentOverride();
                           Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => IepPage()));
                         }
                         else if(selectedAssignment == 'Essay'){
                           essayOver(epochTime, essayId, userId, epochTime2);
+                          //_getAssignmentOverride();
                           Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => IepPage()));
 
                         }
