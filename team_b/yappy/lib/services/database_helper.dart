@@ -238,7 +238,7 @@ class DatabaseHelper {
     return await db.delete('VehicleMaintenance', where: 'maintenance_id = ?', whereArgs: [id]);
   }
 
-  // Transcript table methods
+  //Transcript table methods
   Future<int> insertTranscript(Map<String, dynamic> transcript) async {
     final db = await database;
     return await db.insert('Transcript', transcript);
@@ -502,11 +502,11 @@ class DatabaseHelper {
       'transcript_ai_response': '',
       'industry': industry,
     };
-    insertTranscript(transcript);
+    await insertTranscript(transcript);
   }
 
   saveTranscriptAiResponse({required int userId, required int transcriptId, 
-    required String text, required String aiResponse}) {
+    required String text, required String aiResponse}) async {
     // Save the new transcript to the database using the provided information
     Map<String, dynamic> transcript = {
       'user_id': userId,
@@ -515,7 +515,7 @@ class DatabaseHelper {
       'transcript_timestamp': DateTime.now().toIso8601String(),
       'transcript_ai_response': aiResponse
     };
-    updateTranscript(transcript);
+    await updateTranscript(transcript);
   }
   // Get the number of transcripts for any given date
   Future<int> getTranscriptCountForDate(String date) async {
