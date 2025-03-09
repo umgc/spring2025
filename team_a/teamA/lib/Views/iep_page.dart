@@ -28,6 +28,7 @@ class _IepPageState extends State{
   String? selectedCourse;
   String? selectedAssignment;
   String? selectedEssay;
+  int? essayId;
   int? quizId;
   int? userId;
   int? newEndTime;
@@ -191,7 +192,7 @@ class _IepPageState extends State{
                       } else if (snapshot.hasData) {
                         List<DropdownMenuEntry<String>> dropdownEntries = snapshot.data!.map((Assignment assignment){
                           return DropdownMenuEntry<String>(
-                            value: assignment.name,
+                            value: assignment.id.toString(),
                             label: assignment.name,
                           );
                         }).toList();
@@ -200,6 +201,16 @@ class _IepPageState extends State{
                         hintText: 'Select Essay',
                         width: 500,
                         dropdownMenuEntries: dropdownEntries,
+                        onSelected: (String? selectedEssayId){
+                          setState(() {
+                            if (selectedEssayId != null) {
+                              essayId = int.parse(selectedEssayId);
+                            }
+                            else {
+                              print('Essay ID was Null');
+                            }
+                          });
+                        },
                       );
                       } else {
                         return DropdownMenu(
@@ -435,7 +446,7 @@ List<Override>? getOverrides() {
 DataRow buildDataRow(Override override) {
   return DataRow(
     cells: [
-      DataCell(Text(override.username)),
+      DataCell(Text(override.fullname)),
       DataCell(Text(override.courseName)),
       DataCell(Text(override.assignmentName)),
       DataCell(Text(override.type)),
