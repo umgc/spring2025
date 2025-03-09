@@ -11,25 +11,18 @@ class Photo extends Media {
   late Image? photo;
 
   Photo({
-    int? id,
+    super.id,
     String? title,
-    String? description,
-    List<String>? tags,
-    required DateTime timestamp,
-    String? physicalAddress,
-    required int storageSize,
-    required bool isFavorited,
+    super.description,
+    super.tags,
+    required super.timestamp,
+    super.physicalAddress,
+    required super.storageSize,
+    required super.isFavorited,
     required this.photoFileName,
   }) : super(
-          id: id,
           mediaType: MediaType.photo,
           title: title ?? photoFileName,
-          description: description,
-          tags: tags,
-          timestamp: timestamp,
-          physicalAddress: physicalAddress,
-          storageSize: storageSize,
-          isFavorited: isFavorited,
         ) {
     _loadPhoto();
   }

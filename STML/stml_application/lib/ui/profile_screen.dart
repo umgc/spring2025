@@ -8,19 +8,24 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 
 class ProfileScreen extends StatefulWidget {
+  const ProfileScreen({super.key});
+
   @override
   _ProfileScreenState createState() => _ProfileScreenState();
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  TextEditingController _firstNameController = TextEditingController();
-  TextEditingController _lastNameController = TextEditingController();
-  TextEditingController _emailController = TextEditingController();
-  TextEditingController _phoneController = TextEditingController();
-  TextEditingController _emergencyFirstNameController = TextEditingController();
-  TextEditingController _emergencyLastNameController = TextEditingController();
-  TextEditingController _emergencyPhoneController = TextEditingController();
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _emergencyFirstNameController =
+      TextEditingController();
+  final TextEditingController _emergencyLastNameController =
+      TextEditingController();
+  final TextEditingController _emergencyPhoneController =
+      TextEditingController();
   String _biometricAuth = '';
 
   Future<String> get _localPath async {
@@ -82,7 +87,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       extendBodyBehindAppBar: true,
       extendBody: true,
       appBar: AppBar(
-        backgroundColor: const Color(0x440000), // Set appbar background color
+        backgroundColor: const Color(0x00440000), // Set appbar background color
         elevation: 0.0,
         centerTitle: true,
         leading: const BackButton(color: Colors.black54),
@@ -208,7 +213,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             onPressed: () async {
                               if (_formKey.currentState!.validate()) {
                                 String userData =
-                                    '${_firstNameController.text}, ${_lastNameController.text}, ${_emailController.text}, ${_biometricAuth}, ${_phoneController.text}, ${_emergencyFirstNameController.text}, ${_emergencyLastNameController.text}, ${_emergencyPhoneController.text}';
+                                    '${_firstNameController.text}, ${_lastNameController.text}, ${_emailController.text}, $_biometricAuth, ${_phoneController.text}, ${_emergencyFirstNameController.text}, ${_emergencyLastNameController.text}, ${_emergencyPhoneController.text}';
                                 await writeUserData(userData);
                                 Navigator.pushReplacementNamed(
                                     context, '/homeScreen');
@@ -220,10 +225,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             onPressed: () {
                               Navigator.pop(context);
                             },
-                            child: const Text('Cancel'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.red,
                             ),
+                            child: const Text('Cancel'),
                           ),
                         ],
                       ),

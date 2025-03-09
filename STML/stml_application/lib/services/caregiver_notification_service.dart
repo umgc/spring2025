@@ -5,12 +5,7 @@ import 'package:logging/logging.dart';
 import 'package:memoryminder/models/caregiver.dart';
 import 'package:memoryminder/services/navigation_service.dart';
 import 'dart:convert';
-
-enum EmergencyType {
-  help,
-  fall,
-  medical,
-}
+import 'package:memoryminder/models/emergency_type.dart';
 
 class CaregiverNotificationService {
   final FirebaseMessaging _firebaseMessaging;
@@ -95,6 +90,38 @@ class CaregiverNotificationService {
         ?.createNotificationChannel(_emergencyChannel);
   }
 
+  Future<void> _triggerUrgentProtocol(String location) async {
+    final logger = Logger('UrgentProtocol');
+    try {
+      // Implement urgent protocol logic here
+      logger.info('Urgent protocol triggered for location: $location');
+    } catch (e, stackTrace) {
+      logger.severe('Failed to trigger urgent protocol', e, stackTrace);
+    }
+  }
+
+  Future<void> _triggerConfusionProtocol(String location) async {
+    final logger = Logger('ConfusionProtocol');
+    try {
+      // Implement confusion protocol logic here
+      logger.info('Confusion protocol triggered for location: $location');
+    } catch (e, stackTrace) {
+      logger.severe('Failed to trigger confusion protocol', e, stackTrace);
+    }
+  }
+
+  Future<void> _triggerGeneralProtocol(String location) async {
+    final logger = Logger('GeneralProtocol');
+    try {
+      // Implement general protocol logic here
+      logger.info(
+          'General assistance protocol triggered for location: $location');
+    } catch (e, stackTrace) {
+      logger.severe(
+          'Failed to trigger general assistance protocol', e, stackTrace);
+    }
+  }
+
   Future<void> _handleTokenRefresh(String newToken) async {
     try {
       await http.post(
@@ -116,15 +143,21 @@ class CaregiverNotificationService {
 
   EmergencyType _parseEmergencyType(String? type) {
     switch (type?.toLowerCase()) {
-      case 'help':
-        return EmergencyType.help;
+      case 'urgent':
+        return EmergencyType.urgent;
       case 'fall':
         return EmergencyType.fall;
       case 'medical':
         return EmergencyType.medical;
+      case 'confusion':
+        return EmergencyType.confusion;
+      case 'general':
+        return EmergencyType.general;
+      case 'help':
+        return EmergencyType.urgent;
       default:
-        _logger.warning('Unknown emergency type: $type, defaulting to help');
-        return EmergencyType.help;
+        _logger.warning('Unknown emergency type: $type, defaulting to urgent');
+        return EmergencyType.urgent;
     }
   }
 
@@ -200,23 +233,31 @@ class CaregiverNotificationService {
 
   String _getEmergencyTitle(EmergencyType type) {
     switch (type) {
-      case EmergencyType.help:
+      case EmergencyType.urgent:
         return 'Urgent Help Needed';
       case EmergencyType.fall:
         return 'Fall Detected';
       case EmergencyType.medical:
         return 'Medical Emergency';
+      case EmergencyType.confusion:
+        return 'Disorientation Alert';
+      case EmergencyType.general:
+        return 'General Assistance';
     }
   }
 
   String _getEmergencyBody(EmergencyType type, String location) {
     switch (type) {
-      case EmergencyType.help:
+      case EmergencyType.urgent:
         return 'Your patient needs immediate assistance at $location';
       case EmergencyType.fall:
         return 'A fall has been detected at $location. Immediate attention required.';
       case EmergencyType.medical:
         return 'Medical emergency reported at $location. Urgent response needed.';
+      case EmergencyType.confusion:
+        return 'Patient showing signs of disorientation at $location. Assistance needed.';
+      case EmergencyType.general:
+        return 'General assistance needed at $location';
     }
   }
 
@@ -297,7 +338,7 @@ class CaregiverNotificationService {
     final timestamp = DateTime.parse(data['timestamp']);
 
     switch (type) {
-      case EmergencyType.help:
+      case EmergencyType.urgent:
         await _navigationService.navigateToEmergencyHelp(location, timestamp);
         break;
       case EmergencyType.fall:
@@ -305,6 +346,13 @@ class CaregiverNotificationService {
         break;
       case EmergencyType.medical:
         await _navigationService.navigateToMedicalEmergency(
+            location, timestamp);
+        break;
+      case EmergencyType.confusion:
+        await _navigationService.navigateToConfusionAlert(location, timestamp);
+        break;
+      case EmergencyType.general:
+        await _navigationService.navigateToGeneralAssistance(
             location, timestamp);
         break;
     }
@@ -319,14 +367,20 @@ class CaregiverNotificationService {
     await _updateEmergencyStatus(type, true);
 
     switch (type) {
-      case EmergencyType.help:
-        await _triggerHelpProtocol(location);
+      case EmergencyType.urgent:
+        await _triggerUrgentProtocol(location);
         break;
       case EmergencyType.fall:
         await _triggerFallProtocol(location);
         break;
       case EmergencyType.medical:
         await _triggerMedicalProtocol(location);
+        break;
+      case EmergencyType.confusion:
+        await _triggerConfusionProtocol(location);
+        break;
+      case EmergencyType.general:
+        await _triggerGeneralProtocol(location);
         break;
     }
   }
@@ -352,16 +406,6 @@ class CaregiverNotificationService {
       logger.info('Emergency status updated successfully');
     } catch (e, stackTrace) {
       logger.severe('Failed to update emergency status', e, stackTrace);
-    }
-  }
-
-  Future<void> _triggerHelpProtocol(String location) async {
-    final logger = Logger('HelpProtocol');
-    try {
-      // Implement help protocol logic here
-      logger.info('Help protocol triggered for location: $location');
-    } catch (e, stackTrace) {
-      logger.severe('Failed to trigger help protocol', e, stackTrace);
     }
   }
 

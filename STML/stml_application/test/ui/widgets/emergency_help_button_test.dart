@@ -6,7 +6,7 @@ import 'package:memoryminder/widgets/emergency_help_button.dart';
 
 void main() {
   group('EmergencyHelpButton', () {
-    testWidgets('shows loading state when pressed',
+    testWidgets('shows loading state and feedback message when pressed',
         (WidgetTester tester) async {
       bool wasPressed = false;
 
@@ -29,17 +29,24 @@ void main() {
       final buttonFinder = find.byType(ElevatedButton);
       expect(buttonFinder, findsOneWidget);
 
+      // Verify initial state
+      expect(find.text('EMERGENCY HELP'), findsOneWidget);
+      expect(find.byType(CircularProgressIndicator), findsNothing);
+
+      // Tap the button
       await tester.tap(buttonFinder);
       await tester.pump();
 
+      // Verify loading state
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
       await tester.pumpAndSettle();
 
-      expect(find.byType(CircularProgressIndicator), findsNothing);
+      // Verify success state
+      expect(find.text('Help is on the way!'), findsOneWidget);
       expect(wasPressed, true);
     });
 
-    testWidgets('displays success state after successful operation',
+    testWidgets('displays success message after successful operation',
         (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
@@ -57,15 +64,15 @@ void main() {
       );
 
       await tester.tap(find.byType(ElevatedButton));
-      await tester.pump();
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.check), findsOneWidget);
-      await tester.pump(const Duration(seconds: 2));
-      expect(find.byIcon(Icons.check), findsNothing);
+      expect(find.text('Help is on the way!'), findsOneWidget);
+      final successText = find.text('Help is on the way!');
+      final textWidget = tester.widget<Text>(successText);
+      expect(textWidget.style?.color, Colors.green);
     });
 
-    testWidgets('displays error state after failed operation',
+    testWidgets('displays pending message after unconfirmed operation',
         (WidgetTester tester) async {
       await tester.pumpWidget(
         MaterialApp(
@@ -83,12 +90,41 @@ void main() {
       );
 
       await tester.tap(find.byType(ElevatedButton));
-      await tester.pump();
       await tester.pumpAndSettle();
 
-      expect(find.byIcon(Icons.error), findsOneWidget);
-      await tester.pump(const Duration(seconds: 2));
-      expect(find.byIcon(Icons.error), findsNothing);
+      expect(
+        find.text('Request sent but no confirmation received.'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('displays error message on exception',
+        (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: EmergencyHelpButton(
+                onPressed: () async {
+                  throw Exception('Test error');
+                },
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.byType(ElevatedButton));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Failed to send help request. Please try again.'),
+        findsOneWidget,
+      );
+      final errorText =
+          find.text('Failed to send help request. Please try again.');
+      final textWidget = tester.widget<Text>(errorText);
+      expect(textWidget.style?.color, Colors.red);
     });
 
     testWidgets('is disabled while processing', (WidgetTester tester) async {
@@ -138,7 +174,33 @@ void main() {
 
       final buttonBox = tester.getSize(find.byType(ElevatedButton));
       expect(buttonBox.width, greaterThanOrEqualTo(200));
-      expect(buttonBox.height, greaterThanOrEqualTo(50));
+      expect(buttonBox.height, greaterThanOrEqualTo(60));
+    });
+
+    testWidgets('supports custom text messages', (WidgetTester tester) async {
+      const customButtonText = 'URGENT HELP';
+      const customSuccessMessage = 'Assistance is coming';
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: Center(
+              child: EmergencyHelpButton(
+                buttonText: customButtonText,
+                successMessage: customSuccessMessage,
+                onPressed: () async => true,
+              ),
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text(customButtonText), findsOneWidget);
+
+      await tester.tap(find.byType(ElevatedButton));
+      await tester.pumpAndSettle();
+
+      expect(find.text(customSuccessMessage), findsOneWidget);
     });
   });
 }

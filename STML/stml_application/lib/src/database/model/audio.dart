@@ -13,27 +13,20 @@ class Audio extends Media {
   final String? summary;
 
   Audio({
-    int? id,
+    super.id,
     String? title,
-    String? description,
-    List<String>? tags,
-    required DateTime timestamp,
-    String? physicalAddress,
-    required int storageSize,
-    required bool isFavorited,
+    super.description,
+    super.tags,
+    required super.timestamp,
+    super.physicalAddress,
+    required super.storageSize,
+    required super.isFavorited,
     required this.audioFileName,
     this.transcriptFileName,
     this.summary,
   }) : super(
-          id: id,
           mediaType: MediaType.audio,
           title: title ?? audioFileName,
-          description: description,
-          tags: tags,
-          timestamp: timestamp,
-          physicalAddress: physicalAddress,
-          storageSize: storageSize,
-          isFavorited: isFavorited,
         );
 
   @override

@@ -1,11 +1,13 @@
 import 'dart:convert' show jsonEncode;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:memoryminder/models/help_request.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:http/http.dart' as http;
 import 'package:memoryminder/services/help_request_service.dart';
 import 'package:memoryminder/services/caregiver_notification_service.dart';
 import 'help_request_service_test.mocks.dart' as mocks;
+import 'package:memoryminder/models/emergency_type.dart';
 
 // Generate mock classes for testing
 @GenerateMocks([http.Client, CaregiverNotificationService])

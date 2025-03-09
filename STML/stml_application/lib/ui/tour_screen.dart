@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 
 class TourScreen extends StatelessWidget {
+  const TourScreen({super.key});
 
   @override
-  Widget build(BuildContext context){
+  Widget build(BuildContext context) {
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        backgroundColor: const Color(0x440000),
+        backgroundColor: const Color(0x00440000),
         elevation: 0,
-        leading: const BackButton(
-            color: Colors.black54
-        ),
+        leading: const BackButton(color: Colors.black54),
       ),
       body: Container(
         decoration: const BoxDecoration(
@@ -27,12 +26,14 @@ class TourScreen extends StatelessWidget {
 }
 
 class ImageSliderScreen extends StatefulWidget {
+  const ImageSliderScreen({super.key});
+
   @override
   _ImageSliderScreenState createState() => _ImageSliderScreenState();
 }
 
 class _ImageSliderScreenState extends State<ImageSliderScreen> {
-  PageController _pageController = PageController();
+  final PageController _pageController = PageController();
   int _currentPage = 0;
 
   final List<String> _images = [

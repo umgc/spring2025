@@ -2,34 +2,72 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:memoryminder/services/caregiver_notification_service.dart';
+import 'package:memoryminder/ui/home_screen.dart';
+import 'package:memoryminder/views_model/emergency_help_viewmodel.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
 
-  FirebaseMessaging.onBackgroundMessage(
-      CaregiverNotificationService.backgroundMessageHandler);
+  // Initialize Firebase with error handling
+  try {
+    await Firebase.initializeApp();
+  } catch (e) {
+    debugPrint('Firebase initialization failed: $e');
+  }
 
-  final notificationService = CaregiverNotificationService();
-  await notificationService.initialize();
+  // Initialize services with null-safety
+  CaregiverNotificationService? notificationService;
+  EmergencyHelpViewModel? viewModel;
 
-  runApp(const STMLApp());
+  try {
+    notificationService = CaregiverNotificationService();
+    await notificationService.initialize();
+    viewModel = EmergencyHelpViewModel(notificationService);
+
+    // Set up background message handler
+    FirebaseMessaging.onBackgroundMessage(
+        CaregiverNotificationService.backgroundMessageHandler);
+  } catch (e) {
+    debugPrint('Service initialization failed: $e');
+  }
+
+  runApp(STMLApp(
+    notificationService: notificationService,
+    viewModel: viewModel,
+  ));
 }
 
 class STMLApp extends StatelessWidget {
-  const STMLApp({super.key});
+  final CaregiverNotificationService? notificationService;
+  final EmergencyHelpViewModel? viewModel;
+
+  const STMLApp({
+    super.key,
+    this.notificationService,
+    this.viewModel,
+  });
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: const WelcomePage(),
+      home: WelcomePage(
+        notificationService: notificationService,
+        viewModel: viewModel,
+      ),
     );
   }
 }
 
 class WelcomePage extends StatelessWidget {
-  const WelcomePage({super.key});
+  final CaregiverNotificationService? notificationService;
+  final EmergencyHelpViewModel? viewModel;
+
+  const WelcomePage({
+    super.key,
+    this.notificationService,
+    this.viewModel,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +89,16 @@ class WelcomePage extends StatelessWidget {
               const SizedBox(height: 40),
               ElevatedButton(
                 onPressed: () {
-                  // Navigate to Login Page
+                  // Navigate to Home Screen with optional services
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => HomeScreen(
+                        viewModel: viewModel,
+                        notificationService: notificationService,
+                      ),
+                    ),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
@@ -70,6 +117,7 @@ class WelcomePage extends StatelessWidget {
               OutlinedButton(
                 onPressed: () {
                   // Navigate to Create Account Page
+                  // You can add similar navigation with services for account creation
                 },
                 style: OutlinedButton.styleFrom(
                   padding:

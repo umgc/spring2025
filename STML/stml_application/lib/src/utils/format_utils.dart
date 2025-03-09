@@ -59,7 +59,7 @@ class FormatUtils {
     String formattedDate =
         Moment(timeStamp).format('MMMM Do, YYYY'); // Format the date
 
-    return '$formattedDate';
+    return formattedDate;
   }
 
   static String getTimeString(DateTime? timeStamp) {
