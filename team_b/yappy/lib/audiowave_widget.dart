@@ -5,7 +5,7 @@ import 'package:yappy/speech_state.dart';
 class AudiowaveWidget extends StatelessWidget {
   final SpeechState speechState;
 
-  const AudiowaveWidget({Key? key, required this.speechState}) : super(key: key);
+  const AudiowaveWidget({super.key, required this.speechState});
 
   @override
   Widget build(BuildContext context) {
