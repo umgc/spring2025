@@ -961,22 +961,22 @@ class MoodleLmsService implements LmsInterface {
       'wstoken': _userToken!,
       'wsfunction': 'local_learninglens_add_essay_override',
       'moodlewsrestformat': 'json',
-      'quizid': assignid.toString(),
+      'assignid': assignid.toString(),
     };
-
+    
     // Add only non-null fields
     if (userId != null) body['userid'] = userId.toString();
     if (groupId != null) body['groupid'] = groupId.toString();
     if (allowsubmissionsfromdate != null) body['allowsubmissionsfromdate'] = allowsubmissionsfromdate.toString();
-    if (dueDate != null) body['dueDate'] = dueDate.toString();
-    if (cutoffDate != null) body['cutoffDate'] = cutoffDate.toString();
+    if (dueDate != null) body['duedate'] = dueDate.toString();
+    if (cutoffDate != null) body['cutoffdate'] = cutoffDate.toString();
     if (timelimit != null) body['timelimit'] = timelimit.toString();
     if (sortorder != null) body['sortorder'] = sortorder.toString();
 
     final response = await ApiService().httpPost(url, body: body);
-
+    
     final responseData = json.decode(response.body);
-
+    
     if (response.statusCode == 200 && responseData is Map<String, dynamic>) {
       return 'Override: ${responseData['override_id']}';
     } else {
