@@ -8,7 +8,7 @@ class Override implements LearningLensInterface {
   int courseId;
   String courseName;
   int userid;
-  String username;
+  String fullname;
   DateTime? endTime;
   DateTime? timelimit;
   DateTime? cutoffTime;
@@ -22,7 +22,7 @@ class Override implements LearningLensInterface {
     this.courseId,
     this.courseName,
     this.userid,
-    this.username,
+    this.fullname,
     this.endTime,
     this.timelimit,
     this.cutoffTime,
@@ -37,7 +37,7 @@ class Override implements LearningLensInterface {
         courseId = 0,
         courseName = '',
         userid = 0,
-        username = '',
+        fullname = '',
         endTime = null,
         timelimit = null,
         cutoffTime = null,
@@ -53,7 +53,7 @@ class Override implements LearningLensInterface {
       json['course_id'],
       json['course_name'],
       json['userid'],
-      json['username'],
+      json['fullname'],
       json['end_time'] != null
           ? DateTime.fromMillisecondsSinceEpoch(json['end_time'] * 1000)
           : null,
@@ -69,7 +69,7 @@ class Override implements LearningLensInterface {
 
   @override
   String toString() {
-    return "Override(user: $username | assignment: $assignmentName | course: $courseName)";
+    return "Override(user: $fullname | assignment: $assignmentName | course: $courseName)";
   }
 
   @override
