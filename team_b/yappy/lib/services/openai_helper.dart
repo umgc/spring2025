@@ -1,7 +1,5 @@
 import 'package:dart_openai/dart_openai.dart';
 import 'package:yappy/main.dart';
-
-enum Industry { restaurant, medical, mechanic }
 class OpenAIHelper {
   final List<Map<String, String>> messages = [];
 
@@ -36,22 +34,22 @@ class OpenAIHelper {
       Audio Transcript:
     ''';
   
-  Future<String> summarizeTranscription(int userId, Industry industry, int transcriptId) async {
+  Future<String> summarizeTranscription(int userId, String industry, int transcriptId) async {
     // Pulls the transcript text from the database
     Map<String, dynamic>? transcript = await dbHelper.getTranscriptById(transcriptId);
     if (transcript == null) {
       throw Exception('Transcript with given ID not found');
     }
 
-    String contextPrompt;
+    String contextPrompt = "";
     switch (industry) {
-      case Industry.restaurant:
+      case "Restaurant":
         contextPrompt = restaurantContextPrompt;
         break;
-      case Industry.medical:
+      case "Medical Doctor" || "Medical Patient":
         contextPrompt = medicalContextPrompt;
         break;
-      case Industry.mechanic:
+      case "Vehicle Maintenance":
         contextPrompt = mechanicContextPrompt;
         break;
     }

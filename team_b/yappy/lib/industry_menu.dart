@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:record/record.dart';
 import 'package:yappy/services/openai_helper.dart';
 import 'package:yappy/speech_state.dart';
@@ -47,7 +48,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
       });
     }
   }
-
+  // This method generates a transcript dialog including the options for sharing, downloading, and deleting the transcript
   Widget generateTranscript(BuildContext context, String title, String content, int transcript) {
     return AlertDialog(
       title: Text(title),
@@ -129,8 +130,38 @@ class _IndustryMenuState extends State<IndustryMenu> {
             ),
             IconButton(
               icon: Icon(Icons.delete),
-              onPressed: () {
+                onPressed: () async {
                 // Add your delete functionality here
+                bool confirmDelete = await showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: Text('Confirm Delete'),
+                    content: Text('Are you sure you want to delete this transcript?'),
+                    actions: [
+                    TextButton(
+                      onPressed: () {
+                      Navigator.of(context).pop(false);
+                      },
+                      child: Text('Cancel'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                      Navigator.of(context).pop(true);
+                      },
+                      child: Text('Delete'),
+                    ),
+                    ],
+                  );
+                  },
+                );
+
+                if (confirmDelete) {
+                  // Perform the delete operation
+                  await DatabaseHelper().deleteTranscript(transcript);
+                  if (!context.mounted) return;
+                  Navigator.of(context).pop();
+                }
               },
             ),
           ],
@@ -144,12 +175,12 @@ class _IndustryMenuState extends State<IndustryMenu> {
       ],
     );
   }
-
+  // This method fetches all transcripts from the database
   Future<List<Map<String, dynamic>>> _fetchTranscripts() async {
     DatabaseHelper dbHelper = DatabaseHelper();
     return await dbHelper.getAllTranscripts();
   }
-
+  // This method builds the industry menu widget where the user can record, view transcripts, and view transcript history
   @override
   Widget build(BuildContext context) {
     // Gets the width and height of the current screen
@@ -220,33 +251,34 @@ class _IndustryMenuState extends State<IndustryMenu> {
                         // Create a new transcript ID 
                         int transcriptId = DateTime.now().millisecondsSinceEpoch;
 
-                        // Show a dialog to edit the text
-                        TextEditingController controller = TextEditingController(text: recordedText);
-                        if (!context.mounted) return;
-                        showDialog(
-                          context: context,
-                          builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: Text('Edit Transcript'),
-                              content: TextField(
-                                controller: controller,
-                                decoration: InputDecoration(hintText: 'Edit the transcript text'),
-                                maxLines: null,
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () async {
-                                    // Save the edited text to the database
-                                    await DatabaseHelper().saveTranscriptTextData(
-                                      userId: userId,
-                                      transcriptId: transcriptId,
-                                      text: controller.text,
-                                    );
+                      // Show a dialog to edit the text
+                      TextEditingController controller = TextEditingController(text: recordedText);
+                      if (!context.mounted) return;
+                      showDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return AlertDialog(
+                            title: Text('Edit Transcript'),
+                            content: TextField(
+                              controller: controller,
+                              decoration: InputDecoration(hintText: 'Edit the transcript text'),
+                              maxLines: null,
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () async {
+                                  // Save the edited text to the database
+                                  await DatabaseHelper().saveTranscript(
+                                    userId: userId,
+                                    transcriptId: transcriptId,
+                                    text: controller.text,
+                                    industry: widget.title,
+                                  );
                                     // Kick off the AI summarization process
                                     var openAIHelper = OpenAIHelper();
                                     String aiResponse = '';
                                     try {
-                                      aiResponse = await openAIHelper.summarizeTranscription(userId, Industry.restaurant, transcriptId);
+                                      aiResponse = await openAIHelper.summarizeTranscription(userId, widget.title, transcriptId);
                                     } catch (e) {
                                       // Lets the user know that transcription summarization failed (likely because of a lack of OpenAI API key)
                                       if (context.mounted) {
@@ -259,26 +291,27 @@ class _IndustryMenuState extends State<IndustryMenu> {
                                     debugPrint(aiResponse); // not a necessary statement after implementation
 
                                     if (!context.mounted) return;
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: Text('Save'),
-                                ),
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: Text('Cancel'),
-                                ),
-                              ],
-                            );
-                          },
-                        );
-                      }
+                                  Navigator.of(context).pop();
+                                },
+                                child: Text('Save'),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: Text('Cancel'),
+
+                              ),
+                            ],
+                          );
+                        },
+                      );
                     }
-                  ),
+                  },
                 ),
               ),
-              SizedBox(width: screenWidth * .06),
+            ),
+            SizedBox(width: screenWidth * .06),
 
               // Creates a industry specific icon based on user input
               Container(
@@ -291,6 +324,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
                     color: Colors.white,
                     size: screenHeight * .05,
                   ),
+
                   onPressed: () {
                     _showTranscriptsBottomSheet(context);
                   },
@@ -346,41 +380,47 @@ class _IndustryMenuState extends State<IndustryMenu> {
                     itemCount: transcripts.length,
                     itemBuilder: (context, index) {
                       Map<String, dynamic> transcript = transcripts[index];
-                      return ListTile(
-                        title: Text(
-                          'Transcript ${transcript['transcript_id']}',
-                          style: TextStyle(color: Colors.white),
-                        ),
-                        onTap: () {
-                          Navigator.pop(context);
-                          if (widget.title == 'Restaurant') {
-                            // Show Kanban style list for restaurant
-                            showModalBottomSheet(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return KanbanBoard(tasks: [
-                                  'Cheeseburger no lettuce',
-                                  'Rootbeer',
-                                  'Water with lemon and a large cheese pizza'
-                                ]);
-                              },
-                            );
-                          } else {
-                            // Show regular transcript for other industries
-                            showDialog(
-                              context: context,
-                              builder: (BuildContext context) {
-                                return generateTranscript(
-                                  context,
-                                  'Transcript',
-                                  transcript['transcript_text_data'] ?? 'No content available',
-                                  transcript['transcript_id'],
-                                );
-                              },
-                            );
-                          }
-                        },
-                      );
+                      if (transcript['industry'] == widget.title) {
+                        return ListTile(
+                          title: Text(                           
+                            // Format the transcript ID to Day Month Year Time
+                            DateFormat('dd MMM yyyy HH:mm').format(
+                            DateTime.fromMillisecondsSinceEpoch(transcript['transcript_id'])
+                            ),
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          onTap: () {
+                            Navigator.pop(context);
+                            if (widget.title == 'Restaurant') {
+                              // Show Kanban style list for restaurant
+                              showModalBottomSheet(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return KanbanBoard(tasks: [
+                                    // get the order_transcript from the restaurant table if industy is restaurant
+
+                                  ]);
+                                },
+                              );
+                            } else {
+                              // Show regular transcript for other industries
+                              showDialog(
+                                context: context,
+                                builder: (BuildContext context) {
+                                  return generateTranscript(
+                                    context,
+                                    'Transcript',
+                                    transcript['transcript_text_data'] ?? 'No content available',
+                                    transcript['transcript_id'],
+                                  );
+                                },  
+                              );
+                            }
+                          },
+                        );
+                      } else {
+                        return SizedBox.shrink();
+                      }
                     },
                   ),
                 ),
@@ -390,7 +430,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
         );
       },
     );
-  }    
+  }
 
   // Extract the functionality to show transcript history into a separate method
   void _showTranscriptsHistoryBottomSheet(BuildContext context) async {
@@ -413,30 +453,37 @@ class _IndustryMenuState extends State<IndustryMenu> {
             child: Column(
               children: [
                 Expanded(
-                  child: ListView.builder(
+                    child: ListView.builder(
                     itemCount: transcripts.length,
                     itemBuilder: (context, index) {
                       Map<String, dynamic> transcript = transcripts[index];
+                      if (transcript['industry'] == widget.title) {
                       return ListTile(
                         title: Text(
-                          'Transcript ${transcript['transcript_id']}',
-                          style: TextStyle(color: Colors.white),
+                          // Format the transcript ID to Day Month Year Time
+                          DateFormat('dd MMM yyyy HH:mm').format(
+                          DateTime.fromMillisecondsSinceEpoch(transcript['transcript_id'])
+                          ),
+                        style: TextStyle(color: Colors.white),
                         ),
                         onTap: () {
-                          Navigator.pop(context);
-                          showDialog(
-                            context: context,
-                            builder: (BuildContext context) {
-                              return generateTranscript(
-                                context,
-                                'Transcript',
-                                transcript['transcript_text_data'] ?? 'No content available',
-                                transcript['transcript_id'],
-                              );
-                            },
+                        Navigator.pop(context);
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) {
+                          return generateTranscript(
+                            context,
+                            'Transcript',
+                            transcript['transcript_text_data'] ?? 'No content available',
+                            transcript['transcript_id'],
                           );
+                          },
+                        );
                         },
                       );
+                      } else {
+                      return SizedBox.shrink();
+                      }
                     },
                   ),
                 ),
@@ -582,8 +629,6 @@ class KanbanBoardState extends State<KanbanBoard> {
               },
               child: Text('Close'),
             ),
-
-            // Add your save to database functionality here
           ],
         ),
       ),
