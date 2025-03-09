@@ -261,8 +261,6 @@ class MoodleLmsService implements LmsInterface {
       throw StateError('Unexpected response format from Moodle');
     }
 
-    print(assignmentOverrides);
-
     return assignmentOverrides;
 
   }
