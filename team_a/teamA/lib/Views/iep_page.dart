@@ -541,7 +541,7 @@ class _IepPageState extends State<IepPage> {
         DataColumn(label: Text('Student Name', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
         DataColumn(label: Text('Course Name', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
         DataColumn(label: Text('Assignment', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
-        DataColumn(label: Text('Dates', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
+        DataColumn(label: Text('Due Dates', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
         DataColumn(label: Text('Attempts', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
       ],
       rows: (getOverrides() ?? []).asMap().map((index, override) {
