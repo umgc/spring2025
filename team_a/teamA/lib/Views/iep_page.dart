@@ -494,11 +494,11 @@ Future<List<Participant>> handleSelection(String? courseID) async {
 Future<List<Assignment>> handleEssaySelection(int? courseID) async {
   if (courseID != null) {
     List<Assignment>? essays = await MoodleLmsService().getEssays(courseID);
-    if (essays == null) {
-      return [];
+    if (essays.isNotEmpty) {
+      return essays;
     }
     else {
-      return essays;
+      return [];
     }
   }
   else {
@@ -510,11 +510,11 @@ Future<List<Assignment>> handleEssaySelection(int? courseID) async {
 Future<List<Quiz>> handleQuizSelection(int? courseID) async {
   if (courseID != null) {
     List<Quiz>? quizzes = await MoodleLmsService().getQuizzes(courseID);
-    if (quizzes == null) {
-      return [];
+    if (quizzes.isNotEmpty) {
+      return quizzes;
     }
     else {
-      return quizzes;
+      return [];
     }
   }
   else {

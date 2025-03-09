@@ -56,7 +56,10 @@ class QuizSendToGoogleState extends State<QuizSendToGoogle> {
     print("Fetching courses... inside _fetchCourses");
     setState(() => _isLoading = true);
     final token = await _getToken();
-    if (token == null) return;
+    if (token == null) {
+      setState(() => _isLoading = false);
+      return;
+    }
 
     final response = await http.get(
       Uri.parse('https://classroom.googleapis.com/v1/courses'),
@@ -186,7 +189,9 @@ class QuizSendToGoogleState extends State<QuizSendToGoogle> {
       appBar: CustomAppBar(
           title: 'Assign Assessment',
           userprofileurl: LmsFactory.getLmsService().profileImage ?? ''),
-      body: SingleChildScrollView(
+      body: _isLoading
+        ? Center(child: CircularProgressIndicator())
+        : SingleChildScrollView(
         padding: EdgeInsets.all(15.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

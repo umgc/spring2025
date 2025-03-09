@@ -32,8 +32,8 @@ class EditQuestionsGoogleState extends State<EditQuestionsGoogle> {
   void initState() {
     super.initState();
     myQuiz = Quiz.fromXmlString(widget.questionXML);
-    if (apikey != null) {
-      openai = OpenAiLLM(apikey!);
+    if (apikey.isNotEmpty) {
+      openai = OpenAiLLM(apikey);
     } else {
       // Handle the case where the API key is null
       throw Exception('API key is not set in the environment variables');
