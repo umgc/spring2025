@@ -9,6 +9,8 @@ import 'package:learninglens_app/beans/quiz.dart';
 import 'package:learninglens_app/beans/assignment.dart';
 import 'package:learninglens_app/beans/quiz_override';
 import 'package:learninglens_app/services/api_service.dart';
+import 'package:learninglens_app/beans/override.dart';
+
 
 class IepPage extends StatefulWidget{
   IepPage();
@@ -37,7 +39,6 @@ class _IepPageState extends State{
   double? epochTime;
   List<String> attempts = ['Unlimited', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
   int? selectedAttempt;
-
 
 
  void _selectDate(BuildContext context) async {
@@ -70,6 +71,7 @@ class _IepPageState extends State{
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                //Text(getOverrides().toString()),
                 Text(
                   'Individual Education Plan Page',
                   style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
@@ -338,31 +340,20 @@ class _IepPageState extends State{
                       headingRowColor: MaterialStateProperty.all(Colors.grey),
                       columns: [
                         DataColumn(label: Text('Student Name')),
-                        DataColumn(label: Text('Course')),
+                        DataColumn(label: Text('Course Name')),
                         DataColumn(label: Text('Assignment Name')),
-                        DataColumn(label: Text('Original Due Date')),
+                        DataColumn(label: Text('Assignment Type')),
                         DataColumn(label: Text('Extended Due Date')),
-                        DataColumn(label: Text('Additional Comments')),
+                        DataColumn(label: Text('Cut Off Date')),
+                        DataColumn(label: Text('Attempts')),
                       ],
-                      rows: [
-                        DataRow(
-                          cells: [
-                            DataCell(Text('Andrew Hammes')),
-                            DataCell(Text('Bio')),
-                            DataCell(Text('Yes')),
-                            DataCell(Text('No')),
-                            DataCell(Text('Yes')),
-                            DataCell(ConstrainedBox(constraints: BoxConstraints(maxWidth:225,), child: Text('Student is not very smart. This is what wrapped text would look like. Still need to work out all the bugs.', softWrap: true, maxLines: null, overflow: TextOverflow.visible))),
-                          ]
-                        ),
-                      ],
-                      dataRowHeight: 200,
-                    )
-                  ),
+                      rows: (getOverrides() ?? []).map(buildDataRow).toList(),
+                      )
+                    ),
+                  )
+                ]
                 ),
               ]
-            )
-          ]
         )
       )
     );
@@ -432,4 +423,25 @@ Future<List<Quiz>> handleQuizSelection(int? courseID) async {
 
 void quizOver(epochTime, quizId, userId, attempts) async {
   QuizOverride override = await MoodleLmsService().addQuizOverride(quizId: quizId, userId: userId, timeClose: epochTime, attempts: attempts);
+}
+
+List<Override>? getOverrides() {
+  List<Override>? overrides;
+  overrides = MoodleLmsService().overrides;
+  print(overrides);
+  return overrides;
+}
+
+DataRow buildDataRow(Override override) {
+  return DataRow(
+    cells: [
+      DataCell(Text(override.username)),
+      DataCell(Text(override.courseName)),
+      DataCell(Text(override.assignmentName)),
+      DataCell(Text(override.type)),
+      DataCell(Text(override.endTime.toString())),
+      DataCell(Text(override.cutoffTime.toString())),
+      DataCell(Text(override.attempts.toString())),
+    ],
+  );
 }
