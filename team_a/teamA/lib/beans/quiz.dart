@@ -49,7 +49,6 @@ class Quiz {
     return quiz;
   }
 
-  @override
   static Quiz fromGoogleJson(Map<String, dynamic> json) {
     Quiz tmpQuiz = Quiz();
       tmpQuiz.name = json['title'];

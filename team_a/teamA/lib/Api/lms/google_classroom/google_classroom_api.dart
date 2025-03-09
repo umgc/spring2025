@@ -1,12 +1,10 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'package:http/http.dart' as http;
 import 'package:learninglens_app/beans/lesson_plan.dart';
 import 'package:logging/logging.dart';
-import 'package:learninglens_app/Controller/main_controller.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
 class GoogleClassroomApi {
-  final MainController _controller = MainController();
+  // final MainController _controller = MainController(); ***** Not used *****
 
   Future<String?> _getToken() async {
     final token = LocalStorageService.getGoogleAccessToken();

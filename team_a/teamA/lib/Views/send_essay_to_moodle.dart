@@ -4,7 +4,6 @@ import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/beans/course.dart';
 import 'package:learninglens_app/Views/dashboard.dart';
 import 'dart:convert';
-import '../Api/lms/moodle/moodle_lms_service.dart';
 
 class EssayAssignmentSettings extends StatefulWidget {
   final String updatedJson;

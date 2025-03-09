@@ -144,9 +144,9 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
     }
   }
 
-  String _stripHtmlTags(String htmlText) {
-    return htmlText.replaceAll(RegExp(r'<[^>]*>'), '').trim();
-  }
+  // String _stripHtmlTags(String htmlText) { ***** Not used *****
+  //   return htmlText.replaceAll(RegExp(r'<[^>]*>'), '').trim();
+  // }
 
   void _showLessonPlanDialog(dynamic lessonPlan) {
     showDialog(

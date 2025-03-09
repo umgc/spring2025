@@ -1,6 +1,3 @@
-import 'dart:convert';
-import 'dart:io';
-import 'package:http/http.dart' as http;
 import 'package:learninglens_app/beans/course.dart';
 import 'package:learninglens_app/beans/lesson_plan.dart';
 import 'package:learninglens_app/beans/quiz.dart';
@@ -12,7 +9,6 @@ import 'package:learninglens_app/beans/grade.dart';
 import 'package:learninglens_app/beans/submission.dart';
 import 'package:learninglens_app/beans/submission_with_grade.dart';
 import 'package:learninglens_app/beans/moodle_rubric.dart';
-import 'package:learninglens_app/services/api_service.dart';
 import 'package:learninglens_app/Api/lms/lms_interface.dart';
 
 
@@ -218,8 +214,8 @@ class ApiSingleton implements LmsInterface {
     // TODO: implement getRubric
     throw UnimplementedError();
   }
+
   //Get Lesson Plan
-    @override
   Future<LessonPlan>getLessonPlan(String courseId){
     //\TODO: implement getLessonPlan
     throw UnimplementedError();

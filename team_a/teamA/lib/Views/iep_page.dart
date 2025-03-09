@@ -1,5 +1,4 @@
 import "package:flutter/material.dart";
-//import 'package:flutter_quill/flutter_quill.dart';
 import "package:learninglens_app/Api/lms/factory/lms_factory.dart";
 import "package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart";
 import "package:learninglens_app/Controller/custom_appbar.dart";
@@ -8,7 +7,6 @@ import 'package:learninglens_app/beans/participant.dart';
 import 'package:learninglens_app/beans/quiz.dart';
 import 'package:learninglens_app/beans/assignment.dart';
 import 'package:learninglens_app/beans/quiz_override';
-//import 'package:learninglens_app/services/api_service.dart';
 import 'package:learninglens_app/beans/override.dart';
 
 
@@ -521,11 +519,13 @@ Future<List<Quiz>> handleQuizSelection(int? courseID) async {
 //Quiz Override function
 void quizOver(epochTime, quizId, userId, attempts) async {
   QuizOverride override = await MoodleLmsService().addQuizOverride(quizId: quizId, userId: userId, timeClose: epochTime, attempts: attempts);
+  print('Override: $override');
 }
 
 //Essay Override functioon
 void essayOver(epochTime, essayId, userId, epochTime2) async {
   String essayOverride = await MoodleLmsService().addEssayOverride(assignid: essayId, userId: userId, dueDate: epochTime, cutoffDate: epochTime2);
+  print('Override: $essayOverride');
 }
 
 //function used to load the table and retrieve all overrides

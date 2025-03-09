@@ -4,9 +4,7 @@ import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // For saving/loading chat history
 import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
-import 'package:learninglens_app/services/api_service.dart';
 import 'package:learninglens_app/Api/llm/enum/llm_enum.dart';
-import 'package:learninglens_app/Api/llm/openai_api.dart';
 import 'package:learninglens_app/Api/llm/grok_api.dart';
 import 'package:learninglens_app/Api/llm/perplexity_api.dart';
 import 'dart:convert'; // For encoding and decoding chat history
@@ -115,11 +113,11 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   // Function to toggle role (student/teacher)
-  void _toggleRole() {
-    setState(() {
-      _role = _role == 'student' ? 'teacher' : 'student';
-    });
-  }
+  // void _toggleRole() { ***** Not used *****
+  //   setState(() {
+  //     _role = _role == 'student' ? 'teacher' : 'student';
+  //   });
+  // }
 
   // Scroll to the bottom of the chat list
   void _scrollToBottom() {

@@ -1,10 +1,8 @@
 // ignore_for_file: unnecessary_null_comparison
 
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
 import 'package:learninglens_app/Api/lms/lms_interface.dart';
-import 'package:learninglens_app/Api/lms/google_classroom/google_lms_service.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
 
 enum LLMKey { openAI, perplexity, claude, grok }
@@ -20,7 +18,7 @@ class LoginNotifier with ChangeNotifier {
   // Google variables
   String? _clientID;
 
-  final LocalStorageService _localStorageService = LocalStorageService();
+  // final LocalStorageService _localStorageService = LocalStorageService(); ***** Not used *****
   final LmsInterface _api = LmsFactory.getLmsService(); // Moodle API instance
 
   bool get hasLLMKey => _hasLLMKey;
@@ -30,7 +28,7 @@ class LoginNotifier with ChangeNotifier {
   String? get moodleUrl => _moodleUrl;
   String? get errorMessage => _errorMessage; // Getter for error messages
 
-  late GoogleSignIn _googleSignIn;
+  // late GoogleSignIn _googleSignIn; ***** Not used *****
 
   LoginNotifier() {
     _loadLoginState(); // Load saved login state when the notifier is created

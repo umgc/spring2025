@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:http/http.dart' as http;
 import 'package:learninglens_app/services/api_service.dart';
 
 class PerplexityLLM 

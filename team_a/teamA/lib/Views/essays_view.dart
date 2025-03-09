@@ -1,13 +1,9 @@
 import "package:flutter/material.dart";
-import "package:intl/intl.dart";
 import "package:learninglens_app/Api/lms/factory/lms_factory.dart";
-import "package:learninglens_app/Controller/essay_generator.dart";
 import "package:learninglens_app/Views/view_submissions.dart";
 import "package:learninglens_app/beans/assignment.dart";
 import "package:learninglens_app/beans/participant.dart";
-import 'package:learninglens_app/beans/quiz.dart';
 import "package:learninglens_app/beans/course.dart";
-import "package:learninglens_app/beans/question.dart";
 import "package:learninglens_app/Controller/custom_appbar.dart";
 import "package:learninglens_app/beans/submission_with_grade.dart";
 import "package:learninglens_app/content_carousel.dart";

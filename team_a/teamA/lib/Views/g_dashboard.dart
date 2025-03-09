@@ -1,14 +1,10 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/Views/essays_view.dart';
 import 'package:learninglens_app/Views/g_assignment_home.dart';
 import 'package:learninglens_app/Views/g_courses.dart';
-import 'package:learninglens_app/notifiers/login_notifier.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
-import 'package:provider/provider.dart';
 
 class GoogleTeacherDashboard extends StatelessWidget {
   const GoogleTeacherDashboard({super.key});

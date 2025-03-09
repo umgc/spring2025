@@ -4,11 +4,9 @@ import 'package:learninglens_app/Views/g_quiz_generator.dart';
 import 'package:learninglens_app/Views/g_send_quiz_to_moodle.dart';
 import 'package:learninglens_app/Api/llm/openai_api.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
-import '../Api/lms/moodle/moodle_lms_service.dart';
 import 'package:learninglens_app/beans/quiz.dart';
 import 'package:learninglens_app/beans/question.dart';
 import 'package:flutter/material.dart';
-import 'quiz_generator.dart';
 
 class EditQuestionsGoogle extends StatefulWidget {
   final String questionXML;

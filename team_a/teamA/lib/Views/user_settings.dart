@@ -2,10 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
-import 'package:learninglens_app/Controller/main_controller.dart';
-import 'package:learninglens_app/Views/dashboard.dart';
-import 'package:learninglens_app/Views/g_courses.dart';
-import 'package:learninglens_app/Views/g_dashboard.dart';
 import 'package:learninglens_app/notifiers/login_notifier.dart';
 import 'package:learninglens_app/notifiers/theme_notifier.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
@@ -30,8 +26,8 @@ class UserSettingsState extends State<UserSettings> {
   final TextEditingController _googleClientIdController =
       TextEditingController();
   //
-  bool _isLoading = false;
-  final MainController _controller = MainController();
+  // bool _isLoading = false; ***** Not used *****
+  // final MainController _controller = MainController(); ***** Not used *****
 
   @override
   void initState() {
@@ -220,46 +216,46 @@ class UserSettingsState extends State<UserSettings> {
     );
   }
 
-  Future<void> _handleSignIn(LoginNotifier loginNotifier) async {
-    setState(() {
-      _isLoading = true;
-    });
+  // Future<void> _handleSignIn(LoginNotifier loginNotifier) async { ***** Not used *****
+  //   setState(() {
+  //     _isLoading = true;
+  //   });
 
-    try {
-      loginNotifier.signInWithGoogle();
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => GoogleTeacherDashboard()),
-      );
-    } catch (error) {
-      print("Google Sign-In Error: $error");
-      _showLoginFailedDialog("Google Sign-In failed: $error");
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
+  //   try {
+  //     loginNotifier.signInWithGoogle();
+  //     Navigator.pushReplacement(
+  //       context,
+  //       MaterialPageRoute(builder: (context) => GoogleTeacherDashboard()),
+  //     );
+  //   } catch (error) {
+  //     print("Google Sign-In Error: $error");
+  //     _showLoginFailedDialog("Google Sign-In failed: $error");
+  //   } finally {
+  //     setState(() {
+  //       _isLoading = false;
+  //     });
+  //   }
+  // }
 
-  void _showLoginFailedDialog(String message) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Login Failed"),
-          content: Text(message),
-          actions: <Widget>[
-            TextButton(
-              child: const Text("OK"),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
+  // void _showLoginFailedDialog(String message) { ***** Not used *****
+  //   showDialog(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       return AlertDialog(
+  //         title: const Text("Login Failed"),
+  //         content: Text(message),
+  //         actions: <Widget>[
+  //           TextButton(
+  //             child: const Text("OK"),
+  //             onPressed: () {
+  //               Navigator.of(context).pop();
+  //             },
+  //           ),
+  //         ],
+  //       );
+  //     },
+  //   );
+  // }
 
   // API Key Block
   Widget _buildApiKeyBlock(LoginNotifier loginNotifier) {
