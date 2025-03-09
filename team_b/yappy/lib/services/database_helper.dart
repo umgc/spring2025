@@ -43,8 +43,9 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
       onOpen: (db) async {
         // Check if the tables exist and create them if they don't
         await _createTablesIfNotExists(db);
@@ -55,6 +56,14 @@ class DatabaseHelper {
   Future<void> _onCreate(Database db, int version) async {
     // Create tables if needed
     await _createTablesIfNotExists(db);
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+      if (oldVersion < 2) {
+        await db.execute('''
+          ALTER TABLE Transcript ADD COLUMN industry TEXT;
+    ''');
+      }
   }
 
   Future<void> _createTablesIfNotExists(Database db) async {
