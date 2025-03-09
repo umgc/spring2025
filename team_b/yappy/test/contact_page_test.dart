@@ -4,6 +4,7 @@ import 'package:yappy/contact_page.dart';
 import 'package:yappy/tool_bar.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
   testWidgets('ContactPage should have a ToolBar and HamburgerDrawer',
       (WidgetTester tester) async {
     // Build the widget

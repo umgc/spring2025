@@ -5,6 +5,7 @@ import 'package:yappy/speech_state.dart';
 import 'package:yappy/services/model_manager.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
 
   final SpeechState speechState = SpeechState();
   final ModelManager modelManager = ModelManager();
