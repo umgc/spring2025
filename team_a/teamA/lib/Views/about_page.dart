@@ -50,7 +50,7 @@ class _TemplateState extends State{
             Padding(
               padding: EdgeInsets.all(16.0), // Adjust padding as needed
               child: Text(
-                'Learning Lens v2.0',
+                'Learning Lens v2.0 by Team EduLense',
                 style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.left,
               ),
@@ -58,7 +58,7 @@ class _TemplateState extends State{
             Padding(
               padding: EdgeInsets.symmetric(horizontal: 16.0), // Adds left and right padding
               child: Text(
-                'Learning Lens is an application developed by students at the University of Maryland Global Campus in the SWEN 670 Software Engineering Capstone course. It originated in the Fall 2024 student cohort and has been further developed by the students of Spring 2025. Some features and ideas were also developed from an application developed by a Fall 2024 cohort team named EvaluAI.\n\nLearning Lens is intended to be used by educators who teach students who utilize Learning Management Systems (LMS) like Moodle and Google Classroom. The application allows teachers to automatically generate quizzes, essay assignments, and lesson plans using various Artificial Intelligence platforms. There are also added features for Individual Education Plans and advanced analytics.\n\nSpring 2025 Contributors under Team Name "EduLense": Nathaniel Boyd, Daniel Diep, Dinesh Ghimire, Andrew Hammes, Dusty McKinnon, Derek Sappington, and Kevin Watts',
+                'Learning Lens is an application developed by students at the University of Maryland Global Campus in the SWEN 670 Software Engineering Capstone course. It originated in the Fall 2024 student cohort and has been further developed by the students of Spring 2025. Some features and ideas were also developed from an application developed by a Fall 2024 cohort team named EvaluAI.\n\nLearning Lens is intended to be used by educators who teach students who utilize Learning Management Systems (LMS) like Moodle and Google Classroom. The application allows teachers to automatically generate quizzes, essay assignments, and lesson plans using various Artificial Intelligence platforms. There are also added features for Individual Education Plans and advanced analytics.\n\nSpring 2025 Contributors Under Team Name "EduLense": Nathaniel Boyd, Daniel Diep, Dinesh Ghimire, Andrew Hammes, Dusty McKinnon, Derek Sappington, and Kevin Watts',
                 style: TextStyle(fontSize: 15),
               ),
             ),
