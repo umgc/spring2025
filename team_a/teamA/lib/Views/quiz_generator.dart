@@ -20,6 +20,7 @@ class CreateAssessment extends StatefulWidget {
   static TextEditingController trueFalseController = TextEditingController();
   static TextEditingController shortAnswerController = TextEditingController();
   static TextEditingController topicController = TextEditingController();
+  static TextEditingController llmController = TextEditingController();
   CreateAssessment();
   
   @override
@@ -37,7 +38,7 @@ class _AssessmentState extends State<CreateAssessment> {
   // String? selectedLLM, selectedSubject, selectedGradeLevel;
   String? selectedSubject, selectedGradeLevel;
   LlmType? selectedLLM;
-  List<String> _gradeLevels = ['9th','10th','11th','12th'];
+  List<String> _gradeLevels = ['K', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th'];
   List<String> _subjects = ['Math', 'Science', 'Language Arts', 'Social Studies', 'Health', 'Art', 'Music'];
   bool _isLoading = false;
   _AssessmentState();
@@ -193,6 +194,7 @@ class _AssessmentState extends State<CreateAssessment> {
                           onChanged: (LlmType? newValue) {
                             setState(() {
                               selectedLLM = newValue;
+                              CreateAssessment.llmController.text = newValue!.displayName;
                             });
                           },
                           // items: ['ChatGPT', 'CLAUDE', 'Perplexity', 'Grok'].map((String value) {

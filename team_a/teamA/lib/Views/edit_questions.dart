@@ -1,3 +1,6 @@
+import 'package:learninglens_app/Api/llm/enum/llm_enum.dart';
+import 'package:learninglens_app/Api/llm/grok_api.dart';
+import 'package:learninglens_app/Api/llm/perplexity_api.dart';
 import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/Views/send_quiz_to_moodle.dart';
@@ -21,7 +24,8 @@ class EditQuestionsState extends State<EditQuestions> {
   late Quiz myQuiz;
   // final TextEditingController _textController = TextEditingController();
   var apikey = LocalStorageService.getOpenAIKey();
-  late OpenAiLLM openai;
+  // late OpenAiLLM openai;
+  var aiModel;
   bool _isLoading = false;
 
   String subject = CreateAssessment.descriptionController.text;
@@ -32,18 +36,44 @@ class EditQuestionsState extends State<EditQuestions> {
   void initState() {
     super.initState();
     myQuiz = Quiz.fromXmlString(widget.questionXML);
-    if (apikey.isNotEmpty) {
-      // TODO: Fix only excepts ChatGPT AI. 
-      openai = OpenAiLLM(apikey);
-    } else {
-      // Handle the case where the API key is null
-      throw Exception('API key is not set in the environment variables');
-    }
+    getAiModel();
+    // if (apikey.isNotEmpty) {
+    //   // TODO: Fix only excepts ChatGPT AI. 
+    //   openai = OpenAiLLM(apikey);
+    // } else {
+    //   // Handle the case where the API key is null
+    //   throw Exception('API key is not set in the environment variables');
+    // }
     myQuiz.name = CreateAssessment.nameController.text;
     myQuiz.description = CreateAssessment.descriptionController.text;
 
     promptstart =
-        'Create a question that is compatible with Moodle XML import. Be a bit creative in how you design the question and answers, making sure it is engaging but still on the subject of $subject and related to $topic. Make sure the XML specification is included, and the question is wrapped in the quiz XML element required by Moodle. Each answer should have feedback that fits the Moodle XML format, and avoid using HTML elements within a CDATA field. The quiz should be challenging and thought-provoking, but appropriate for high school students who speak English. The Moodle question type should be  ';
+        'Create a question that is compatible with Moodle XML import. '
+        'Be a bit creative in how you design the question and answers, '
+        'making sure it is engaging but still on the subject of $subject and related to $topic. '
+        'Make sure the XML specification is included, and the question is wrapped '
+        'in the quiz XML element required by Moodle. Each answer should have feedback '
+        'that fits the Moodle XML format, and avoid using HTML elements within a CDATA field. '
+        'The quiz should be challenging and thought-provoking, but appropriate for '
+        'high school students who speak English. The Moodle question type should be  ';
+  }
+
+  void getAiModel() {
+    LlmType selectedLLM = LlmType.values.firstWhere(
+      (type) => type.displayName == CreateAssessment.llmController.text,
+      orElse: () => throw Exception('No LlmType found'),
+    );
+    if (selectedLLM == LlmType.CHATGPT) {
+      aiModel = OpenAiLLM(LocalStorageService.getOpenAIKey());
+    } else if (selectedLLM == LlmType.GROK) {
+      aiModel = GrokLLM(LocalStorageService.getGrokKey());
+    } else if (selectedLLM == LlmType.PERPLEXITY) {
+      // aiModel = OpenAiLLM(perplexityApiKey); 
+      aiModel = PerplexityLLM(LocalStorageService.getPerplexityKey());
+    } else {
+      // default
+      aiModel = OpenAiLLM(LocalStorageService.getOpenAIKey());
+    }
   }
 
   @override
@@ -102,7 +132,7 @@ class EditQuestionsState extends State<EditQuestions> {
                       setState(() {
                         _isLoading = true;
                       });
-                      var result = await openai
+                      var result = await aiModel
                           // .postToLlm(promptstart + question.toString());
                           .postToLlm(promptstart + question.type.toString());
 
