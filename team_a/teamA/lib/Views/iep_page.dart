@@ -4,6 +4,7 @@ import "package:learninglens_app/Api/lms/factory/lms_factory.dart";
 import "package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart";
 import "package:learninglens_app/Controller/custom_appbar.dart";
 import 'package:learninglens_app/beans/course.dart';
+import 'package:learninglens_app/beans/essay_override.dart';
 import 'package:learninglens_app/beans/participant.dart';
 import 'package:learninglens_app/beans/quiz.dart';
 import 'package:learninglens_app/beans/assignment.dart';
@@ -23,6 +24,7 @@ class IepPage extends StatefulWidget{
 
 class _IepPageState extends State{
   TextEditingController _dateController = TextEditingController();
+  TextEditingController _cutoffDateController = TextEditingController();
   bool? isChecked1 = false;
   bool? isChecked2 = false;
   String? selectedCourse;
@@ -38,6 +40,7 @@ class _IepPageState extends State{
   Future<List<Quiz>>? quiz;
   List<String> type = ['Quiz', 'Essay'];
   double? epochTime;
+  double? epochTime2;
   List<String> attempts = ['Unlimited', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
   int? selectedAttempt;
 
@@ -48,6 +51,16 @@ class _IepPageState extends State{
       setState(() {
         _dateController.text = "${picked.toLocal()}".split(' ')[0];
         epochTime = picked.millisecondsSinceEpoch/1000.round();
+      });
+    }
+  }
+
+   void _selectCutOffDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime(2000), lastDate: DateTime(2100),);
+    if (picked!= null && picked != DateTime.now()) {
+      setState(() {
+        _cutoffDateController.text = "${picked.toLocal()}".split(' ')[0];
+        epochTime2 = picked.millisecondsSinceEpoch/1000.round();
       });
     }
   }
@@ -320,14 +333,78 @@ class _IepPageState extends State{
                   ), 
                 ),
                 Visibility(
+                  visible: essayId != null,
+                  child: Row (children: [
+                    Container(
+                      width: 325,
+                      margin: EdgeInsets.only(right: 20),
+                      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.black),
+                      ),
+                      child: Text(_dateController.text, style: TextStyle(fontSize: 20)),
+                    ),
+                    GestureDetector(
+                      onTap:() => _selectDate(context),
+                      child: Container(
+                        padding: EdgeInsets.symmetric(vertical: 15, horizontal: 40),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.black),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          'Select Due Date',
+                        ),
+                      ),
+                    ),
+                    ] ,
+                  ),
+                ),
+                Visibility(
+                  visible: essayId != null,
+                  child: Row (children: [
+                    Container(
+                      width: 325,
+                      margin: EdgeInsets.only(right: 20, top: 20),
+                      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.black),
+                      ),
+                      child: Text(_cutoffDateController.text, style: TextStyle(fontSize: 20)),
+                    ),
+                    GestureDetector(
+                      onTap:() => _selectCutOffDate(context),
+                      child: Container(
+
+                        padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: Colors.black),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          'Select Cutoff Date',
+                        ),
+                      ),
+                    ),
+                  ],)
+                ),
+                Visibility(
                   visible: epochTime != null,
                   child: Container(                  
                     padding: EdgeInsets.only(top: 50, left: 200),
                     child: ElevatedButton(
                       onPressed: () {
-                        quizOver(epochTime, quizId, userId, selectedAttempt);
-                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => IepPage()),
-                        );
+                        if(selectedAssignment == 'Quiz') {
+                          quizOver(epochTime, quizId, userId, selectedAttempt);
+                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => IepPage()));
+                        }
+                        else if(selectedAssignment == 'Essay'){
+                          essayOver(epochTime, essayId, userId, epochTime2);
+                          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => IepPage()));
+
+                        }
                       },
                       child: Text('Submit')
                     )
@@ -436,10 +513,13 @@ void quizOver(epochTime, quizId, userId, attempts) async {
   QuizOverride override = await MoodleLmsService().addQuizOverride(quizId: quizId, userId: userId, timeClose: epochTime, attempts: attempts);
 }
 
+void essayOver(epochTime, essayId, userId, epochTime2) async {
+  String essayOverride = await MoodleLmsService().addEssayOverride(assignid: essayId, userId: userId, dueDate: epochTime, cutoffDate: epochTime2);
+}
+
 List<Override>? getOverrides() {
   List<Override>? overrides;
   overrides = MoodleLmsService().overrides;
-  print(overrides);
   return overrides;
 }
 
