@@ -13,6 +13,8 @@ class DatabaseHelper {
   }
 
   DatabaseHelper._internal();
+  static DatabaseHelper get instance => _instance;
+
 
   Future<Database> get database async {
     if (_database != null) return _database!;

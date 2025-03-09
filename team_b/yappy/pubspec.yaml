@@ -50,7 +50,12 @@ dependencies:
   flutter_audio_waveforms: ^1.2.1+8
   dart_openai: ^5.1.0
 
+  
+
+
 dev_dependencies:
+  lints: ^5.1.1
+  test: ^1.21.0
   flutter_test:
     sdk: flutter
 
@@ -113,3 +118,6 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+  
+
