@@ -1,5 +1,5 @@
 import "package:flutter/material.dart";
-import 'package:flutter_quill/flutter_quill.dart';
+//import 'package:flutter_quill/flutter_quill.dart';
 import "package:learninglens_app/Api/lms/factory/lms_factory.dart";
 import "package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart";
 import "package:learninglens_app/Controller/custom_appbar.dart";
@@ -8,7 +8,7 @@ import 'package:learninglens_app/beans/participant.dart';
 import 'package:learninglens_app/beans/quiz.dart';
 import 'package:learninglens_app/beans/assignment.dart';
 import 'package:learninglens_app/beans/quiz_override';
-import 'package:learninglens_app/services/api_service.dart';
+//import 'package:learninglens_app/services/api_service.dart';
 import 'package:learninglens_app/beans/override.dart';
 
 
@@ -43,7 +43,7 @@ class _IepPageState extends State{
   List<String> attempts = ['Unlimited', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
   int? selectedAttempt;
 
-
+//function used to select extended due date for override
  void _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime(2000), lastDate: DateTime(2100),);
     if (picked!= null && picked != DateTime.now()) {
@@ -54,6 +54,7 @@ class _IepPageState extends State{
     }
   }
 
+//function used to select cut off date for the essay override
    void _selectCutOffDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime(2000), lastDate: DateTime(2100),);
     if (picked!= null && picked != DateTime.now()) {
@@ -63,7 +64,6 @@ class _IepPageState extends State{
       });
     }
   }
-
 
 
   @override
@@ -96,7 +96,7 @@ class _IepPageState extends State{
                 DropdownMenu(
                   helperText: 'Course',
                   hintText: 'Select Course',
-                  width: 500,
+                  width: 350,
                   dropdownMenuEntries: (getAllCourses() ?? []).map((Course course) {
                     return DropdownMenuEntry<String>(
                       value: course.id.toString(),
@@ -141,7 +141,7 @@ class _IepPageState extends State{
                       return DropdownMenu(
                         helperText: 'Participants',
                         hintText: 'Select Participants',
-                        width: 500,
+                        width: 350,
                         dropdownMenuEntries: dropdownEntries,
                         onSelected: (String? selectedParticipant) {
                           setState(() {
@@ -158,7 +158,7 @@ class _IepPageState extends State{
                         return DropdownMenu(
                           hintText: 'Select A Course To View Participants',
                           helperText: 'Participants',
-                          width: 500,
+                          width: 350,
                           dropdownMenuEntries: [],
                         );
                       }
@@ -168,7 +168,7 @@ class _IepPageState extends State{
                 Visibility (
                   visible: userId != null,
                   child: DropdownMenu(
-                  width: 500,
+                  width: 350,
                   helperText: 'Assignment',
                   hintText: 'Select Quiz or Essay',
                   dropdownMenuEntries: type.map<DropdownMenuEntry<String>>((String value) {
@@ -211,7 +211,7 @@ class _IepPageState extends State{
                       return DropdownMenu(
                         helperText: 'Essays',
                         hintText: 'Select Essay',
-                        width: 500,
+                        width: 350,
                         dropdownMenuEntries: dropdownEntries,
                         onSelected: (String? selectedEssayId){
                           setState(() {
@@ -228,7 +228,7 @@ class _IepPageState extends State{
                         return DropdownMenu(
                           hintText: 'Select A Course To View Essays',
                           helperText: 'Essays',
-                          width: 500,
+                          width: 350,
                           dropdownMenuEntries: [],
                         );
                       }
@@ -254,7 +254,7 @@ class _IepPageState extends State{
                       return DropdownMenu(
                         helperText: 'Quiz',
                         hintText: 'Select Quiz',
-                        width: 500,
+                        width: 350,
                         dropdownMenuEntries: dropdownEntries,
                         onSelected: (String? selectedQuizId) {
                           setState(() {
@@ -271,7 +271,7 @@ class _IepPageState extends State{
                         return DropdownMenu(
                           hintText: 'Select A Course To View Quizzes',
                           helperText: 'Quizzes',
-                          width: 500,
+                          width: 350,
                           dropdownMenuEntries: [],
                         );
                       }
@@ -281,7 +281,7 @@ class _IepPageState extends State{
                 Visibility(
                   visible: quizId != null,
                   child: DropdownMenu(
-                    width: 300,
+                    width: 350,
                     helperText: 'Attempts',
                     hintText: 'Select Number of Attempts',
                     dropdownMenuEntries: attempts.map<DropdownMenuEntry<String>>((String attempts) {
@@ -335,7 +335,7 @@ class _IepPageState extends State{
                   visible: essayId != null,
                   child: Row (children: [
                     Container(
-                      width: 325,
+                      width: 250,
                       margin: EdgeInsets.only(right: 20),
                       padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
                       decoration: BoxDecoration(
@@ -347,7 +347,7 @@ class _IepPageState extends State{
                     GestureDetector(
                       onTap:() => _selectDate(context),
                       child: Container(
-                        padding: EdgeInsets.symmetric(vertical: 15, horizontal: 40),
+                        padding: EdgeInsets.symmetric(vertical: 15, horizontal: 10),
                         decoration: BoxDecoration(
                           border: Border.all(color: Colors.black),
                           borderRadius: BorderRadius.circular(8),
@@ -364,7 +364,7 @@ class _IepPageState extends State{
                   visible: essayId != null,
                   child: Row (children: [
                     Container(
-                      width: 325,
+                      width: 250,
                       margin: EdgeInsets.only(right: 20, top: 20),
                       padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
                       decoration: BoxDecoration(
@@ -376,8 +376,8 @@ class _IepPageState extends State{
                     GestureDetector(
                       onTap:() => _selectCutOffDate(context),
                       child: Container(
-
-                        padding: EdgeInsets.symmetric(vertical: 10, horizontal: 30),
+                        margin: EdgeInsets.only(top:20),
+                        padding: EdgeInsets.symmetric(vertical: 15, horizontal: 10),
                         decoration: BoxDecoration(
                           border: Border.all(color: Colors.black),
                           borderRadius: BorderRadius.circular(8),
@@ -392,7 +392,7 @@ class _IepPageState extends State{
                 Visibility(
                   visible: epochTime != null,
                   child: Container(                  
-                    padding: EdgeInsets.only(top: 50, left: 200),
+                    padding: EdgeInsets.only(top: 50, left: 160),
                     child: ElevatedButton(
                       onPressed: () {
                         if(selectedAssignment == 'Quiz') {
@@ -415,7 +415,8 @@ class _IepPageState extends State{
               children: [
                 Text('Existing IEPs', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                 Container(
-                  margin: EdgeInsets.only(left: 50),
+                  margin: EdgeInsets.only(left: 20),
+                  width: 1100,
                   height: 830,
                   decoration: BoxDecoration(
                     border: Border.all(color: Colors.grey),
@@ -423,26 +424,33 @@ class _IepPageState extends State{
                   ),
                   child: SingleChildScrollView(
                     scrollDirection: Axis.vertical,
-                    child: DataTable(
-                      headingRowColor: MaterialStateProperty.all(Colors.grey),
-                      columns: [
-                        DataColumn(label: Text('Student Name')),
-                        DataColumn(label: Text('Course Name')),
-                        DataColumn(label: Text('Assignment Name')),
-                        DataColumn(label: Text('Assignment Type')),
-                        DataColumn(label: Text('Extended Due Date')),
-                        DataColumn(label: Text('Cut Off Date')),
-                        DataColumn(label: Text('Attempts')),
-                      ],
-                      rows: (getOverrides() ?? []).map(buildDataRow).toList(),
-                      )
-                    ),
-                  )
-                ]
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: DataTable(
+                        headingRowColor: MaterialStateProperty.all(const Color.fromARGB(255, 77, 195, 89)),
+                        columns: [
+                          DataColumn(label: Text('Student Name', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
+                          DataColumn(label: Text('Course Name', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
+                          DataColumn(label: Text('Assignment Name', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
+                          DataColumn(label: Text('Assignment Type', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
+                          DataColumn(label: Text('Extended Due Date', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
+                          DataColumn(label: Text('Cut Off Date', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
+                          DataColumn(label: Text('Attempts', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16))),
+                        ],
+                        //rows: (getOverrides() ?? []).map(buildDataRow).toList(),
+                        rows: (getOverrides() ?? []).asMap().map((index, override) {
+                          return MapEntry(index, buildDataRow(override, index),
+                          );
+                        }).values.toList(),
+                      ),  
+                    ), 
+                  ),
                 ),
               ]
-        )
-      )
+            ),
+          ],      
+        ),
+      ),
     );
   }
 }
@@ -478,6 +486,7 @@ Future<List<Participant>> handleSelection(String? courseID) async {
   }
 }
 
+//gets the list of Essays dependent on Course
 Future<List<Assignment>> handleEssaySelection(int? courseID) async {
   if (courseID != null) {
     List<Assignment>? essays = await MoodleLmsService().getEssays(courseID);
@@ -493,6 +502,7 @@ Future<List<Assignment>> handleEssaySelection(int? courseID) async {
   }
 }
 
+//gets the list of quizzes dependent on Course
 Future<List<Quiz>> handleQuizSelection(int? courseID) async {
   if (courseID != null) {
     List<Quiz>? quizzes = await MoodleLmsService().getQuizzes(courseID);
@@ -508,30 +518,37 @@ Future<List<Quiz>> handleQuizSelection(int? courseID) async {
   }
 }
 
+//Quiz Override function
 void quizOver(epochTime, quizId, userId, attempts) async {
   QuizOverride override = await MoodleLmsService().addQuizOverride(quizId: quizId, userId: userId, timeClose: epochTime, attempts: attempts);
 }
 
+//Essay Override functioon
 void essayOver(epochTime, essayId, userId, epochTime2) async {
   String essayOverride = await MoodleLmsService().addEssayOverride(assignid: essayId, userId: userId, dueDate: epochTime, cutoffDate: epochTime2);
 }
 
+//function used to load the table and retrieve all overrides
 List<Override>? getOverrides() {
   List<Override>? overrides;
   overrides = MoodleLmsService().overrides;
   return overrides;
 }
 
-DataRow buildDataRow(Override override) {
+//builds the rows for the table. Used in DataTable widget
+DataRow buildDataRow(Override override, int index) {
   return DataRow(
+    color: MaterialStateProperty.resolveWith<Color>((states) {
+      return index % 2 == 0 ? Colors.grey[400]! : Colors.white;
+    }),
     cells: [
       DataCell(Text(override.fullname)),
       DataCell(Text(override.courseName)),
       DataCell(Text(override.assignmentName)),
       DataCell(Text(override.type)),
-      DataCell(Text(override.endTime.toString())),
-      DataCell(Text(override.cutoffTime.toString())),
-      DataCell(Text(override.attempts.toString())),
+      DataCell(Text(override.endTime?.toString() ?? 'N/A')),
+      DataCell(Text(override.cutoffTime?.toString() ?? 'N/A')),
+      DataCell(Text(override.attempts?.toString() ?? 'N/A')),
     ],
   );
 }
