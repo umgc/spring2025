@@ -86,9 +86,12 @@ void main() {
     test('should send emergency notification to caregiver', () async {
       // Arrange
       final caregiver = Caregiver(
-        id: 'caregiver123',
-        name: 'John Doe',
+        userId: 'caregiver123',
+        firstName: 'John Doe',
+        lastName: 'Robert',
+        email: 'smuk@gmail.com',
         fcmToken: 'fake-fcm-token',
+        relationship: 'son',
       );
 
       when(mockHttpClient.post(
@@ -168,9 +171,12 @@ void main() {
     test('should handle failed emergency alert sending', () async {
       // Arrange
       final caregiver = Caregiver(
-        id: 'caregiver123',
-        name: 'John Doe',
+        userId: 'caregiver123',
+        firstName: 'John Doe',
+        lastName: 'Robert',
+        email: 'smuk@gmail.com',
         fcmToken: 'fake-fcm-token',
+        relationship: 'son',
       );
 
       when(mockHttpClient.post(

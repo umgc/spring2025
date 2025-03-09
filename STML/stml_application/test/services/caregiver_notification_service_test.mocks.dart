@@ -316,14 +316,6 @@ class MockNotificationSettings extends _i1.Mock
             returnValue: _i7.AppleNotificationSetting.disabled,
           )
           as _i7.AppleNotificationSetting);
-
-  @override
-  _i7.AppleNotificationSetting get providesAppNotificationSettings =>
-      (super.noSuchMethod(
-            Invocation.getter(#providesAppNotificationSettings),
-            returnValue: _i7.AppleNotificationSetting.disabled,
-          )
-          as _i7.AppleNotificationSetting);
 }
 
 /// A class which mocks [RemoteMessage].

@@ -5,7 +5,6 @@ import 'package:logging/logging.dart';
 import 'package:memoryminder/models/caregiver.dart';
 import 'package:memoryminder/services/navigation_service.dart';
 import 'dart:convert';
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';  
 
 enum EmergencyType {
   help,
@@ -44,9 +43,7 @@ class CaregiverNotificationService {
     Logger.root.level = Level.ALL;
     Logger.root.onRecord.listen((record) {
       _logger.info('${record.level.name}: ${record.time}: ${record.message}');
-      if (record.level >= Level.SEVERE) {
-        
-      }
+      if (record.level >= Level.SEVERE) {}
     });
   }
 
@@ -187,7 +184,8 @@ class CaregiverNotificationService {
       );
 
       if (response.statusCode == 200) {
-        _logger.info('Emergency alert sent successfully to ${caregiver.name}');
+        _logger.info(
+            'Emergency alert sent successfully to ${caregiver.firstName} ${caregiver.lastName}');
         return true;
       } else {
         _logger.warning(
