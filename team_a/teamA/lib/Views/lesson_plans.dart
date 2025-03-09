@@ -17,19 +17,18 @@ class LessonPlans extends StatefulWidget {
   State createState() => _LessonPlanState();
 }
 
-class _LessonPlanState extends State {
+class _LessonPlanState extends State<LessonPlans> {
   List<Course>? courses = [];
   String? selectedCourse;
   List<LessonPlan> lessonPlans = [];
   LessonPlan? selectedLessonPlan;
   bool isEditing = false;
-  bool useAiGeneration = false;
-  // String? selectedLLM;
+  bool useAiGeneration = false; // Tracks whether AI generation is enabled
+  bool useManualGeneration = false; // Tracks whether manual generation is enabled
   LlmType? selectedLLM;
-  bool isSubmitDisabled = false; 
+  bool isSubmitDisabled = false;
   String? selectedGradeLevel;
-
-
+  bool isSubmitting = false;
 
   final TextEditingController lessonPlanNameController = TextEditingController();
   final TextEditingController manualEntryController = TextEditingController();
@@ -62,19 +61,8 @@ class _LessonPlanState extends State {
   }
 
   Future<void> generateLessonPlanWithAI() async {
-    // final openApiKey = LocalStorageService.getOpenAIKey();
-    // final grokApiKey = LocalStorageService.getGrokKey();
-    // final perplexityApiKey = LocalStorageService.getPerplexityKey();
-
     try {
       final aiModel;
-      // if (selectedLLM == 'ChatGPT') {
-      //   aiModel = OpenAiLLM(openApiKey);
-      // } else if (selectedLLM == 'Grok') {
-      //   aiModel = GrokLLM(grokApiKey);
-      // } else {
-      //   aiModel = LlmApi(perplexityApiKey);
-      // }
       if (selectedLLM == LlmType.CHATGPT) {
         aiModel = OpenAiLLM(LocalStorageService.getOpenAIKey());
       } else if (selectedLLM == LlmType.GROK) {
@@ -100,11 +88,11 @@ class _LessonPlanState extends State {
 
   String _stripHtmlTags(String htmlText) {
     return htmlText
-        .replaceAll(RegExp(r'<p[^>]*>'), '\n\n') // Replace <p> with double line break
-        .replaceAll(RegExp(r'</p>'), '') // Remove closing </p> tags
-        .replaceAll(RegExp(r'<br\s*/?>'), '\n') // Replace <br> or <br/> with single line break
-        .replaceAll(RegExp(r'<[^>]*>'), '') // Remove all other HTML tags
-        .trim(); // Trim any extra newlines at the start or end
+        .replaceAll(RegExp(r'<p[^>]*>'), '\n\n')
+        .replaceAll(RegExp(r'</p>'), '')
+        .replaceAll(RegExp(r'<br\s*/?>'), '\n')
+        .replaceAll(RegExp(r'<[^>]*>'), '')
+        .trim();
   }
 
   void _showLessonPlanDialog(LessonPlan plan) {
@@ -112,17 +100,17 @@ class _LessonPlanState extends State {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text(plan.name), // Display Lesson Plan Name
+          title: Text(plan.name),
           content: SingleChildScrollView(
             child: Container(
-              width: MediaQuery.of(context).size.width * 0.4, // Adjust width
+              width: MediaQuery.of(context).size.width * 0.4,
               child: Text(_stripHtmlTags(plan.intro), textAlign: TextAlign.left),
             ),
           ),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // Close dialog
+                Navigator.of(context).pop();
               },
               child: Text("Close"),
             ),
@@ -131,7 +119,6 @@ class _LessonPlanState extends State {
       },
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -183,12 +170,12 @@ class _LessonPlanState extends State {
                         ),
                       ),
                       SizedBox(height: 10),
-                      DropdownButtonFormField<String>( // Changed LlmType to String
+                      DropdownButtonFormField<String>(
                         decoration: const InputDecoration(
                           labelText: 'Select Grade Level',
                           border: OutlineInputBorder(),
                           ),
-                        value: selectedGradeLevel, // This is where you bind to the selected value
+                        value: selectedGradeLevel,
                         items: <String>['9', '10', '11', '12'].map((String value) {
                           return DropdownMenuItem<String>(
                             value: value,
@@ -201,60 +188,81 @@ class _LessonPlanState extends State {
                           });
                         },
                       ),
+                      SizedBox(height: 20),
+
+                      // Moved "Generate Lesson Plan with AI" and "Select AI Model" here
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          CheckboxListTile(
+                            title: Text("Generate Lesson Plan with AI"),
+                            value: useAiGeneration,
+                            onChanged: (bool? value) {
+                              setState(() {
+                                useAiGeneration = value!;
+                                useManualGeneration = false; // Ensure only one option is selected
+                                if (!useAiGeneration) {
+                                  selectedLLM = null; // Reset dropdown when unchecked
+                                }
+                              });
+                            },
+                          ),
+                          CheckboxListTile(
+                            title: Text("Generate Lesson Plan without AI"),
+                            value: useManualGeneration,
+                            onChanged: (bool? value) {
+                              setState(() {
+                                useManualGeneration = value!;
+                                useAiGeneration = false; // Ensure only one option is selected
+                              });
+                            },
+                          ),
+                          if (useAiGeneration)
+                            DropdownButtonFormField<LlmType>(
+                              value: selectedLLM,
+                              decoration: const InputDecoration(labelText: "Select AI Model"),
+                              onChanged: (LlmType? newValue) {
+                                setState(() {
+                                  selectedLLM = newValue;
+                                });
+                              },
+                              items: LlmType.values.map((LlmType llm) {
+                                return DropdownMenuItem<LlmType>(
+                                  value: llm,
+                                  enabled: LocalStorageService.userHasLlmKey(llm),
+                                  child: Text(llm.displayName, style: TextStyle(
+                                    color: LocalStorageService.userHasLlmKey(llm) ? Colors.black87 : Colors.grey,
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                              disabledHint: Text("Enable AI to select a model"),
+                            ),
+                        ],
+                      ),
+                      SizedBox(height: 20),
+
+                      // Updated textbox label based on selection
                       TextField(
                         controller: manualEntryController,
                         maxLines: 8,
                         decoration: InputDecoration(
-                          labelText: 'Enter Lesson Plan Manually',
+                          labelText: useAiGeneration
+                              ? "Enter any additional prompts for the AI model to customize your lesson"
+                              : "Enter Lesson Plan Manually",
                           border: OutlineInputBorder(),
                         ),
                       ),
                       SizedBox(height: 20),
 
-                      CheckboxListTile(
-                        title: Text("Generate Lesson Plan with AI"),
-                        value: useAiGeneration,
-                        onChanged: (bool? value) {
-                          setState(() {
-                            useAiGeneration = value!;
-                            if (!useAiGeneration) {
-                              selectedLLM = null; // Reset dropdown when unchecked
-                            }
-                          });
-                        },
-                      ),
-
-                      DropdownButtonFormField<LlmType>(
-                        value: selectedLLM,
-                        decoration: const InputDecoration(labelText: "Select AI Model"),
-                        onChanged: useAiGeneration ? (LlmType? newValue) {
-                          setState(() {
-                            selectedLLM = newValue;
-                          });
-                        } : null, // Disables interaction when checkbox is unchecked
-                        // items: ['ChatGPT', 'Grok', 'Perplexity'].map((String value) {
-                        //   return DropdownMenuItem<String>(
-                        //     value: value,
-                        //     child: Text(value),
-                        //   );
-                        // }).toList(),
-                        items: LlmType.values.map((LlmType llm) {
-                          return DropdownMenuItem<LlmType>(
-                            value: llm,
-                            enabled: LocalStorageService.userHasLlmKey(llm),
-                            child: Text(llm.displayName, style: TextStyle(
-                              color: LocalStorageService.userHasLlmKey(llm) ? Colors.black87 : Colors.grey,
-                              ),
-                            ),
-                          );
-                        }).toList(),
-                        disabledHint: Text("Enable AI to select a model"), // Greyed-out text when disabled
-                      ),
-
                       ElevatedButton(
-                        onPressed: isSubmitDisabled
-                            ? null // Disable the button
+                        onPressed: isSubmitDisabled || isSubmitting
+                            ? null
                             : () async {
+                                setState(() {
+                                  isSubmitting = true;
+                                });
+
                                 if (selectedCourse != null) {
                                   if (useAiGeneration) {
                                     await generateLessonPlanWithAI();
@@ -271,8 +279,21 @@ class _LessonPlanState extends State {
                                   lessonPlanNameController.clear();
                                   manualEntryController.clear();
                                 }
+
+                                setState(() {
+                                  isSubmitting = false;
+                                });
                               },
-                        child: Text('Submit'),
+                        child: isSubmitting
+                            ? SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                ),
+                              )
+                            : Text('Submit'),
                       ),
                     ],
                   ),
@@ -293,17 +314,17 @@ class _LessonPlanState extends State {
                         child: SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           child: DataTable(
-                            columnSpacing: 10, // Reduce spacing between columns
+                            columnSpacing: 10,
                             columns: [
                               DataColumn(
                                 label: SizedBox(
-                                  width: 100, // Reduce width of Name column
+                                  width: 100,
                                   child: Text('Name', style: TextStyle(fontWeight: FontWeight.bold)),
                                 ),
                               ),
                               DataColumn(
                                 label: SizedBox(
-                                  width: 200, // Reduce width of Lesson Plan column
+                                  width: 200,
                                   child: Text('Lesson Plan', style: TextStyle(fontWeight: FontWeight.bold)),
                                 ),
                               ),
@@ -316,22 +337,22 @@ class _LessonPlanState extends State {
                                 cells: [
                                   DataCell(
                                     ConstrainedBox(
-                                      constraints: BoxConstraints(maxWidth: 150), // Limit Name column width
+                                      constraints: BoxConstraints(maxWidth: 150),
                                       child: Text(
                                         plan.name,
-                                        overflow: TextOverflow.ellipsis, // Adds "..." if text is too long
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
                                   ),
                                   DataCell(
                                     ConstrainedBox(
-                                      constraints: BoxConstraints(maxWidth: 250), // Limit Lesson Plan content width
+                                      constraints: BoxConstraints(maxWidth: 250),
                                       child: SingleChildScrollView(
                                         scrollDirection: Axis.vertical,
                                         child: Text(
                                           _stripHtmlTags(plan.intro),
-                                          maxLines: 3, // Show only 3 lines, add scroll for longer text
-                                          overflow: TextOverflow.ellipsis, // Adds "..." if content is too long
+                                          maxLines: 3,
+                                          overflow: TextOverflow.ellipsis,
                                         ),
                                       ),
                                     ),
@@ -405,8 +426,8 @@ class _LessonPlanState extends State {
                                     manualEntryController.clear();
                                     
                                     setState(() {
-                                      selectedLessonPlan = null; // Reset selection
-                                      isEditing = false; // Exit editing mode
+                                      selectedLessonPlan = null;
+                                      isEditing = false;
                                       isSubmitDisabled = false;
                                     });
                                   }
