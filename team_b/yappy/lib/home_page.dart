@@ -7,7 +7,7 @@ import 'package:yappy/medical_patient.dart';
 import 'package:yappy/restaurant.dart';
 import 'package:yappy/tool_bar.dart';
 import 'package:yappy/settings_page.dart';
-import 'package:yappy/tutorialPage.dart';
+import 'package:yappy/tutorial_page.dart';
 import './services/model_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -26,7 +26,7 @@ class _HomePageState extends State<HomePage> {
     final prefs = await SharedPreferences.getInstance();
     final isFirstTime = prefs.getBool('isFirstTime') ?? true;
 
-    if (isFirstTime) {
+    if (isFirstTime && mounted) {
       final shouldShowDialog = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(

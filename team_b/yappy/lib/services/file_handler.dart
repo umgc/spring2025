@@ -58,7 +58,7 @@ class FileHandler {
   }
 
   // Method to save transcript text data to local storage as a text file
-  Future<void> saveTranscriptTextToLocal(DatabaseHelper dbHelper, int transcriptId) async {
+  Future<String> saveTranscriptTextToLocal(DatabaseHelper dbHelper, int transcriptId) async {
     try {
       final transcriptData = await dbHelper.getTranscriptTextDataAndIndustryById(transcriptId);
       if (transcriptData != null) {
@@ -71,6 +71,7 @@ class FileHandler {
         if (kDebugMode) {
           print('Transcript text data saved to local storage: $fileName');
         }
+        return fileName;
       } else {
         if (kDebugMode) {
           print('No transcript data found for ID: $transcriptId');
@@ -81,6 +82,7 @@ class FileHandler {
         print('Error saving transcript text data to local storage: $e');
       }
     }
+    return '';
   }
 
   // Method to save document (BLOB) to local storage as a text file

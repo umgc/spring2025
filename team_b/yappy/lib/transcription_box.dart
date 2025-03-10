@@ -9,10 +9,10 @@ class TranscriptionBox extends StatefulWidget {
   });
 
   @override
-  _TranscriptionBoxState createState() => _TranscriptionBoxState();
+  TranscriptionBoxState createState() => TranscriptionBoxState();
 }
 
-class _TranscriptionBoxState extends State<TranscriptionBox> {
+class TranscriptionBoxState extends State<TranscriptionBox> {
   final ScrollController _scrollController = ScrollController();
 
   @override

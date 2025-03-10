@@ -2,6 +2,7 @@ import 'package:dart_openai/dart_openai.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import './services/model_manager.dart';
+import 'package:yappy/main.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -109,8 +110,7 @@ class _SettingsPageState extends State<SettingsPage> {
                         onPressed: () async {
                           // Save the API key
                           String apiKey = apiKeyController.text;
-                          SharedPreferences prefs = await SharedPreferences.getInstance();
-                          await prefs.setString('openai_api_key', apiKey);
+                          await preferences.setString('openai_api_key', apiKey);
                           OpenAI.apiKey = apiKey;
                           if (!context.mounted) return;
                           Navigator.of(context).pop();
