@@ -1,17 +1,17 @@
-import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:record/record.dart';
-import 'package:yappy/services/openai_helper.dart';
-import 'package:yappy/speech_state.dart';
-import 'package:yappy/services/database_helper.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'dart:convert';
-import 'package:yappy/services/file_handler.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
+import 'package:record/record.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'services/openai_helper.dart';
+import 'services/database_helper.dart';
+import 'services/file_handler.dart';
 import 'services/model_manager.dart';
+import 'services/speech_state.dart';
 
 class IndustryMenu extends StatefulWidget {
   final String title;
