@@ -1,8 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'dart:io';
-import 'dart:typed_data';
 
 class DatabaseHelper {
   static final DatabaseHelper _instance = DatabaseHelper._internal();
@@ -36,8 +36,10 @@ class DatabaseHelper {
         List<int> bytes = data.buffer.asUint8List();
         await File(path).writeAsBytes(bytes);
       } catch (e) {
-        // Can create logging function in later task if wanted
-        print('Error copying database: $e');
+      // Can create logging function in later task if wanted
+        if (kDebugMode) {
+          print('Error copying database: $e');
+        }
       }
     }
 
@@ -252,6 +254,26 @@ class DatabaseHelper {
     return await db.delete('Transcript', where: 'transcript_id = ?', whereArgs: [id]);
   }
 
+  // Retrieve all transcripts
+  Future<List<Map<String, dynamic>>> getAllTranscripts() async {
+    final db = await database;
+    return await db.query('Transcript');
+  }
+
+  // Retrieve a specific transcript by ID
+  Future<Map<String, dynamic>?> getTranscriptById(int transcriptId) async {
+    final db = await database;
+    List<Map<String, dynamic>> results = await db.query(
+      'Transcript',
+      where: 'transcript_id = ?',
+      whereArgs: [transcriptId],
+    );
+    if (results.isNotEmpty) {
+      return results.first;
+    }
+    return null;
+  }
+ 
   // RestaurantOrder table methods
   Future<int> insertOrder(Map<String, dynamic> order) async {
     final db = await database;
@@ -466,6 +488,48 @@ class DatabaseHelper {
       where: 'order_id = ?',
       whereArgs: [orderId],
     );
-    return results.map((result) => result['item_id'] as int).toList();
+    return results.map((result) => result['item_id'] as int).toList(); 
+  }
+
+  saveTranscriptTextData({required int userId, required int transcriptId, required String text}) {
+    // Save the new transcript to the database using the provided information
+    Map<String, dynamic> transcript = {
+      'user_id': userId,
+      'transcript_id': transcriptId,
+      'transcript_text_data': text,
+      'transcript_timestamp': DateTime.now().toIso8601String(),
+      'transcript_ai_response': ''
+    };
+    insertTranscript(transcript);
+  }
+
+  saveTranscriptAiResponse({required int userId, required int transcriptId, 
+    required String text, required String aiResponse}) {
+    // Save the new transcript to the database using the provided information
+    Map<String, dynamic> transcript = {
+      'user_id': userId,
+      'transcript_id': transcriptId,
+      'transcript_text_data': text,
+      'transcript_timestamp': DateTime.now().toIso8601String(),
+      'transcript_ai_response': aiResponse
+    };
+    updateTranscript(transcript);
   }
 }
+
+  // Commented out this method for future use
+  /* getTranscriptCountForDate(String date) {
+    // Get the number of transcripts for a given date
+    Future<int> getTranscriptCountForDate(String date) async {
+        final db = await database;
+        List<Map<String, dynamic>> results = await db.rawQuery(
+          'SELECT COUNT(*) as count FROM Transcript WHERE DATE(transcript_timestamp) = ?',
+          [date],
+        );
+        if (results.isNotEmpty) {
+          return results.first['count'] as int;
+        }
+        return 0;
+      }
+    }
+  }*/
