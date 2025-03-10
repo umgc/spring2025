@@ -3,8 +3,10 @@ import 'dart:io' show File; // For non-web file I/O
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart'; // For file saving on non-web platforms
-// For web file export:
-import 'dart:html' as html;
+// Needed for web file export, conditional import based upon user's platform.
+import 'package:learninglens_app/stub/html_stub.dart'
+    if (dart.library.html) 'dart:html' as html;
+
 
 import 'package:pdf/widgets.dart' as pw; // PDF package
 import 'package:pdf/pdf.dart'; // PDF package
