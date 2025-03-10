@@ -120,9 +120,7 @@ class _AssessmentsState extends State<AssessmentsView> {
                                 ? Center(
                                     child:
                                         Text('Select a quiz to view details'))
-                                : ViewQuiz(
-                                    showAppBar: false,
-                                    quizId: selectedQuiz?.id ?? widget.quizID),
+                                : ViewQuiz(quizId: selectedQuiz?.id ?? widget.quizID),
                           ),
                         ],
                       );

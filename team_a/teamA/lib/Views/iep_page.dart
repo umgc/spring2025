@@ -70,9 +70,9 @@ class _IepPageState extends State<IepPage> {
     }
   }
 
-  void _getAssignmentOverride() async {
-    await MoodleLmsService().getAssignmentOverrides();
-  }
+  // void _getAssignmentOverride() async { ***** Not used *****
+  //   await MoodleLmsService().getAssignmentOverrides();
+  // }
 
   // Function to show details in a dialog
   void _showDetailsDialog(BuildContext context, Override override) {

@@ -5,9 +5,9 @@ import 'package:learninglens_app/beans/quiz_type.dart';
 
 class ViewQuiz extends StatelessWidget {
   final int quizId;
-  bool showAppBar = true;
+  final bool showAppBar = false;
 
-  ViewQuiz({required this.quizId, required this.showAppBar});
+  ViewQuiz({required this.quizId});
 
   @override
   Widget build(BuildContext context) {

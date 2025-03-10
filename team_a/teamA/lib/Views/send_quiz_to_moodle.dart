@@ -350,25 +350,25 @@ class QuizMoodleState extends State<QuizMoodle> {
                         }
                         try {
                           // 1. Construct submission and due dates as DateTime objects
-                          DateTime submissionDate = DateTime(
-                            int.parse(selectedYearSubmission),
-                            months.indexOf(selectedMonthSubmission) + 1,
-                            int.parse(selectedDaySubmission),
-                            int.parse(selectedHourSubmission),
-                            int.parse(selectedMinuteSubmission),
-                          );
+                          // DateTime submissionDate = DateTime( ***** Not used *****
+                          //   int.parse(selectedYearSubmission),
+                          //   months.indexOf(selectedMonthSubmission) + 1,
+                          //   int.parse(selectedDaySubmission),
+                          //   int.parse(selectedHourSubmission),
+                          //   int.parse(selectedMinuteSubmission),
+                          // );
 
-                          DateTime dueDate = DateTime(
-                            int.parse(selectedYearDue),
-                            months.indexOf(selectedMonthDue) + 1,
-                            int.parse(selectedDayDue),
-                            int.parse(selectedHourDue),
-                            int.parse(selectedMinuteDue),
-                          );
+                          // DateTime dueDate = DateTime( ***** Not used *****
+                          //   int.parse(selectedYearDue),
+                          //   months.indexOf(selectedMonthDue) + 1,
+                          //   int.parse(selectedDayDue),
+                          //   int.parse(selectedHourDue),
+                          //   int.parse(selectedMinuteDue),
+                          // );
 
                           // 2. Format the due date as YYYY-MM-DD-HH-MM
-                          String formattedDueDate =
-                              "${dueDate.year}-${dueDate.month.toString().padLeft(2, '0')}-${dueDate.day.toString().padLeft(2, '0')}-${dueDate.hour.toString().padLeft(2, '0')}-${dueDate.minute.toString().padLeft(2, '0')}";
+                          // String formattedDueDate =  ***** Not used *****
+                          //     "${dueDate.year}-${dueDate.month.toString().padLeft(2, '0')}-${dueDate.day.toString().padLeft(2, '0')}-${dueDate.hour.toString().padLeft(2, '0')}-${dueDate.minute.toString().padLeft(2, '0')}";
 
                           // Call Moodle-specific methods
                           var quizid = await LmsFactory.getLmsService()
@@ -444,13 +444,13 @@ class QuizMoodleState extends State<QuizMoodle> {
                         }
                         try {
                           // 1. Construct submission and due dates as DateTime objects
-                          DateTime submissionDate = DateTime(
-                            int.parse(selectedYearSubmission),
-                            months.indexOf(selectedMonthSubmission) + 1,
-                            int.parse(selectedDaySubmission),
-                            int.parse(selectedHourSubmission),
-                            int.parse(selectedMinuteSubmission),
-                          );
+                          // DateTime submissionDate = DateTime( ***** Not used *****
+                          //   int.parse(selectedYearSubmission),
+                          //   months.indexOf(selectedMonthSubmission) + 1,
+                          //   int.parse(selectedDaySubmission),
+                          //   int.parse(selectedHourSubmission),
+                          //   int.parse(selectedMinuteSubmission),
+                          // );
 
                           DateTime dueDate = DateTime(
                             int.parse(selectedYearDue),
