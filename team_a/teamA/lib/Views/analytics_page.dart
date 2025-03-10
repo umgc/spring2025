@@ -568,17 +568,17 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   }
 
   // ---------------------------------------------------------------------------
-  // _buildStudentBreakdown:
-  // Displays the student breakdown table (with clickable names) and a detail panel.
+  // _buildStudentTable:
+  // Returns ONLY the table of student data. The detail panel is separate.
   // ---------------------------------------------------------------------------
-  Widget _buildStudentBreakdown() {
+  Widget _buildStudentTable() {
     if (_studentBreakdown.isEmpty && !isLoading) {
       return const Center(child: Text('No student breakdown available.'));
     }
     if (isLoading) {
       return const Center(child: CircularProgressIndicator());
     }
-    Widget studentTable = SizedBox(
+    return SizedBox(
       height: 300,
       child: Scrollbar(
         thumbVisibility: true,
@@ -629,26 +629,11 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         ),
       ),
     );
-    Widget detailPanel = Container(
-      width: 300,
-      padding: const EdgeInsets.all(16),
-      color: Colors.grey[100],
-      child: _buildStudentDetail(),
-    );
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(child: studentTable),
-        const SizedBox(width: 20),
-        detailPanel,
-      ],
-    );
   }
 
   // ---------------------------------------------------------------------------
   // _buildStudentDetail:
-  // Displays detailed (non-editable) assignment grade information for the selected student.
-  // For each assessment, it shows its name and a placeholder for grade.
+  // Displays the selected student's detail info in the bottom-right quadrant.
   // ---------------------------------------------------------------------------
   Widget _buildStudentDetail() {
     if (_selectedStudent == null) {
@@ -660,13 +645,14 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       );
     }
     List<Map<String, String>> detailData = _assessmentsData.map((assessment) {
-      // Fetch the actual grade for this student, otherwise dislay 'Not Submitted'.
+      // For now, "Not Submitted" is used if there's no real grade data.
       String grade = "Not Submitted";
       return {
         'Assignment': assessment.name,
         'Grade': grade,
       };
     }).toList();
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -692,26 +678,75 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   }
 
   // ---------------------------------------------------------------------------
-  // _buildReportGeneratorSection:
-  // Combines the report form, optional question breakdown (if quiz), and student breakdown.
+  // _buildMainGrid:
+  // Creates a 2×2 grid layout:
+  //  Top-left: Report form
+  //  Bottom-left: Student breakdown table
+  //  Top-right: Question breakdown
+  //  Bottom-right: Selected student detail
   // ---------------------------------------------------------------------------
-  Widget _buildReportGeneratorSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
+  Widget _buildMainGrid() {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildReportForm(),
-        const SizedBox(height: 30),
-        // Show question breakdown only if a quiz assessment is selected.
-        if (_selectedAssessment != null && _selectedAssessment!.type == "quiz")
-          _buildQuestionBreakdown(),
-        const SizedBox(height: 30),
-        const Text('Student Breakdown',
-            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-        const SizedBox(height: 8),
-        Container(
-          color: Colors.white,
-          padding: const EdgeInsets.all(8),
-          child: _buildStudentBreakdown(),
+        // Left Column
+        Expanded(
+          flex: 1,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Top-left: the form
+              _buildReportForm(),
+              const SizedBox(height: 20),
+
+              // Bottom-left: label + student table
+              const Text(
+                'Student Breakdown',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                color: Colors.white,
+                padding: const EdgeInsets.all(8),
+                child: _buildStudentTable(),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(width: 16),
+
+        // Right Column
+        Expanded(
+          flex: 1,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Top-right: label + question breakdown
+              const Text(
+                'Question Breakdown',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                color: Colors.white,
+                padding: const EdgeInsets.all(8),
+                child: _buildQuestionBreakdown(),
+              ),
+              const SizedBox(height: 20),
+
+              // Bottom-right: label + detail panel
+              const Text(
+                'Student Detail',
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                color: Colors.white,
+                padding: const EdgeInsets.all(8),
+                child: _buildStudentDetail(),
+              ),
+            ],
+          ),
         ),
       ],
     );
@@ -719,7 +754,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
   // ---------------------------------------------------------------------------
   // _buildContent:
-  // Builds the overall page content including analytics summary and report generator.
+  // Builds the overall page content including analytics summary and the 2x2 grid.
   // ---------------------------------------------------------------------------
   Widget _buildContent() {
     if (isLoading && analyticsData == null && errorMsg.isEmpty) {
@@ -755,7 +790,9 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             ),
           ),
           const SizedBox(height: 20),
-          _buildReportGeneratorSection(),
+          // 2x2 grid view
+          _buildMainGrid(),
+
           const SizedBox(height: 30),
         ],
       ),
