@@ -1,5 +1,8 @@
 import 'package:dart_openai/dart_openai.dart';
+import 'package:flutter/material.dart';
 import 'package:yappy/main.dart';
+import 'package:assistant_openai/common/ai/models/newagentmodel.dart';
+import 'package:assistant_openai/openaiassistant.dart';
 class OpenAIHelper {
   final List<Map<String, String>> messages = [];
 
@@ -73,5 +76,37 @@ class OpenAIHelper {
     } catch (e) {
       rethrow;
     }
+  }
+
+  void transcriptChatAssistant() async {
+    // TODO: change orgID
+    var client = OpenAIAssistant(apiKey: preferences.getString('openai_api_key')!, organizationID: 'Zander Forsythe');
+
+    ///CREATE A VARIABLE WITH NEW ASSISTANT OBJECT
+    var newAssistant = NewAssistantModel(
+        name: "Yappu",
+        description: "Transcript Analysis Chatbot",
+        instructions: "You are a helpful assistant who can analyze the contents of transcript text documents and provide insights for user questions.",
+        model: "gpt-4o-mini",
+        tools: [
+          Tool(type: "retrieval"),
+          Tool(type: "file-search"),
+          Tool(type: "code-interpreter")
+        ],
+        // TODO: should this say 'fileId' and be a list of them? this list of transcript IDs gets passed in somehow
+        fileIds: ['fieldId'],
+    );
+
+    ///USE THE CLIENT TO ACCESS THE ASSISTANT CREATE MODULE AND PARSE THE NEW ASSISTANT OBJECT YOU CREATED
+    var assistant = await client.assistant.create(newAssistant);
+
+    ///YOU GET BACK THE FOLLOWING VALUES FROM THE RESPONSE
+    debugPrint(assistant!.name);
+    debugPrint(assistant.model);
+    debugPrint(assistant.instructions);
+    debugPrint(assistant.tools.toString());
+    debugPrint(assistant.fileIds.toString());
+    debugPrint(assistant.description);
+    debugPrint(assistant.metadata.toString());
   }
 }
