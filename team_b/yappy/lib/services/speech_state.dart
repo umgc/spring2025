@@ -1,20 +1,17 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:record/record.dart';
-
 import 'package:sherpa_onnx/sherpa_onnx.dart' as sherpa_onnx;
-
-import './utils.dart';
-import './online_model.dart';
-import './offline_model.dart';
-import './speaker_model.dart';
+import 'utils.dart';
+import 'online_model.dart';
+import 'offline_model.dart';
+import 'speaker_model.dart';
 
 Future<sherpa_onnx.OnlineRecognizer> createOnlineRecognizer() async {
-  final type = 4;
+  final type = 0;
 
   final modelConfig = await getOnlineModelConfig(type: type);
   final config = sherpa_onnx.OnlineRecognizerConfig(

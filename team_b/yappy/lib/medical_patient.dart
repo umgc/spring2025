@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:yappy/audiowave_widget.dart';
-import 'package:yappy/speech_state.dart';
-import 'package:yappy/tool_bar.dart';
-import 'package:yappy/industry_menu.dart';
-import 'package:yappy/transcription_box.dart';
+import 'audiowave_widget.dart';
+import 'tool_bar.dart';
+import 'industry_menu.dart';
+import 'transcription_box.dart';
+import 'services/speech_state.dart';
 import 'services/model_manager.dart';
 
 class MedicalPatientApp extends StatelessWidget {
