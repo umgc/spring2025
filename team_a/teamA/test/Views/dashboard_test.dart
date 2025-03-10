@@ -28,7 +28,7 @@ void main() {
     final coursesButton = find.text('Courses');
     final essaysButton = find.text('Essays');
     final iepButton = find.text('IEP');
-    final analyticsButton = find.text('Analytics Dashboard');
+    final analyticsButton = find.text('Analytics');
     final lessonPlanButton = find.text('Lesson Plan');
     final assessmentsButton = find.text('Assessments');
 
