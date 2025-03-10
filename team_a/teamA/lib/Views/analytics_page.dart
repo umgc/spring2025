@@ -1,4 +1,4 @@
-import 'dart:convert'; // For utf8 encoding
+// import 'dart:convert'; // For utf8 encoding
 import 'dart:io' show File; // For non-web file I/O
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
@@ -9,23 +9,23 @@ import 'package:learninglens_app/stub/html_stub.dart'
 
 
 import 'package:pdf/widgets.dart' as pw; // PDF package
-import 'package:pdf/pdf.dart'; // PDF package
+// import 'package:pdf/pdf.dart'; // PDF package
 import 'package:excel/excel.dart'; // Excel package
 
 // Import the LMS services using prefixes so that type checks work correctly.
 import 'package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart' as moodle;
-import 'package:learninglens_app/Api/lms/google_classroom/google_lms_service.dart' as google;
+// import 'package:learninglens_app/Api/lms/google_classroom/google_lms_service.dart' as google;
 
 import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
-import 'package:learninglens_app/Controller/main_controller.dart';
-import 'package:learninglens_app/Views/dashboard.dart';
-import 'package:learninglens_app/Views/user_settings.dart';
+// import 'package:learninglens_app/Controller/main_controller.dart';
+// import 'package:learninglens_app/Views/dashboard.dart';
+// import 'package:learninglens_app/Views/user_settings.dart';
 
 import 'package:learninglens_app/beans/course.dart';
 import 'package:learninglens_app/beans/assignment.dart';
 import 'package:learninglens_app/beans/participant.dart';
-import 'package:learninglens_app/beans/grade.dart';
+// import 'package:learninglens_app/beans/grade.dart';
 import 'package:learninglens_app/beans/quiz.dart';
 import 'package:learninglens_app/beans/quiz_type.dart';
 
@@ -98,7 +98,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   List<QuestionType> _questionBreakdown = [];
 
   // LMS selection (from the AppBar dropdown).
-  String _selectedLMS = "Moodle Classroom";
+  // String _selectedLMS = "Moodle Classroom"; ***** Not used *****
 
   // Scroll controllers for tables.
   late ScrollController _verticalStudentController;
