@@ -249,7 +249,7 @@ class MoodleLmsService implements LmsInterface {
 
     final decodedJson = jsonDecode(response.body);
     List<Override> assignmentOverrides;
-    
+
     if (decodedJson is List) {
       assignmentOverrides =
           decodedJson.map((i) => Override.empty().fromMoodleJson(i)).toList();
@@ -863,10 +863,10 @@ class MoodleLmsService implements LmsInterface {
     print('Rubric JSON Response: $responseData');
     return MoodleRubric.empty().fromMoodleJson(responseData.first);
   }
-
+  
 
   // ****************************************************************************************
-  // TODO: add the method below to the lms_interface. 
+  // TODO: add the method below to the lms_interface.
   // ****************************************************************************************
   /**
    * Fetches all the questions from a quiz.
@@ -961,7 +961,7 @@ class MoodleLmsService implements LmsInterface {
       'moodlewsrestformat': 'json',
       'assignid': assignid.toString(),
     };
-    
+
     // Add only non-null fields
     if (userId != null) body['userid'] = userId.toString();
     if (groupId != null) body['groupid'] = groupId.toString();
@@ -972,9 +972,9 @@ class MoodleLmsService implements LmsInterface {
     if (sortorder != null) body['sortorder'] = sortorder.toString();
 
     final response = await ApiService().httpPost(url, body: body);
-    
+
     final responseData = json.decode(response.body);
-    
+
     if (response.statusCode == 200 && responseData is Map<String, dynamic>) {
       return 'Override: ${responseData['override_id']}';
     } else {
@@ -1155,5 +1155,109 @@ class MoodleLmsService implements LmsInterface {
     } else {
       throw Exception("Failed to update lesson plan: ${response.body}");
     }
+  }
+
+  @override
+  Future<List<Participant>> getCourseParticipantsWithGrades(
+      String courseId) async {
+    if (_userToken == null) throw StateError('User not logged in to Moodle');
+
+    // Step 1: Fetch participants
+    final response =
+        await ApiService().httpPost(Uri.parse(apiURL + serverUrl), body: {
+      'wstoken': _userToken,
+      'wsfunction': 'core_enrol_get_enrolled_users',
+      'courseid': courseId,
+      'moodlewsrestformat': 'json',
+    });
+
+    if (response.statusCode != 200) {
+      throw HttpException(response.body);
+    }
+
+    final decodedJson = jsonDecode(response.body);
+    if (decodedJson is! List) {
+      throw StateError('Unexpected response format (expected a List)');
+    }
+    // Step 2: Fetch Grades for all participants in the course
+    List<Grade> grades = await getCourseGrades(int.parse(courseId));
+
+    // Step 3: Map participants and add grades
+    return decodedJson.map((participantJson) {
+      Participant participant =
+          Participant.empty().fromMoodleJson(participantJson);
+
+      // Step 4: Find all grades for this participant
+      List<Grade> userGrades =
+          grades.where((g) => g.userid == participant.id).toList();
+
+      // Step 5: Calculate average grade if there are any grades
+      if (userGrades.isNotEmpty) {
+        double avgGrade =
+            userGrades.map((g) => g.grade).reduce((a, b) => a + b) /
+                userGrades.length;
+        participant.avgGrade = avgGrade;
+      }
+
+      print(participant.avgGrade);
+
+      return participant;
+    }).toList();
+  }
+
+  Future<List<Grade>> getCourseGrades(int courseId) async {
+    if (_userToken == null) throw StateError('User not logged in to Moodle');
+
+    final response =
+        await ApiService().httpPost(Uri.parse(apiURL + serverUrl), body: {
+      'wstoken': _userToken,
+      'wsfunction': 'gradereport_user_get_grade_items',
+      'courseid': courseId.toString(),
+      'moodlewsrestformat': 'json',
+    });
+
+    if (response.statusCode != 200) {
+      throw HttpException(response.body);
+    }
+
+    final decodedJson = jsonDecode(response.body) as Map<String, dynamic>;
+    if (!decodedJson.containsKey('usergrades')) {
+      return [];
+    }
+
+    List<Grade> grades = [];
+
+    for (var userGrade in decodedJson['usergrades']) {
+      int userId = userGrade['userid'];
+
+      for (var item in userGrade['gradeitems']) {
+        // Extracting raw grade, ensuring it's numeric
+        double? rawGrade = item['graderaw'] != null
+            ? double.tryParse(item['graderaw'].toString())
+            : null;
+        if (rawGrade == null) continue; // Ignore ungraded items
+
+        int grader = item.containsKey('grader') ? item['grader'] : 0;
+        DateTime timeCreated = item['gradedatesubmitted'] != null
+            ? DateTime.fromMillisecondsSinceEpoch(
+                item['gradedatesubmitted'] * 1000)
+            : DateTime.now();
+        DateTime timeModified = item['gradedategraded'] != null
+            ? DateTime.fromMillisecondsSinceEpoch(
+                item['gradedategraded'] * 1000)
+            : DateTime.now();
+
+        grades.add(Grade(
+          id: item['id'],
+          userid: userId,
+          grade: rawGrade,
+          grader: grader,
+          timecreated: timeCreated,
+          timemodified: timeModified,
+        ));
+      }
+    }
+
+    return grades;
   }
 }

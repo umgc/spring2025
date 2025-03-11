@@ -160,7 +160,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           _selectedAssessment = _assessmentsData.first;
         }
         // Fetch participants.
-        _participantsData = await lmsService.getCourseParticipants(_selectedCourse!.id.toString());
+        _participantsData = await lmsService.getCourseParticipantsWithGrades(_selectedCourse!.id.toString());
       }
       setState(() {
         analyticsData = {
