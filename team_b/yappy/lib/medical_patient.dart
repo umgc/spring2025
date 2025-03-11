@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:yappy/tool_bar.dart';
-import 'package:yappy/industry_menu.dart';
-import 'package:yappy/transcription_box.dart';
-
+import 'audiowave_widget.dart';
+import 'tool_bar.dart';
+import 'industry_menu.dart';
+import 'transcription_box.dart';
+import 'services/speech_state.dart';
+import 'services/model_manager.dart';
 
 class MedicalPatientApp extends StatelessWidget {
   const MedicalPatientApp({super.key});
@@ -17,7 +19,9 @@ class MedicalPatientApp extends StatelessWidget {
 //Creates a page for the Medical Patient industry
 //The page will contain the industry menu and the transcription box
 class MedicalPatientPage extends StatelessWidget {
-  const MedicalPatientPage({super.key});
+  MedicalPatientPage({super.key});
+  final speechState = SpeechState();
+  final modelManager = ModelManager();
 
   @override
   Widget build(BuildContext context) {
@@ -28,16 +32,32 @@ class MedicalPatientPage extends StatelessWidget {
         child: ToolBar()
       ),
       drawer: HamburgerDrawer(),
-      body: Column(
-        children: [
-        IndustryMenu(title: "Medical Patient", icon: Icons.local_pharmacy),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: TranscriptionBox(),
-            ),
-          ),
-        ],
+      body: ListenableBuilder(
+        listenable: speechState,
+        builder: (context, child) {
+          return Column(
+            children: [
+              IndustryMenu(
+                title: "Medical Patient",
+                icon: Icons.local_pharmacy,
+                speechState: speechState,
+                modelManager: modelManager,
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(children: [
+                    AudiowaveWidget(speechState: speechState),
+                    TranscriptionBox(
+                      controller: speechState.controller,
+                    ),
+                  ],)
+
+                ),
+              ),
+            ],
+          );
+        }
       ),
     );
   }
