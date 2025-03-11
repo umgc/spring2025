@@ -2,6 +2,7 @@ import 'dart:io' show File; // For non-web file I/O
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart'; // For file saving on non-web platforms
+import 'package:learninglens_app/beans/question_stat_type.dart';
 import 'package:learninglens_app/stub/html_stub.dart'
     if (dart.library.html) 'dart:html' as html;
 
@@ -76,7 +77,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   Map<String, dynamic>? _selectedStudent;
 
   // For quiz assessments, question breakdown data.
-  List<QuestionType> _questionBreakdown = [];
+  List<QuestionStatsType> _questionBreakdown = [];
 
   // Scroll controllers for tables.
   late ScrollController _verticalStudentController;
@@ -549,15 +550,23 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               scrollDirection: Axis.horizontal,
               child: DataTable(
                 columns: const [
-                  DataColumn(label: Text('Q#')),
-                  DataColumn(label: Text('Type')),
-                  DataColumn(label: Text('Text')),
+                  DataColumn(label: Text('#')),
+                  DataColumn(label: Text('Question Type')),
+                  DataColumn(label: Text('Question')),
+                  DataColumn(label: Text('% Answered Correct')),
+                  DataColumn(label: Text('# of Correct')),
+                  DataColumn(label: Text('# of Incorrect')),
+                  DataColumn(label: Text('# of Total Attempts')),
                 ],
                 rows: _questionBreakdown.map((q) {
                   return DataRow(cells: [
                     DataCell(Text(q.id.toString())),
                     DataCell(Text(q.questionType)),
                     DataCell(Text(q.questionText)),
+                    DataCell(Text("${computePercentage(q).toStringAsFixed(2)}%")),
+                    DataCell(Text(q.numCorrect.toString())),
+                    DataCell(Text(q.numIncorrect.toString())),
+                    DataCell(Text(q.totalAttempts.toString())),
                   ]);
                 }).toList(),
               ),
@@ -766,7 +775,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       try {
         int quizId = _selectedAssessment!.assessment.id;
         _questionBreakdown = await (lmsService as dynamic)
-            .getQuestionsFromQuiz(quizId);
+            .getQuestionStatsFromQuiz(quizId);
 
         setState(() {}); // Refresh UI with new breakdown
       } catch (e) {
@@ -923,5 +932,14 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         child: _buildContent(),
       ),
     );
+  }
+  
+  /**
+   * Computes the percentage a question is answered correctly.
+   * Correct Percentage = ((numcorrect + numpartial) / totalattempts) * 100
+   */
+  double computePercentage(QuestionStatsType q) {
+    if (q.totalAttempts == 0) return 0.0; // Avoid division by zero
+    return ((q.numCorrect + q.numPartial) / q.totalAttempts) * 100;
   }
 }

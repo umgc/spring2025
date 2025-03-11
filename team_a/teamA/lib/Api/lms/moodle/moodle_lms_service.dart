@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:learninglens_app/Api/lms/lms_interface.dart';
 import 'package:learninglens_app/beans/course.dart';
 import 'package:learninglens_app/beans/lesson_plan.dart';
+import 'package:learninglens_app/beans/question_stat_type.dart';
 import 'package:learninglens_app/beans/quiz.dart';
 import 'package:learninglens_app/beans/override.dart';
 import 'package:learninglens_app/beans/assignment.dart';
@@ -1237,5 +1238,43 @@ class MoodleLmsService implements LmsInterface {
       }
     }
     return students;
+  }
+
+
+  /// Fetches extended question stats (correct/incorrect/partial attempts) 
+  /// from the local_learninglens_get_question_stats_from_quiz service.
+  Future<List<QuestionStatsType>> getQuestionStatsFromQuiz(int quizId) async {
+    if (_userToken == null) {
+      throw StateError('User not logged in to Moodle');
+    }
+
+    final url = Uri.parse('$apiURL$serverUrl');
+
+    final response = await ApiService().httpPost(
+      url,
+      body: {
+        'wstoken': _userToken!,
+        'wsfunction': 'local_learninglens_get_question_stats_from_quiz',
+        'moodlewsrestformat': 'json',
+        'quizid': quizId.toString(),
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to fetch question stats: ${response.body}');
+    }
+    print(quizId);
+    print(response.body);
+    final decoded = json.decode(response.body);
+    if (decoded is! List) {
+      throw Exception(
+        'Expected a list of question stats but got: ${response.body}',
+      );
+    }
+
+    // Convert each item into a QuestionStatsType instance
+    return decoded.map<QuestionStatsType>((item) {
+      return QuestionStatsType.fromJson(item);
+    }).toList();
   }
 }
