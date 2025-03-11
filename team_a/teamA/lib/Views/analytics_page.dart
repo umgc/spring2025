@@ -1,47 +1,28 @@
-// import 'dart:convert'; // For utf8 encoding
 import 'dart:io' show File; // For non-web file I/O
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart'; // For file saving on non-web platforms
-// Needed for web file export, conditional import based upon user's platform.
 import 'package:learninglens_app/stub/html_stub.dart'
     if (dart.library.html) 'dart:html' as html;
 
-
 import 'package:pdf/widgets.dart' as pw; // PDF package
-// import 'package:pdf/pdf.dart'; // PDF package
 import 'package:excel/excel.dart'; // Excel package
 
 // Import the LMS services using prefixes so that type checks work correctly.
 import 'package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart' as moodle;
-// import 'package:learninglens_app/Api/lms/google_classroom/google_lms_service.dart' as google;
-
 import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
-// import 'package:learninglens_app/Controller/main_controller.dart';
-// import 'package:learninglens_app/Views/dashboard.dart';
-// import 'package:learninglens_app/Views/user_settings.dart';
 
 import 'package:learninglens_app/beans/course.dart';
 import 'package:learninglens_app/beans/assignment.dart';
 import 'package:learninglens_app/beans/participant.dart';
-// import 'package:learninglens_app/beans/grade.dart';
 import 'package:learninglens_app/beans/quiz.dart';
 import 'package:learninglens_app/beans/quiz_type.dart';
 
 /// Enum to represent export formats.
 enum ExportFormat { pdf, excel }
 
-/// AnalyticsPage displays the Analytics Dashboard where teachers can:
-///  - View overall analytics data (live data fetched from the LMS)
-///  - Generate a detailed report for essay assignments only (quizzes are omitted)
-///  - Export the generated report as a valid PDF or Excel file
-///    (using proper PDF/Excel libraries)
-///  - View tables in fixed-height containers with visible scrollbars.
-///
-/// When a student is clicked in the breakdown table, a detail panel appears
-/// on the right showing that student's assignment details (non-editable).
-/// A simple wrapper to hold either an essay assignment or a quiz assignment.
+/// A simple wrapper to hold either an essay assignment or a quiz.
 /// The `type` property distinguishes between the two.
 class Assessment {
   final dynamic assessment; // Either an Assignment (essay) or a Quiz.
@@ -87,7 +68,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
   // Selections from dropdowns.
   Course? _selectedCourse;
-  // Use the course's subject if available; otherwise default to "General".
   String? _selectedSubject;
   Assessment? _selectedAssessment;
 
@@ -97,9 +77,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
   // For quiz assessments, question breakdown data.
   List<QuestionType> _questionBreakdown = [];
-
-  // LMS selection (from the AppBar dropdown).
-  // String _selectedLMS = "Moodle Classroom"; ***** Not used *****
 
   // Scroll controllers for tables.
   late ScrollController _verticalStudentController;
@@ -128,9 +105,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
   // ---------------------------------------------------------------------------
   // _fetchAnalyticsData:
-  // Fetches live data from the LMS.
-  // It retrieves courses and, for the first course, fetches essays and quizzes,
-  // combines them into an assessment list, and fetches participants.
+  // Fetches live data from the LMS (courses, initial quizzes/essays).
   // ---------------------------------------------------------------------------
   Future<void> _fetchAnalyticsData() async {
     setState(() {
@@ -148,10 +123,12 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         // Fetch quizzes (if available).
         List<Quiz> quizList = [];
         try {
-          quizList = await (lmsService as moodle.MoodleLmsService).getQuizzes(_selectedCourse!.id);
+          quizList = await (lmsService as moodle.MoodleLmsService)
+              .getQuizzes(_selectedCourse!.id);
         } catch (e) {
           print("getQuizzes not available or failed: $e");
         }
+        // Combine them into one list
         _assessmentsData = [
           ...essayList.map((a) => Assessment(assessment: a, type: "essay")),
           ...quizList.map((q) => Assessment(assessment: q, type: "quiz"))
@@ -182,8 +159,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
   // ---------------------------------------------------------------------------
   // _generateReport:
-  // Builds the student breakdown report from live participant data.
-  // If the selected assessment is a quiz, it also fetches its question breakdown.
+  // Builds the student breakdown for the currently selected assessment only
+  // (i.e., one quiz or essay).
   // ---------------------------------------------------------------------------
   Future<void> _generateReport() async {
     if (_selectedCourse == null) return;
@@ -197,27 +174,28 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
     try {
       if (isQuiz()) {
-        // grab the quiz grades
+        // Grab participants for this quiz
         int quizId = _selectedAssessment!.assessment.id;
         _participantsData = await (lmsService as moodle.MoodleLmsService)
-            .getQuizGradesForParticipants(
-                _selectedCourse!.id.toString(), quizId);
+            .getQuizGradesForParticipants(_selectedCourse!.id.toString(), quizId);
+
+        // Filter out non-students, if needed
         _participantsData = _participantsData
             .where((i) => i.roles.contains('student'))
             .toList();
       } else if (isEssay()) {
-        // grab the essay grades.
+        // Grab participants for this essay
         int assignmentId = _selectedAssessment!.assessment.id;
         _participantsData = await (lmsService as moodle.MoodleLmsService)
-            .getEssayGradesForParticipants(
-                _selectedCourse!.id.toString(), assignmentId);
+            .getEssayGradesForParticipants(_selectedCourse!.id.toString(), assignmentId);
       } else {
         throw Exception("Unsupported Assessment Type");
       }
 
+      // Build the table shown in the "Student Breakdown" section
       getStudentBreakdown(_participantsData);
 
-      // Fetch question breakdown if the selected assessment is a quiz
+      // If it's a quiz, also fetch the question breakdown
       await _fetchQuestionBreakdown();
     } catch (e) {
       setState(() {
@@ -231,10 +209,42 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   }
 
   // ---------------------------------------------------------------------------
+  // getStudentBreakdown:
+  // Builds `_studentBreakdown` from the given participant list for the currently
+  // selected assessment only.
+  // ---------------------------------------------------------------------------
+  void getStudentBreakdown(List<Participant> participantsData) {
+    _studentBreakdown = participantsData.map((participant) {
+      double? grade = participant.avgGrade;
+      String displayGrade =
+          (grade != null) ? '${grade.toInt()}%' : '0%';
+
+      return {
+        'id': participant.id,
+        'studentName': participant.fullname,
+        'avgGrade': displayGrade,
+        'classRank': 0, // This will be updated after sorting
+        'nationalComparison': 'N/A',
+      };
+    }).toList();
+
+    // Sort descending by numeric grade
+    _studentBreakdown.sort((a, b) {
+      int aGrade = int.tryParse(a['avgGrade'].replaceAll('%', '')) ?? 0;
+      int bGrade = int.tryParse(b['avgGrade'].replaceAll('%', '')) ?? 0;
+      return bGrade.compareTo(aGrade);
+    });
+
+    // Assign a 1-based rank
+    for (int i = 0; i < _studentBreakdown.length; i++) {
+      _studentBreakdown[i]['classRank'] = i + 1;
+    }
+  }
+
+  // ---------------------------------------------------------------------------
   // _saveReport:
-  // Exports the generated report as PDF or Excel and saves it.
-  // On web, triggers a download via an AnchorElement;
-  // on non-web, writes to the chosen location.
+  // Exports the generated report as PDF or Excel (only for the single
+  // selected assessment).
   // ---------------------------------------------------------------------------
   Future<void> _saveReport() async {
     final format = await _chooseExportFormat();
@@ -243,6 +253,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     String defaultName = 'my_report.$extension';
 
     if (kIsWeb) {
+      // Build bytes
       List<int> bytes = (format == ExportFormat.pdf)
           ? await _exportReportAsPdf()
           : await _exportReportAsExcel();
@@ -255,6 +266,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       anchor.click();
       anchor.remove();
       html.Url.revokeObjectUrl(url);
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Report exported as $extension via browser download.')),
       );
@@ -262,15 +274,12 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       final savePath = await _pickFileLocation(defaultName);
       if (savePath == null) return;
       try {
-        if (format == ExportFormat.pdf) {
-          List<int> bytes = await _exportReportAsPdf();
-          final file = File(savePath);
-          await file.writeAsBytes(bytes);
-        } else {
-          List<int> bytes = await _exportReportAsExcel();
-          final file = File(savePath);
-          await file.writeAsBytes(bytes);
-        }
+        List<int> bytes = (format == ExportFormat.pdf)
+            ? await _exportReportAsPdf()
+            : await _exportReportAsExcel();
+        final file = File(savePath);
+        await file.writeAsBytes(bytes);
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Report saved as $extension at:\n$savePath')),
         );
@@ -280,86 +289,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         );
       }
     }
-  }
-
-  // ---------------------------------------------------------------------------
-  // _exportReportAsPdf:
-  // Uses the pdf package to generate a PDF document containing the student breakdown
-  // and, if applicable, the question breakdown.
-  // ---------------------------------------------------------------------------
-  Future<List<int>> _exportReportAsPdf() async {
-    final pdf = pw.Document();
-    pdf.addPage(
-      pw.MultiPage(
-        build: (pw.Context context) => [
-          pw.Header(level: 0, child: pw.Text("Student Breakdown Report")),
-          pw.Table.fromTextArray(
-            headers: [
-              'Student Name',
-              'Average Grade',
-              'Class Rank',
-              'National Comparison'
-            ],
-            data: _studentBreakdown
-                .map((student) => [
-                      student['studentName'],
-                      student['avgGrade'],
-                      student['classRank'].toString(),
-                      student['nationalComparison']
-                    ])
-                .toList(),
-          ),
-          if (isQuiz())
-            pw.Column(children: [
-              pw.SizedBox(height: 20),
-              pw.Header(level: 0, child: pw.Text("Question Breakdown")),
-              pw.Table.fromTextArray(
-                headers: ['Q#', 'Type', 'Text'],
-                data: _questionBreakdown
-                    .map((q) => [q.id.toString(), q.questionType, q.questionText])
-                    .toList(),
-              ),
-            ]),
-        ],
-      ),
-    );
-    return pdf.save();
-  }
-
-  // ---------------------------------------------------------------------------
-  // _exportReportAsExcel:
-  // Uses the excel package to generate an Excel file containing the student breakdown
-  // and, if applicable, the question breakdown.
-  // ---------------------------------------------------------------------------
-  Future<List<int>> _exportReportAsExcel() async {
-    var excel = Excel.createExcel();
-    Sheet studentSheet = excel['Student Breakdown'];
-        studentSheet.appendRow([
-      'Student Name',
-      'Average Grade',
-      'Class Rank',
-      'National Comparison'
-    ]);
-    for (var student in _studentBreakdown) {
-      studentSheet.appendRow([
-        student['studentName'],
-        student['avgGrade'],
-        student['classRank'],
-        student['nationalComparison']
-      ]);
-    }
-    if (isQuiz()) {
-      Sheet questionSheet = excel['Question Breakdown'];
-      questionSheet.appendRow(['Q#', 'Type', 'Text']);
-      for (var q in _questionBreakdown) {
-        questionSheet.appendRow([
-          q.id,
-          q.questionType,
-          q.questionText,
-        ]);
-      }
-    }
-    return excel.encode()!;
   }
 
   // ---------------------------------------------------------------------------
@@ -393,11 +322,89 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   }
 
   // ---------------------------------------------------------------------------
+  // _exportReportAsPdf: Exports only the single assessment's data stored in
+  // _studentBreakdown (and questionBreakdown if quiz).
+  // ---------------------------------------------------------------------------
+  Future<List<int>> _exportReportAsPdf() async {
+    final pdf = pw.Document();
+    pdf.addPage(
+      pw.MultiPage(
+        build: (pw.Context context) => [
+          pw.Header(level: 0, child: pw.Text("Student Breakdown Report")),
+          pw.Table.fromTextArray(
+            headers: [
+              'Student Name',
+              'Average Grade',
+              'Class Rank',
+              'National Comparison'
+            ],
+            data: _studentBreakdown.map((student) => [
+              student['studentName'],
+              student['avgGrade'],
+              student['classRank'].toString(),
+              student['nationalComparison']
+            ]).toList(),
+          ),
+          if (isQuiz())
+            pw.Column(children: [
+              pw.SizedBox(height: 20),
+              pw.Header(level: 0, child: pw.Text("Question Breakdown")),
+              pw.Table.fromTextArray(
+                headers: ['Q#', 'Type', 'Text'],
+                data: _questionBreakdown.map((q) => [
+                  q.id.toString(),
+                  q.questionType,
+                  q.questionText
+                ]).toList(),
+              ),
+            ]),
+        ],
+      ),
+    );
+    return pdf.save();
+  }
+
+  // ---------------------------------------------------------------------------
+  // _exportReportAsExcel: Exports only the single assessment's data stored in
+  // _studentBreakdown (and questionBreakdown if quiz).
+  // ---------------------------------------------------------------------------
+  Future<List<int>> _exportReportAsExcel() async {
+    var excel = Excel.createExcel();
+    Sheet studentSheet = excel['Student Breakdown'];
+    studentSheet.appendRow([
+      'Student Name',
+      'Average Grade',
+      'Class Rank',
+      'National Comparison'
+    ]);
+    for (var student in _studentBreakdown) {
+      studentSheet.appendRow([
+        student['studentName'],
+        student['avgGrade'],
+        student['classRank'],
+        student['nationalComparison']
+      ]);
+    }
+    if (isQuiz()) {
+      Sheet questionSheet = excel['Question Breakdown'];
+      questionSheet.appendRow(['Q#', 'Type', 'Text']);
+      for (var q in _questionBreakdown) {
+        questionSheet.appendRow([
+          q.id,
+          q.questionType,
+          q.questionText,
+        ]);
+      }
+    }
+    return excel.encode()!;
+  }
+
+  // ---------------------------------------------------------------------------
   // _pickFileLocation:
   // For non-web platforms, uses FilePicker to let the user choose a save location.
   // On web, file saving is handled via an AnchorElement.
   // ---------------------------------------------------------------------------
-  Future<String?> _pickFileLocation(String defaultName) async {
+   Future<String?> _pickFileLocation(String defaultName) async {
     if (kIsWeb) return null;
     final result = await FilePicker.platform.saveFile(
       dialogTitle: 'Save Report',
@@ -445,7 +452,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                 List<Quiz> quizzes = [];
                 try {
                   quizzes = await (lmsService as dynamic).getQuizzes(_selectedCourse!.id);
-                } catch (e) {
+                 } catch (e) {
                   print("getQuizzes not available or failed: $e");
                 }
                 _assessmentsData = [
@@ -518,7 +525,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   // Displays the question breakdown table for quiz assessments.
   // This is shown only when a quiz is selected.
   // ---------------------------------------------------------------------------
-  Widget _buildQuestionBreakdown() {
+ Widget _buildQuestionBreakdown() {
     if (_selectedAssessment == null || _selectedAssessment!.type != "quiz") {
       return const SizedBox.shrink();
     }
@@ -564,7 +571,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   // ---------------------------------------------------------------------------
   // _buildStudentTable:
   // Returns ONLY the table of student data. The detail panel is separate.
-  // ---------------------------------------------------------------------------
+ // ---------------------------------------------------------------------------
   Widget _buildStudentTable() {
     if (_studentBreakdown.isEmpty && !isLoading) {
       return const Center(child: Text('No student breakdown available.'));
@@ -641,58 +648,139 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
     int studentId = _selectedStudent!['id'];
 
-    List<Map<String, String>> detailData = _assessmentsData.map((assessment) {
-      String grade = "Not Submitted";
-
-      // Find the student in participantsData
-      Participant? participant = _participantsData.firstWhere(
-        (p) => p.id == studentId,
-        orElse: () => Participant.empty(),
-      );
-
-      // Ensure we get the correct grade for THIS assessment
-      if (participant.avgGrade != null) {
-        grade = "${participant.avgGrade!.toInt()}%"; // ✅ Only the relevant assessment's grade
-      }
-
-      return {
-        'Assessment': assessment.name, // Quiz or Essay name
-        'Type': assessment.type.toUpperCase(), // "QUIZ" or "ESSAY"
-        'Grade': grade,
-      };
-    }).toList();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Details for ${_selectedStudent!['studentName']}',
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 10),
-        ...detailData.map((item) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    "${item['Assessment']} (${item['Type']})",
-                    style: const TextStyle(fontSize: 16),
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                Text(
-                  item['Grade']!,
-                  style: const TextStyle(fontSize: 16),
-                ),
-              ],
-            ),
+    return FutureBuilder<List<Map<String, String>>>(
+      future: _fetchAllAssessmentsForStudent(studentId),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return Center(
+            child: Text('Error loading grades: ${snapshot.error}'),
           );
-        }).toList(),
-      ],
+        }
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return Text('No data available for student $studentId.');
+        }
+
+        List<Map<String, String>> detailData = snapshot.data!;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Details for ${_selectedStudent!['studentName']}',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            ...detailData.map((item) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        "${item['Assessment']} (${item['Type']})",
+                        style: const TextStyle(fontSize: 16),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    Text(
+                      item['Grade']!,
+                      style: const TextStyle(fontSize: 16),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ],
+        );
+      },
     );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Helper function to fetch ALL assessments (quiz or essay) for ONE student.
+  // It loops over _assessmentsData and calls the correct Moodle service for each.
+  // ---------------------------------------------------------------------------
+  Future<List<Map<String, String>>> _fetchAllAssessmentsForStudent(int studentId) async {
+    if (_selectedCourse == null) return [];
+
+    // We'll gather up a list of async calls in futureList
+    List<Future<Map<String, String>>> futureList = [];
+
+    for (var assessment in _assessmentsData) {
+      futureList.add(() async {
+        String gradeStr = "0%";
+
+        if (assessment.type == "quiz") {
+          // Fetch participants for this quiz
+          final participants = await (lmsService as moodle.MoodleLmsService)
+              .getQuizGradesForParticipants(
+                _selectedCourse!.id.toString(),
+                assessment.id,
+              );
+          // Filter for this student
+          final participant = participants.firstWhere(
+            (p) => p.id == studentId,
+            orElse: () => Participant.empty(),
+          );
+          if (participant.avgGrade != null) {
+            gradeStr = "${participant.avgGrade!.toInt()}%";
+          }
+        } else if (assessment.type == "essay") {
+          // Fetch participants for this essay
+          final participants = await (lmsService as moodle.MoodleLmsService)
+              .getEssayGradesForParticipants(
+                _selectedCourse!.id.toString(),
+                assessment.id,
+              );
+          // Filter for this student
+          final participant = participants.firstWhere(
+            (p) => p.id == studentId,
+            orElse: () => Participant.empty(),
+          );
+          if (participant.avgGrade != null) {
+            gradeStr = "${participant.avgGrade!.toInt()}%";
+          }
+        }
+
+        // Return a map with the assessment name, type, and computed grade
+        return {
+          'Assessment': assessment.name,
+          'Type': assessment.type.toUpperCase(),
+          'Grade': gradeStr,
+        };
+      }());
+    }
+
+    // Wait for all those calls to finish
+    return Future.wait(futureList);
+  }
+
+  // ---------------------------------------------------------------------------
+  // If the user selected a quiz, fetch a question breakdown for that quiz.
+  // ---------------------------------------------------------------------------
+  Future<void> _fetchQuestionBreakdown() async {
+    if (isQuiz()) {
+      try {
+        int quizId = _selectedAssessment!.assessment.id;
+        _questionBreakdown = await (lmsService as dynamic)
+            .getQuestionsFromQuiz(quizId);
+
+        setState(() {}); // Refresh UI with new breakdown
+      } catch (e) {
+        print("Failed to fetch question breakdown: $e");
+      }
+    }
+  }
+
+  bool isQuiz() {
+    return _selectedAssessment != null && _selectedAssessment!.type == "quiz";
+  }
+
+  bool isEssay() {
+    return _selectedAssessment != null && _selectedAssessment!.type == "essay";
   }
 
   // ---------------------------------------------------------------------------
@@ -835,61 +923,5 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         child: _buildContent(),
       ),
     );
-  }
-
-  // get student breakdown
-  void getStudentBreakdown(List<Participant> participantsData) {
-    // Build student breakdown report.
-    _studentBreakdown = _participantsData.map((participant) {
-      // Retrieve grade from the fetched quiz data, otherwise use 'Not Submitted'
-      double? grade = participant.avgGrade;
-
-      String displayGrade =
-          (grade != null) ? '${grade.toInt()}%' : 'Not Submitted';
-
-      return {
-        'id': participant.id,
-        'studentName': participant.fullname,
-        'avgGrade': displayGrade,
-        'classRank': 0, // This will be updated after sorting
-        'nationalComparison': 'N/A',
-      };
-    }).toList();
-
-    _studentBreakdown.sort((a, b) {
-      int aGrade = int.tryParse(a['avgGrade'].replaceAll('%', '')) ?? 0;
-      int bGrade = int.tryParse(b['avgGrade'].replaceAll('%', '')) ?? 0;
-      return bGrade.compareTo(aGrade);
-    });
-
-    // Assign class ranking based on sorted grades.
-    for (int i = 0; i < _studentBreakdown.length; i++) {
-      _studentBreakdown[i]['classRank'] = i + 1;
-    }
-  }
-
-  bool isQuiz() {
-    return _selectedAssessment != null && _selectedAssessment!.type == "quiz";
-  }
-
-  bool isEssay() {
-    return _selectedAssessment != null && _selectedAssessment!.type == "essay";
-  }
-
-  /// Fetches question breakdown for quizzes, including the percentage of students who answered correctly.
-  Future<void> _fetchQuestionBreakdown() async {
-    if (isQuiz()) {
-      try {
-        int quizId = _selectedAssessment!.assessment.id;
-
-        final lmsService = LmsFactory.getLmsService();
-        _questionBreakdown = await (lmsService as dynamic)
-            .getQuestionsFromQuiz(quizId);
-
-        setState(() {}); // Refresh UI with new breakdown data
-      } catch (e) {
-        print("Failed to fetch question breakdown: $e");
-      }
-    }
   }
 }
