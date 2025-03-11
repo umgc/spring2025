@@ -15,7 +15,7 @@ class TranscriptionBox extends StatelessWidget {
 
     // Wraps the UI in a sized box so that it can be adjusted to the screen's height
     return SizedBox(
-      height: screenHeight *.4, // Adjust height as needed
+      height: screenHeight *.4,
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8.0),
