@@ -80,7 +80,6 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
     // Extract the results from the database query
   String text = transcriptDetails['text'] ?? "No text available.";
   String timestamp = transcriptDetails['timestamp'] ?? "No timestamp available.";
-  String aiResponse = transcriptDetails['ai_response'] ?? "No AI response available.";
 
   // Shows the information extracted from the query
     if (mounted) {
@@ -93,11 +92,9 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Transcript Text: $text"),
-                SizedBox(height: 8.0),
                 Text("Timestamp: $timestamp"),
-                SizedBox(height: 8.0),
-                Text("AI Response: $aiResponse"),
+                SizedBox(height: 15.0),
+                Text("Transcript Text: $text"),
               ],
             ),
           ),
