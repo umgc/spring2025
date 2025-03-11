@@ -8,8 +8,6 @@ $FirebaseSDKVersion = '11.8.0'
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 
-
-
 project 'Runner', {
   'Debug' => :debug,
   'Profile' => :release,
@@ -62,6 +60,7 @@ post_install do |installer|
     target.build_configurations.each do |config|
       config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
       config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'  # ✅ Fix for modular header issue
+      config.build_settings['SWIFT_VERSION'] = '5.0'
     end
   end
 end  

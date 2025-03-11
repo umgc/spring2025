@@ -10,6 +10,7 @@
 	<string>1</string>
 	<key>BUNDLE_ID</key>
 	<string>com.example.stmlApplication</string>
+	<string>com.umgc.memoryminder</string>
 	<key>PROJECT_ID</key>
 	<string>spring2025-81f5b</string>
 	<key>STORAGE_BUCKET</key>
@@ -25,6 +26,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:944422012610:ios:1c73d37a831e3c015b5d5b</string>
+	<string>1:944422012610:ios:c68887c565b144685b5d5b</string>
 </dict>
 </plist>

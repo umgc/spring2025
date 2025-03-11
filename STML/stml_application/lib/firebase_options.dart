@@ -60,11 +60,11 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyAgZeA-pUaDnsalTM40eWrTtWDBXKLacVE',
-    appId: '1:944422012610:ios:1c73d37a831e3c015b5d5b',
+    appId: '1:944422012610:ios:c68887c565b144685b5d5b',
     messagingSenderId: '944422012610',
     projectId: 'spring2025-81f5b',
     storageBucket: 'spring2025-81f5b.firebasestorage.app',
-    iosBundleId: 'com.example.stmlApplication',
+    iosBundleId: 'com.umgc.memoryminder',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
@@ -73,7 +73,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '944422012610',
     projectId: 'spring2025-81f5b',
     storageBucket: 'spring2025-81f5b.firebasestorage.app',
-    iosBundleId: 'com.example.stmlApplication',
+    iosBundleId: 'com.example.memoryminder',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
@@ -85,5 +85,4 @@ class DefaultFirebaseOptions {
     storageBucket: 'spring2025-81f5b.firebasestorage.app',
     measurementId: 'G-64MQC19KTL',
   );
-
 }

@@ -1,7 +1,7 @@
 import 'package:memoryminder/src/database/model/media_type.dart';
 import 'package:memoryminder/src/utils/permission_manager.dart';
 import 'package:memoryminder/ui/assistant_screen.dart';
-import 'package:memoryminder/ui/home_screen.dart';
+import 'package:memoryminder/src/features/stml_user_dashboard/presentation/stml_user_dashboard.dart';
 import 'package:memoryminder/ui/significant_objects_screen.dart';
 import 'package:memoryminder/ui/video_screen.dart';
 import 'package:flutter/material.dart';

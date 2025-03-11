@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import '../src/onboarding.dart';
-import 'home_screen.dart';
+import '../src/features/stml_user_dashboard/presentation/stml_user_dashboard.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
 class OnboardingScreen extends StatefulWidget {

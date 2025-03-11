@@ -4,9 +4,11 @@ import 'package:path/path.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:flutter/widgets.dart';
+import 'package:memoryminder/src/features/account_creation_and_login/presentation/eula_screen.dart';
+import 'package:memoryminder/src/features/account_creation_and_login/presentation/welcome_screen.dart';
 import 'package:memoryminder/src/utils/logger.dart';
-import 'package:memoryminder/ui/home_screen.dart';
-import 'package:memoryminder/ui/login_screen.dart';
+import 'package:memoryminder/src/features/stml_user_dashboard/presentation/stml_user_dashboard.dart';
+import 'package:memoryminder/src/features/account_creation_and_login/presentation/login_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:memoryminder/src/camera_manager.dart';
 import 'package:memoryminder/src/data_service.dart';
@@ -15,7 +17,8 @@ import 'package:memoryminder/src/utils/directory_manager.dart';
 import 'package:memoryminder/src/utils/permission_manager.dart';
 import 'package:memoryminder/location_permission_manager.dart';
 import 'package:permission_handler/permission_handler.dart';
-
+import 'package:memoryminder/src/features/account_creation_and_login/presentation/registration_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 
 // New function to check and request location permissions
@@ -45,6 +48,7 @@ Future<void> checkAndRequestPermissions() async {
 
 
 
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); 
   print("✅ Initializing Logging...");
@@ -54,6 +58,8 @@ void main() async {
   await checkAndRequestPermissions();
 
   print("✅ Loading .env file...");
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   await dotenv.load(fileName: ".env");
 
   print("✅ Initializing Directories...");
@@ -86,13 +92,17 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'CogniOpen',
+      title: 'MemoryMinder',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      initialRoute: '/loginScreen', // the initial screen when the app starts
+      initialRoute:
+          '/welcomeScreen', // The initial screen when the application starts
       routes: {
+        '/welcomeScreen': (context) => WelcomeScreem(),
         '/loginScreen': (context) => LoginScreen(),
+        '/registrationScreen': (context) => RegistrationScreen(),
+        '/eulaScreen': (context) => EulaScreen(),
         '/homeScreen': (context) => HomeScreen(),
        // You can add other routes as needed
       },
