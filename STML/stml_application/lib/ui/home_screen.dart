@@ -14,6 +14,10 @@ import 'package:geolocator/geolocator.dart';
 import 'package:memoryminder/src/camera_manager.dart';
 import 'package:memoryminder/src/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:memoryminder/database_helper.dart';
+
+
+
 
 
 // Main HomeScreen widget which is a stateless widget.
@@ -26,6 +30,11 @@ class _HomeScreenState extends State<HomeScreen> {
   bool hasBeenInitialized = false;
   double iconSize = 65;
 
+  // User-defined safe zone variables
+  double? homeLatitude;
+  double? homeLongitude;
+  double safeZoneRadius = 100; // Default radius in meters
+
   // To keep track of the current location
   LocationEntry? currentLocationEntry;
 
@@ -33,8 +42,137 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _initializeCamera();
+    _loadSafeZone(); 
     _listenToLocationChanges();
   }
+
+
+ // ✅ Load safe zone from database when the app starts
+  Future<void> _loadSafeZone() async {
+    final safeZone = await DatabaseHelper.instance.getSafeZone();
+    if (safeZone != null) {
+      setState(() {
+        homeLatitude = safeZone['latitude'];
+        homeLongitude = safeZone['longitude'];
+        safeZoneRadius = safeZone['radius'];
+      });
+    }
+  }
+  //✅ Open a dialog for user to set a safe zone
+  void _setSafeZone() async {
+    TextEditingController latController = TextEditingController();
+    TextEditingController longController = TextEditingController();
+    TextEditingController radiusController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Set Safe Zone"),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: latController,
+              decoration: const InputDecoration(labelText: "Latitude"),
+              keyboardType: TextInputType.number,
+            ),
+            TextField(
+              controller: longController,
+              decoration: const InputDecoration(labelText: "Longitude"),
+              keyboardType: TextInputType.number,
+            ),
+            TextField(
+              controller: radiusController,
+              decoration: const InputDecoration(labelText: "Radius (meters)"),
+              keyboardType: TextInputType.number,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            child: const Text("Cancel"),
+          ),
+          TextButton(
+            onPressed: () async {
+              setState(() {
+                homeLatitude = double.tryParse(latController.text);
+                homeLongitude = double.tryParse(longController.text);
+                safeZoneRadius = double.tryParse(radiusController.text) ?? 100;
+              });
+
+            
+              // ✅ Save to database
+              await DatabaseHelper.instance.saveSafeZone(
+                homeLatitude!,
+                homeLongitude!,
+                safeZoneRadius,
+              );
+
+              Navigator.pop(context);
+            },
+            child: const Text("Save"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ✅ Show an alert when user leaves the safe zone
+  void _showSafeZoneExitAlert() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Alert"),
+        content: const Text("You have exited your safe zone!"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("OK"),
+          ),
+        ],
+      ),
+    );
+  }
+
+
+void _showLocationOptions(BuildContext context) {
+  showModalBottomSheet(
+    context: context,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
+    ),
+    builder: (context) {
+      return Wrap(
+        children: [
+          ListTile(
+            leading: Icon(Icons.history, color: Colors.blueAccent),
+            title: Text("View Location History"),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => LocationHistoryScreen()),
+              );
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.shield, color: Colors.green),
+            title: Text("Set Safe Zone"),
+            onTap: () {
+              Navigator.pop(context);
+              _setSafeZone();  // ✅ Open Safe Zone dialog
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+
+
 
   _initializeCamera() {
     if (!hasBeenInitialized) {
@@ -43,39 +181,59 @@ class _HomeScreenState extends State<HomeScreen> {
       hasBeenInitialized = true;
     }
   }
+  bool _alertTriggered = false; // Prevent repeated alerts
 
-  _listenToLocationChanges() {
+  Future<void> _listenToLocationChanges() async {
     final locationStream = Geolocator.getPositionStream();
+
     locationStream.listen((Position position) async {
       try {
-        List<Placemark> placemarks = await placemarkFromCoordinates(
-            position.latitude, position.longitude);
-        if (placemarks.isNotEmpty) {
-          final Placemark placemark = placemarks.first;
-          final address =
-              "${placemark.street}, ${placemark.locality}, ${placemark.administrativeArea}, ${placemark.postalCode}, ${placemark.isoCountryCode}";
+        double userLat = position.latitude;
+        double userLong = position.longitude;
 
-          if (currentLocationEntry == null ||
-              currentLocationEntry!.address != address) {
-            if (currentLocationEntry != null) {
-              if (currentLocationEntry!.endTime == null) {
-                currentLocationEntry!.endTime = DateTime.now();
-                await LocationDatabase.instance.update(currentLocationEntry!);
-              }
-            }
+      // ✅ Reverse geocoding to get address
+      List<Placemark> placemarks = await placemarkFromCoordinates(userLat, userLong);
+      if (placemarks.isNotEmpty) {
+        final Placemark placemark = placemarks.first;
+        final address =
+            "${placemark.street}, ${placemark.locality}, ${placemark.administrativeArea}, ${placemark.postalCode}, ${placemark.isoCountryCode}";
 
-            final newEntry =
-            LocationEntry(address: address, startTime: DateTime.now());
-            final id = await LocationDatabase.instance.create(newEntry);
-            newEntry.id = id;
-            currentLocationEntry = newEntry;
+        // ✅ Check if the location has changed before updating database
+        if (currentLocationEntry == null || currentLocationEntry!.address != address) {
+          if (currentLocationEntry != null && currentLocationEntry!.endTime == null) {
+            currentLocationEntry!.endTime = DateTime.now();
+            await LocationDatabase.instance.update(currentLocationEntry!);
           }
+
+          final newEntry = LocationEntry(address: address, startTime: DateTime.now());
+          final id = await LocationDatabase.instance.create(newEntry);
+          newEntry.id = id;
+          currentLocationEntry = newEntry;
         }
-      } catch (e) {
-        print(e);
       }
-    });
-  }
+
+      // ✅ Safe Zone Check
+      if (homeLatitude != null && homeLongitude != null) {
+        double distance = Geolocator.distanceBetween(userLat, userLong, homeLatitude!, homeLongitude!);
+        
+        if (distance > safeZoneRadius) {
+          if (!_alertTriggered) {
+            print("🚨 User has left the safe zone!");
+            _showSafeZoneExitAlert();
+            _alertTriggered = true; // Prevent multiple alerts
+          }
+        } else {
+          _alertTriggered = false; // Reset alert when user returns to safe zone
+        }
+      }
+
+    } catch (e) {
+      print("❌ Error in location tracking: $e");
+    }
+  });
+}
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -121,7 +279,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               },
             ),
-
+            // ✅ Safe Zone Button
+            IconButton(
+              icon: const Icon(Icons.shield, color: Colors.black54),
+              onPressed: _setSafeZone, // Opens safe zone input dialog
+            ),
+            IconButton(
+              icon: const Icon(Icons.more_vert, color: Colors.black54),
+              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileScreen())),
+            ),
             // First page icon to navigate back
             IconButton(
               icon: const Icon(
@@ -205,12 +371,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       text: 'Location',
                       screen: LocationHistoryScreen(),
                       keyName: "LocationObjectButtonKey",
+                      onTap: () => _showLocationOptions(context),  // ✅ Open options menu
+                      
                     ),
                     _buildElevatedButton(
                       context: context,
                       icon: Icon(Icons.flag,
                           size: iconSize, color: Colors.black54),
-                      text: 'Tour Guide',
+                      text: 'Free Tour',
                       screen: TourScreen(),
                       keyName: "TourGuideButtonKey",
                     ),
@@ -240,6 +408,7 @@ class _HomeScreenState extends State<HomeScreen> {
     required String text,
     required Widget screen,
     required String keyName,
+    VoidCallback? onTap,  // ✅ Allow custom action when button is tapped
   }) {
     return ElevatedButton(
       key: Key(keyName),
@@ -253,7 +422,7 @@ class _HomeScreenState extends State<HomeScreen> {
           borderRadius: BorderRadius.circular(10.0),
         ),
       ),
-      onPressed: () {
+      onPressed: onTap ?? () { // ✅ If onTap is null, default to navigation
         Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => screen),

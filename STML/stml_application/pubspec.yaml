@@ -60,9 +60,13 @@ dependencies:
     external_path: ^2.0.1
     gallery_saver: ^2.3.2
     url_launcher: ^6.0.12
+    firebase_core: ^2.20.0  # Required for Firebase initialization
+    firebase_messaging: ^14.6.9
+    flutter_local_notifications: ^16.3.2
 dev_dependencies:
   flutter_test:
     sdk: flutter
+    
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
