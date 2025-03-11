@@ -527,55 +527,75 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   // This is shown only when a quiz is selected.
   // ---------------------------------------------------------------------------
  Widget _buildQuestionBreakdown() {
-    if (_selectedAssessment == null || _selectedAssessment!.type != "quiz") {
+    if (isEssay()) {
       return const SizedBox.shrink();
     }
     if (_questionBreakdown.isEmpty) {
       return const Center(child: Text('No question breakdown available.'));
     }
-    return SizedBox(
-      height: 200,
-      child: Scrollbar(
-        thumbVisibility: true,
-        controller: _verticalQuestionController,
-        child: SingleChildScrollView(
-          controller: _verticalQuestionController,
-          scrollDirection: Axis.vertical,
+
+    // Example hard-coded or computed stats.
+    // Replace these with real calculations if you have them:
+    final double averageGrade = getAverageGrade();
+    final int numSubmittedQuizzes = getTotalSubmittedQuizzes();     
+    final int numStudentsInClass = _studentBreakdown.length;       
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // ====== ADDED SECTION ======
+        Text('Average Grade: $averageGrade%'),
+        Text('Number of Submitted Quizzes: $numSubmittedQuizzes'),
+        Text('Number of Students in Class: $numStudentsInClass'),
+        const SizedBox(height: 16),
+        // ====== END ADDED SECTION ======
+
+        SizedBox(
+          height: 200,
           child: Scrollbar(
             thumbVisibility: true,
-            controller: _horizontalQuestionController,
-            notificationPredicate: (notification) => notification.depth == 2,
+            controller: _verticalQuestionController,
             child: SingleChildScrollView(
-              controller: _horizontalQuestionController,
-              scrollDirection: Axis.horizontal,
-              child: DataTable(
-                columns: const [
-                  DataColumn(label: Text('#')),
-                  DataColumn(label: Text('Question Type')),
-                  DataColumn(label: Text('Question')),
-                  DataColumn(label: Text('% Answered Correct')),
-                  DataColumn(label: Text('# of Correct')),
-                  DataColumn(label: Text('# of Incorrect')),
-                  DataColumn(label: Text('# of Total Attempts')),
-                ],
-                rows: _questionBreakdown.map((q) {
-                  return DataRow(cells: [
-                    DataCell(Text(q.id.toString())),
-                    DataCell(Text(q.questionType)),
-                    DataCell(Text(q.questionText)),
-                    DataCell(Text("${computePercentage(q).toStringAsFixed(2)}%")),
-                    DataCell(Text(q.numCorrect.toString())),
-                    DataCell(Text(q.numIncorrect.toString())),
-                    DataCell(Text(q.totalAttempts.toString())),
-                  ]);
-                }).toList(),
+              controller: _verticalQuestionController,
+              scrollDirection: Axis.vertical,
+              child: Scrollbar(
+                thumbVisibility: true,
+                controller: _horizontalQuestionController,
+                notificationPredicate: (notification) => notification.depth == 2,
+                child: SingleChildScrollView(
+                  controller: _horizontalQuestionController,
+                  scrollDirection: Axis.horizontal,
+                  child: DataTable(
+                    columns: const [
+                      DataColumn(label: Text('#')),
+                      DataColumn(label: Text('Question Type')),
+                      DataColumn(label: Text('Question')),
+                      DataColumn(label: Text('% Answered Correct')),
+                      DataColumn(label: Text('# of Correct')),
+                      DataColumn(label: Text('# of Incorrect')),
+                      DataColumn(label: Text('# of Total Attempts')),
+                    ],
+                    rows: _questionBreakdown.map((q) {
+                      return DataRow(cells: [
+                        DataCell(Text(q.id.toString())),
+                        DataCell(Text(q.questionType)),
+                        DataCell(Text(q.questionText)),
+                        DataCell(Text("${computePercentCorrect(q).toStringAsFixed(2)}%")),
+                        DataCell(Text(q.numCorrect.toString())),
+                        DataCell(Text(q.numIncorrect.toString())),
+                        DataCell(Text(q.totalAttempts.toString())),
+                      ]);
+                    }).toList(),
+                  ),
+                ),
               ),
             ),
           ),
         ),
-      ),
+      ],
     );
   }
+
 
   // ---------------------------------------------------------------------------
   // _buildStudentTable:
@@ -722,7 +742,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       futureList.add(() async {
         String gradeStr = "0%";
 
-        if (assessment.type == "quiz") {
+        if (isQuiz()) {
           // Fetch participants for this quiz
           final participants = await (lmsService as moodle.MoodleLmsService)
               .getQuizGradesForParticipants(
@@ -938,8 +958,69 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
    * Computes the percentage a question is answered correctly.
    * Correct Percentage = ((numcorrect + numpartial) / totalattempts) * 100
    */
-  double computePercentage(QuestionStatsType q) {
+  double computePercentCorrect(QuestionStatsType q) {
     if (q.totalAttempts == 0) return 0.0; // Avoid division by zero
     return ((q.numCorrect + q.numPartial) / q.totalAttempts) * 100;
   }
+  
+  // loop over all the studentBreadkdown and get all of the avgGrades
+  double getAverageGrade() {
+    // short circuit the method If there's no data, just return 0 to avoid division by zero.
+    if (_studentBreakdown.isEmpty) {
+      return 0.0;
+    }
+
+    double sum = 0.0;
+
+    // loop over every student and grab there avgGrade (technically it is a their grade)
+    for (var student in _studentBreakdown) {
+      // Extract the "avgGrade" field
+      String? gradeStr = student['avgGrade'];
+
+      // If the field is missing or invalid, skip it.
+      if (gradeStr == null || gradeStr.isEmpty) {
+        continue;
+      }
+
+      // Remove the percent sign, parse as double.
+      gradeStr = gradeStr.replaceAll('%', '');
+      double? numericGrade = double.tryParse(gradeStr);
+
+      // Accumulate the parsed numeric grade, defaulting to 0 if parse fails.
+      sum += numericGrade ?? 0.0;
+    }
+
+    // Divide by number of students to get average.
+    return sum / _studentBreakdown.length;
+  }
+  
+  /// Returns the total number of quizzes submitted for the current quiz
+  /// by dividing the sum of all question attempts by the count of questions.
+  /// 
+  /// For each question Q:
+  ///   totalAttemptsForQ = (Q.numCorrect + Q.numIncorrect + Q.numPartial)
+  /// Then:
+  ///   totalQuizSubmissions = grandTotalAttemptsAcrossAllQuestions / numberOfQuestions
+  int getTotalSubmittedQuizzes() {
+    if (_questionBreakdown.isEmpty) {
+      return 0;
+    }
+
+    double grandTotalAttempts = 0;
+    int questionCount = _questionBreakdown.length;
+
+    for (QuestionStatsType q in _questionBreakdown) {
+      grandTotalAttempts += (q.numCorrect + q.numIncorrect + q.numPartial);
+    }
+
+    // If for some reason questionCount is 0, avoid division by zero
+    if (questionCount == 0) return 0;
+
+    // Divide total attempts by question count to get # of submissions
+    double submissions = grandTotalAttempts / questionCount;
+
+    // Round to an integer or use floor/ceil if preferred
+    return submissions.round();
+  }
+
 }
