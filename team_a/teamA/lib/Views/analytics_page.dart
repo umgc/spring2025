@@ -638,11 +638,26 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         ),
       );
     }
+
+    int studentId = _selectedStudent!['id'];
+
     List<Map<String, String>> detailData = _assessmentsData.map((assessment) {
-      // For now, "Not Submitted" is used if there's no real grade data.
       String grade = "Not Submitted";
+
+      // Find the student in participantsData
+      Participant? participant = _participantsData.firstWhere(
+        (p) => p.id == studentId,
+        orElse: () => Participant.empty(),
+      );
+
+      // Ensure we get the correct grade for THIS assessment
+      if (participant.avgGrade != null) {
+        grade = "${participant.avgGrade!.toInt()}%"; // ✅ Only the relevant assessment's grade
+      }
+
       return {
-        'Assignment': assessment.name,
+        'Assessment': assessment.name, // Quiz or Essay name
+        'Type': assessment.type.toUpperCase(), // "QUIZ" or "ESSAY"
         'Grade': grade,
       };
     }).toList();
@@ -661,8 +676,17 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(item['Assignment']!, style: const TextStyle(fontSize: 16)),
-                Text(item['Grade']!, style: const TextStyle(fontSize: 16)),
+                Expanded(
+                  child: Text(
+                    "${item['Assessment']} (${item['Type']})",
+                    style: const TextStyle(fontSize: 16),
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Text(
+                  item['Grade']!,
+                  style: const TextStyle(fontSize: 16),
+                ),
               ],
             ),
           );
@@ -858,8 +882,9 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       try {
         int quizId = _selectedAssessment!.assessment.id;
 
-        // fetch the assessment data 
-        // data needed quiz question, percentage of answered correctly, etc.
+        final lmsService = LmsFactory.getLmsService();
+        _questionBreakdown = await (lmsService as dynamic)
+            .getQuestionsFromQuiz(quizId);
 
         setState(() {}); // Refresh UI with new breakdown data
       } catch (e) {
