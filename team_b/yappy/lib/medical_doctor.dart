@@ -5,6 +5,8 @@ import 'tool_bar.dart';
 import 'transcription_box.dart';
 import 'services/speech_state.dart';
 import 'services/model_manager.dart';
+import 'search_bar_widget.dart';
+
 
 class MedicalDoctorApp extends StatelessWidget {
   const MedicalDoctorApp({super.key});
@@ -28,34 +30,38 @@ class MedicalDoctorPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 0, 0, 0),
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(140), 
+        preferredSize: Size.fromHeight(100), 
         child: ToolBar()
       ),
       drawer: HamburgerDrawer(),
       body: ListenableBuilder(
         listenable: speechState,
         builder: (context, child) {
-          return Column(
-            children: [
-              IndustryMenu(
-                title: "Medical Doctor",
-                icon: Icons.medical_services,
-                speechState: speechState,
-                modelManager: modelManager,
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(children: [
-                    AudiowaveWidget(speechState: speechState),
-                    TranscriptionBox(
-                      controller: speechState.controller,
-                    ),
-                  ],)
-
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: SearchBarWidget(industry: "Medical Doctor"),
                 ),
-              ),
-            ],
+                IndustryMenu(
+                  title: "Medical Doctor",
+                  icon: Icons.medical_services,
+                  speechState: speechState,
+                  modelManager: modelManager,
+                ),
+                Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(children: [
+                      AudiowaveWidget(speechState: speechState),
+                      TranscriptionBox(
+                        controller: speechState.controller,
+                      ),
+                    ],)
+
+                  ),
+              ],
+            )
           );
         }
       ),
