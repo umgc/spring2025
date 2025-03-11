@@ -74,6 +74,7 @@ class AnalyticsPage extends StatefulWidget {
 }
 
 class _AnalyticsPageState extends State<AnalyticsPage> {
+  final lmsService = LmsFactory.getLmsService();
   // Live analytics data fetched from the LMS.
   Map<String, dynamic>? analyticsData;
   bool isLoading = false;
@@ -137,7 +138,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       errorMsg = '';
     });
     try {
-      final lmsService = LmsFactory.getLmsService();
       _coursesData = await lmsService.getUserCourses();
       int totalCourses = _coursesData.length;
       if (_coursesData.isNotEmpty) {
@@ -148,7 +148,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         // Fetch quizzes (if available).
         List<Quiz> quizList = [];
         try {
-          quizList = await (lmsService as dynamic).getQuizzes(_selectedCourse!.id);
+          quizList = await (lmsService as moodle.MoodleLmsService).getQuizzes(_selectedCourse!.id);
         } catch (e) {
           print("getQuizzes not available or failed: $e");
         }
@@ -159,8 +159,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         if (_assessmentsData.isNotEmpty) {
           _selectedAssessment = _assessmentsData.first;
         }
-        // Fetch participants.
-        _participantsData = await lmsService.getCourseParticipantsWithGrades(_selectedCourse!.id.toString());
       }
       setState(() {
         analyticsData = {
@@ -196,34 +194,31 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       _questionBreakdown.clear();
       _selectedStudent = null;
     });
+
     try {
-      _studentBreakdown = _participantsData.map((participant) {
-        int grade = participant.avgGrade != null ? participant.avgGrade!.toInt() : 0;
-        String displayGrade = (participant.avgGrade != null && grade > 0)
-            ? '$grade%'
-            : 'Not Submitted';
-        return {
-          'id': participant.id,
-          'studentName': participant.fullname,
-          'avgGrade': displayGrade,
-          'classRank': 0,
-          'nationalComparison': 'N/A'
-        };
-      }).toList();
-      _studentBreakdown.sort((a, b) {
-        int aGrade = int.tryParse(a['avgGrade'].replaceAll('%', '')) ?? 0;
-        int bGrade = int.tryParse(b['avgGrade'].replaceAll('%', '')) ?? 0;
-        return bGrade.compareTo(aGrade);
-      });
-      for (int i = 0; i < _studentBreakdown.length; i++) {
-        _studentBreakdown[i]['classRank'] = i + 1;
+      if (isQuiz()) {
+        // grab the quiz grades
+        int quizId = _selectedAssessment!.assessment.id;
+        _participantsData = await (lmsService as moodle.MoodleLmsService)
+            .getQuizGradesForParticipants(
+                _selectedCourse!.id.toString(), quizId);
+        _participantsData = _participantsData
+            .where((i) => i.roles.contains('student'))
+            .toList();
+      } else if (isEssay()) {
+        // grab the essay grades.
+        int assignmentId = _selectedAssessment!.assessment.id;
+        _participantsData = await (lmsService as moodle.MoodleLmsService)
+            .getEssayGradesForParticipants(
+                _selectedCourse!.id.toString(), assignmentId);
+      } else {
+        throw Exception("Unsupported Assessment Type");
       }
-      // If the selected assessment is a quiz, fetch its question breakdown.
-      if (_selectedAssessment != null && _selectedAssessment!.type == "quiz") {
-        final lmsService = LmsFactory.getLmsService();
-        _questionBreakdown = await (lmsService as dynamic)
-            .getQuestionsFromQuiz(_selectedAssessment!.assessment.id);
-      }
+
+      getStudentBreakdown(_participantsData);
+
+      // Fetch question breakdown if the selected assessment is a quiz
+      await _fetchQuestionBreakdown();
     } catch (e) {
       setState(() {
         errorMsg = 'Failed to generate report: $e';
@@ -314,7 +309,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                     ])
                 .toList(),
           ),
-          if (_selectedAssessment != null && _selectedAssessment!.type == "quiz")
+          if (isQuiz())
             pw.Column(children: [
               pw.SizedBox(height: 20),
               pw.Header(level: 0, child: pw.Text("Question Breakdown")),
@@ -339,7 +334,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   Future<List<int>> _exportReportAsExcel() async {
     var excel = Excel.createExcel();
     Sheet studentSheet = excel['Student Breakdown'];
-    studentSheet.appendRow([
+        studentSheet.appendRow([
       'Student Name',
       'Average Grade',
       'Class Rank',
@@ -353,7 +348,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         student['nationalComparison']
       ]);
     }
-    if (_selectedAssessment != null && _selectedAssessment!.type == "quiz") {
+    if (isQuiz()) {
       Sheet questionSheet = excel['Question Breakdown'];
       questionSheet.appendRow(['Q#', 'Type', 'Text']);
       for (var q in _questionBreakdown) {
@@ -445,7 +440,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                 _selectedSubject = val?.subject ?? "General";
               });
               if (_selectedCourse != null) {
-                final lmsService = LmsFactory.getLmsService();
                 // Fetch essays and quizzes, then combine them.
                 List<Assignment> essays = await lmsService.getEssays(_selectedCourse!.id);
                 List<Quiz> quizzes = [];
@@ -817,5 +811,60 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         child: _buildContent(),
       ),
     );
+  }
+
+  // get student breakdown
+  void getStudentBreakdown(List<Participant> participantsData) {
+    // Build student breakdown report.
+    _studentBreakdown = _participantsData.map((participant) {
+      // Retrieve grade from the fetched quiz data, otherwise use 'Not Submitted'
+      double? grade = participant.avgGrade;
+
+      String displayGrade =
+          (grade != null) ? '${grade.toInt()}%' : 'Not Submitted';
+
+      return {
+        'id': participant.id,
+        'studentName': participant.fullname,
+        'avgGrade': displayGrade,
+        'classRank': 0, // This will be updated after sorting
+        'nationalComparison': 'N/A',
+      };
+    }).toList();
+
+    _studentBreakdown.sort((a, b) {
+      int aGrade = int.tryParse(a['avgGrade'].replaceAll('%', '')) ?? 0;
+      int bGrade = int.tryParse(b['avgGrade'].replaceAll('%', '')) ?? 0;
+      return bGrade.compareTo(aGrade);
+    });
+
+    // Assign class ranking based on sorted grades.
+    for (int i = 0; i < _studentBreakdown.length; i++) {
+      _studentBreakdown[i]['classRank'] = i + 1;
+    }
+  }
+
+  bool isQuiz() {
+    return _selectedAssessment != null && _selectedAssessment!.type == "quiz";
+  }
+
+  bool isEssay() {
+    return _selectedAssessment != null && _selectedAssessment!.type == "essay";
+  }
+
+  /// Fetches question breakdown for quizzes, including the percentage of students who answered correctly.
+  Future<void> _fetchQuestionBreakdown() async {
+    if (isQuiz()) {
+      try {
+        int quizId = _selectedAssessment!.assessment.id;
+
+        // fetch the assessment data 
+        // data needed quiz question, percentage of answered correctly, etc.
+
+        setState(() {}); // Refresh UI with new breakdown data
+      } catch (e) {
+        print("Failed to fetch question breakdown: $e");
+      }
+    }
   }
 }

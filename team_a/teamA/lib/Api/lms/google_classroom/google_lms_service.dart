@@ -745,10 +745,4 @@ class GoogleLmsService extends LmsInterface {
       }
     };
   }
-  
-  @override
-  Future<List<Participant>> getCourseParticipantsWithGrades(String courseId) {
-    // TODO: implement getCourseParticipantsWithGrades
-    throw UnimplementedError();
-  }
 }
