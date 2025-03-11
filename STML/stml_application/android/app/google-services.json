@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "944422012610",
+    "project_id": "spring2025-81f5b",
+    "storage_bucket": "spring2025-81f5b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:944422012610:android:a205c56c9180152b5b5d5b",
+        "android_client_info": {
+          "package_name": "com.umgc.memoryminder"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDt3q9f16WvUspQWQ_xhqAvE9mvNH70SGg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
