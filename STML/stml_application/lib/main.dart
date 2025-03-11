@@ -13,7 +13,7 @@ import 'package:memoryminder/src/utils/directory_manager.dart';
 import 'package:memoryminder/src/utils/permission_manager.dart';
 import 'package:memoryminder/src/features/account_creation_and_login/presentation/registration_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:memoryminder/ui/caregiver_task_screen.dart'; // Added import
+import 'package:memoryminder/features/caregiver_task_management/caregiver_task_screen.dart';
 
 void main() async {
   initializeLogging();
@@ -28,6 +28,7 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
