@@ -7,12 +7,16 @@ import 'dart:convert';
 import 'package:yappy/services/file_handler.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/services.dart';
+import 'package:file_picker/file_picker.dart';
 
 class IndustryMenu extends StatelessWidget {
   final String title;
   final IconData icon;
 
-  const IndustryMenu({required this.title, required this.icon, super.key});
+  IndustryMenu({required this.title, required this.icon, super.key});
+
+  String? uploadedFileName;
+  String? uploadedFileContent;
 
   Widget generateTranscript(
       BuildContext context, String title, String content) {
@@ -39,6 +43,7 @@ class IndustryMenu extends StatelessWidget {
             IconButton(
               icon: Icon(Icons.download),
               onPressed: () async {
+                // Download button
                 try {
                   // Request storage permission
                   if (await Permission.storage.request().isGranted ||
@@ -348,8 +353,33 @@ class IndustryMenu extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(top: 16.0),
                   child: ElevatedButton.icon(
-                    onPressed: () {
-                      // Add your upload functionality here
+                    onPressed: () async {
+                      // Upload button
+                      FilePickerResult? result =
+                          await FilePicker.platform.pickFiles();
+                      if (result != null) {
+                        PlatformFile file = result.files.first;
+                        uploadedFileName = file.name;
+                        uploadedFileContent =
+                            await File(file.path!).readAsString();
+
+                        Map<String, dynamic> transcriptMap = {
+                          'transcript_text_data': uploadedFileContent
+                        };
+
+                        DatabaseHelper dbHelper = DatabaseHelper();
+                        await dbHelper.insertTranscript(transcriptMap);
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content:
+                                  Text('File uploaded: $uploadedFileName')),
+                        );
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('File upload canceled')),
+                        );
+                      }
                     },
                     icon: Icon(Icons.upload),
                     label: Text('Upload Transcript'),
