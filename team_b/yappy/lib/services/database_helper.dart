@@ -529,8 +529,10 @@ class DatabaseHelper {
 
   // Search method that will query the transcript information in the database and return
   // search results based on the information found.
-Future<List<String>> searchTranscripts(String query, String industry) async {g
+Future<List<String>> searchTranscripts(String query, String industry) async {
     final db = await database;
+
+    // Compares the query with the data within the transcripts and returns the entries.
     final List<Map<String, dynamic>> results = await db.query(
       'Transcript',
       where: '(LOWER(transcript_text_data) LIKE LOWER(?) OR LOWER(transcript_ai_response) LIKE LOWER(?)) AND industry = ?',
@@ -540,6 +542,23 @@ Future<List<String>> searchTranscripts(String query, String industry) async {g
     return results.map((row) => row['transcript_text_data'] as String).toList();
 }
 
+Future<Map<String, String>?> getTranscriptDetails(String entry) async {    final db = await database;
+  // Select the information i want to display from database
+    var result = await db.rawQuery(
+      "SELECT transcript_text_data, transcript_timestamp, transcript_ai_response FROM Transcript WHERE transcript_text_data = ? OR transcript_ai_response = ?",
+      [entry, entry]
+    );
+
+  // Grabs the results and return them
+    if (result.isNotEmpty) {
+      return {
+        'text': result.first['transcript_text_data'] as String,
+        'timestamp': result.first['transcript_timestamp'] as String,
+        'ai_response': result.first['transcript_ai_response'] as String,
+      };
+    }
+    return null;
+  }
 }
 
 

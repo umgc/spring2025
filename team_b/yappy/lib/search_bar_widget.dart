@@ -69,24 +69,49 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
     );
   }
 
-  // Opens a pop up when the user clicks on a specific entry
-  void _showDetailsDialog(String entry) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Transcript "),
-          content: Text('Details for $entry...'),
-          actions: <Widget> [
-            TextButton (
-              child: const Text('Close'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              }
-            )
-          ]
-        );
-      }
-    );
+  // Opens a pop-up window when users clicks on a specific search result
+  void _showDetailsDialog(String entry) async {
+  Map<String, String>? transcriptDetails = await dbHelp.getTranscriptDetails(entry);
+
+  if (transcriptDetails == null || !mounted) {
+    return;
+  }
+
+    // Extract the results from the database query
+  String text = transcriptDetails['text'] ?? "No text available.";
+  String timestamp = transcriptDetails['timestamp'] ?? "No timestamp available.";
+  String aiResponse = transcriptDetails['ai_response'] ?? "No AI response available.";
+
+  // Shows the information extracted from the query
+    if (mounted) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("Transcript Details"),
+            content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Transcript Text: $text"),
+                SizedBox(height: 8.0),
+                Text("Timestamp: $timestamp"),
+                SizedBox(height: 8.0),
+                Text("AI Response: $aiResponse"),
+              ],
+            ),
+          ),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('Close'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              )
+            ],
+          );
+        },
+      );
+    }
   }
 }
