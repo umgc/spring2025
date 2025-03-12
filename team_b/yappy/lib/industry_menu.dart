@@ -381,7 +381,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
                 padding: EdgeInsets.all(5),
                 child: IconButton(
                   icon: Icon(
-                    Icons.chat,
+                    Icons.android,
                     color: Colors.white,
                     size: screenHeight * .05,
                   ),
