@@ -418,18 +418,6 @@ class _IndustryMenuState extends State<IndustryMenu> {
                                   );
                                 }
                                 }
-                              showModalBottomSheet(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return KanbanBoard(tasks: [
-                                    // get the order_transcript from the restaurant table if industy is restaurant
-                                    //get the order transcript
-                                    // run it through the API
-                                    //Then send it to the kanban board
-
-                                  ]);
-                                },
-                              );
                             } else {
                               // Show regular transcript for other industries
                               showDialog(
