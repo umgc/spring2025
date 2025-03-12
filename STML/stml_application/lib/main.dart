@@ -58,8 +58,6 @@ void main() async {
   await checkAndRequestPermissions();
 
   print("✅ Loading .env file...");
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
   await dotenv.load(fileName: ".env");
 
   print("✅ Initializing Directories...");
