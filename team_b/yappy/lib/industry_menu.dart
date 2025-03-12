@@ -404,7 +404,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
                                 try {
                                 var restaurantAPI = RestaurantAPI();
                                 validatedMenuItems = await restaurantAPI.validateMenuItems(orderTranscript.split(', '));
-                                showModalBottomSheet(
+                                showModalBottomSheet(  
                                   context: context,
                                   builder: (BuildContext context) {
                                   return KanbanBoard(tasks: validatedMenuItems);
