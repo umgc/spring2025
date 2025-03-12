@@ -1,1 +1,1 @@
-This folder is only for experimental ideas and not for production-ready features. This is only a proof of concept on how we can build a AI assistant that  fetches and retrieves information related to our application. such as students, course, lesson plans, etc. 
+This folder is for experimental ideas only—not for production. It’s a proof of concept showing how an AI assistant can fetch info like students, courses, and quizzes from our app (Moodle-based). Think of it as a sandbox.

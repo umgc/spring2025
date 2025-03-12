@@ -31,6 +31,14 @@ class ChatGPTFunctionCaller {
         );
         return _formatGrades(participants);
 
+      // NEW: getCourseParticipants
+      case "getCourseParticipants":
+        if (args == null || !args.containsKey("courseId")) {
+          return "Error: Missing required parameter 'courseId'.";
+        }
+        final participants = await moodleService.getCourseParticipants(args["courseId"]);
+        return _formatParticipants(participants);
+
       default:
         return "Error: Unknown function '$functionName'.";
     }
@@ -48,10 +56,18 @@ class ChatGPTFunctionCaller {
 
   String _formatGrades(List<Participant> participants) {
     if (participants.isEmpty) return "No participants or grades found.";
-    // if the participant has .avgGrade, show it
+    // Show each participant with .avgGrade if available
     return participants.map((p) {
       final gradeStr = (p.avgGrade != null) ? p.avgGrade.toString() : "No grade";
       return "Student: ${p.fullname} (ID: ${p.id}), Grade: $gradeStr";
+    }).join("\n");
+  }
+
+  /// Format participants (no quiz grade needed here, just their names/IDs)
+  String _formatParticipants(List<Participant> participants) {
+    if (participants.isEmpty) return "No participants found.";
+    return participants.map((p) {
+      return "Student: ${p.fullname} (ID: ${p.id}) Roles: ${p.roles.join(', ')}";
     }).join("\n");
   }
 }

@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:learninglens_app/Api/experimental/chatgpt_function_caller.dart';
+import 'package:learninglens_app/Api/experimental/assistant/chatgpt_function_caller.dart';
 
 class ChatGPTClient {
   final String apiKey;
@@ -15,15 +15,21 @@ class ChatGPTClient {
       "role": "system",
       "content": """
 You are Athena, a highly advanced e-learning assistant specialized in Moodle. 
-Your primary goal is to retrieve quiz grades for a given user query. 
-If the user references a course name (like "Math") or quiz name (like "final quiz") 
-but doesn't provide IDs, you must call the appropriate function(s) to figure it out.
+You can retrieve course info, quiz info, and show participants (students).
 
-Use these steps:
-1) If the user references a course name, call getUserCourses() and find the matching ID.
-2) If the user references a quiz name, call getQuizzes(courseID) and find the matching quiz ID.
-3) Finally, call getQuizGradesForParticipants(courseId, quizId) to fetch the grades.
-Ask clarifying questions if uncertain.
+When the user mentions a course by name (like "Math" or "Science"):
+1) Call getUserCourses() to find the matching course ID.
+
+When the user asks for students/participants in a course:
+2) Then call getCourseParticipants(courseId).
+
+When the user references a quiz name (like "final quiz"):
+3) Then call getQuizzes(courseID) to find the matching quiz ID.
+
+Finally, if they ask for quiz grades (like "show me the quiz grades for X quiz in Y course"):
+4) Call getQuizGradesForParticipants(courseId, quizId).
+
+Always ask clarifying questions if uncertain about which course or quiz.
 """
     });
   }
@@ -77,6 +83,20 @@ Ask clarifying questions if uncertain.
                 }
               },
               "required": ["courseId","quizId"]
+            }
+          },
+          {
+            "name": "getCourseParticipants",
+            "description": "Fetches participants (students) in a course by course ID.",
+            "parameters": {
+              "type": "object",
+              "properties": {
+                "courseId": {
+                  "type": "string",
+                  "description": "The course ID"
+                }
+              },
+              "required": ["courseId"]
             }
           }
         ]

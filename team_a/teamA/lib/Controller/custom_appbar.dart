@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:learninglens_app/Api/lms/enum/lms_enum.dart';
-import 'package:learninglens_app/Api/experimental/chatgpt_function_caller_view.dart';
+import 'package:learninglens_app/Api/experimental/assistant/chatgpt_function_caller_view.dart';
 import 'package:learninglens_app/Views/dashboard.dart';
 import 'package:learninglens_app/Views/user_settings.dart';
 import 'package:learninglens_app/Views/chat_screen.dart';
@@ -78,17 +78,17 @@ class _CustomAppBarState extends State<CustomAppBar> {
       ),
       actions: <Widget>[
 
-        Flexible(
-            child: IconButton(
-              icon: Icon(Icons.science), // Science Icon
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ChatGPTFunctionCallerView()),
-                );
-              },
-            ),
-          ),
+        // Flexible(
+        //     child: IconButton(
+        //       icon: Icon(Icons.science), // Science Icon
+        //       onPressed: () {
+        //         Navigator.push(
+        //           context,
+        //           MaterialPageRoute(builder: (context) => ChatGPTFunctionCallerView()),
+        //         );
+        //       },
+        //     ),
+        //   ),
         // Refresh button: Instead of relying on an external callback,
         // try to obtain the current route's name and then replace the route,
         // effectively refreshing the current view.
