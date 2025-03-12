@@ -11,6 +11,7 @@ class ChatGPTFunctionCallerView extends StatefulWidget {
 
 class _ChatGPTFunctionCallerViewState extends State<ChatGPTFunctionCallerView> {
   final TextEditingController _controller = TextEditingController();
+  final FocusNode _focusNode = FocusNode(); 
   final List<Map<String, String>> _messages = [];
   late ChatGPTClient _chatGPT;
 
@@ -38,6 +39,9 @@ class _ChatGPTFunctionCallerViewState extends State<ChatGPTFunctionCallerView> {
     setState(() {
       _messages.add({"sender": "bot", "text": response});
     });
+
+    // Refocus on input field after sending
+    _focusNode.requestFocus();
   }
 
   @override
@@ -90,15 +94,17 @@ class _ChatGPTFunctionCallerViewState extends State<ChatGPTFunctionCallerView> {
                 Expanded(
                   child: TextField(
                     controller: _controller,
+                    focusNode: _focusNode, // Attach FocusNode
                     decoration: InputDecoration(
                       hintText: "Ask ChatGPT...",
                       border: OutlineInputBorder(),
                     ),
+                    onSubmitted: (value) => _sendMessage(), // Trigger send on Enter key
                   ),
                 ),
                 IconButton(
                   icon: Icon(Icons.send),
-                  onPressed: _sendMessage,
+                  onPressed: _sendMessage, // Send message on button click
                 ),
               ],
             ),
