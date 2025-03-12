@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yappy/tool_bar.dart';
+import 'package:yappy/tutorialPage.dart';
 
 
 class HelpApp extends StatelessWidget {
@@ -49,15 +50,33 @@ class HelpPage extends StatelessWidget {
                 child: Column(
                   children: [
                     Text(
-                      'Reporting a Problem with Yappy\n'
-                      'If something is not working on Yappy, please follow the instructions below to let us know.\n\n'
-                      'Give Us Feedback\n'
-                      'Use the links below to give us feedback about how a Yappy feature works or to let us know how we can improve the Help Center:\n\n',
+                      'Welcome to Yappy! If this is your first time and need help with using Yappy, please select the button below.',
                       style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
+                        color: const Color.fromRGBO(255, 255, 255, 1),
+                        fontSize: 12,
                       ),
                     ),
+                    SizedBox(height: 20),
+                    ElevatedButton(
+                      onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                        builder: (context) => TutorialPage(),
+                        ),
+                      );
+                      },
+                      child: Text('It\'s my first time'),
+                    ),
+                    SizedBox(height: 20),
+                    Text(
+                      'Reporting a Problem with Yappy\n'
+                      'If something is not working on Yappy, please follow the instructions below to let us know.\n\n',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                      ),
+                    ),
+                    SizedBox(height: 5),
                     ElevatedButton(
                       onPressed: () {
                         showDialog(
@@ -80,37 +99,39 @@ class HelpPage extends StatelessWidget {
                       },
                       child: Text('Report a problem'),
                     ),
-                    SizedBox(height: 10),
+                    SizedBox(height: 5),
+                    Text(
+                      '\n\nFeedback from the people who use Yappy has helped us redesign our products, improve our policies and fix technical problems. We really appreciate you taking the time to share your thoughts and suggestions with us.\n',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                      ),
+                    ),
+                    SizedBox(height: 5),
                     ElevatedButton(
                       onPressed: () {
                         showDialog(
                           context: context,
                           builder: (BuildContext context) {
-                            return AlertDialog(
-                              title: Text('Feedback for the Help Center'),
-                              content: Text('Please call: +1-800-123-4567'),
-                              actions: [
-                                TextButton(
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                  child: Text('Close'),
-                                ),
-                              ],
-                            );
+                          return AlertDialog(
+                            title: Text('Feedback for the Help Center'),
+
+                            actions: [
+                            TextButton(
+                              onPressed: () {
+                              Navigator.of(context).pop();
+                              },
+                              child: Text('Close'),
+                            ),
+                            ],
+                          );
                           },
                         );
                       },
                       child: Text('Feedback for the Help Center'),
                     ),
-                    SizedBox(height: 10),
-                    Text(
-                      '\n\nFeedback from the people who use Yappy has helped us redesign our products, improve our policies and fix technical problems. We really appreciate you taking the time to share your thoughts and suggestions with us.\n',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                      ),
-                    ),
+                    SizedBox(height: 20),
+
                   ],
                 ),
               ),  
