@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 import 'database_helper.dart';
 
 class MechanicAPI {
@@ -58,7 +60,7 @@ class MechanicAPI {
       'vehicle_required_parts': mechanicData['parts']
     });
 
-    print(" Mechanic service stored successfully!");
+    debugPrint(" Mechanic service stored successfully!");
   }
 
   // Combines steps: Fetch transcription, extract data, and store the report.
