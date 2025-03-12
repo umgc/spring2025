@@ -3,10 +3,15 @@ import 'database_helper.dart';
 class RestaurantAPI {
   final DatabaseHelper dbHelper = DatabaseHelper();
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
   //Steps 1,2,3,4 needs to be done then in step 4 we will get extractedItems List - which contains exact orders - e.g[pizza,coke,chips]  then that extractedItems 
   //needs to be passed to step 5 
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
   /// STEP 5: VALIDATE AGAINST THE RESTAURANT MENU
+  ///
   /// We get a list of items from the LLM (e.g. ["Margherita Pizza", "Coke"]).
   /// We compare each item with what’s in the MenuItem table.
   /// Only items that match are returned in `validItems`.
@@ -33,6 +38,7 @@ class RestaurantAPI {
   }
 
   /// STEP 6: STORE THE VALIDATED ORDER IN THE DATABASE
+  ///
   /// Once we have a list of valid items, we store them in RestaurantOrder
   /// with a "Pending" status. For simplicity, we join them into a single string
   /// (e.g. "Margherita Pizza, Coke, Garlic Bread").
@@ -64,7 +70,7 @@ class RestaurantAPI {
   }
 
   // -------------------------------------------------------------------
-  // Optional convenience method that does Steps 5 & 6 in one shot: 
+  // Optional convenience method that does Steps 5 & 6 in one shot:
   // Given a list of extracted items, validate them, then store them.
   // The UI can then call getOrderHistory to show it.
   // -------------------------------------------------------------------
