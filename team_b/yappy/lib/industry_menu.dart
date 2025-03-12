@@ -7,7 +7,6 @@ import 'package:record/record.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:yappy/main.dart';
 import 'services/openai_helper.dart';
 import 'services/database_helper.dart';
 import 'services/file_handler.dart';
