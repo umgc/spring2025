@@ -1,0 +1,1 @@
+This folder is only for experimental ideas and not for production-ready features. This is only a proof of concept on how we can build a AI assistant that  fetches and retrieves information related to our application. such as students, course, lesson plans, etc. 

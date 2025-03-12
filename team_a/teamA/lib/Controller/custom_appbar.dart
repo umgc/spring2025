@@ -74,7 +74,11 @@ class _CustomAppBarState extends State<CustomAppBar> {
               },
             ),
           ),
-          Flexible(
+        ],
+      ),
+      actions: <Widget>[
+
+        Flexible(
             child: IconButton(
               icon: Icon(Icons.science), // Science Icon
               onPressed: () {
@@ -85,9 +89,6 @@ class _CustomAppBarState extends State<CustomAppBar> {
               },
             ),
           ),
-        ],
-      ),
-      actions: <Widget>[
         // Refresh button: Instead of relying on an external callback,
         // try to obtain the current route's name and then replace the route,
         // effectively refreshing the current view.
