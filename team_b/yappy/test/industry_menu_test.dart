@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yappy/industry_menu.dart';
-import 'package:yappy/speech_state.dart';
+import 'package:yappy/services/speech_state.dart';
 import 'package:yappy/services/model_manager.dart';
 
 void main() {

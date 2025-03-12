@@ -1,17 +1,17 @@
-import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
-import 'package:record/record.dart';
-import 'package:yappy/services/openai_helper.dart';
-import 'package:yappy/speech_state.dart';
-import 'package:yappy/services/database_helper.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'dart:convert';
-import 'package:yappy/services/file_handler.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
+import 'package:record/record.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'services/openai_helper.dart';
+import 'services/database_helper.dart';
+import 'services/file_handler.dart';
 import 'services/model_manager.dart';
+import 'services/speech_state.dart';
 
 class IndustryMenu extends StatefulWidget {
   final String title;
@@ -158,7 +158,8 @@ class _IndustryMenuState extends State<IndustryMenu> {
 
                 if (confirmDelete) {
                   // Perform the delete operation
-                    await DatabaseHelper().deleteTranscript(transcript);
+                  await DatabaseHelper().deleteTranscript(transcript);
+                  if (!context.mounted) return;
                   Navigator.of(context).pop();
                 }
               },
@@ -252,7 +253,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
 
                       // Show a dialog to edit the text
                       TextEditingController controller = TextEditingController(text: recordedText);
-                        if (!context.mounted) return;
+                      if (!context.mounted) return;
                       showDialog(
                         context: context,
                         builder: (BuildContext context) {
@@ -277,7 +278,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
                                     var openAIHelper = OpenAIHelper();
                                     String aiResponse = '';
                                     try {
-                                      aiResponse = await openAIHelper.summarizeTranscription(userId, Industry.restaurant, transcriptId);
+                                      aiResponse = await openAIHelper.summarizeTranscription(userId, widget.title, transcriptId);
                                     } catch (e) {
                                       // Lets the user know that transcription summarization failed (likely because of a lack of OpenAI API key)
                                       if (context.mounted) {

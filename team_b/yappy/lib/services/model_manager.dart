@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:archive/archive.dart';
@@ -14,50 +16,95 @@ import 'toast_service.dart';
 class ExtractionData {
   final List<int> fileBytes;
   final String modelDir;
-  final List<String> keepPaths;
+  final List<OutputFileMapping> outputMappings;
   final SendPort sendPort;
 
   ExtractionData({
     required this.fileBytes,
     required this.modelDir,
-    required this.keepPaths,
+    required this.outputMappings,
     required this.sendPort,
   });
+}
+
+// Class for mapping source files to destination names
+class OutputFileMapping {
+  final String source;
+  final String destination;
+  
+  OutputFileMapping({
+    required this.source,
+    required this.destination,
+  });
+  
+  // Factory constructor from JSON
+  factory OutputFileMapping.fromJson(Map<String, dynamic> json) {
+    return OutputFileMapping(
+      source: json['source'],
+      destination: json['destination'],
+    );
+  }
+}
+
+class ModelInfo {
+  final String id;
+  final String name;
+  final String url;
+  final bool isCompressed;
+  final String type;
+  final String? modelType;
+  final List<OutputFileMapping> outputFiles;
+  final double size; // Size in MB
+  
+  ModelInfo({
+    required this.id,
+    required this.name,
+    required this.url,
+    required this.isCompressed,
+    required this.type,
+    this.modelType,
+    required this.outputFiles,
+    required this.size,
+  });
+  
+  // Factory constructor to create ModelInfo from JSON
+  factory ModelInfo.fromJson(Map<String, dynamic> json) {
+    final outputFilesJson = json['outputFiles'] as List<dynamic>;
+    
+    return ModelInfo(
+      id: json['id'],
+      name: json['name'],
+      url: json['url'],
+      isCompressed: json['isCompressed'],
+      type: json['type'],
+      modelType: json['modelType'],  // Added modelType
+      outputFiles: outputFilesJson
+          .map((fileJson) => OutputFileMapping.fromJson(fileJson))
+          .toList(),
+      size: json['size'],
+    );
+  }
+  
+  String getFilename() {
+    return path.basename(url);
+  }
 }
 
 class ModelManager {
   // Base directory for storing models
   late final Future<String> _modelDirPath;
   
-  // Model information with URLs and extraction details
-  final List<ModelInfo> _models = [
-    ModelInfo(
-      name: 'Speaker Recognition Model',
-      url: 'https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/3dspeaker_speech_eres2net_sv_en_voxceleb_16k.onnx',
-      isCompressed: false,
-      size: 25.3, // Size in MB
-    ),
-    ModelInfo(
-      name: 'Offline Whisper Model (Tiny)',
-      url: 'https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-whisper-tiny.en.tar.bz2',
-      isCompressed: true,
-      keepPaths: ['sherpa-onnx-whisper-tiny.en/tiny.en-tokens.txt', 'sherpa-onnx-whisper-tiny.en/tiny.en-decoder.int8.onnx', 'sherpa-onnx-whisper-tiny.en/tiny.en-encoder.int8.onnx'],
-      size: 113, // Size in MB
-    ),
-    ModelInfo(
-      name: 'Online Zipformer Model',
-      url: 'https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-streaming-zipformer-en-20M-2023-02-17-mobile.tar.bz2',
-      isCompressed: true,
-      keepPaths: ['sherpa-onnx-streaming-zipformer-en-20M-2023-02-17-mobile/tokens.txt', 'sherpa-onnx-streaming-zipformer-en-20M-2023-02-17-mobile/decoder-epoch-99-avg-1.onnx', 'sherpa-onnx-streaming-zipformer-en-20M-2023-02-17-mobile/encoder-epoch-99-avg-1.int8.onnx', 'sherpa-onnx-streaming-zipformer-en-20M-2023-02-17-mobile/joiner-epoch-99-avg-1.int8.onnx'],
-      size: 103, // Size in MB
-    ),
-  ];
+  // List to hold models loaded from config
+  List<ModelInfo> _models = [];
   
-  // Toast service
+  // Config file path in assets
+  static const String _configAssetPath = 'assets/models_config.json';
+  
   final _toastService = ToastService();
   
   ModelManager() {
     _modelDirPath = _initModelDir();
+    _loadModelsFromConfig();
   }
   
   // Initialize the models directory
@@ -68,6 +115,58 @@ class ModelManager {
       await modelDir.create(recursive: true);
     }
     return modelDir.path;
+  }
+  
+  // Load models from the config file
+  Future<void> _loadModelsFromConfig() async {
+    try {
+      // Load the JSON file from assets
+      final String jsonContent = await rootBundle.loadString(_configAssetPath);
+      final Map<String, dynamic> configData = json.decode(jsonContent);
+      
+      // Parse models
+      final List<dynamic> modelsJson = configData['models'];
+      _models = modelsJson.map((modelJson) => ModelInfo.fromJson(modelJson)).toList();
+      
+      debugPrint('Loaded ${_models.length} models from config');
+    } catch (e) {
+      debugPrint('Error loading models from config: $e');
+      // Fallback to empty list
+      _models = [];
+    }
+  }
+  
+  // Reload models from config
+  Future<void> reloadModelsConfig() async {
+    await _loadModelsFromConfig();
+  }
+  
+  // Get the list of models (for UI display)
+  List<ModelInfo> get models => List.unmodifiable(_models);
+  
+  // Get model path by type and file type
+  Future<String> getModelPath(String modelType, String fileName) async {
+    final modelDir = await _modelDirPath;
+    return '$modelDir/$fileName';
+  }
+  
+  // Find a model by type
+  ModelInfo? getModelByType(String type) {
+    return _models.firstWhere(
+      (model) => model.type == type,
+      orElse: () => throw Exception('No model found with type: $type'),
+    );
+  }
+  
+  // Get model type string by type
+  Future<String?> getModelTypeString(String type) async {
+    try {
+      final model = getModelByType(type);
+      return model?.modelType;
+    } catch (e) {
+      debugPrint('Error getting model type: $e');
+      return null;
+    }
   }
   
   // Check if all required models exist
@@ -81,15 +180,22 @@ class ModelManager {
         return true;
       }
       
-      // Check individual models if marker doesn't exist
+      // Make sure we've loaded the models config
+      if (_models.isEmpty) {
+        await _loadModelsFromConfig();
+      }
+      
+      // Check if all destination files exist for all models
       for (var model in _models) {
-        final modelFile = File('$modelDir/${model.getFilename()}');
-        if (!await modelFile.exists()) {
-          return false;
+        for (var outputFile in model.outputFiles) {
+          final file = File('$modelDir/${outputFile.destination}');
+          if (!await file.exists()) {
+            return false;
+          }
         }
       }
       
-      // If all models exist but marker doesn't, create the marker
+      // If all files exist but marker doesn't, create the marker
       await markerFile.writeAsString('Models installed on ${DateTime.now()}');
       return true;
     } catch (e) {
@@ -125,9 +231,15 @@ class ModelManager {
   
   // Show download dialog to user
   Future<bool> showDownloadDialog(BuildContext context) async {
+    // Make sure models are loaded
+    if (_models.isEmpty) {
+      await _loadModelsFromConfig();
+    }
+    
     // Calculate total download size
     final totalSize = _models.fold(0.0, (sum, model) => sum + model.size);
     
+    if (!context.mounted) return false;
     return await showDialog<bool>(
       context: context,
       barrierDismissible: false,
@@ -220,6 +332,17 @@ class ModelManager {
   
   // Download all models
   Future<bool> downloadModels(BuildContext context) async {
+    // Make sure models are loaded
+    if (_models.isEmpty) {
+      await _loadModelsFromConfig();
+      
+      // If still empty after loading, show error
+      if (_models.isEmpty) {
+        _toastService.showError('Failed to load model configuration.');
+        return false;
+      }
+    }
+    
     // Check connectivity first - still need context for initial dialogs
     final canDownload = await _checkConnectivity();
     if (!canDownload && context.mounted) {
@@ -275,12 +398,14 @@ class ModelManager {
           await _processCompressedFileInIsolate(
             response.bodyBytes,
             modelDir,
-            model.keepPaths ?? [],
+            model.outputFiles,
           );
         } else {
-          // Handle direct .onnx file
-          final file = File('$modelDir/${model.getFilename()}');
-          await file.writeAsBytes(response.bodyBytes);
+          // Handle direct files with mapping to new name
+          for (var outputFile in model.outputFiles) {
+            final file = File('$modelDir/${outputFile.destination}');
+            await file.writeAsBytes(response.bodyBytes);
+          }
         }
         
         completedModels++;
@@ -310,7 +435,7 @@ class ModelManager {
   Future<void> _processCompressedFileInIsolate(
     List<int> fileBytes,
     String modelDir,
-    List<String> keepPaths,
+    List<OutputFileMapping> outputMappings,
   ) async {
     // Create a ReceivePort for communication
     final receivePort = ReceivePort();
@@ -319,7 +444,7 @@ class ModelManager {
     final data = ExtractionData(
       fileBytes: fileBytes,
       modelDir: modelDir,
-      keepPaths: keepPaths,
+      outputMappings: outputMappings,
       sendPort: receivePort.sendPort,
     );
     
@@ -350,34 +475,51 @@ class ModelManager {
       // Extract tar archive
       final tarArchive = TarDecoder().decodeBytes(archive);
       
+      // Create a mapping for efficient lookup
+      final Map<String, String> pathMappings = {};
+      for (final mapping in data.outputMappings) {
+        pathMappings[mapping.source] = mapping.destination;
+      }
+      
+      // Track which files we've processed
+      final Set<String> processedDestinations = {};
+      
       // Process each file in the archive
       for (final file in tarArchive) {
-        // Check if this file/directory should be kept
-        bool shouldKeep = data.keepPaths.isEmpty;
-        for (final keepPath in data.keepPaths) {
-          if (file.name.startsWith(keepPath)) {
-            shouldKeep = true;
+        if (!file.isFile) continue;
+        
+        // Check for exact matches
+        String? destinationFile;
+        
+        for (final sourcePath in pathMappings.keys) {
+          if (file.name == sourcePath) {
+            destinationFile = pathMappings[sourcePath];
             break;
           }
         }
         
-        if (shouldKeep) {
-          final filePath = '${data.modelDir}/${file.name}';
-          
-          if (file.isFile) {
-            // Create parent directories if needed
-            final parentDir = Directory(path.dirname(filePath));
-            if (!await parentDir.exists()) {
-              await parentDir.create(recursive: true);
-            }
-            
-            // Write file
-            await File(filePath).writeAsBytes(file.content as List<int>);
-          } else {
-            // Create directory
-            await Directory(filePath).create(recursive: true);
-          }
+        // Skip files we don't need
+        if (destinationFile == null) continue;
+        
+        // Mark as processed
+        processedDestinations.add(destinationFile);
+        
+        // Create the destination file
+        final filePath = '${data.modelDir}/$destinationFile';
+        
+        // Create parent directories if needed
+        final parentDir = Directory(path.dirname(filePath));
+        if (!await parentDir.exists()) {
+          await parentDir.create(recursive: true);
         }
+        
+        // Write file
+        await File(filePath).writeAsBytes(file.content as List<int>);
+      }
+      
+      // Check if all needed files were found
+      if (processedDestinations.length != pathMappings.length) {
+        throw Exception('Not all required files were found in the archive');
       }
       
       // Signal completion
@@ -432,25 +574,5 @@ class ModelManager {
       return await downloadModels(context);
     }
     return false;
-  }
-}
-
-class ModelInfo {
-  final String name;
-  final String url;
-  final bool isCompressed;
-  final List<String>? keepPaths;
-  final double size; // Size in MB
-  
-  ModelInfo({
-    required this.name,
-    required this.url,
-    required this.isCompressed,
-    this.keepPaths,
-    required this.size,
-  });
-  
-  String getFilename() {
-    return path.basename(url);
   }
 }

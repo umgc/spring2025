@@ -43,9 +43,8 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 2,
+      version: 1,
       onCreate: _onCreate,
-      //onUpgrade: _onUpgrade,
       onOpen: (db) async {
         // Check if the tables exist and create them if they don't
         await _createTablesIfNotExists(db);
@@ -57,14 +56,6 @@ class DatabaseHelper {
     // Create tables if needed
     await _createTablesIfNotExists(db);
   }
-
-  // Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-  //     if (oldVersion < 2) {
-  //       await db.execute('''
-  //         ALTER TABLE Transcript ADD COLUMN industry TEXT;
-  //   ''');
-  //     }
-  // }
 
   Future<void> _createTablesIfNotExists(Database db) async {
     // Create Users table if it doesn't exist
@@ -256,7 +247,12 @@ class DatabaseHelper {
   Future<int> updateTranscript(Map<String, dynamic> transcript) async {
     final db = await database;
     int id = transcript['transcript_id'];
-    return await db.update('Transcript', transcript, where: 'transcript_id = ?', whereArgs: [id]);
+    return await db.update(
+      'Transcript',
+      transcript,
+      where: 'transcript_id = ?',
+      whereArgs: [id],
+    );
   }
 
   Future<int> deleteTranscript(int id) async {
@@ -267,7 +263,10 @@ class DatabaseHelper {
   // Retrieve all transcripts
   Future<List<Map<String, dynamic>>> getAllTranscripts() async {
     final db = await database;
-    return await db.query('Transcript');
+    return await db.query(
+      'Transcript',
+      orderBy: 'transcript_timestamp DESC',
+    );
   }
 
   // Retrieve a specific transcript by ID
@@ -501,41 +500,81 @@ class DatabaseHelper {
     return results.map((result) => result['item_id'] as int).toList(); 
   }
 
-  saveTranscript({required int userId, required int transcriptId, required String text, required String industry}) async {
-    // Save the new transcript to the database using the provided information
+  saveTranscript({required int userId, required int transcriptId, required String text,
+    required String industry,}) async {
     Map<String, dynamic> transcript = {
       'user_id': userId,
       'transcript_id': transcriptId,
       'transcript_text_data': text,
       'transcript_timestamp': DateTime.now().toIso8601String(),
       'transcript_ai_response': '',
-      'industry': industry,
+      'industry': industry, 
     };
     await insertTranscript(transcript);
   }
 
   saveTranscriptAiResponse({required int userId, required int transcriptId, 
-    required String text, required String aiResponse}) async {
+    required String text, required String aiResponse, required String industry}) async {
     // Save the new transcript to the database using the provided information
     Map<String, dynamic> transcript = {
       'user_id': userId,
       'transcript_id': transcriptId,
       'transcript_text_data': text,
       'transcript_timestamp': DateTime.now().toIso8601String(),
-      'transcript_ai_response': aiResponse
+      'transcript_ai_response': aiResponse,
+      'industry': industry
     };
     await updateTranscript(transcript);
   }
-  // Get the number of transcripts for any given date
-  Future<int> getTranscriptCountForDate(String date) async {
+
+  // Search method that will query the transcript information in the database and return
+  // search results based on the information found.
+Future<List<String>> searchTranscripts(String query, String industry) async {
     final db = await database;
-    List<Map<String, dynamic>> results = await db.rawQuery(
-      'SELECT COUNT(*) as count FROM Transcript WHERE DATE(transcript_timestamp) = ?',
-      [date],
+
+    // Compares the query with the data within the transcripts and returns the entries.
+    final List<Map<String, dynamic>> results = await db.query(
+      'Transcript',
+      where: '(LOWER(transcript_text_data) LIKE LOWER(?) OR LOWER(transcript_ai_response) LIKE LOWER(?)) AND industry = ?',
+      whereArgs: ['%$query%', '%$query%', industry],
     );
-    if (results.isNotEmpty) {
-      return results.first['count'] as int;
+
+    return results.map((row) => row['transcript_text_data'] as String).toList();
+}
+
+Future<Map<String, String>?> getTranscriptDetails(String entry) async {    final db = await database;
+  // Select the information i want to display from database
+    var result = await db.rawQuery(
+      "SELECT transcript_text_data, transcript_timestamp, transcript_ai_response FROM Transcript WHERE transcript_text_data = ? OR transcript_ai_response = ?",
+      [entry, entry]
+    );
+
+  // Grabs the results and return them
+    if (result.isNotEmpty) {
+      return {
+        'text': result.first['transcript_text_data'] as String,
+        'timestamp': result.first['transcript_timestamp'] as String,
+        'ai_response': result.first['transcript_ai_response'] as String,
+      };
     }
-    return 0;
+    return null;
   }
 }
+
+
+  // Commented out this method for future use
+  /* getTranscriptCountForDate(String date) {
+    // Get the number of transcripts for a given date
+    Future<int> getTranscriptCountForDate(String date) async {
+        final db = await database;
+        List<Map<String, dynamic>> results = await db.rawQuery(
+          'SELECT COUNT(*) as count FROM Transcript WHERE DATE(transcript_timestamp) = ?',
+          [date],
+        );
+        if (results.isNotEmpty) {
+          return results.first['count'] as int;
+        }
+        return 0;
+      }
+    }
+  }*/

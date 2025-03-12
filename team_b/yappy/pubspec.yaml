@@ -83,6 +83,7 @@ flutter:
   assets:
     - assets/icon/app_icon.png
     - assets/yappy_database.db
+    - assets/models_config.json
     - assets/
   # To add assets to your application, add an assets section, like this:
   # assets:
