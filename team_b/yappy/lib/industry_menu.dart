@@ -403,12 +403,15 @@ class _IndustryMenuState extends State<IndustryMenu> {
                                 List<String> validatedMenuItems = [];
                                 try {
                                 var restaurantAPI = RestaurantAPI();
-                                validatedMenuItems = await restaurantAPI.validateMenuItems(orderTranscript.split(', '));
+                                // This is the ai response output [OpenAIChatCompletionChoiceMessageContentItemModel(type: text, text: Seat 1: Burger, fries, soda. Seat 2: Burger, fries, soda. Seat 3: Burger, fries, soda. Seat 4: Double burger, large fries, soda.  )]
+                                validatedMenuItems = await restaurantAPI.validateMenuItems([orderTranscript]);
+                                
+                                
                                 showModalBottomSheet(  
                                   context: context,
                                   builder: (BuildContext context) {
-                                  return KanbanBoard(tasks: validatedMenuItems);
-                                  },
+                                  return KanbanBoard(tasks: validatedMenuItems);                                
+                                  }, 
                                 );
                                 } catch (e) {
                                 // Handle API call failure
