@@ -6,63 +6,39 @@ class ChatGPTClient {
   final String apiKey;
   final ChatGPTFunctionCaller functionCaller;
 
-  /// Keep a conversation list so ChatGPT can chain calls
+  // Keep a conversation so ChatGPT can chain calls
   final List<Map<String, dynamic>> _conversation = [];
 
   ChatGPTClient(this.apiKey, this.functionCaller) {
-    // Insert a system message once, at the beginning
+    // Insert a system message once
     _conversation.add({
       "role": "system",
       "content": """
-You are Athena, a highly advanced AI assistant for e-learning and Moodle-based systems. 
-You will:
-1) Provide concise yet thorough help about courses, quizzes, participants, and lesson plans.
-2) If the user’s question isn’t perfectly clear, ask clarifying questions.
-3) Offer additional relevant suggestions or resources (e.g., best practices in online learning).
-4) Maintain a friendly, professional tone.
-5) When needed, call the specified Moodle function(s) to retrieve data.
+You are Athena, a highly advanced e-learning assistant specialized in Moodle. 
+Your primary goal is to retrieve quiz grades for a given user query. 
+If the user references a course name (like "Math") or quiz name (like "final quiz") 
+but doesn't provide IDs, you must call the appropriate function(s) to figure it out.
+
+Use these steps:
+1) If the user references a course name, call getUserCourses() and find the matching ID.
+2) If the user references a quiz name, call getQuizzes(courseID) and find the matching quiz ID.
+3) Finally, call getQuizGradesForParticipants(courseId, quizId) to fetch the grades.
+Ask clarifying questions if uncertain.
 """
     });
   }
 
-  /// Sends a user message to ChatGPT and handles multiple function calls
   Future<String> sendMessage(String userMessage) async {
-    // 1) Add the user message to conversation
-    _conversation.add({
-      "role": "user",
-      "content": userMessage
-    });
+    // Add user message
+    _conversation.add({"role": "user", "content": userMessage});
 
     while (true) {
-      // Build the request body from the entire conversation
       final body = jsonEncode({
         "model": "gpt-4-turbo",
         "temperature": 0.7,
         "top_p": 0.9,
         "messages": _conversation,
         "functions": [
-          {
-            "name": "getCourses",
-            "description": "Fetches all available courses.",
-            "parameters": {
-              "type": "object",
-              "properties": {}
-            }
-          },
-          {
-            "name": "getCourseParticipants",
-            "description": "Fetches participants of a course.",
-            "parameters": {
-              "type": "object",
-              "properties": {
-                "courseId": {
-                  "type": "string",
-                  "description": "The course ID"
-                }
-              },
-              "required": ["courseId"]
-            }
-          },
           {
             "name": "getUserCourses",
             "description": "Fetches courses the user is enrolled in.",
@@ -73,7 +49,7 @@ You will:
           },
           {
             "name": "getQuizzes",
-            "description": "Fetches quizzes for a course.",
+            "description": "Fetches quizzes for a course by ID.",
             "parameters": {
               "type": "object",
               "properties": {
@@ -86,23 +62,27 @@ You will:
             }
           },
           {
-            "name": "getLessonPlans",
-            "description": "Fetches lesson plans for a course.",
+            "name": "getQuizGradesForParticipants",
+            "description": "Fetches quiz grades for all participants in a given course & quiz.",
             "parameters": {
               "type": "object",
               "properties": {
                 "courseId": {
+                  "type": "string",
+                  "description": "The course ID as string"
+                },
+                "quizId": {
                   "type": "integer",
-                  "description": "The course ID"
+                  "description": "The quiz ID"
                 }
               },
-              "required": ["courseId"]
+              "required": ["courseId","quizId"]
             }
           }
         ]
       });
 
-      // Make the ChatGPT API call
+      // Call ChatGPT
       final response = await http.post(
         Uri.parse("https://api.openai.com/v1/chat/completions"),
         headers: {
@@ -111,7 +91,6 @@ You will:
         },
         body: body,
       );
-
       final responseData = jsonDecode(response.body);
 
       if (responseData["choices"] == null || responseData["choices"].isEmpty) {
@@ -120,7 +99,7 @@ You will:
 
       final message = responseData["choices"][0]["message"];
 
-      // 2) If the assistant wants to call a function:
+      // If ChatGPT wants to call a function:
       if (message != null && message.containsKey("function_call")) {
         final functionCall = message["function_call"];
         final functionName = functionCall["name"];
@@ -128,36 +107,28 @@ You will:
             ? jsonDecode(functionCall["arguments"])
             : null;
 
-        // 2a) Execute that function in Dart
-        final functionResult =
-            await functionCaller.handleFunctionCall(functionName, arguments);
+        // Execute the function
+        final functionResult = await functionCaller.handleFunctionCall(functionName, arguments);
 
-        // 2b) Add the function call to the conversation (assistant step)
+        // Append the function call to conversation
         _conversation.add({
           "role": "assistant",
           "content": "[Function call] $functionName(${arguments.toString()})"
         });
 
-        // 2c) Add the function result to the conversation (function step)
+        // Append the function result
         _conversation.add({
           "role": "function",
           "name": functionName,
           "content": functionResult
         });
 
-        // 2d) Loop again, so ChatGPT sees the function’s result
-        // and can decide if it needs another function call or if it can finalize
+        // Loop to let ChatGPT see the function result
         continue;
       } else {
-        // 3) The assistant returned a normal text message: final answer
+        // If normal text, final answer
         final assistantReply = message["content"] ?? "No content.";
-        // Add it to the conversation
-        _conversation.add({
-          "role": "assistant",
-          "content": assistantReply
-        });
-
-        // Return to the UI
+        _conversation.add({"role": "assistant", "content": assistantReply});
         return assistantReply;
       }
     }
