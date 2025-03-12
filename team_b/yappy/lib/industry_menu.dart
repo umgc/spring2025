@@ -12,7 +12,6 @@ import 'services/database_helper.dart';
 import 'services/file_handler.dart';
 import 'services/model_manager.dart';
 import 'services/speech_state.dart';
-import 'package:flutter/services.dart';
 import 'package:file_picker/file_picker.dart';
 
 class IndustryMenu extends StatefulWidget {
@@ -21,10 +20,7 @@ class IndustryMenu extends StatefulWidget {
   final SpeechState speechState;
   final ModelManager modelManager;
 
-  IndustryMenu({required this.title, required this.icon, super.key});
-
-  String? uploadedFileName;
-  String? uploadedFileContent;
+  const IndustryMenu({required this.title, required this.icon, super.key, required this.speechState, required this.modelManager});
 
   @override
   State<IndustryMenu> createState() => _IndustryMenuState();
@@ -497,8 +493,8 @@ class _IndustryMenuState extends State<IndustryMenu> {
                           await FilePicker.platform.pickFiles();
                       if (result != null) {
                         PlatformFile file = result.files.first;
-                        uploadedFileName = file.name;
-                        uploadedFileContent =
+                        String uploadedFileName = file.name;
+                       String uploadedFileContent =
                             await File(file.path!).readAsString();
 
                         Map<String, dynamic> transcriptMap = {
@@ -508,12 +504,14 @@ class _IndustryMenuState extends State<IndustryMenu> {
                         DatabaseHelper dbHelper = DatabaseHelper();
                         await dbHelper.insertTranscript(transcriptMap);
 
+                        if (!context.mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                               content:
                                   Text('File uploaded: $uploadedFileName')),
                         );
                       } else {
+                        if (!context.mounted) return;
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(content: Text('File upload canceled')),
                         );
