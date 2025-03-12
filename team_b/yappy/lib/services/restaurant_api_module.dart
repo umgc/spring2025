@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 import 'database_helper.dart';
 
 class RestaurantAPI {
@@ -38,12 +40,12 @@ class RestaurantAPI {
   /// (e.g. "Margherita Pizza, Coke, Garlic Bread").
   Future<void> storeValidatedOrder(List<String> validItems) async {
     if (validItems.isEmpty) {
-      print(" No valid items to store in database.Please chech whether MenuItem table and RestaurantOrder table has column or not.If not then create it");
+      debugPrint(" No valid items to store in database.Please chech whether MenuItem table and RestaurantOrder table has column or not.If not then create it");
       return;
     }
 
     String orderText = validItems.join(", ");
-    print("Storing order: $orderText"); 
+    debugPrint("Storing order: $orderText"); 
 
     final db = await dbHelper.database;
     await db.insert('RestaurantOrder', {
@@ -51,7 +53,7 @@ class RestaurantAPI {
       'order_status': 'Pending',
     });
 
-    print("Order successfully stored in database.");
+    debugPrint("Order successfully stored in database.");
   }
 
   /// STEP 7: UI FETCHES & DISPLAYS ORDER SUMMARY
