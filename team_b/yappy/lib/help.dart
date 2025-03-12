@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:yappy/home_page.dart';
 import 'package:yappy/tool_bar.dart';
 import 'package:yappy/tutorialPage.dart';
 
