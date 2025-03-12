@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
+import 'package:learninglens_app/beans/g_question_form_data.dart';
+import 'package:logger/logger.dart';
 import 'package:learninglens_app/beans/quiz_type.dart';
 import 'package:xml/xml.dart' as xml;
 import 'package:google_sign_in/google_sign_in.dart';
@@ -92,7 +94,10 @@ class GoogleLmsService extends LmsInterface {
         'https://www.googleapis.com/auth/forms.responses.readonly',
         'https://www.googleapis.com/auth/classroom.courseworkmaterials.readonly',
         'https://www.googleapis.com/auth/classroom.courseworkmaterials',
-        'https://www.googleapis.com/auth/classroom.profile.photos',
+        'https://www.googleapis.com/auth/forms.body.readonly',
+       
+       
+        
       ],
     );
 
@@ -110,8 +115,6 @@ class GoogleLmsService extends LmsInterface {
 
       firstName = nameParts.isNotEmpty ? nameParts.first : "";
       lastName = nameParts.length > 1 ? nameParts.sublist(1).join(" ") : "";
-
-      profileImage = googleUser.photoUrl;
 
       print('Welcome, ${firstName ?? 'User'}');
 
@@ -236,7 +239,9 @@ class GoogleLmsService extends LmsInterface {
       }
       
       course.quizzes = await getQuizzes(course.id, topicId: course.quizTopicId);
+      print('Quizzes for course ${course.id}: ${course.quizzes}');
       course.essays = await getEssays(course.id, topicId: course.essayTopicId);
+      print('Essays for course ${course.id}: ${course.essays}');
     }
 
     return courses;
@@ -245,7 +250,7 @@ class GoogleLmsService extends LmsInterface {
   @override
   Future<List<Participant>> getCourseParticipants(String courseId) async {
     // TODO: implement google api code
-    throw UnimplementedError();
+    throw UnimplementedError('This feature is not supported by Google Classroom. Please contact the developer.');
   }
 
   // ****************************************************************************************
@@ -255,12 +260,13 @@ class GoogleLmsService extends LmsInterface {
   @override
   Future<void> importQuiz(String courseid, String quizXml) async {
     // TODO: implement google api code
-    throw UnimplementedError();
+    throw UnimplementedError('This feature is not supported by Google Classroom. Please contact the developer.');
   }
 
   @override
   Future<List<Quiz>> getQuizzes(int? courseID, {int? topicId}) async {
     if (_userToken == null) throw StateError('User not logged in to Google Classroom');
+
 
     
     final response = await ApiService().httpGet(
@@ -274,6 +280,9 @@ class GoogleLmsService extends LmsInterface {
       throw HttpException(response.body);
     }
 
+    print('Getting quizzes from Google Classroom...');
+    print(response.body);
+
     final quizzesMap = jsonDecode(response.body) as Map<String, dynamic>;
     final decodedJson = quizzesMap['courseWork'] as List<dynamic>?;
 
@@ -283,6 +292,7 @@ class GoogleLmsService extends LmsInterface {
     
     List<Quiz> quizList = [];
     for (var item in decodedJson) {
+      print('Item: $item');
       // If courseID is null, return all quizzes; otherwise filter by course
       if (courseID == null || int.parse(item['courseId']) == courseID) {
         if (topicId != null && item.containsKey('topicId')) {
@@ -293,6 +303,8 @@ class GoogleLmsService extends LmsInterface {
         }
       }
     }
+
+    print('I am getting this quiz list: $quizList');
 
     return quizList;
   }
@@ -412,7 +424,7 @@ class GoogleLmsService extends LmsInterface {
         print('Adding random questions to quiz...');
     print('Category ID: $categoryid');
     // TODO: implement google api code
-    throw UnimplementedError();
+    throw UnimplementedError('This feature is not supported by Google Classroom. Please contact the developer.');
   }
 
   @override
@@ -421,14 +433,204 @@ class GoogleLmsService extends LmsInterface {
     print('Course ID: $courseid');
     print('Quiz XML: $quizXml');
     // TODO: implement google api code
-    throw UnimplementedError();
+    throw UnimplementedError('This feature is not supported by Google Classroom. Please contact the developer.');
   }
 
   @override
   Future<List<QuestionType>> getQuestionsFromQuiz(int quizId) async {
     // TODO: implement google api code
-    throw UnimplementedError();
+    throw UnimplementedError('This feature is not supported by Google Classroom. Please contact the developer.');
   }
+
+ Future<FormData> getAssignmentFormQuestions(String coursedId, String courseWorkId) async {
+  print('Fetching form questions for course $coursedId, coursework $courseWorkId...');
+  try {
+    final accessToken = await _getToken();
+    if (accessToken == null) {
+      throw Exception('No access token found. Please log in again.');
+    }
+
+    final courseworkUrl =
+        'https://classroom.googleapis.com/v1/courses/$coursedId/courseWork/$courseWorkId';
+    final courseworkResponse = await http.get(
+      Uri.parse(courseworkUrl),
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (courseworkResponse.statusCode != 200) {
+      throw Exception(
+          'Failed to fetch coursework: ${courseworkResponse.statusCode} - ${courseworkResponse.body}');
+    }
+
+    final courseworkData = jsonDecode(courseworkResponse.body);
+    print('Coursework data: $courseworkData');
+
+    String? formUrl;
+    if (courseworkData['materials'] != null && courseworkData['materials'].isNotEmpty) {
+      for (var material in courseworkData['materials']) {
+        if (material['link'] != null && material['link']['url'] != null) {
+          final url = material['link']['url'];
+          if (url.contains('docs.google.com/forms')) {
+            formUrl = url;
+            break;
+          }
+        }
+        if (material['form'] != null && material['form']['formUrl'] != null) {
+          final url = material['form']['formUrl'];
+          if (url.contains('docs.google.com/forms')) {
+            formUrl = url;
+            break;
+          }
+        }
+      }
+    }
+
+    if (formUrl == null) {
+      throw Exception('No Google Form found in assignment materials.');
+    }
+    print('Extracted Form URL: $formUrl');
+
+    // Extract and format dates to YYYY-MM-DD
+    String? startDate;
+    if (courseworkData['creationTime'] != null) {
+      final dateTime = DateTime.parse(courseworkData['creationTime']);
+      startDate = '${dateTime.year}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.day.toString().padLeft(2, '0')}';
+    }
+    
+    String? endDate;
+    if (courseworkData['dueDate'] != null) {
+      final dueDate = courseworkData['dueDate'];
+      endDate = '${dueDate['year']}-${dueDate['month'].toString().padLeft(2, '0')}-${dueDate['day'].toString().padLeft(2, '0')}';
+    }
+
+    String? status = courseworkData['state'];
+
+    final formId = await getFormIdFromViewformUrl(formUrl, accessToken);
+    if (formId == null) {
+      throw Exception('Failed to retrieve Form ID from viewform URL');
+    }
+    print('Form ID: $formId');
+
+    final formsUrl = 'https://forms.googleapis.com/v1/forms/$formId';
+    final formsResponse = await http.get(
+      Uri.parse(formsUrl),
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (formsResponse.statusCode != 200) {
+      throw Exception(
+          'Failed to fetch form: ${formsResponse.statusCode} - ${formsResponse.body}');
+    }
+
+    final formData = jsonDecode(formsResponse.body);
+    print('Form data: $formData');
+
+    String title = formData['info']?['title'] ?? 'Untitled Form';
+    List<QuestionData> questions = [];
+    if (formData['items'] != null) {
+      for (var item in formData['items']) {
+        if (item['questionItem'] != null && item['questionItem']['question'] != null) {
+          String questionText = item['title'] ?? 'Unnamed Question';
+          List<String> options = [];
+          if (item['questionItem']['question']['choiceQuestion'] != null) {
+            var choiceQuestion = item['questionItem']['question']['choiceQuestion'];
+            if (choiceQuestion['options'] != null) {
+              for (var option in choiceQuestion['options']) {
+                options.add(option['value'] ?? 'No Option');
+              }
+            }
+          }
+          questions.add(QuestionData(question: questionText, options: options));
+        }
+      }
+    }
+
+    return FormData(
+      title: title,
+      questions: questions,
+      startDate: startDate,
+      endDate: endDate,
+      formUrl: formUrl,
+      status: status,
+    );
+  } catch (e) {
+    print('Error retrieving form questions: $e');
+    return FormData(title: 'Error', questions: []);
+  }
+}
+
+Future<String?> getFormIdFromViewformUrl(String viewformUrl, String accessToken) async {
+  try {
+    final publicKey = viewformUrl.split('/d/e/')[1].split('/')[0];
+    print('Public key: $publicKey');
+
+    final driveUrl = 'https://www.googleapis.com/drive/v3/files'
+        '?q=mimeType="application/vnd.google-apps.form"'
+        '&fields=files(id,name)'
+        '&spaces=drive';
+    final driveResponse = await http.get(
+      Uri.parse(driveUrl),
+      headers: {
+        'Authorization': 'Bearer $accessToken',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (driveResponse.statusCode != 200) {
+      throw Exception('Failed to fetch Drive files: ${driveResponse.body}');
+    }
+
+    final driveData = jsonDecode(driveResponse.body);
+    print('Drive data: $driveData');
+
+    for (var file in driveData['files']) {
+      final fileId = file['id'];
+      print('Checking file ID: $fileId');
+
+      final formsUrl = 'https://forms.googleapis.com/v1/forms/$fileId';
+      final formResponse = await http.get(
+        Uri.parse(formsUrl),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (formResponse.statusCode == 200) {
+        final formData = jsonDecode(formResponse.body);
+        final responderUri = formData['responderUri'];
+        print('Responder URI for $fileId: $responderUri');
+
+        if (responderUri != null && responderUri.contains(publicKey)) {
+          print('Matched form ID: $fileId');
+          return fileId;
+        }
+      } else {
+        print('Failed to fetch form $fileId: ${formResponse.statusCode}');
+      }
+    }
+
+    throw Exception('No matching form found in Drive for the provided viewform URL');
+  } catch (e) {
+    print('Error fetching Form ID from Drive: $e');
+    return null;
+  }
+}
+
+Future<String?> _getToken() async {
+  final token = LocalStorageService.getGoogleAccessToken();
+  if (token == null) {
+    print('Error: No valid OAuth token. Ensure the required scopes are enabled. Token null');
+  }
+  return token;
+}
+
 
   // ****************************************************************************************
   // Assignment methods
@@ -496,7 +698,7 @@ class GoogleLmsService extends LmsInterface {
     print('Assignment ID: $assignmentId');
     print('Course ID: $courseId');
     // TODO: implement google api code
-    throw UnimplementedError();
+    throw UnimplementedError('This feature is not supported by Google Classroom. Please contact the developer.');
   }
 
   // ****************************************************************************************
@@ -508,7 +710,7 @@ class GoogleLmsService extends LmsInterface {
     print('Getting assignment submissions...');
     print('Assignment ID: $assignmentId');
     // TODO: implement google api code
-    throw UnimplementedError();
+    throw UnimplementedError('This feature is not supported by Google Classroom. Please contact the developer.');
   }
 
   @override
@@ -518,7 +720,7 @@ class GoogleLmsService extends LmsInterface {
     print('Assignment ID: $assignmentId');
 
     // TODO: implement google api code
-    throw UnimplementedError();
+    throw UnimplementedError('This feature is not supported by Google Classroom. Please contact the developer.');
   }
 
   @override
@@ -528,7 +730,7 @@ class GoogleLmsService extends LmsInterface {
     print('Assignment ID: $assignmentId');
     print('User ID: $userId');
     // TODO: implement google api code
-    throw UnimplementedError();
+    throw UnimplementedError('This feature is not supported by Google Classroom. Please contact the developer.');
   }
 
   @override
@@ -536,7 +738,7 @@ class GoogleLmsService extends LmsInterface {
     print('Getting assignment grades...');
     print('Assignment ID: $assignmentId');
     // TODO: implement google api code
-    throw UnimplementedError();
+    throw UnimplementedError('This feature is not supported by Google Classroom. Please contact the developer.');
   }
 
   @override
@@ -545,7 +747,7 @@ class GoogleLmsService extends LmsInterface {
     print('Assignment ID: $assignmentId');
     print('User ID: $userId');
     // TODO: implement google api code
-    throw UnimplementedError();
+    throw UnimplementedError('This feature is not supported by Google Classroom. Please contact the developer.');
   }
 
   @override
@@ -554,7 +756,7 @@ class GoogleLmsService extends LmsInterface {
     print('Assignment ID: $assignmentId');
     print('User ID: $userid');
     // TODO: implement google api code
-    throw UnimplementedError();
+    throw UnimplementedError('This feature is not supported by Google Classroom. Please contact the developer.');
   }
 
   @override
@@ -563,7 +765,7 @@ class GoogleLmsService extends LmsInterface {
     print('User ID: $userId');
 
     // TODO: implement google api code
-    throw UnimplementedError();
+    throw UnimplementedError('This feature is not supported by Google Classroom. Please contact the developer.');
   }
 
   // ****************************************************************************************
@@ -575,7 +777,7 @@ class GoogleLmsService extends LmsInterface {
     // TODO: implement google api code
     print('Getting rubric...');
     print('Assignment ID: $assignmentid');
-    throw UnimplementedError();
+    throw UnimplementedError('This feature is not supported by Google Classroom. Please contact the developer.');
   }
 
 // -----------------------------------------------------------------------

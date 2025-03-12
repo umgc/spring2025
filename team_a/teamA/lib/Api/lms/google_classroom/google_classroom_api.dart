@@ -539,4 +539,178 @@ Future<void> getLessonPlan(String courseId) async {
 }
 
 
+// -----------------------------------------------------------------------
+// retrive the quiz questions
+// -----------------------------------------------------------------------
+  Future<Map<String, dynamic>?> getQuizQuestions(String courseId, String quizId) async {
+    final token = await _getToken();
+    if (token == null) return null;
+
+    final url = Uri.parse('https://classroom.googleapis.com/v1/courses/$courseId/courseWork/$quizId');
+    final headers = {
+      'Authorization': 'Bearer $token',
+      'Content-Type': 'application/json',
+    };
+
+    try {
+      final response = await http.get(url, headers: headers);
+
+      print("Response Status: ${response.statusCode}");
+      print("Response Body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data;
+      } else {
+        print('Quiz questions retrieval failed: ${response.statusCode}');
+        return null;
+      }
+    } catch (e) {
+      print('Error retrieving quiz questions: $e');
+      return null;
+    }
+  }
+
+  // -----------------------------------------------------------------------
+  // Updates the course work
+  // -----------------------------------------------------------------------
+  Future<Map<String, dynamic>?> updateCourseWork(String courseId, String courseWorkId, String title, String description,
+      String? dueDate, String? dueTime, String? rubricJson, String? state) async {
+    final token = await _getToken();
+    if (token == null) return null;
+
+    final url = Uri.parse('https://classroom.googleapis.com/v1/courses/$courseId/courseWork/$courseWorkId');
+    final headers = {
+      'Authorization': 'Bearer $token',
+      'Content-Type': 'application/json',
+    };
+
+    final body = jsonEncode({
+      'title': title,
+      'description': description,
+      'dueDate': dueDate,
+      'dueTime': dueTime,
+      'rubric': rubricJson,
+      'state': state,
+    });
+
+    try {
+      final response = await http.put(url, headers: headers, body: body);
+
+      print("Response Status: ${response.statusCode}");
+      print("Response Body: ${response.body}");
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return data;
+      } else {
+        print('Course work update failed: ${response.statusCode}');
+        return null;
+      }
+    } catch (e) {
+      print('Error updating course work: $e');
+      return null;
+    }
+  }
+
+  // -----------------------------------------------------------------------
+
+  // Method to retrieve Google Form questions from an assignment
+  // -----------------------------------------------------------------------
+  
+
+Future<List<String>> getAssignmentFormQuestions(String? courseId, String? courseWorkId) async {
+  //  "courseId": "750797786103",
+  //"id": "757589683856",
+  try {
+    // Step 1: Retrieve the stored access token
+    final token = await _getToken();
+    print('Token: $token'); // Debug output
+
+    if (token == null) {
+      throw Exception('No access token found. Please log in again.');
+    }
+
+    // Step 2: Fetch assignment details from Google Classroom API
+    final courseworkUrl =
+        'https://classroom.googleapis.com/v1/courses/$courseId/courseWork/$courseWorkId';
+    final courseworkResponse = await http.get(
+      Uri.parse(courseworkUrl),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    print('Coursework URL: $courseworkUrl'); // Debug output
+    print('Coursework Response: ${courseworkResponse.body}'); // Debug output
+
+    if (courseworkResponse.statusCode != 200) {
+      throw Exception(
+          'Failed to fetch coursework: ${courseworkResponse.statusCode} - ${courseworkResponse.body}');
+    }
+
+    final courseworkData = jsonDecode(courseworkResponse.body);
+    print('Coursework Data: $courseworkData'); // Debug output
+
+    // Step 3: Extract Form URL from materials
+    String? formUrl;
+    if (courseworkData['materials'] != null && courseworkData['materials'].isNotEmpty) {
+      for (var material in courseworkData['materials']) {
+        if (material['link'] != null && material['link']['url'] != null) {
+          final url = material['link']['url'];
+          if (url.contains('docs.google.com/forms')) {
+            formUrl = url;
+            break;
+          }
+        }
+      }
+    }
+
+    if (formUrl == null) {
+      throw Exception('No Google Form found in assignment materials.');
+    }
+    print('Form URL: $formUrl'); // Debug output
+
+    // Step 4: Extract Form ID from the URL
+    final formId = formUrl.split('/d/e/')[1].split('/')[0];
+    print('Form ID: $formId'); // Debug output
+
+    // Step 5: Fetch form details from Google Forms API
+    final formsUrl = 'https://forms.googleapis.com/v1/forms/$formId';
+    final formsResponse = await http.get(
+      Uri.parse(formsUrl),
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+    );
+
+    if (formsResponse.statusCode != 200) {
+      throw Exception(
+          'Failed to fetch form: ${formsResponse.statusCode} - ${formsResponse.body}');
+    }
+
+    final formData = jsonDecode(formsResponse.body);
+    print('Form Data: $formData'); // Debug output
+
+    // Step 6: Extract questions from the form
+    List<String> questions = [];
+    if (formData['items'] != null) {
+      for (var item in formData['items']) {
+        if (item['questionItem'] != null && item['questionItem']['question'] != null) {
+          questions.add(item['questionItem']['question']['text']);
+        }
+      }
+    }
+
+    return questions;
+  } catch (e) {
+    print('Error retrieving form questions: $e');
+    return [];
+  }
+}
+
+
+
 }
