@@ -7,6 +7,7 @@ import 'package:record/record.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:yappy/services/Restaurant_api_module.dart';
 import 'services/openai_helper.dart';
 import 'services/database_helper.dart';
 import 'services/file_handler.dart';
@@ -389,15 +390,42 @@ class _IndustryMenuState extends State<IndustryMenu> {
                             ),
                             style: TextStyle(color: Colors.white),
                           ),
-                          onTap: () {
+                          onTap: () async {
                             Navigator.pop(context);
                             if (widget.title == 'Restaurant') {
                               // Show Kanban style list for restaurant
+                              // Run the Transcript ai response to the Validatemenuitems 
+                                // Fetch the order transcript from the restaurant table
+                                String orderTranscript = transcript['transcript_text_data'] ?? 'No content available';
+
+                                // Run it through the API to validate menu items
+                                //var openAIHelper = OpenAIHelper();
+                                List<String> validatedMenuItems = [];
+                                try {
+                                var restaurantAPI = RestaurantAPI();
+                                validatedMenuItems = await restaurantAPI.validateMenuItems(orderTranscript.split(', '));
+                                showModalBottomSheet(
+                                  context: context,
+                                  builder: (BuildContext context) {
+                                  return KanbanBoard(tasks: validatedMenuItems);
+                                  },
+                                );
+                                } catch (e) {
+                                // Handle API call failure
+                                if (context.mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Failed to validate menu items: $e')),
+                                  );
+                                }
+                                }
                               showModalBottomSheet(
                                 context: context,
                                 builder: (BuildContext context) {
                                   return KanbanBoard(tasks: [
                                     // get the order_transcript from the restaurant table if industy is restaurant
+                                    //get the order transcript
+                                    // run it through the API
+                                    //Then send it to the kanban board
 
                                   ]);
                                 },
