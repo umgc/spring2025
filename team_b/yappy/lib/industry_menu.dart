@@ -187,6 +187,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
   }
 
   // This method builds the industry menu widget where the user can record, view transcripts, and view transcript history
+  // Added the fourth button for Chat Bot
   @override
   Widget build(BuildContext context) {
     // Gets the width and height of the current screen
@@ -368,6 +369,25 @@ class _IndustryMenuState extends State<IndustryMenu> {
                   ),
                   onPressed: () {
                     _showTranscriptsHistoryBottomSheet(context);
+                  },
+                ),
+              ),
+              SizedBox(width: screenWidth * .06),
+
+              // Creates a chatbot button
+              Container(
+                decoration:
+                    BoxDecoration(shape: BoxShape.circle, color: Colors.grey),
+                padding: EdgeInsets.all(5),
+                child: IconButton(
+                  icon: Icon(
+                    Icons.chat,
+                    color: Colors.white,
+                    size: screenHeight * .05,
+                  ),
+                  onPressed: () {
+                    // Add your chatbot functionality here   
+                    
                   },
                 ),
               ),

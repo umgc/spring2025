@@ -89,9 +89,9 @@ class TutorialPage extends StatelessWidget {
       );
       },
     );
-    }
+  }
 
-    void _showSecondPopup(BuildContext context) {
+  void _showSecondPopup(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -99,7 +99,7 @@ class TutorialPage extends StatelessWidget {
         content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text("The middle button will show you the days transcripts with broken down into details."),
+          Text("The second button will show you the days transcripts with broken down into details."),
           ElevatedButton(
           onPressed: () {
             Navigator.of(context).pop();
@@ -112,9 +112,9 @@ class TutorialPage extends StatelessWidget {
       );
       },
     );
-    }
+  }
 
-    void _showThirdPopup(BuildContext context) {
+  void _showThirdPopup(BuildContext context) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -122,7 +122,30 @@ class TutorialPage extends StatelessWidget {
       content: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text("The button on the right will show you all transcripts and allow you to search, share, upload, download, and delete."),
+        Text("The third button will show you all transcripts and allow you to search, share, upload, download, and delete."),
+        ElevatedButton(
+        onPressed: () {
+        Navigator.of(context).pop();
+        _showFourthPopup(context);
+        },
+        child: Text("Next"),
+        ),
+      ],
+      ),
+      );
+      },
+    );
+  }
+
+  void _showFourthPopup(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+      return AlertDialog(
+      content: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text("The fourth button will bring you to a chatbot that can search your transcripts to provide you information."),
         ElevatedButton(
         onPressed: () {
         Navigator.of(context).pop();
@@ -139,7 +162,3 @@ class TutorialPage extends StatelessWidget {
     );
   }
 }
-
-
-
-  
