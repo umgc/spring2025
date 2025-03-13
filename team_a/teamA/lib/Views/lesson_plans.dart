@@ -32,6 +32,9 @@ class _LessonPlanState extends State<LessonPlans> {
   String? selectedGradeLevel;
   bool isSubmitting = false;
 
+  //final ScrollController _scrollController = ScrollController();
+  List<ScrollController> _scrollControllers = [];
+
   final TextEditingController lessonPlanNameController = TextEditingController();
   final TextEditingController manualEntryController = TextEditingController();
   final TextEditingController additionalPromptController = TextEditingController(); // New controller
@@ -43,6 +46,9 @@ class _LessonPlanState extends State<LessonPlans> {
     lessonPlanNameController.dispose();
     manualEntryController.dispose();
     additionalPromptController.dispose();
+    for (var controller in _scrollControllers) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
@@ -67,6 +73,11 @@ class _LessonPlanState extends State<LessonPlans> {
     List<LessonPlan> plans = await MoodleLmsService().getLessonPlans(courseId);
     setState(() {
       lessonPlans = plans;
+      _scrollControllers = List.generate(
+        lessonPlans.length,
+        (index) => ScrollController(),
+        growable: true,
+      );
     });
   }
 
@@ -399,10 +410,16 @@ class _LessonPlanState extends State<LessonPlans> {
                                           child: Text('Lesson Plan', style: TextStyle(fontWeight: FontWeight.bold)),
                                         ),
                                       ),
-                                    DataColumn(label: Text('Select', style: TextStyle(fontWeight: FontWeight.bold))),
-                                    DataColumn(label: Text('View', style: TextStyle(fontWeight: FontWeight.bold))),
+                                    DataColumn(
+                                      label: Text('Select', style: TextStyle(fontWeight: FontWeight.bold)),
+                                    ),
+                                    DataColumn(
+                                      label: Text('View', style: TextStyle(fontWeight: FontWeight.bold)),
+                                    ),
                                   ],
-                                  rows: lessonPlans.map((plan) {
+                                  rows: lessonPlans.asMap().entries.map((entry) {
+                                    int index = entry.key;
+                                    LessonPlan plan = entry.value;
                                     bool isSelected = selectedLessonPlan == plan;
                                     return DataRow(
                                       cells: [
@@ -419,24 +436,31 @@ class _LessonPlanState extends State<LessonPlans> {
                                           DataCell(
                                             ConstrainedBox(
                                               constraints: BoxConstraints(maxWidth: 250),
-                                              child: SingleChildScrollView(
-                                                scrollDirection: Axis.vertical,
-                                                child: Text(
-                                                  _stripHtmlTags(plan.intro),
-                                                  maxLines: 3,
-                                                  overflow: TextOverflow.ellipsis,
+                                              child: Container(
+                                                height: 60, // Fixed height to maintain row size
+                                                child: Scrollbar(
+                                                  controller: _scrollControllers[index], // Add a ScrollController
+                                                  child: SingleChildScrollView(
+                                                    controller: _scrollControllers[index], // Add a ScrollController
+                                                    scrollDirection: Axis.vertical,
+                                                    child: Text(
+                                                      _stripHtmlTags(plan.intro),
+                                                    ),
+                                                  ),
                                                 ),
                                               ),
                                             ),
                                           ),
-                                        DataCell(Checkbox(
-                                          value: isSelected,
-                                          onChanged: (bool? selected) {
-                                            setState(() {
-                                              selectedLessonPlan = selected! ? plan : null;
-                                            });
-                                          },
-                                        )),
+                                        DataCell(
+                                          Checkbox(
+                                            value: isSelected,
+                                            onChanged: (bool? selected) {
+                                              setState(() {
+                                                selectedLessonPlan = selected! ? plan : null;
+                                              });
+                                            },
+                                          ),
+                                        ),
                                         DataCell(
                                           ElevatedButton(
                                             onPressed: () {
@@ -743,16 +767,23 @@ class _LessonPlanState extends State<LessonPlans> {
                                   child: Text('Name', style: TextStyle(fontWeight: FontWeight.bold)),
                                 ),
                               ),
-                              DataColumn(
-                                label: SizedBox(
-                                  width: 200,
-                                  child: Text('Lesson Plan', style: TextStyle(fontWeight: FontWeight.bold)),
+                              if (!isMediumScreen) // Hide Lesson Plan column for medium screens
+                                DataColumn(
+                                  label: SizedBox(
+                                    width: 200,
+                                    child: Text('Lesson Plan', style: TextStyle(fontWeight: FontWeight.bold)),
+                                  ),
                                 ),
+                              DataColumn(
+                                label: Text('Select', style: TextStyle(fontWeight: FontWeight.bold)),
                               ),
-                              DataColumn(label: Text('Select', style: TextStyle(fontWeight: FontWeight.bold))),
-                              DataColumn(label: Text('View', style: TextStyle(fontWeight: FontWeight.bold))),
+                              DataColumn(
+                                label: Text('View', style: TextStyle(fontWeight: FontWeight.bold)),
+                              ),
                             ],
-                            rows: lessonPlans.map((plan) {
+                            rows: lessonPlans.asMap().entries.map((entry) {
+                              int index = entry.key;
+                              LessonPlan plan = entry.value;
                               bool isSelected = selectedLessonPlan == plan;
                               return DataRow(
                                 cells: [
@@ -765,27 +796,35 @@ class _LessonPlanState extends State<LessonPlans> {
                                       ),
                                     ),
                                   ),
-                                  DataCell(
-                                    ConstrainedBox(
-                                      constraints: BoxConstraints(maxWidth: 250),
-                                      child: SingleChildScrollView(
-                                        scrollDirection: Axis.vertical,
-                                        child: Text(
-                                          _stripHtmlTags(plan.intro),
-                                          maxLines: 3,
-                                          overflow: TextOverflow.ellipsis,
+                                  if (!isMediumScreen) // Hide Lesson Plan column for medium screens
+                                    DataCell(
+                                      ConstrainedBox(
+                                        constraints: BoxConstraints(maxWidth: 250),
+                                        child: Container(
+                                          height: 60, // Fixed height to maintain row size
+                                          child: Scrollbar(
+                                            controller: _scrollControllers[index], // Add a ScrollController
+                                            child: SingleChildScrollView(
+                                              controller: _scrollControllers[index], // Add a ScrollController
+                                              scrollDirection: Axis.vertical,
+                                              child: Text(
+                                                _stripHtmlTags(plan.intro),
+                                              ),
+                                            ),
+                                          ),
                                         ),
                                       ),
                                     ),
+                                  DataCell(
+                                    Checkbox(
+                                      value: isSelected,
+                                      onChanged: (bool? selected) {
+                                        setState(() {
+                                          selectedLessonPlan = selected! ? plan : null;
+                                        });
+                                      },
+                                    ),
                                   ),
-                                  DataCell(Checkbox(
-                                    value: isSelected,
-                                    onChanged: (bool? selected) {
-                                      setState(() {
-                                        selectedLessonPlan = selected! ? plan : null;
-                                      });
-                                    },
-                                  )),
                                   DataCell(
                                     ElevatedButton(
                                       onPressed: () {
