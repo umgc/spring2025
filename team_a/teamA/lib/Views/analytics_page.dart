@@ -20,6 +20,9 @@ import 'package:learninglens_app/beans/participant.dart';
 import 'package:learninglens_app/beans/quiz.dart';
 import 'package:learninglens_app/beans/quiz_type.dart';
 
+import 'package:learninglens_app/Views/dashboard.dart';
+import 'package:learninglens_app/Views/user_settings.dart';
+
 /// Enum to represent export formats.
 enum ExportFormat { pdf, excel }
 
