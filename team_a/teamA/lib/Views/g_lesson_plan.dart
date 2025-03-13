@@ -35,6 +35,7 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
 
   final TextEditingController lessonPlanNameController = TextEditingController();
   final TextEditingController manualEntryController = TextEditingController();
+  final TextEditingController aiPromptDetailsController = TextEditingController();
   final log = Logger('GoogleLessonPlans');
   final GoogleClassroomApi googleClassroomApi = GoogleClassroomApi();
 
@@ -42,6 +43,7 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
   void dispose() {
     lessonPlanNameController.dispose();
     manualEntryController.dispose();
+    aiPromptDetailsController.dispose();
     super.dispose();
   }
 
@@ -67,10 +69,8 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
       List<Course> fetchedCourses = await LmsFactory.getLmsService().getUserCourses();
       setState(() {
         courses = fetchedCourses;
-        if (courses!.isNotEmpty) {
-          selectedCourse = courses!.first.id.toString();
-          _loadLessonPlan(selectedCourse!);
-        }
+        // Removed automatic selection of first course
+        selectedCourse = null; // Explicitly set to null for "Select Course"
       });
     } catch (e) {
       log.severe('Failed to load courses: $e');
@@ -130,7 +130,7 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
               : PerplexityLLM(perplexityApiKey);
 
       String prompt =
-          "Generate a lesson plan for ${selectedGradeLevel}th grade ${lessonPlanNameController.text} covering key topics like ${manualEntryController.text} within 500 words.";
+          "Generate a lesson plan for ${selectedGradeLevel}th grade ${lessonPlanNameController.text} covering key topics like ${manualEntryController.text}. Additional details: ${aiPromptDetailsController.text}. Keep it within 500 words.";
       var result = await (aiModel as PerplexityLLM).postToLlm(prompt);
       setState(() {
         manualEntryController.text = result;
@@ -143,10 +143,6 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
       });
     }
   }
-
-  // String _stripHtmlTags(String htmlText) { ***** Not used *****
-  //   return htmlText.replaceAll(RegExp(r'<[^>]*>'), '').trim();
-  // }
 
   void _showLessonPlanDialog(dynamic lessonPlan) {
     showDialog(
@@ -174,6 +170,7 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
   void _clearFormFields() {
     lessonPlanNameController.clear();
     manualEntryController.clear();
+    aiPromptDetailsController.clear();
     setState(() {
       selectedGradeLevel = null;
       useAiGeneration = false;
@@ -207,17 +204,26 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
                           SizedBox(height: 20),
                           DropdownButtonFormField<String>(
                             value: selectedCourse,
-                            items: courses?.map<DropdownMenuItem<String>>((course) {
-                              return DropdownMenuItem<String>(
-                                value: course.id.toString(),
-                                child: Text(course.fullName),
-                              );
-                            }).toList() ?? [],
+                            items: [
+                              DropdownMenuItem<String>(
+                                value: null,
+                                child: Text('Select Course'),
+                              ),
+                              ...(courses?.map<DropdownMenuItem<String>>((course) {
+                                    return DropdownMenuItem<String>(
+                                      value: course.id.toString(),
+                                      child: Text(course.fullName),
+                                    );
+                                  }).toList() ??
+                                  [])
+                            ],
                             onChanged: (value) async {
                               setState(() {
                                 selectedCourse = value;
                               });
-                              await _loadLessonPlan(value!);
+                              if (value != null) {
+                                await _loadLessonPlan(value);
+                              }
                             },
                             decoration: InputDecoration(labelText: 'Course', border: OutlineInputBorder()),
                           ),
@@ -246,21 +252,12 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
                           TextField(
                             controller: lessonPlanNameController,
                             decoration: InputDecoration(
-                                labelText: 'Lesson Plan Name', border: OutlineInputBorder()),
-                          ),
-                          SizedBox(height: 20),
-                          TextField(
-                            controller: manualEntryController,
-                            maxLines: 8,
-                            decoration: InputDecoration(
-                                labelText: 'Enter Lesson Plan Manually', border: OutlineInputBorder()),
-                          ),
-                          SizedBox(height: 20),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text('OR', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                            ],
+                              labelText: 'Lesson Plan Name',
+                              border: OutlineInputBorder(),
+                              errorText: lessonPlanNameController.text.isEmpty && (isSaving || isGeneratingAI)
+                                  ? 'Lesson Plan Name is required'
+                                  : null,
+                            ),
                           ),
                           SizedBox(height: 20),
                           CheckboxListTile(
@@ -272,61 +269,86 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
                                 if (!useAiGeneration) {
                                   selectedLLM = null;
                                   manualEntryController.clear();
+                                  aiPromptDetailsController.clear();
                                 }
                               });
                             },
                           ),
-                          DropdownButtonFormField<String>(
-                            value: selectedLLM,
-                            decoration: const InputDecoration(labelText: "Select AI Model"),
-                            onChanged: useAiGeneration
-                                ? (String? newValue) => setState(() => selectedLLM = newValue)
-                                : null,
-                            items: ['ChatGPT', 'Grok', 'Perplexity'].map((String value) {
-                              return DropdownMenuItem<String>(value: value, child: Text(value));
-                            }).toList(),
-                            disabledHint: Text("Enable AI to select a model"),
-                          ),
                           if (useAiGeneration)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 20.0),
-                              child: ElevatedButton(
-                                onPressed: selectedLLM != null && selectedGradeLevel != null
-                                    ? () async {
-                                        await generateLessonPlanWithAI();
-                                      }
-                                    : null,
-                                child: isGeneratingAI
-                                    ? SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(strokeWidth: 2),
-                                      )
-                                    : Text('Generate Lesson Plan'),
-                              ),
+                            Column(
+                              children: [
+                                DropdownButtonFormField<String>(
+                                  value: selectedLLM,
+                                  decoration: const InputDecoration(labelText: "Select AI Model"),
+                                  onChanged: (String? newValue) => setState(() => selectedLLM = newValue),
+                                  items: ['ChatGPT', 'Grok', 'Perplexity'].map((String value) {
+                                    return DropdownMenuItem<String>(value: value, child: Text(value));
+                                  }).toList(),
+                                ),
+                                SizedBox(height: 20),
+                                TextField(
+                                  controller: aiPromptDetailsController,
+                                  maxLines: 3,
+                                  decoration: InputDecoration(
+                                    labelText: 'Additional Details for AI Prompt',
+                                    border: OutlineInputBorder(),
+                                  ),
+                                ),
+                                SizedBox(height: 20),
+                                ElevatedButton(
+                                  onPressed: selectedLLM != null &&
+                                          selectedGradeLevel != null &&
+                                          lessonPlanNameController.text.isNotEmpty
+                                      ? () async {
+                                          await generateLessonPlanWithAI();
+                                        }
+                                      : null,
+                                  child: isGeneratingAI
+                                      ? SizedBox(
+                                          width: 20,
+                                          height: 20,
+                                          child: CircularProgressIndicator(strokeWidth: 2),
+                                        )
+                                      : Text('Generate Lesson Plan'),
+                                ),
+                              ],
                             ),
                           SizedBox(height: 20),
+                          TextField(
+                            controller: manualEntryController,
+                            maxLines: 8,
+                            decoration: InputDecoration(
+                              labelText: 'Enter/Edit Lesson Plan',
+                              border: OutlineInputBorder(),
+                              errorText: manualEntryController.text.isEmpty && isSaving
+                                  ? 'Lesson Plan details are required'
+                                  : null,
+                            ),
+                          ),
+                          SizedBox(height: 20),
                           ElevatedButton(
-                            onPressed: () async {
-                              if (selectedCourse != null && selectedGradeLevel != null) {
-                                setState(() {
-                                  isSaving = true;
-                                });
-                                String? materialId = await googleClassroomApi.createCourseWorkMaterial(
-                                  selectedCourse!,
-                                  lessonPlanNameController.text,
-                                  manualEntryController.text,
-                                  "https://example.com",
-                                );
-                                if (materialId != null) {
-                                  await _loadLessonPlan(selectedCourse!);
-                                  _clearFormFields();
-                                }
-                                setState(() {
-                                  isSaving = false;
-                                });
-                              }
-                            },
+                            onPressed: selectedCourse != null &&
+                                    lessonPlanNameController.text.isNotEmpty &&
+                                    manualEntryController.text.isNotEmpty
+                                ? () async {
+                                    setState(() {
+                                      isSaving = true;
+                                    });
+                                    String? materialId = await googleClassroomApi.createCourseWorkMaterial(
+                                      selectedCourse!,
+                                      lessonPlanNameController.text,
+                                      manualEntryController.text,
+                                      "https://example.com",
+                                    );
+                                    if (materialId != null) {
+                                      await _loadLessonPlan(selectedCourse!);
+                                      _clearFormFields();
+                                    }
+                                    setState(() {
+                                      isSaving = false;
+                                    });
+                                  }
+                                : null,
                             child: isSaving
                                 ? SizedBox(
                                     width: 20,

@@ -23,11 +23,50 @@ class _EssaysState extends State<EssaysView> {
   Assignment? selectedEssay;
   late Future<List<SubmissionWithGrade>> futureSubmissionsWithGrades;
   late Future<List<Participant>> futureParticipants;
+  String? submissionError; // To store error message for submissions
+  String? participantError; // To store error message for participants
 
   @override
   void initState() {
     super.initState();
     essays = getAllEssays(widget.courseID);
+    // Initialize with placeholder futures to avoid null errors
+    futureSubmissionsWithGrades = Future.value([]);
+    futureParticipants = Future.value([]);
+  }
+
+  // Helper method to fetch submissions with error handling
+  Future<List<SubmissionWithGrade>> fetchSubmissionsWithGrades(int essayId) async {
+    try {
+      return await LmsFactory.getLmsService().getSubmissionsWithGrades(essayId);
+    } on UnimplementedError catch (e) {
+      setState(() {
+        submissionError = "Submissions/Grading feature is currently not available for Google Classroom. Please reach out to the developer for more information.";
+      });
+      return []; // Return empty list to avoid breaking the FutureBuilder
+    } catch (e) {
+      setState(() {
+        submissionError = "Error fetching submissions: $e";
+      });
+      return [];
+    }
+  }
+
+  // Helper method to fetch participants with error handling
+  Future<List<Participant>> fetchCourseParticipants(String courseId) async {
+    try {
+      return await LmsFactory.getLmsService().getCourseParticipants(courseId);
+    } on UnimplementedError catch (e) {
+      setState(() {
+        participantError = "Participants feature is not yet implemented.";
+      });
+      return []; // Return empty list to avoid breaking the FutureBuilder
+    } catch (e) {
+      setState(() {
+        participantError = "Error fetching participants: $e";
+      });
+      return [];
+    }
   }
 
   @override
@@ -67,7 +106,6 @@ class _EssaysState extends State<EssaysView> {
                       return Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          // Left-side course list with border
                           Expanded(
                             flex: 1,
                             child: Container(
@@ -80,8 +118,7 @@ class _EssaysState extends State<EssaysView> {
                                 itemCount: essayList.length,
                                 itemBuilder: (context, index) {
                                   final essay = essayList[index];
-                                  final activeCourse =
-                                      getCourse(essay.courseId);
+                                  final activeCourse = getCourse(essay.courseId);
                                   if (essay.id == widget.essayID) {
                                     selectedEssay = essay;
                                   }
@@ -89,8 +126,7 @@ class _EssaysState extends State<EssaysView> {
                                     title: Text(
                                         '${essay.name} (${activeCourse.shortName}${activeCourse.courseId})'),
                                     subtitle: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                             'Due: ${essay.dueDate == null ? "No due date set" : Course.dateFormatted(essay.dueDate!)}'),
@@ -105,16 +141,13 @@ class _EssaysState extends State<EssaysView> {
                                     onTap: () {
                                       setState(() {
                                         selectedEssay = essay;
+                                        submissionError = null; // Reset error
+                                        participantError = null; // Reset error
                                         futureSubmissionsWithGrades =
-                                            LmsFactory.getLmsService()
-                                                .getSubmissionsWithGrades(
-                                                    selectedEssay?.id ?? 0);
+                                            fetchSubmissionsWithGrades(essay.id!);
                                         futureParticipants =
-                                            LmsFactory.getLmsService()
-                                                .getCourseParticipants(
-                                                    selectedEssay?.courseId
-                                                            .toString() ??
-                                                        "");
+                                            fetchCourseParticipants(
+                                                essay.courseId.toString());
                                       });
                                     },
                                   );
@@ -122,22 +155,16 @@ class _EssaysState extends State<EssaysView> {
                               ),
                             ),
                           ),
-
-                          // Right-side course details (quiz questions)
                           Expanded(
                             flex: 2,
                             child: selectedEssay == null && widget.essayID == 0
-                                ? Center(
-                                    child:
-                                        Text('Select an essay to view details'))
+                                ? Center(child: Text('Select an essay to view details'))
                                 : Column(
                                     children: [
                                       Container(
                                         decoration: BoxDecoration(
-                                          border:
-                                              Border.all(color: Colors.grey),
-                                          borderRadius:
-                                              BorderRadius.circular(8.0),
+                                          border: Border.all(color: Colors.grey),
+                                          borderRadius: BorderRadius.circular(8.0),
                                         ),
                                         margin: EdgeInsets.all(8.0),
                                         child: Center(
@@ -147,14 +174,10 @@ class _EssaysState extends State<EssaysView> {
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
                                                 Padding(
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            8.0),
+                                                    padding: const EdgeInsets.all(8.0),
                                                     child: Text('Essay Prompt',
-                                                        style: TextStyle(
-                                                            fontSize: 20))),
-                                                Text(selectedEssay
-                                                        ?.description ??
+                                                        style: TextStyle(fontSize: 20))),
+                                                Text(selectedEssay?.description ??
                                                     "No description found."),
                                               ],
                                             ),
@@ -165,10 +188,8 @@ class _EssaysState extends State<EssaysView> {
                                         flex: 1,
                                         child: Container(
                                           decoration: BoxDecoration(
-                                            border:
-                                                Border.all(color: Colors.grey),
-                                            borderRadius:
-                                                BorderRadius.circular(8.0),
+                                            border: Border.all(color: Colors.grey),
+                                            borderRadius: BorderRadius.circular(8.0),
                                           ),
                                           margin: EdgeInsets.all(8.0),
                                           child: Padding(
@@ -177,31 +198,41 @@ class _EssaysState extends State<EssaysView> {
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
                                                 Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(8.0),
-                                                  child: Text(
-                                                      'Student Submissions',
-                                                      style: TextStyle(
-                                                          fontSize: 20)),
+                                                  padding: const EdgeInsets.all(8.0),
+                                                  child: Text('Student Submissions',
+                                                      style: TextStyle(fontSize: 20)),
                                                 ),
                                                 Expanded(
-                                                  child: selectedEssay ==
-                                                              null &&
-                                                          widget.essayID == 0
+                                                  child: submissionError != null
                                                       ? Center(
-                                                          child: Text(
-                                                              'No essay selected'))
+                                                          child: Column(
+                                                            mainAxisAlignment:
+                                                                MainAxisAlignment.center,
+                                                            children: [
+                                                              Icon(
+                                                                Icons.construction, // Under development icon
+                                                                size: 48.0,
+                                                                color: Colors.orange,
+                                                              ),
+                                                              SizedBox(height: 16.0),
+                                                              Text(
+                                                                submissionError!,
+                                                                textAlign: TextAlign.center,
+                                                                style: TextStyle(
+                                                                  fontSize: 16.0,
+                                                                  color: Colors.grey[700],
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                        )
                                                       : SubmissionList(
                                                           key: ValueKey(
-                                                              selectedEssay
-                                                                      ?.id ??
-                                                                  widget
-                                                                      .essayID), // Add a Key to force rebuild
+                                                              selectedEssay?.id ??
+                                                                  widget.essayID),
                                                           assignmentId:
-                                                              selectedEssay
-                                                                      ?.id ??
-                                                                  widget
-                                                                      .essayID,
+                                                              selectedEssay?.id ??
+                                                                  widget.essayID,
                                                           courseId: selectedEssay
                                                                   ?.courseId
                                                                   .toString() ??

@@ -39,13 +39,16 @@ class SubmissionDetailState extends State<SubmissionDetail> {
   }
 
   Future<void> fetchRubric() async {
+    print('Fetching Rubric for assignment ID: ${widget.submission.assignmentId}');
     int? contextId = await LmsFactory.getLmsService()
         .getContextId(widget.submission.assignmentId, widget.courseId);
     if (contextId != null) {
       var fetchedRubric = await LmsFactory.getLmsService()
           .getRubric(widget.submission.assignmentId.toString());
+    print('Fetched Rubric: $fetchedRubric');
       var submissionScores = await LmsFactory.getLmsService().getRubricGrades(
           widget.submission.assignmentId, widget.participant.id);
+      print('Submission Scores: $submissionScores');
 
       setState(() {
         rubric = fetchedRubric;
@@ -119,7 +122,7 @@ class SubmissionDetailState extends State<SubmissionDetail> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(title: 'Submission Details', userprofileurl: LmsFactory.getLmsService().profileImage ?? ''),
+      appBar: CustomAppBar(title: 'Submission Details From here', userprofileurl: LmsFactory.getLmsService().profileImage ?? ''),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : Padding(
@@ -194,7 +197,7 @@ class SubmissionDetailState extends State<SubmissionDetail> {
                             ? Text(
                                 errorMessage,
                                 style: TextStyle(
-                                    fontSize: 16,
+                                    fontSize: 50,
                                     fontStyle: FontStyle.italic,
                                     color: Colors.red),
                               )
