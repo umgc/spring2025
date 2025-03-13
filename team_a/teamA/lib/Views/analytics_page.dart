@@ -225,7 +225,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         'studentName': participant.fullname,
         'avgGrade': displayGrade,
         'classRank': 0, // This will be updated after sorting
-        'nationalComparison': 'N/A',
+        //'nationalComparison': 'N/A', // Placeholder for future feature
       };
     }).toList();
 
@@ -337,13 +337,13 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               'Student Name',
               'Average Grade',
               'Class Rank',
-              'National Comparison'
+              //'National Comparison' // Placeholder for future feature
             ],
             data: _studentBreakdown.map((student) => [
               student['studentName'],
               student['avgGrade'],
               student['classRank'].toString(),
-              student['nationalComparison']
+              //student['nationalComparison'] // Placeholder for future feature
             ]).toList(),
           ),
           if (isQuiz())
@@ -376,14 +376,14 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       'Student Name',
       'Average Grade',
       'Class Rank',
-      'National Comparison'
+      //'National Comparison' // Placeholder for future feature
     ]);
     for (var student in _studentBreakdown) {
       studentSheet.appendRow([
         student['studentName'],
         student['avgGrade'],
         student['classRank'],
-        student['nationalComparison']
+        //student['nationalComparison'] // Placeholder for future feature
       ]);
     }
     if (isQuiz()) {
@@ -628,7 +628,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                   DataColumn(label: Text('Student Name')),
                   DataColumn(label: Text('Average Grade')),
                   DataColumn(label: Text('Class Rank')),
-                  DataColumn(label: Text('National Comparison')),
+                  //DataColumn(label: Text('National Comparison')), // Placeholder for future feature
                 ],
                 rows: _studentBreakdown.map((student) {
                   return DataRow(cells: [
@@ -650,7 +650,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                     ),
                     DataCell(Text(student['avgGrade'].toString())),
                     DataCell(Text(student['classRank'].toString())),
-                    DataCell(Text(student['nationalComparison'].toString())),
+                    //DataCell(Text(student['nationalComparison'].toString())), // Placeholder for future feature
                   ]);
                 }).toList(),
               ),
