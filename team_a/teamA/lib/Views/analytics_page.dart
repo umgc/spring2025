@@ -20,9 +20,22 @@ import 'package:learninglens_app/beans/participant.dart';
 import 'package:learninglens_app/beans/quiz.dart';
 import 'package:learninglens_app/beans/quiz_type.dart';
 
+import 'package:learninglens_app/Views/dashboard.dart';
+import 'package:learninglens_app/Views/user_settings.dart';
+
 /// Enum to represent export formats.
 enum ExportFormat { pdf, excel }
 
+/// AnalyticsPage displays the Analytics Dashboard where teachers can:
+///  - View overall analytics data (live data fetched from the LMS)
+///  - Generate a detailed report for essay assignments only (quizzes are omitted)
+///  - Export the generated report as a valid PDF or Excel file
+///    (using proper PDF/Excel libraries)
+///  - View tables in fixed-height containers with visible scrollbars.
+///
+/// When a student is clicked in the breakdown table, a detail panel appears
+/// on the right showing that student's assignment details (non-editable).
+/// 
 /// A simple wrapper to hold either an essay assignment or a quiz.
 /// The `type` property distinguishes between the two.
 class Assessment {
@@ -175,17 +188,16 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
     try {
       if (isQuiz()) {
-        // Grab participants for this quiz
+        // Grab participants for this quiz.
         int quizId = _selectedAssessment!.assessment.id;
         _participantsData = await (lmsService as moodle.MoodleLmsService)
             .getQuizGradesForParticipants(_selectedCourse!.id.toString(), quizId);
-
-        // Filter out non-students, if needed
+        // Filter out non-students, if needed.
         _participantsData = _participantsData
             .where((i) => i.roles.contains('student'))
             .toList();
       } else if (isEssay()) {
-        // Grab participants for this essay
+        // Grab participants for this essay.
         int assignmentId = _selectedAssessment!.assessment.id;
         _participantsData = await (lmsService as moodle.MoodleLmsService)
             .getEssayGradesForParticipants(_selectedCourse!.id.toString(), assignmentId);
@@ -193,10 +205,10 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         throw Exception("Unsupported Assessment Type");
       }
 
-      // Build the table shown in the "Student Breakdown" section
+      // Build the table shown in the "Student Breakdown" section.
       getStudentBreakdown(_participantsData);
 
-      // If it's a quiz, also fetch the question breakdown
+      // If it's a quiz, also fetch the question breakdown.
       await _fetchQuestionBreakdown();
     } catch (e) {
       setState(() {
@@ -219,24 +231,22 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       double? grade = participant.avgGrade;
       String displayGrade =
           (grade != null) ? '${grade.toInt()}%' : '0%';
-
       return {
         'id': participant.id,
         'studentName': participant.fullname,
         'avgGrade': displayGrade,
-        'classRank': 0, // This will be updated after sorting
-        'nationalComparison': 'N/A',
+        'classRank': 0,
       };
     }).toList();
 
-    // Sort descending by numeric grade
+    // Sort descending by numeric grade.
     _studentBreakdown.sort((a, b) {
       int aGrade = int.tryParse(a['avgGrade'].replaceAll('%', '')) ?? 0;
       int bGrade = int.tryParse(b['avgGrade'].replaceAll('%', '')) ?? 0;
       return bGrade.compareTo(aGrade);
     });
 
-    // Assign a 1-based rank
+    // Assign a 1-based rank.
     for (int i = 0; i < _studentBreakdown.length; i++) {
       _studentBreakdown[i]['classRank'] = i + 1;
     }
@@ -244,8 +254,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
 
   // ---------------------------------------------------------------------------
   // _saveReport:
-  // Exports the generated report as PDF or Excel (only for the single
-  // selected assessment).
+  // Exports the generated report as PDF or Excel (only for the single selected assessment).
   // ---------------------------------------------------------------------------
   Future<void> _saveReport() async {
     final format = await _chooseExportFormat();
@@ -254,7 +263,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     String defaultName = 'my_report.$extension';
 
     if (kIsWeb) {
-      // Build bytes
+      // Build bytes.
       List<int> bytes = (format == ExportFormat.pdf)
           ? await _exportReportAsPdf()
           : await _exportReportAsExcel();
@@ -267,7 +276,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       anchor.click();
       anchor.remove();
       html.Url.revokeObjectUrl(url);
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Report exported as $extension via browser download.')),
       );
@@ -280,7 +288,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             : await _exportReportAsExcel();
         final file = File(savePath);
         await file.writeAsBytes(bytes);
-
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Report saved as $extension at:\n$savePath')),
         );
@@ -323,8 +330,9 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   }
 
   // ---------------------------------------------------------------------------
-  // _exportReportAsPdf: Exports only the single assessment's data stored in
-  // _studentBreakdown (and questionBreakdown if quiz).
+  // _exportReportAsPdf:
+  // Uses the pdf package to generate a PDF document containing the student breakdown
+  // and, if applicable, the question breakdown.
   // ---------------------------------------------------------------------------
   Future<List<int>> _exportReportAsPdf() async {
     final pdf = pw.Document();
@@ -333,17 +341,11 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         build: (pw.Context context) => [
           pw.Header(level: 0, child: pw.Text("Student Breakdown Report")),
           pw.Table.fromTextArray(
-            headers: [
-              'Student Name',
-              'Average Grade',
-              'Class Rank',
-              'National Comparison'
-            ],
+            headers: ['Student Name', 'Average Grade', 'Class Rank'],
             data: _studentBreakdown.map((student) => [
               student['studentName'],
               student['avgGrade'],
               student['classRank'].toString(),
-              student['nationalComparison']
             ]).toList(),
           ),
           if (isQuiz())
@@ -351,11 +353,15 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               pw.SizedBox(height: 20),
               pw.Header(level: 0, child: pw.Text("Question Breakdown")),
               pw.Table.fromTextArray(
-                headers: ['Q#', 'Type', 'Text'],
+                headers: ['Q#', 'Question Type', 'Question', '% Answered Correct', '# Correct', '# Incorrect', '# Total Attempts'],
                 data: _questionBreakdown.map((q) => [
                   q.id.toString(),
                   q.questionType,
-                  q.questionText
+                  q.questionText,
+                  "${computePercentCorrect(q).toStringAsFixed(2)}%",
+                  q.numCorrect.toString(),
+                  q.numIncorrect.toString(),
+                  q.totalAttempts.toString(),
                 ]).toList(),
               ),
             ]),
@@ -366,34 +372,33 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   }
 
   // ---------------------------------------------------------------------------
-  // _exportReportAsExcel: Exports only the single assessment's data stored in
-  // _studentBreakdown (and questionBreakdown if quiz).
+  // _exportReportAsExcel:
+  // Uses the excel package to generate an Excel file containing the student breakdown
+  // and, if applicable, the question breakdown.
   // ---------------------------------------------------------------------------
   Future<List<int>> _exportReportAsExcel() async {
     var excel = Excel.createExcel();
     Sheet studentSheet = excel['Student Breakdown'];
-    studentSheet.appendRow([
-      'Student Name',
-      'Average Grade',
-      'Class Rank',
-      'National Comparison'
-    ]);
+    studentSheet.appendRow(['Student Name', 'Average Grade', 'Class Rank']);
     for (var student in _studentBreakdown) {
       studentSheet.appendRow([
         student['studentName'],
         student['avgGrade'],
         student['classRank'],
-        student['nationalComparison']
       ]);
     }
     if (isQuiz()) {
       Sheet questionSheet = excel['Question Breakdown'];
-      questionSheet.appendRow(['Q#', 'Type', 'Text']);
+      questionSheet.appendRow(['Q#', 'Question Type', 'Question', '% Answered Correct', '# Correct', '# Incorrect', '# Total Attempts']);
       for (var q in _questionBreakdown) {
         questionSheet.appendRow([
           q.id,
           q.questionType,
           q.questionText,
+          "${computePercentCorrect(q).toStringAsFixed(2)}%",
+          q.numCorrect,
+          q.numIncorrect,
+          q.totalAttempts,
         ]);
       }
     }
@@ -405,7 +410,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   // For non-web platforms, uses FilePicker to let the user choose a save location.
   // On web, file saving is handled via an AnchorElement.
   // ---------------------------------------------------------------------------
-   Future<String?> _pickFileLocation(String defaultName) async {
+  Future<String?> _pickFileLocation(String defaultName) async {
     if (kIsWeb) return null;
     final result = await FilePicker.platform.saveFile(
       dialogTitle: 'Save Report',
@@ -421,7 +426,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   // ---------------------------------------------------------------------------
   Widget _buildReportForm() {
     return Container(
-      width: 300,
+      width: 100,
       padding: const EdgeInsets.all(16),
       color: Colors.grey[200],
       child: Column(
@@ -430,7 +435,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           const Text('Generate New Report',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
           const SizedBox(height: 8),
-          // Course dropdown populated with live courses.
+          // Course dropdown.
           DropdownButtonFormField<Course>(
             value: _selectedCourse,
             decoration: const InputDecoration(labelText: 'Course'),
@@ -453,7 +458,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                 List<Quiz> quizzes = [];
                 try {
                   quizzes = await (lmsService as dynamic).getQuizzes(_selectedCourse!.id);
-                 } catch (e) {
+                } catch (e) {
                   print("getQuizzes not available or failed: $e");
                 }
                 _assessmentsData = [
@@ -467,7 +472,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               }
             },
           ),
-          // Subject dropdown: only if the selected course provides a subject.
+          // Subject dropdown.
           if (_selectedCourse != null)
             DropdownButtonFormField<String>(
               value: _selectedSubject,
@@ -484,7 +489,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                 });
               },
             ),
-          // Assessment dropdown populated from live assessments.
+          // Assessment dropdown.
           DropdownButtonFormField<Assessment>(
             value: _selectedAssessment,
             decoration: const InputDecoration(labelText: 'Assessment'),
@@ -525,82 +530,74 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   // _buildQuestionBreakdown:
   // Displays the question breakdown table for quiz assessments.
   // This is shown only when a quiz is selected.
+  // Here, each DataCell wraps its Text widget with an IntrinsicWidth widget
+  // to ensure that the column width adjusts to the largest text.
+  // Additionally, the entire table is wrapped in a FittedBox to scale down
+  // the table if the user has a smaller screen or they change their resolution.
   // ---------------------------------------------------------------------------
- Widget _buildQuestionBreakdown() {
+  Widget _buildQuestionBreakdown() {
     if (isEssay()) {
       return const SizedBox.shrink();
     }
     if (_questionBreakdown.isEmpty) {
       return const Center(child: Text('No question breakdown available.'));
     }
-
-    // Example hard-coded or computed stats.
-    // Replace these with real calculations if you have them:
-    final double averageGrade = getAverageGrade();
-    final int numSubmittedQuizzes = getTotalSubmittedQuizzes();     
-    final int numStudentsInClass = _studentBreakdown.length;       
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // ====== ADDED SECTION ======
-        Text('Average Grade: $averageGrade%'),
-        Text('Number of Submitted Quizzes: $numSubmittedQuizzes'),
-        Text('Number of Students in Class: $numStudentsInClass'),
-        const SizedBox(height: 16),
-        // ====== END ADDED SECTION ======
-
-        SizedBox(
-          height: 200,
+    return SizedBox(
+      height: 200,
+      child: Scrollbar(
+        thumbVisibility: true,
+        controller: _verticalQuestionController,
+        child: SingleChildScrollView(
+          controller: _verticalQuestionController,
+          scrollDirection: Axis.vertical,
           child: Scrollbar(
             thumbVisibility: true,
-            controller: _verticalQuestionController,
+            controller: _horizontalQuestionController,
+            notificationPredicate: (notification) => notification.depth == 2,
             child: SingleChildScrollView(
-              controller: _verticalQuestionController,
-              scrollDirection: Axis.vertical,
-              child: Scrollbar(
-                thumbVisibility: true,
-                controller: _horizontalQuestionController,
-                notificationPredicate: (notification) => notification.depth == 2,
-                child: SingleChildScrollView(
-                  controller: _horizontalQuestionController,
-                  scrollDirection: Axis.horizontal,
-                  child: DataTable(
-                    columns: const [
-                      DataColumn(label: Text('#')),
-                      DataColumn(label: Text('Question Type')),
-                      DataColumn(label: Text('Question')),
-                      DataColumn(label: Text('% Answered Correct')),
-                      DataColumn(label: Text('# of Correct')),
-                      DataColumn(label: Text('# of Incorrect')),
-                      DataColumn(label: Text('# of Total Attempts')),
-                    ],
-                    rows: _questionBreakdown.map((q) {
-                      return DataRow(cells: [
-                        DataCell(Text(q.id.toString())),
-                        DataCell(Text(q.questionType)),
-                        DataCell(Text(q.questionText)),
-                        DataCell(Text("${computePercentCorrect(q).toStringAsFixed(2)}%")),
-                        DataCell(Text(q.numCorrect.toString())),
-                        DataCell(Text(q.numIncorrect.toString())),
-                        DataCell(Text(q.totalAttempts.toString())),
-                      ]);
-                    }).toList(),
-                  ),
+              controller: _horizontalQuestionController,
+              scrollDirection: Axis.horizontal,
+              // This is where the magic happens with the FittedBox and DataTable.
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: DataTable(
+                  columnSpacing: 12.0,
+                  columns: const [
+                    DataColumn(label: Text('#')),
+                    DataColumn(label: Text('Question Type')),
+                    DataColumn(label: Text('Question')),
+                    DataColumn(label: Text('% Answered Correct')),
+                    DataColumn(label: Text('# Correct')),
+                    DataColumn(label: Text('# Incorrect')),
+                    DataColumn(label: Text('# Total Attempts')),
+                  ],
+                  rows: _questionBreakdown.map((q) {
+                    return DataRow(
+                      cells: [
+                        DataCell(IntrinsicWidth(child: Text(q.id.toString()))),
+                        DataCell(IntrinsicWidth(child: Text(q.questionType))),
+                        DataCell(IntrinsicWidth(child: Text(q.questionText))),
+                        DataCell(IntrinsicWidth(child: Text("${computePercentCorrect(q).toStringAsFixed(2)}%"))),
+                        DataCell(IntrinsicWidth(child: Text(q.numCorrect.toString()))),
+                        DataCell(IntrinsicWidth(child: Text(q.numIncorrect.toString()))),
+                        DataCell(IntrinsicWidth(child: Text(q.totalAttempts.toString()))),
+                      ],
+                    );
+                  }).toList(),
                 ),
               ),
             ),
           ),
         ),
-      ],
+      ),
     );
   }
-
 
   // ---------------------------------------------------------------------------
   // _buildStudentTable:
   // Returns ONLY the table of student data. The detail panel is separate.
- // ---------------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
   Widget _buildStudentTable() {
     if (_studentBreakdown.isEmpty && !isLoading) {
       return const Center(child: Text('No student breakdown available.'));
@@ -624,34 +621,35 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               controller: _horizontalStudentController,
               scrollDirection: Axis.horizontal,
               child: DataTable(
+                columnSpacing: 12.0,
                 columns: const [
                   DataColumn(label: Text('Student Name')),
                   DataColumn(label: Text('Average Grade')),
                   DataColumn(label: Text('Class Rank')),
-                  DataColumn(label: Text('National Comparison')),
                 ],
                 rows: _studentBreakdown.map((student) {
-                  return DataRow(cells: [
-                    DataCell(
-                      InkWell(
-                        onTap: () {
-                          setState(() {
-                            _selectedStudent = student;
-                          });
-                        },
-                        child: Text(
-                          student['studentName'].toString(),
-                          style: const TextStyle(
-                            color: Colors.blue,
-                            decoration: TextDecoration.underline,
+                  return DataRow(
+                    cells: [
+                      DataCell(
+                        InkWell(
+                          onTap: () {
+                            setState(() {
+                              _selectedStudent = student;
+                            });
+                          },
+                          child: Text(
+                            student['studentName'].toString(),
+                            style: const TextStyle(
+                              color: Colors.blue,
+                              decoration: TextDecoration.underline,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    DataCell(Text(student['avgGrade'].toString())),
-                    DataCell(Text(student['classRank'].toString())),
-                    DataCell(Text(student['nationalComparison'].toString())),
-                  ]);
+                      DataCell(Text(student['avgGrade'].toString())),
+                      DataCell(Text(student['classRank'].toString())),
+                    ],
+                  );
                 }).toList(),
               ),
             ),
@@ -674,24 +672,19 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         ),
       );
     }
-
     int studentId = _selectedStudent!['id'];
-
-    return FutureBuilder<List<Map<String, String>>>(
+    return FutureBuilder<List<Map<String, String>>>( 
       future: _fetchAllAssessmentsForStudent(studentId),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
         if (snapshot.hasError) {
-          return Center(
-            child: Text('Error loading grades: ${snapshot.error}'),
-          );
+          return Center(child: Text('Error loading grades: ${snapshot.error}'));
         }
         if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return Text('No data available for student $studentId.');
         }
-
         List<Map<String, String>> detailData = snapshot.data!;
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -729,27 +722,21 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   }
 
   // ---------------------------------------------------------------------------
+  // _fetchAllAssessmentsForStudent:
   // Helper function to fetch ALL assessments (quiz or essay) for ONE student.
-  // It loops over _assessmentsData and calls the correct Moodle service for each.
   // ---------------------------------------------------------------------------
   Future<List<Map<String, String>>> _fetchAllAssessmentsForStudent(int studentId) async {
     if (_selectedCourse == null) return [];
-
-    // We'll gather up a list of async calls in futureList
     List<Future<Map<String, String>>> futureList = [];
-
     for (var assessment in _assessmentsData) {
       futureList.add(() async {
         String gradeStr = "0%";
-
-        if (isQuiz()) {
-          // Fetch participants for this quiz
+        if (assessment.type == "quiz") {
           final participants = await (lmsService as moodle.MoodleLmsService)
               .getQuizGradesForParticipants(
                 _selectedCourse!.id.toString(),
                 assessment.id,
               );
-          // Filter for this student
           final participant = participants.firstWhere(
             (p) => p.id == studentId,
             orElse: () => Participant.empty(),
@@ -758,13 +745,11 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             gradeStr = "${participant.avgGrade!.toInt()}%";
           }
         } else if (assessment.type == "essay") {
-          // Fetch participants for this essay
           final participants = await (lmsService as moodle.MoodleLmsService)
               .getEssayGradesForParticipants(
                 _selectedCourse!.id.toString(),
                 assessment.id,
               );
-          // Filter for this student
           final participant = participants.firstWhere(
             (p) => p.id == studentId,
             orElse: () => Participant.empty(),
@@ -773,8 +758,6 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             gradeStr = "${participant.avgGrade!.toInt()}%";
           }
         }
-
-        // Return a map with the assessment name, type, and computed grade
         return {
           'Assessment': assessment.name,
           'Type': assessment.type.toUpperCase(),
@@ -782,13 +765,12 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         };
       }());
     }
-
-    // Wait for all those calls to finish
     return Future.wait(futureList);
   }
 
   // ---------------------------------------------------------------------------
-  // If the user selected a quiz, fetch a question breakdown for that quiz.
+  // _fetchQuestionBreakdown:
+  // If a quiz is selected, fetch its question breakdown.
   // ---------------------------------------------------------------------------
   Future<void> _fetchQuestionBreakdown() async {
     if (isQuiz()) {
@@ -796,8 +778,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         int quizId = _selectedAssessment!.assessment.id;
         _questionBreakdown = await (lmsService as dynamic)
             .getQuestionStatsFromQuiz(quizId);
-
-        setState(() {}); // Refresh UI with new breakdown
+        setState(() {});
       } catch (e) {
         print("Failed to fetch question breakdown: $e");
       }
@@ -815,7 +796,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   // ---------------------------------------------------------------------------
   // _buildMainGrid:
   // Creates a 2×2 grid layout:
-  //  Top-left: Report form
+  //  Top-left: Report form (narrower)
   //  Bottom-left: Student breakdown table
   //  Top-right: Question breakdown
   //  Bottom-right: Selected student detail
@@ -824,17 +805,15 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Left Column
+        // Left Column (narrow)
         Expanded(
           flex: 1,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Top-left: the form
+              // Top-left: the report form
               _buildReportForm(),
               const SizedBox(height: 20),
-
-              // Bottom-left: label + student table
               const Text(
                 'Student Breakdown',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
@@ -849,10 +828,9 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           ),
         ),
         const SizedBox(width: 16),
-
-        // Right Column
+        // Right Column (wider)
         Expanded(
-          flex: 1,
+          flex: 2,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -868,8 +846,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                 child: _buildQuestionBreakdown(),
               ),
               const SizedBox(height: 20),
-
-              // Bottom-right: label + detail panel
+              // Bottom-right: label + selected student detail
               const Text(
                 'Student Detail',
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
@@ -925,9 +902,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             ),
           ),
           const SizedBox(height: 20),
-          // 2x2 grid view
+          // 2x2 grid view.
           _buildMainGrid(),
-
           const SizedBox(height: 30),
         ],
       ),
@@ -944,7 +920,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       backgroundColor: Theme.of(context).colorScheme.surface,
       appBar: CustomAppBar(
         title: 'Analytics Dashboard',
-        userprofileurl: LmsFactory.getLmsService().profileImage ?? '',
+        userprofileurl: lmsService.profileImage ?? '',
         onRefresh: _fetchAnalyticsData,
       ),
       body: Padding(
@@ -953,74 +929,36 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       ),
     );
   }
-  
-  /**
-   * Computes the percentage a question is answered correctly.
-   * Correct Percentage = ((numcorrect + numpartial) / totalattempts) * 100
-   */
+
+  /// Computes the percentage a question is answered correctly.
   double computePercentCorrect(QuestionStatsType q) {
-    if (q.totalAttempts == 0) return 0.0; // Avoid division by zero
+    if (q.totalAttempts == 0) return 0.0;
     return ((q.numCorrect + q.numPartial) / q.totalAttempts) * 100;
   }
-  
-  // loop over all the studentBreadkdown and get all of the avgGrades
+
+  /// Computes the average grade across the student breakdown.
   double getAverageGrade() {
-    // short circuit the method If there's no data, just return 0 to avoid division by zero.
-    if (_studentBreakdown.isEmpty) {
-      return 0.0;
-    }
-
+    if (_studentBreakdown.isEmpty) return 0.0;
     double sum = 0.0;
-
-    // loop over every student and grab there avgGrade (technically it is a their grade)
     for (var student in _studentBreakdown) {
-      // Extract the "avgGrade" field
       String? gradeStr = student['avgGrade'];
-
-      // If the field is missing or invalid, skip it.
-      if (gradeStr == null || gradeStr.isEmpty) {
-        continue;
-      }
-
-      // Remove the percent sign, parse as double.
+      if (gradeStr == null || gradeStr.isEmpty) continue;
       gradeStr = gradeStr.replaceAll('%', '');
       double? numericGrade = double.tryParse(gradeStr);
-
-      // Accumulate the parsed numeric grade, defaulting to 0 if parse fails.
       sum += numericGrade ?? 0.0;
     }
-
-    // Divide by number of students to get average.
     return sum / _studentBreakdown.length;
   }
-  
-  /// Returns the total number of quizzes submitted for the current quiz
-  /// by dividing the sum of all question attempts by the count of questions.
-  /// 
-  /// For each question Q:
-  ///   totalAttemptsForQ = (Q.numCorrect + Q.numIncorrect + Q.numPartial)
-  /// Then:
-  ///   totalQuizSubmissions = grandTotalAttemptsAcrossAllQuestions / numberOfQuestions
-  int getTotalSubmittedQuizzes() {
-    if (_questionBreakdown.isEmpty) {
-      return 0;
-    }
 
+  /// Returns the total number of quizzes submitted for the current quiz.
+  int getTotalSubmittedQuizzes() {
+    if (_questionBreakdown.isEmpty) return 0;
     double grandTotalAttempts = 0;
     int questionCount = _questionBreakdown.length;
-
     for (QuestionStatsType q in _questionBreakdown) {
       grandTotalAttempts += (q.numCorrect + q.numIncorrect + q.numPartial);
     }
-
-    // If for some reason questionCount is 0, avoid division by zero
     if (questionCount == 0) return 0;
-
-    // Divide total attempts by question count to get # of submissions
-    double submissions = grandTotalAttempts / questionCount;
-
-    // Round to an integer or use floor/ceil if preferred
-    return submissions.round();
+    return (grandTotalAttempts / questionCount).round();
   }
-
 }
