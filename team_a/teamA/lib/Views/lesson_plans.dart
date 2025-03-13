@@ -31,11 +31,15 @@ class _LessonPlanState extends State<LessonPlans> {
 
   final TextEditingController lessonPlanNameController = TextEditingController();
   final TextEditingController manualEntryController = TextEditingController();
+  final TextEditingController additionalPromptController = TextEditingController(); // New controller
+  bool showAiPromptSection = false; // New state variable to control visibility
+  bool isGeneratingLesson = false; // New state variable for loading state
 
   @override
   void dispose() {
     lessonPlanNameController.dispose();
     manualEntryController.dispose();
+    additionalPromptController.dispose();
     super.dispose();
   }
 
@@ -64,26 +68,29 @@ class _LessonPlanState extends State<LessonPlans> {
   }
 
   Future<void> generateLessonPlanWithAI() async {
-    try {
-      final aiModel;
-      if (selectedLLM == LlmType.CHATGPT) {
-        aiModel = OpenAiLLM(LocalStorageService.getOpenAIKey());
-      } else if (selectedLLM == LlmType.GROK) {
-        aiModel = GrokLLM(LocalStorageService.getGrokKey());
-      } else {
-        aiModel = PerplexityLLM(LocalStorageService.getPerplexityKey());
-      }
-
-      String prompt = "Generate an all text (no diagrams) lesson for ${lessonPlanNameController.text} for grade $selectedGradeLevel covering key topics like ${manualEntryController.text}. This lesson is WHAT THE STUDENT WILL SEE! This lesson will be viewed by students and students will use it to study from (which will help them write essays and take quizzes).";
-      var result = await aiModel.postToLlm(prompt);
-
-      setState(() {
-        manualEntryController.text = result;
-      });
-    } catch (e) {
-      print("Error generating lesson plan: $e");
+  try {
+    final aiModel;
+    if (selectedLLM == LlmType.CHATGPT) {
+      aiModel = OpenAiLLM(LocalStorageService.getOpenAIKey());
+    } else if (selectedLLM == LlmType.GROK) {
+      aiModel = GrokLLM(LocalStorageService.getGrokKey());
+    } else {
+      aiModel = PerplexityLLM(LocalStorageService.getPerplexityKey());
     }
+
+    String prompt = "Generate an all text (no diagrams) lesson for ${lessonPlanNameController.text} for grade $selectedGradeLevel covering key topics like ${manualEntryController.text}. ${additionalPromptController.text}. This lesson is WHAT THE STUDENT WILL SEE! This lesson will be viewed by students and students will use it to study from (which will help them write essays and take quizzes).";
+    var result = await aiModel.postToLlm(prompt);
+
+    setState(() {
+      manualEntryController.text = result; // Update the manual entry textbox with the AI response
+    });
+  } catch (e) {
+    print("Error generating lesson plan: $e");
+    setState(() {
+      isGeneratingLesson = false; // Ensure loading spinner is hidden on error
+    });
   }
+}
 
   String _convertTextToHtml(String text) {
     return "<p>${text.replaceAll('\n\n', '</p><p>').replaceAll('\n', '<br>')}</p>";
@@ -200,6 +207,7 @@ class _LessonPlanState extends State<LessonPlans> {
                             SizedBox(height: 20),
 
                             // AI and Manual Generation Options
+                            // Inside the build method, where the AI generation options are defined
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -210,13 +218,14 @@ class _LessonPlanState extends State<LessonPlans> {
                                     setState(() {
                                       useAiGeneration = value!;
                                       useManualGeneration = false; // Ensure only one option is selected
+                                      showAiPromptSection = useAiGeneration; // Show/hide the new section
                                       if (!useAiGeneration) {
                                         selectedLLM = null; // Reset dropdown when unchecked
                                       }
                                     });
                                   },
                                 ),
-                                
+
                                 if (useAiGeneration)
                                   DropdownButtonFormField<LlmType>(
                                     value: selectedLLM,
@@ -237,6 +246,48 @@ class _LessonPlanState extends State<LessonPlans> {
                                     }).toList(),
                                     disabledHint: Text("Enable AI to select a model"),
                                   ),
+
+                                // New UI elements for additional AI prompt
+                                if (showAiPromptSection)
+                                  Column(
+                                    children: [
+                                      SizedBox(height: 20),
+                                      TextField(
+                                        controller: additionalPromptController,
+                                        maxLines: 4, // Half the height of the manual entry textbox
+                                        decoration: InputDecoration(
+                                          labelText: "Enter any additional prompts for the AI model to customize your lesson",
+                                          border: OutlineInputBorder(),
+                                        ),
+                                      ),
+                                      SizedBox(height: 10),
+                                      ElevatedButton(
+                                        onPressed: isGeneratingLesson
+                                            ? null
+                                            : () async {
+                                                setState(() {
+                                                  isGeneratingLesson = true; // Show loading spinner
+                                                });
+
+                                                await generateLessonPlanWithAI(); // Call the AI generation logic
+
+                                                setState(() {
+                                                  isGeneratingLesson = false; // Hide loading spinner
+                                                });
+                                              },
+                                        child: isGeneratingLesson
+                                            ? SizedBox(
+                                                width: 24,
+                                                height: 24,
+                                                child: CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                                ),
+                                              )
+                                            : Text("Generate Lesson Plan"),
+                                      ),
+                                    ],
+                                  ),
                               ],
                             ),
                             SizedBox(height: 20),
@@ -247,7 +298,7 @@ class _LessonPlanState extends State<LessonPlans> {
                               maxLines: 8,
                               decoration: InputDecoration(
                                 labelText: useAiGeneration
-                                    ? "Enter any additional prompts for the AI model to customize your lesson"
+                                    ? "Edit the AI-generated lesson plan"
                                     : "Enter Lesson Plan Manually",
                                 border: OutlineInputBorder(),
                               ),
@@ -264,9 +315,6 @@ class _LessonPlanState extends State<LessonPlans> {
                                       });
 
                                       if (selectedCourse != null) {
-                                        if (useAiGeneration) {
-                                          await generateLessonPlanWithAI();
-                                        }
                                         Lesson newLp = Lesson(
                                           lessonPlanName: lessonPlanNameController.text,
                                           courseId: int.parse(selectedCourse!),
@@ -498,6 +546,7 @@ class _LessonPlanState extends State<LessonPlans> {
                       SizedBox(height: 20),
 
                       // AI and Manual Generation Options
+                      // Inside the build method, where the AI generation options are defined
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -508,13 +557,14 @@ class _LessonPlanState extends State<LessonPlans> {
                               setState(() {
                                 useAiGeneration = value!;
                                 useManualGeneration = false; // Ensure only one option is selected
+                                showAiPromptSection = useAiGeneration; // Show/hide the new section
                                 if (!useAiGeneration) {
                                   selectedLLM = null; // Reset dropdown when unchecked
                                 }
                               });
                             },
                           ),
-                          
+
                           if (useAiGeneration)
                             DropdownButtonFormField<LlmType>(
                               value: selectedLLM,
@@ -535,6 +585,48 @@ class _LessonPlanState extends State<LessonPlans> {
                               }).toList(),
                               disabledHint: Text("Enable AI to select a model"),
                             ),
+
+                          // New UI elements for additional AI prompt
+                          if (showAiPromptSection)
+                            Column(
+                              children: [
+                                SizedBox(height: 20),
+                                TextField(
+                                  controller: additionalPromptController,
+                                  maxLines: 4, // Half the height of the manual entry textbox
+                                  decoration: InputDecoration(
+                                    labelText: "Enter any additional prompts for the AI model to customize your lesson",
+                                    border: OutlineInputBorder(),
+                                  ),
+                                ),
+                                SizedBox(height: 10),
+                                ElevatedButton(
+                                  onPressed: isGeneratingLesson
+                                      ? null
+                                      : () async {
+                                          setState(() {
+                                            isGeneratingLesson = true; // Show loading spinner
+                                          });
+
+                                          await generateLessonPlanWithAI(); // Call the AI generation logic
+
+                                          setState(() {
+                                            isGeneratingLesson = false; // Hide loading spinner
+                                          });
+                                        },
+                                  child: isGeneratingLesson
+                                      ? SizedBox(
+                                          width: 24,
+                                          height: 24,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                          ),
+                                        )
+                                      : Text("Generate Lesson Plan"),
+                                ),
+                              ],
+                            ),
                         ],
                       ),
                       SizedBox(height: 20),
@@ -545,8 +637,8 @@ class _LessonPlanState extends State<LessonPlans> {
                         maxLines: 8,
                         decoration: InputDecoration(
                           labelText: useAiGeneration
-                              ? "Enter any additional prompts for the AI model to customize your lesson"
-                              : "Enter Lesson Plan Manually",
+                              ? "Edit the AI-generated lesson plan"
+                              : "Enter the Lesson Plan Manually",
                           border: OutlineInputBorder(),
                         ),
                       ),
@@ -562,9 +654,6 @@ class _LessonPlanState extends State<LessonPlans> {
                                 });
 
                                 if (selectedCourse != null) {
-                                  if (useAiGeneration) {
-                                    await generateLessonPlanWithAI();
-                                  }
                                   Lesson newLp = Lesson(
                                     lessonPlanName: lessonPlanNameController.text,
                                     courseId: int.parse(selectedCourse!),
