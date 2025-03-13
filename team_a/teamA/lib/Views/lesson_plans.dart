@@ -587,7 +587,7 @@ class _LessonPlanState extends State<LessonPlans> {
                           border: OutlineInputBorder(),
                         ),
                         value: selectedGradeLevel,
-                        items: <String>['9', '10', '11', '12'].map((String value) {
+                        items: gradeLevels.map((String value) {
                           return DropdownMenuItem<String>(
                             value: value,
                             child: Text(value),
@@ -656,7 +656,7 @@ class _LessonPlanState extends State<LessonPlans> {
                                 ),
                                 SizedBox(height: 10),
                                 ElevatedButton(
-                                  onPressed: isGeneratingLesson
+                                  onPressed: isGeneratingLesson || selectedLLM == null
                                       ? null
                                       : () async {
                                           setState(() {
