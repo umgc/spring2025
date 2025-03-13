@@ -216,16 +216,7 @@ class _LessonPlanState extends State<LessonPlans> {
                                     });
                                   },
                                 ),
-                                CheckboxListTile(
-                                  title: Text("Generate Lesson Plan without AI"),
-                                  value: useManualGeneration,
-                                  onChanged: (bool? value) {
-                                    setState(() {
-                                      useManualGeneration = value!;
-                                      useAiGeneration = false; // Ensure only one option is selected
-                                    });
-                                  },
-                                ),
+                                
                                 if (useAiGeneration)
                                   DropdownButtonFormField<LlmType>(
                                     value: selectedLLM,
@@ -524,16 +515,7 @@ class _LessonPlanState extends State<LessonPlans> {
                               });
                             },
                           ),
-                          CheckboxListTile(
-                            title: Text("Generate Lesson Plan without AI"),
-                            value: useManualGeneration,
-                            onChanged: (bool? value) {
-                              setState(() {
-                                useManualGeneration = value!;
-                                useAiGeneration = false; // Ensure only one option is selected
-                              });
-                            },
-                          ),
+                          
                           if (useAiGeneration)
                             DropdownButtonFormField<LlmType>(
                               value: selectedLLM,
