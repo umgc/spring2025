@@ -10,6 +10,10 @@ import 'package:learninglens_app/Api/llm/openai_api.dart';
 import 'package:learninglens_app/Api/llm/grok_api.dart';
 import 'package:learninglens_app/Api/llm/perplexity_api.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
+import 'dart:convert';
+
+// Define a constant for grade levels
+const List<String> gradeLevels = ['Kindergarten', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
 
 class LessonPlans extends StatefulWidget {
   @override
@@ -23,7 +27,6 @@ class _LessonPlanState extends State<LessonPlans> {
   LessonPlan? selectedLessonPlan;
   bool isEditing = false;
   bool useAiGeneration = false;
-  bool useManualGeneration = false;
   LlmType? selectedLLM;
   bool isSubmitDisabled = false;
   String? selectedGradeLevel;
@@ -67,6 +70,16 @@ class _LessonPlanState extends State<LessonPlans> {
     });
   }
 
+  String normalizeText(String text) {
+  return text
+      .replaceAll('â', "'") // Replace garbled curly apostrophe with a plain apostrophe
+      .replaceAll('’', "'")   // Replace Unicode curly apostrophe with a plain apostrophe
+      .replaceAll('“', '"')   // Replace Unicode left double quotation mark
+      .replaceAll('”', '"')   // Replace Unicode right double quotation mark
+      .replaceAll('‘', "'")   // Replace Unicode left single quotation mark
+      .replaceAll('’', "'");  // Replace Unicode right single quotation mark
+}
+
   Future<void> generateLessonPlanWithAI() async {
   try {
     final aiModel;
@@ -78,11 +91,13 @@ class _LessonPlanState extends State<LessonPlans> {
       aiModel = PerplexityLLM(LocalStorageService.getPerplexityKey());
     }
 
-    String prompt = "Generate an all text (no diagrams) lesson for ${lessonPlanNameController.text} for grade $selectedGradeLevel covering key topics like ${manualEntryController.text}. ${additionalPromptController.text}. This lesson is WHAT THE STUDENT WILL SEE! This lesson will be viewed by students and students will use it to study from (which will help them write essays and take quizzes).";
+    String prompt = """Generate an all text (no diagrams) lesson for ${lessonPlanNameController.text} for grade $selectedGradeLevel covering key topics like ${manualEntryController.text}. ${additionalPromptController.text}. This lesson is WHAT THE STUDENT WILL SEE! This lesson will be viewed by students and students will use it to study from (which will help them write essays and take quizzes). IMPORTANT: Do not use any Markdown syntax (e.g., #, *, **, etc.). Use plain text only.""";
     var result = await aiModel.postToLlm(prompt);
 
+    String normalizedText = utf8.decode(result.codeUnits);
+
     setState(() {
-      manualEntryController.text = result; // Update the manual entry textbox with the AI response
+      manualEntryController.text = normalizeText(normalizedText); // Update the manual entry textbox with the AI response
     });
   } catch (e) {
     print("Error generating lesson plan: $e");
@@ -170,6 +185,15 @@ class _LessonPlanState extends State<LessonPlans> {
                                 setState(() {
                                   selectedCourse = value;
                                   _fetchLessonPlans(int.parse(value!));
+                                  lessonPlanNameController.clear();
+                                  manualEntryController.clear();
+                                  additionalPromptController.clear(); 
+                                  selectedLLM = null; 
+                                  isEditing = false;
+                                  isSubmitDisabled = false;
+                                  useAiGeneration = false;
+                                  showAiPromptSection = false;
+                                  selectedGradeLevel = null;
                                 });
                               },
                               decoration: InputDecoration(
@@ -192,7 +216,7 @@ class _LessonPlanState extends State<LessonPlans> {
                                 border: OutlineInputBorder(),
                               ),
                               value: selectedGradeLevel,
-                              items: <String>['9', '10', '11', '12'].map((String value) {
+                              items: gradeLevels.map((String value) {
                                 return DropdownMenuItem<String>(
                                   value: value,
                                   child: Text(value),
@@ -217,7 +241,6 @@ class _LessonPlanState extends State<LessonPlans> {
                                   onChanged: (bool? value) {
                                     setState(() {
                                       useAiGeneration = value!;
-                                      useManualGeneration = false; // Ensure only one option is selected
                                       showAiPromptSection = useAiGeneration; // Show/hide the new section
                                       if (!useAiGeneration) {
                                         selectedLLM = null; // Reset dropdown when unchecked
@@ -262,7 +285,7 @@ class _LessonPlanState extends State<LessonPlans> {
                                       ),
                                       SizedBox(height: 10),
                                       ElevatedButton(
-                                        onPressed: isGeneratingLesson
+                                        onPressed: isGeneratingLesson || selectedLLM == null
                                             ? null
                                             : () async {
                                                 setState(() {
@@ -433,7 +456,7 @@ class _LessonPlanState extends State<LessonPlans> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 ElevatedButton(
-                                  onPressed: selectedLessonPlan != null
+                                  onPressed: selectedLessonPlan != null && !isEditing
                                       ? () async {
                                           await MoodleLmsService().deleteLessonPlan(selectedLessonPlan!.id);
                                           _fetchLessonPlans(int.parse(selectedCourse!));
@@ -445,7 +468,7 @@ class _LessonPlanState extends State<LessonPlans> {
                                   child: Text('Delete Selected'),
                                 ),
                                 ElevatedButton(
-                                  onPressed: selectedLessonPlan != null
+                                  onPressed: selectedLessonPlan != null && !isEditing
                                       ? () {
                                           setState(() {
                                             isEditing = true;
@@ -509,6 +532,15 @@ class _LessonPlanState extends State<LessonPlans> {
                           setState(() {
                             selectedCourse = value;
                             _fetchLessonPlans(int.parse(value!));
+                            lessonPlanNameController.clear();
+                            manualEntryController.clear();
+                            additionalPromptController.clear(); 
+                            selectedLLM = null; 
+                            isEditing = false;
+                            isSubmitDisabled = false;
+                            useAiGeneration = false;
+                            showAiPromptSection = false;
+                            selectedGradeLevel = null;
                           });
                         },
                         decoration: InputDecoration(
@@ -556,7 +588,6 @@ class _LessonPlanState extends State<LessonPlans> {
                             onChanged: (bool? value) {
                               setState(() {
                                 useAiGeneration = value!;
-                                useManualGeneration = false; // Ensure only one option is selected
                                 showAiPromptSection = useAiGeneration; // Show/hide the new section
                                 if (!useAiGeneration) {
                                   selectedLLM = null; // Reset dropdown when unchecked
@@ -664,6 +695,15 @@ class _LessonPlanState extends State<LessonPlans> {
                                   _fetchLessonPlans(int.parse(selectedCourse!));
                                   lessonPlanNameController.clear();
                                   manualEntryController.clear();
+                                  lessonPlanNameController.clear();
+                                  manualEntryController.clear();
+                                  additionalPromptController.clear(); 
+                                  selectedLLM = null; 
+                                  isEditing = false;
+                                  isSubmitDisabled = false;
+                                  useAiGeneration = false;
+                                  showAiPromptSection = false;
+                                  selectedGradeLevel = null;
                                 }
 
                                 setState(() {
@@ -765,7 +805,7 @@ class _LessonPlanState extends State<LessonPlans> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           ElevatedButton(
-                            onPressed: selectedLessonPlan != null
+                            onPressed: selectedLessonPlan != null && !isEditing
                                 ? () async {
                                     await MoodleLmsService().deleteLessonPlan(selectedLessonPlan!.id);
                                     _fetchLessonPlans(int.parse(selectedCourse!));
@@ -777,7 +817,7 @@ class _LessonPlanState extends State<LessonPlans> {
                             child: Text('Delete Selected'),
                           ),
                           ElevatedButton(
-                            onPressed: selectedLessonPlan != null
+                            onPressed: selectedLessonPlan != null && !isEditing
                                 ? () {
                                     setState(() {
                                       isEditing = true;
