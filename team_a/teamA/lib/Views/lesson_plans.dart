@@ -272,7 +272,6 @@ class _LessonPlanState extends State<LessonPlans> {
                                           courseId: int.parse(selectedCourse!),
                                           content: _convertTextToHtml(manualEntryController.text),
                                         );
-                                        newLp.saveLessonLocally();
                                         bool success = await newLp.submitLesson();
                                         print(success ? 'Lesson plan sent successfully' : 'Lesson plan send failed');
                                         _fetchLessonPlans(int.parse(selectedCourse!));
@@ -571,7 +570,6 @@ class _LessonPlanState extends State<LessonPlans> {
                                     courseId: int.parse(selectedCourse!),
                                     content: _convertTextToHtml(manualEntryController.text),
                                   );
-                                  newLp.saveLessonLocally();
                                   bool success = await newLp.submitLesson();
                                   print(success ? 'Lesson plan sent successfully' : 'Lesson plan send failed');
                                   _fetchLessonPlans(int.parse(selectedCourse!));
