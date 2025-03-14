@@ -76,9 +76,9 @@ class TeacherDashboard extends StatelessWidget {
   }
 
   bool canUserAccessApp(BuildContext context) {
-    bool isLoggedIn = LocalStorageService.isLoggedIntoMoodle();
-    bool hasLLMKey = LocalStorageService.hasLLMKey();
-    return isLoggedIn && hasLLMKey;
+    bool isLoggedIntoGoogleClassroom = LocalStorageService.isLoggedIntoGoogle() && LocalStorageService.hasLLMKey();
+    bool isLoggedIntoMoodle = LocalStorageService.isLoggedIntoMoodle() && LocalStorageService.hasLLMKey();
+    return isMoodle() ? isLoggedIntoMoodle : isLoggedIntoGoogleClassroom;
   }
 
   String getClassroom() {
