@@ -102,7 +102,7 @@ class _LessonPlanState extends State<LessonPlans> {
       aiModel = PerplexityLLM(LocalStorageService.getPerplexityKey());
     }
 
-    String prompt = """Generate an all text (no diagrams) lesson for ${lessonPlanNameController.text} for grade $selectedGradeLevel covering key topics like ${manualEntryController.text}. ${additionalPromptController.text}. This lesson is WHAT THE STUDENT WILL SEE! This lesson will be viewed by students and students will use it to study from (which will help them write essays and take quizzes). IMPORTANT: Do not use any Markdown syntax (e.g., #, *, **, etc.). Use plain text only.""";
+    String prompt = """Generate an all text (no diagrams) lesson of less than 500 words for ${lessonPlanNameController.text} for grade $selectedGradeLevel covering key topics like ${manualEntryController.text}. ${additionalPromptController.text}. This lesson is WHAT THE STUDENT WILL SEE! This lesson will be viewed by students and students will use it to study from (which will help them write essays and take quizzes). IMPORTANT: Do not use any Markdown syntax (e.g., #, *, **, etc.). Use plain text only.""";
     var result = await aiModel.postToLlm(prompt);
 
     String normalizedText = utf8.decode(result.codeUnits);
