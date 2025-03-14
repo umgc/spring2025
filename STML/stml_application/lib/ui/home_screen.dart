@@ -16,10 +16,6 @@ import 'package:memoryminder/src/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:memoryminder/database_helper.dart';
 
-
-
-
-
 // Main HomeScreen widget which is a stateless widget.
 class HomeScreen extends StatefulWidget {
   @override
@@ -42,12 +38,11 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _initializeCamera();
-    _loadSafeZone(); 
+    _loadSafeZone();
     _listenToLocationChanges();
   }
 
-
- // ✅ Load safe zone from database when the app starts
+  // ✅ Load safe zone from database when the app starts
   Future<void> _loadSafeZone() async {
     final safeZone = await DatabaseHelper.instance.getSafeZone();
     if (safeZone != null) {
@@ -58,6 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
       });
     }
   }
+
   //✅ Open a dialog for user to set a safe zone
   void _setSafeZone() async {
     TextEditingController latController = TextEditingController();
@@ -103,7 +99,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 safeZoneRadius = double.tryParse(radiusController.text) ?? 100;
               });
 
-            
               // ✅ Save to database
               await DatabaseHelper.instance.saveSafeZone(
                 homeLatitude!,
@@ -137,42 +132,40 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-
-void _showLocationOptions(BuildContext context) {
-  showModalBottomSheet(
-    context: context,
-    shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
-    ),
-    builder: (context) {
-      return Wrap(
-        children: [
-          ListTile(
-            leading: Icon(Icons.history, color: Colors.blueAccent),
-            title: Text("View Location History"),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => LocationHistoryScreen()),
-              );
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.shield, color: Colors.green),
-            title: Text("Set Safe Zone"),
-            onTap: () {
-              Navigator.pop(context);
-              _setSafeZone();  // ✅ Open Safe Zone dialog
-            },
-          ),
-        ],
-      );
-    },
-  );
-}
-
-
+  void _showLocationOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
+      ),
+      builder: (context) {
+        return Wrap(
+          children: [
+            ListTile(
+              leading: Icon(Icons.history, color: Colors.blueAccent),
+              title: Text("View Location History"),
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => LocationHistoryScreen()),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.shield, color: Colors.green),
+              title: Text("Set Safe Zone"),
+              onTap: () {
+                Navigator.pop(context);
+                _setSafeZone(); // ✅ Open Safe Zone dialog
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   _initializeCamera() {
     if (!hasBeenInitialized) {
@@ -181,6 +174,7 @@ void _showLocationOptions(BuildContext context) {
       hasBeenInitialized = true;
     }
   }
+
   bool _alertTriggered = false; // Prevent repeated alerts
 
   Future<void> _listenToLocationChanges() async {
@@ -191,54 +185,57 @@ void _showLocationOptions(BuildContext context) {
         double userLat = position.latitude;
         double userLong = position.longitude;
 
-      // ✅ Reverse geocoding to get address
-      List<Placemark> placemarks = await placemarkFromCoordinates(userLat, userLong);
-      if (placemarks.isNotEmpty) {
-        final Placemark placemark = placemarks.first;
-        final address =
-            "${placemark.street}, ${placemark.locality}, ${placemark.administrativeArea}, ${placemark.postalCode}, ${placemark.isoCountryCode}";
+        // ✅ Reverse geocoding to get address
+        List<Placemark> placemarks =
+            await placemarkFromCoordinates(userLat, userLong);
+        if (placemarks.isNotEmpty) {
+          final Placemark placemark = placemarks.first;
+          final address =
+              "${placemark.street}, ${placemark.locality}, ${placemark.administrativeArea}, ${placemark.postalCode}, ${placemark.isoCountryCode}";
 
-        // ✅ Check if the location has changed before updating database
-        if (currentLocationEntry == null || currentLocationEntry!.address != address) {
-          if (currentLocationEntry != null && currentLocationEntry!.endTime == null) {
-            currentLocationEntry!.endTime = DateTime.now();
-            await LocationDatabase.instance.update(currentLocationEntry!);
+          // ✅ Check if the location has changed before updating database
+          if (currentLocationEntry == null ||
+              currentLocationEntry!.address != address) {
+            if (currentLocationEntry != null &&
+                currentLocationEntry!.endTime == null) {
+              currentLocationEntry!.endTime = DateTime.now();
+              await LocationDatabase.instance.update(currentLocationEntry!);
+            }
+
+            final newEntry =
+                LocationEntry(address: address, startTime: DateTime.now());
+            final id = await LocationDatabase.instance.create(newEntry);
+            newEntry.id = id;
+            currentLocationEntry = newEntry;
           }
-
-          final newEntry = LocationEntry(address: address, startTime: DateTime.now());
-          final id = await LocationDatabase.instance.create(newEntry);
-          newEntry.id = id;
-          currentLocationEntry = newEntry;
         }
-      }
 
-      // ✅ Safe Zone Check
-      if (homeLatitude != null && homeLongitude != null) {
-        double distance = Geolocator.distanceBetween(userLat, userLong, homeLatitude!, homeLongitude!);
-        
-        if (distance > safeZoneRadius) {
-          if (!_alertTriggered) {
-            print("🚨 User has left the safe zone!");
-            _showSafeZoneExitAlert();
-            _alertTriggered = true; // Prevent multiple alerts
+        // ✅ Safe Zone Check
+        if (homeLatitude != null && homeLongitude != null) {
+          double distance = Geolocator.distanceBetween(
+              userLat, userLong, homeLatitude!, homeLongitude!);
+
+          if (distance > safeZoneRadius) {
+            if (!_alertTriggered) {
+              print("🚨 User has left the safe zone!");
+              _showSafeZoneExitAlert();
+              _alertTriggered = true; // Prevent multiple alerts
+            }
+          } else {
+            _alertTriggered =
+                false; // Reset alert when user returns to safe zone
           }
-        } else {
-          _alertTriggered = false; // Reset alert when user returns to safe zone
         }
+      } catch (e) {
+        print("❌ Error in location tracking: $e");
       }
-
-    } catch (e) {
-      print("❌ Error in location tracking: $e");
-    }
-  });
-}
-
-
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Set the background color for the entire screen
+        // Set the background color for the entire screen
         extendBodyBehindAppBar: true,
         extendBody: true,
         // Setting up the app bar at the top of the screen
@@ -283,10 +280,6 @@ void _showLocationOptions(BuildContext context) {
             IconButton(
               icon: const Icon(Icons.shield, color: Colors.black54),
               onPressed: _setSafeZone, // Opens safe zone input dialog
-            ),
-            IconButton(
-              icon: const Icon(Icons.more_vert, color: Colors.black54),
-              onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (context) => ProfileScreen())),
             ),
             // First page icon to navigate back
             IconButton(
@@ -371,8 +364,8 @@ void _showLocationOptions(BuildContext context) {
                       text: 'Location',
                       screen: LocationHistoryScreen(),
                       keyName: "LocationObjectButtonKey",
-                      onTap: () => _showLocationOptions(context),  // ✅ Open options menu
-                      
+                      onTap: () =>
+                          _showLocationOptions(context), // ✅ Open options menu
                     ),
                     _buildElevatedButton(
                       context: context,
@@ -408,26 +401,28 @@ void _showLocationOptions(BuildContext context) {
     required String text,
     required Widget screen,
     required String keyName,
-    VoidCallback? onTap,  // ✅ Allow custom action when button is tapped
+    VoidCallback? onTap, // ✅ Allow custom action when button is tapped
   }) {
     return ElevatedButton(
       key: Key(keyName),
       style: ElevatedButton.styleFrom(
         foregroundColor: Colors.black,
         backgroundColor:
-        const Color(0xFFFFFFFF).withOpacity(0.30), // Button text color
+            const Color(0xFFFFFFFF).withOpacity(0.30), // Button text color
         padding: const EdgeInsets.all(16.0),
         elevation: 0.0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10.0),
         ),
       ),
-      onPressed: onTap ?? () { // ✅ If onTap is null, default to navigation
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => screen),
-        );
-      },
+      onPressed: onTap ??
+          () {
+            // ✅ If onTap is null, default to navigation
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => screen),
+            );
+          },
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
