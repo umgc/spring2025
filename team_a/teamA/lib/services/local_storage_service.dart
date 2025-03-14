@@ -183,7 +183,7 @@ class LocalStorageService {
     _prefs.remove('grokKey');
   }
 
-  static String? getGoogleClientId() {
+  static String getGoogleClientId() {
     return _prefs.getString('GOOGLE_CLIENT_ID') ?? dotenv.env['GOOGLE_CLIENT_ID'] ?? '';
   }
 

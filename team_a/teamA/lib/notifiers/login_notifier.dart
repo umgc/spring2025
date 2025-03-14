@@ -1,70 +1,86 @@
-// ignore_for_file: unnecessary_null_comparison
-
 import 'package:flutter/material.dart';
 import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
 import 'package:learninglens_app/Api/lms/lms_interface.dart';
+import 'package:learninglens_app/notifiers/login_state.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
 
 enum LLMKey { openAI, perplexity, claude, grok }
 
 class LoginNotifier with ChangeNotifier {
-  bool _isLoggedIn = false;
+  // ---------------------------------------
+  // New: use these model objects
+  // ---------------------------------------
+  final LoginState _moodleState = LoginState();
+  final LoginState _googleState = LoginState();
+
+  // If you want external access to them, you can provide getters:
+  LoginState get moodleState => _moodleState;
+  LoginState get googleState => _googleState;
+
+  // You can still store other fields here as needed
   bool _hasLLMKey = false;
   String? _username;
   String? _password;
   String? _moodleUrl;
-  String? _errorMessage; // Added to store error messages
+  String? _clientID;  // for Google
+  String? _otherError;  // If you want any global error, or remove if not needed
 
-  // Google variables
-  String? _clientID;
-
-  // final LocalStorageService _localStorageService = LocalStorageService(); ***** Not used *****
   final LmsInterface _api = LmsFactory.getLmsService(); // Moodle API instance
 
   bool get hasLLMKey => _hasLLMKey;
-  bool get isLoggedIn => _isLoggedIn;
   String? get username => _username;
   String? get password => _password;
   String? get moodleUrl => _moodleUrl;
-  String? get errorMessage => _errorMessage; // Getter for error messages
 
-  // late GoogleSignIn _googleSignIn; ***** Not used *****
-
+  // Constructor
   LoginNotifier() {
-    _loadLoginState(); // Load saved login state when the notifier is created
+    _loadLoginState(); // Load any saved login state on creation
   }
 
+  // ---------------------------------------
+  // Load from local storage
+  // ---------------------------------------
   Future<void> _loadLoginState() async {
-    _isLoggedIn = LocalStorageService.isLoggedIntoMoodle();
+    // Moodle
+    _moodleState.isLoggedIn = LocalStorageService.isLoggedIntoMoodle();
     _username = LocalStorageService.getUsername();
     _password = LocalStorageService.getPassword();
     _moodleUrl = LocalStorageService.getMoodleUrl();
+
+    // Google
+    _googleState.isLoggedIn = LocalStorageService.isLoggedIntoGoogle();
     _clientID = LocalStorageService.getGoogleClientId();
 
+    // LLM Key
     _hasLLMKey = await _checkHasLLMKey();
 
+    // Attempt auto-login if we had credentials
     _autoLogin();
     notifyListeners();
   }
 
+  // ---------------------------------------
+  // Check existence of any LLM keys
+  // ---------------------------------------
   Future<bool> _checkHasLLMKey() async {
-    String? openAIKey = LocalStorageService.getOpenAIKey();
-    String? perplexityKey = LocalStorageService.getPerplexityKey();
-    // String? claudeKey = LocalStorageService.getClaudeKey();
-    String? grokKey = LocalStorageService.getGrokKey();
+    final openAIKey = LocalStorageService.getOpenAIKey();
+    final perplexityKey = LocalStorageService.getPerplexityKey();
+    final grokKey = LocalStorageService.getGrokKey();
 
-    return openAIKey != null && openAIKey.isNotEmpty ||
-        perplexityKey != null && perplexityKey.isNotEmpty ||
-        grokKey != null && grokKey.isNotEmpty;
+    return (openAIKey != null && openAIKey.isNotEmpty) ||
+           (perplexityKey != null && perplexityKey.isNotEmpty) ||
+           (grokKey != null && grokKey.isNotEmpty);
   }
 
+  // ---------------------------------------
+  // Auto-login if we have saved credentials
+  // ---------------------------------------
   Future<void> _autoLogin() async {
-    if (_username != null && _username!.isNotEmpty &&
-        _password != null && _password!.isNotEmpty &&
-        _moodleUrl != null && _moodleUrl!.isNotEmpty) {
+    if ((_username != null && _username!.isNotEmpty) &&
+        (_password != null && _password!.isNotEmpty) &&
+        (_moodleUrl != null && _moodleUrl!.isNotEmpty)) {
       try {
-        // Attempt to auto-login with saved credentials
-        await login(_username!, _password!, _moodleUrl!);
+        await signInWithMoodle(_username!, _password!, _moodleUrl!);
       } catch (e) {
         print('Auto-login Error: $e');
       }
@@ -73,64 +89,64 @@ class LoginNotifier with ChangeNotifier {
     }
   }
 
-  Future<void> login(String username, String password, String moodleUrl) async {
+  // ---------------------------------------
+  // Moodle: Sign-in
+  // ---------------------------------------
+  Future<void> signInWithMoodle(String username, String password, String moodleUrl) async {
     try {
       await _api.login(username, password, moodleUrl);
 
       if (_api.isLoggedIn()) {
-        _isLoggedIn = true;
+        _moodleState.isLoggedIn = true;
+        _moodleState.errorMessage = null;   // Clear any old error
         _username = username;
         _password = password;
         _moodleUrl = moodleUrl;
-        _errorMessage = null; // Clear error message on success
 
-        LocalStorageService.saveMoodleLoginState(_isLoggedIn);
+        // Save to local storage
+        LocalStorageService.saveMoodleLoginState(_moodleState.isLoggedIn);
         LocalStorageService.saveCredentials(username, password);
-        LocalStorageService.saveMoodleUrl(moodleUrl); // Save Moodle URL
+        LocalStorageService.saveMoodleUrl(moodleUrl);
 
-        notifyListeners();
       } else {
-        _errorMessage = "Invalid username or password."; // Set error message
-        notifyListeners();
+        // Logged in is false; set a custom error
+        _moodleState.isLoggedIn = false;
+        _moodleState.errorMessage = "Invalid username or password.";
       }
+
+      notifyListeners();
     } catch (e) {
-      _errorMessage = "Login failed: ${e.toString()}"; // Handle exception message
+      // Catch the exception, set isLoggedIn = false, set error
+      _moodleState.isLoggedIn = false;
+      _moodleState.errorMessage = "Moodle login failed: ${e.toString()}";
       notifyListeners();
     }
   }
 
-  void logout() async {
-    _isLoggedIn = false;
+  // ---------------------------------------
+  // Moodle: Sign-out
+  // ---------------------------------------
+  Future<void> signOutFromMoodle() async {
+    _moodleState.isLoggedIn = false;
+    _moodleState.errorMessage = null;
     _username = null;
     _password = null;
     _moodleUrl = null;
-    _errorMessage = null; // Clear error message on logout
 
+    // Clear from local storage
     LocalStorageService.clearMoodleLoginState();
     LocalStorageService.clearCredentials();
     LocalStorageService.clearMoodleUrl();
+
+    // Reset LMS
     LmsFactory.getLmsService().resetLMSUserInfo();
 
     notifyListeners();
   }
 
-  // Save the LLM key to local storage
-  Future<void> saveLLMKey(LLMKey key, String value) async {
-    if (key == LLMKey.openAI) {
-      LocalStorageService.saveOpenAIKey(value);
-    } else if (key == LLMKey.perplexity) {
-      LocalStorageService.savePerplexityKey(value);
-    } else if (key == LLMKey.grok) {
-      print('Saving Grok key');
-      LocalStorageService.saveGrokKey(value);
-    }
-    _hasLLMKey = await _checkHasLLMKey();
-    notifyListeners();
-  }
-
-  ///
-  /// Google Classroom login steps 
-  ///
+  // ---------------------------------------
+  // Google: Sign-in
+  // ---------------------------------------
   Future<void> signInWithGoogle() async {
     if (_clientID == null) {
       throw Exception("GOOGLE_CLIENT_ID not found in .env file.");
@@ -140,39 +156,55 @@ class LoginNotifier with ChangeNotifier {
       await LmsFactory.getLmsServiceGoogle().loginOath(_clientID!);
 
       if (_api.isLoggedIn()) {
-        _isLoggedIn = true;
+        _googleState.isLoggedIn = true;
+        _googleState.errorMessage = null;
 
-        LocalStorageService.saveGoogleLoginState(_isLoggedIn);
+        // Save to local storage
+        LocalStorageService.saveGoogleLoginState(_googleState.isLoggedIn);
         LocalStorageService.saveGoogleAccessToken(
-            LmsFactory.getLmsServiceGoogle().getGoogleAccessToken());
+          LmsFactory.getLmsServiceGoogle().getGoogleAccessToken()
+        );
 
         notifyListeners();
       } else {
+        _googleState.isLoggedIn = false;
+        _googleState.errorMessage = 'Google login failed.';
+        notifyListeners();
         throw Exception('Google login failed.');
       }
     } catch (e) {
-      print('Login Error: $e');
-      _errorMessage = "Google login failed: ${e.toString()}";
+      _googleState.isLoggedIn = false;
+      _googleState.errorMessage = "Google login failed: ${e.toString()}";
       notifyListeners();
-      rethrow;
+      rethrow;  // Or remove if you don't want to rethrow
     }
   }
 
+  // ---------------------------------------
+  // Google: Sign-out
+  // ---------------------------------------
   Future<void> signOutFromGoogle() async {
     try {
       LmsFactory.getLmsServiceGoogle().logout();
+      _googleState.isLoggedIn = false;
+      _googleState.errorMessage = null;
+
       LocalStorageService.clearGoogleLoginState();
-      _isLoggedIn = false;
       LocalStorageService.clearGoogleAccessToken();
+
+      notifyListeners();
     } catch (error) {
       print("Google Sign-Out Error: $error");
+      // Optionally set _googleState.errorMessage
       throw Exception("Google Sign-Out failed: $error");
     }
   }
 
-  Future<void> makeClassroomApiRequest(
-      String apiEndpoint, dynamic http) async {
-    String? accessToken = LocalStorageService.getGoogleAccessToken();
+  // ---------------------------------------
+  // Example Classroom API request for Google
+  // ---------------------------------------
+  Future<void> makeClassroomApiRequest(String apiEndpoint, dynamic http) async {
+    final accessToken = LocalStorageService.getGoogleAccessToken();
 
     if (accessToken != null) {
       try {
@@ -184,10 +216,8 @@ class LoginNotifier with ChangeNotifier {
         if (response.statusCode == 200) {
           print('Classroom API Response: ${response.body}');
         } else {
-          print(
-              'Classroom API Error: ${response.statusCode} - ${response.body}');
-          throw Exception(
-              "Classroom API request failed: ${response.statusCode}");
+          print('Classroom API Error: ${response.statusCode} - ${response.body}');
+          throw Exception("Classroom API request failed: ${response.statusCode}");
         }
       } catch (e) {
         print('Error making Classroom API request: $e');
@@ -197,5 +227,28 @@ class LoginNotifier with ChangeNotifier {
       print('No Google access token available. User needs to sign in.');
       throw Exception("No access token available. Please sign in again.");
     }
+  }
+
+  // ---------------------------------------
+  // Save the LLM key to local storage
+  // ---------------------------------------
+  Future<void> saveLLMKey(LLMKey key, String value) async {
+    switch (key) {
+      case LLMKey.openAI:
+        LocalStorageService.saveOpenAIKey(value);
+        break;
+      case LLMKey.perplexity:
+        LocalStorageService.savePerplexityKey(value);
+        break;
+      case LLMKey.grok:
+        LocalStorageService.saveGrokKey(value);
+        break;
+      case LLMKey.claude:
+        // If you had a Claude key, you could handle it here
+        break;
+    }
+
+    _hasLLMKey = await _checkHasLLMKey();
+    notifyListeners();
   }
 }
