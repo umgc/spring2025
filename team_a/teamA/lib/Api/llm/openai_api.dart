@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:learninglens_app/Api/llm/llm_api_modules_base.dart';
 import 'package:learninglens_app/services/api_service.dart';
 
-class OpenAiLLM {
+class OpenAiLLM implements LLM {
   final String openAiKey;
   OpenAiLLM(this.openAiKey);
 
@@ -151,6 +153,34 @@ class OpenAiLLM {
       print('Error occurred: $error');
       return 'An error occurred. Please check your internet connection and try again.';
     }
+  }
+  
+  @override
+  Future<String> generate(String prompt) async {
+    print("In generate - prompt : $prompt");
+  
+final url = Uri.parse('https://api.openai.com/v1/chat/completions');
+    final headers = {
+      'Authorization': 'Bearer $openAiKey',
+      'Content-Type': 'application/json',
+    };
+    final body = jsonEncode({
+      'model': 'gpt-4o-mini', 
+      'messages': [
+        {'role': 'system', 'content': 'You are a helpful assistant.'},
+        {'role': 'user', 'content': prompt},
+      ],
+      'max_tokens': 500, // Limit response length
+    });
+
+    final response = await http.post(url, headers: headers, body: body);
+    if (response.statusCode != 200) {
+      throw Exception('OpenAI API error: ${response.statusCode} - ${response.body}');
+    }
+
+    final data = jsonDecode(response.body);
+    return data['choices'][0]['message']['content'].trim();
+
   }
 
 }

@@ -1,6 +1,7 @@
 import "dart:convert";
 import "package:flutter/material.dart";
 import "package:http/http.dart" as http;
+import "package:learninglens_app/Api/llm/llm_api_modules_base.dart";
 import "package:learninglens_app/Api/lms/factory/lms_factory.dart";
 import "package:learninglens_app/Api/lms/google_classroom/google_classroom_api.dart";
 import "package:learninglens_app/Controller/custom_appbar.dart";
@@ -69,8 +70,7 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
       List<Course> fetchedCourses = await LmsFactory.getLmsService().getUserCourses();
       setState(() {
         courses = fetchedCourses;
-        // Removed automatic selection of first course
-        selectedCourse = null; // Explicitly set to null for "Select Course"
+        selectedCourse = null;
       });
     } catch (e) {
       log.severe('Failed to load courses: $e');
@@ -118,25 +118,44 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
     setState(() {
       isGeneratingAI = true;
     });
+
     final openApiKey = LocalStorageService.getOpenAIKey();
     final grokApiKey = LocalStorageService.getGrokKey();
     final perplexityApiKey = LocalStorageService.getPerplexityKey();
 
     try {
-      final aiModel = selectedLLM == 'ChatGPT'
-          ? OpenAiLLM(openApiKey)
-          : selectedLLM == 'Grok'
-              ? GrokLLM(grokApiKey)
-              : PerplexityLLM(perplexityApiKey);
+      late final LLM aiModel;
+      switch (selectedLLM) {
+        case 'ChatGPT':
+          aiModel = OpenAiLLM(openApiKey);
+          break;
+        case 'Grok':
+          aiModel = GrokLLM(grokApiKey); 
+          break;
+        case 'Perplexity':
+          aiModel = PerplexityLLM(perplexityApiKey);
+          break;
+        default:
+          throw Exception('Unsupported AI model: $selectedLLM');
+      }
 
-      String prompt =
-          "Generate a lesson plan for ${selectedGradeLevel}th grade ${lessonPlanNameController.text} covering key topics like ${manualEntryController.text}. Additional details: ${aiPromptDetailsController.text}. Keep it within 500 words.";
-      var result = await (aiModel as PerplexityLLM).postToLlm(prompt);
+      // String prompt =
+      //     "Generate a lesson plan for ${selectedGradeLevel == 'K' ? 'Kindergarten' : '${selectedGradeLevel}th grade'} ${lessonPlanNameController.text} "
+      //     "covering key topics like ${manualEntryController.text}. Additional details: ${aiPromptDetailsController.text}. "
+      //     "Keep it within 500 words.";
+
+  String prompt = "Create a concise, all-text lesson plan for ${lessonPlanNameController.text} for grade ${selectedGradeLevel == 'K' ? 'Kindergarten' : selectedGradeLevel} covering ${manualEntryController.text}. ${aiPromptDetailsController.text}. Write it as student-facing content for studying, essays, and quizzes. Use plain text, no Markdown, in 500 words.";
+      //String prompt = "Generate an all text lesson plan for ${lessonPlanNameController.text} for grade ${selectedGradeLevel == 'K' ? 'Kindergarten' : selectedGradeLevel} covering key topics like ${manualEntryController.text}. ${aiPromptDetailsController.text}. This lesson is WHAT THE STUDENT WILL SEE! It will be viewed by students to study from for essays and quizzes. Do not use Markdown syntax. Keep to 500 words.";
+
+      var result = await aiModel.generate(prompt);
       setState(() {
         manualEntryController.text = result;
       });
     } catch (e) {
       log.severe("Error generating lesson plan: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to generate lesson plan: $e')),
+      );
     } finally {
       setState(() {
         isGeneratingAI = false;
@@ -175,7 +194,16 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
       selectedGradeLevel = null;
       useAiGeneration = false;
       selectedLLM = null;
+      isEditing = false;
+      selectedMaterial = null;
     });
+  }
+
+  bool _canSubmit() {
+    return selectedCourse != null &&
+        selectedGradeLevel != null &&
+        lessonPlanNameController.text.isNotEmpty &&
+        manualEntryController.text.isNotEmpty;
   }
 
   @override
@@ -230,10 +258,13 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
                           SizedBox(height: 20),
                           DropdownButtonFormField<String>(
                             value: selectedGradeLevel,
-                            items: ['9', '10', '11', '12'].map<DropdownMenuItem<String>>((grade) {
+                            items: ['K', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
+                                .map<DropdownMenuItem<String>>((grade) {
                               return DropdownMenuItem<String>(
                                 value: grade,
-                                child: Text('$grade${grade == '11' || grade == '12' ? 'th' : 'th'} Grade'),
+                                child: Text(grade == 'K' 
+                                    ? 'Kindergarten' 
+                                    : '$grade${grade == '1' ? 'st' : grade == '2' ? 'nd' : grade == '3' ? 'rd' : 'th'} Grade'),
                               );
                             }).toList(),
                             onChanged: (value) {
@@ -258,6 +289,7 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
                                   ? 'Lesson Plan Name is required'
                                   : null,
                             ),
+                            onChanged: (value) => setState(() {}),
                           ),
                           SizedBox(height: 20),
                           CheckboxListTile(
@@ -324,12 +356,11 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
                                   ? 'Lesson Plan details are required'
                                   : null,
                             ),
+                            onChanged: (value) => setState(() {}),
                           ),
                           SizedBox(height: 20),
                           ElevatedButton(
-                            onPressed: selectedCourse != null &&
-                                    lessonPlanNameController.text.isNotEmpty &&
-                                    manualEntryController.text.isNotEmpty
+                            onPressed: _canSubmit()
                                 ? () async {
                                     setState(() {
                                       isSaving = true;
@@ -418,9 +449,12 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
                                         onChanged: (bool? selected) {
                                           setState(() {
                                             selectedMaterial = selected! ? material : null;
-                                            if (selectedMaterial != null && !isEditing) {
+                                            if (selectedMaterial != null) {
                                               lessonPlanNameController.text = selectedMaterial['title'] ?? '';
                                               manualEntryController.text = selectedMaterial['description'] ?? '';
+                                              isEditing = false;
+                                            } else {
+                                              _clearFormFields();
                                             }
                                           });
                                         },
@@ -450,7 +484,6 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
                                         await _loadLessonPlan(selectedCourse!);
                                         _clearFormFields();
                                         setState(() {
-                                          selectedMaterial = null;
                                           isDeleting = false;
                                         });
                                       }
@@ -474,7 +507,7 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
                                 child: Text('Edit Selected'),
                               ),
                               ElevatedButton(
-                                onPressed: isEditing
+                                onPressed: isEditing && selectedMaterial != null
                                     ? () async {
                                         setState(() {
                                           isUpdating = true;
@@ -488,10 +521,6 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
                                           );
                                           await _loadLessonPlan(selectedCourse!);
                                           _clearFormFields();
-                                          setState(() {
-                                            isEditing = false;
-                                            selectedMaterial = null;
-                                          });
                                         } catch (e) {
                                           print('Error during update: $e');
                                           ScaffoldMessenger.of(context).showSnackBar(

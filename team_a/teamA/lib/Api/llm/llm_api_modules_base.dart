@@ -4,3 +4,8 @@
 class Awesome {
   bool get isAwesome => true;
 }
+//This is the abstract class for the LLM API module
+//It has a single method called generate which takes a string prompt and returns a string
+abstract class LLM {
+  Future<String> generate(String prompt);
+}

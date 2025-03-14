@@ -1,8 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:learninglens_app/Api/llm/llm_api_modules_base.dart';
 import 'package:learninglens_app/services/api_service.dart';
 
-class PerplexityLLM 
+class PerplexityLLM implements LLM
 {
   final String apiKey;
   PerplexityLLM(this.apiKey);
@@ -17,7 +18,8 @@ class PerplexityLLM
   {
     return jsonEncode({
       // 'model': 'llama-3-sonar-large-32k-online',
-      'model': 'llama-3.1-sonar-large-128k-chat',
+      //'model': 'llama-3.1-sonar-large-128k-chat',
+      'model': 'llama-3.1-sonar-large-128k-online',
       'messages': [
         {'role': 'system', 'content': 'Be precise and concise'},
         {'content': queryMessage, 'role': 'user'}
@@ -143,6 +145,18 @@ class PerplexityLLM
       print('Error occurred: $error');
       return 'An error occurred. Please check your internet connection and try again.';
     }
+  }
+  
+  @override
+  Future<String> generate(String prompt) async {
+    print('Generating response for prompt Perplexity: $prompt');
+
+  final postHeaders = getPostHeaders();
+    final postBody = getPostBody(prompt);
+    final url = getPostUrl();
+    final responseString = await postMessage(url, postHeaders, postBody);
+    final responseJson = jsonDecode(responseString);
+    return responseJson['choices'][0]['message']['content'].trim();
   }
   
 }

@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:learninglens_app/Api/llm/llm_api_modules_base.dart';
 import 'package:learninglens_app/services/api_service.dart';
 
-class GrokLLM {
+class GrokLLM implements LLM {
   final String grokKey;
 
   GrokLLM(this.grokKey);
@@ -153,5 +155,33 @@ class GrokLLM {
       return 'An error occurred. Please check your internet connection and try again.';
     }
   }
+  
+
+ 
+  
+  @override
+  Future<String> generate(String prompt) async {
+    final url = Uri.parse('https://api.xai.com/v1/chat/completions'); // Hypothetical endpoint
+    final headers = {
+      'Authorization': 'Bearer $grokKey',
+      'Content-Type': 'application/json',
+    };
+    final body = jsonEncode({
+      'model': 'grok-2-latest', // Use the configurable model
+      'messages': [
+        {'role': 'user', 'content': prompt},
+      ],
+      'max_tokens': 500, // Limit response length
+    });
+
+    final response = await http.post(url, headers: headers, body: body);
+    if (response.statusCode != 200) {
+      throw Exception('Grok API error: ${response.statusCode} - ${response.body}');
+    }
+
+    final data = jsonDecode(response.body);
+    return data['choices'][0]['message']['content'].trim(); // Adjust based on actual response structure
+  }
+  
   
 }
