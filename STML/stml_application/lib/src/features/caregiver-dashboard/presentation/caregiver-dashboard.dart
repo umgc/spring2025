@@ -6,7 +6,7 @@ import 'package:memoryminder/ui/profile_screen.dart';
 import 'package:memoryminder/src/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:memoryminder/ui/home_screen.dart';
+
 
 
 // Main HomeScreen widget which is a stateless widget.
@@ -262,7 +262,7 @@ class _CaregiverDashboardScreen extends State<CaregiverDashboardScreen> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => HomeScreen()),
+                  MaterialPageRoute(builder: (context) => ProfileScreen()),
                 );
               },
               child: Padding(
