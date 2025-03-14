@@ -24,6 +24,9 @@ migrate_working_dir/
 # .metadata file from flutter create
 .metadata
 
+# widget_test.dart file from flutter create
+test/widget_test.dart
+
 # Flutter/Dart/Pub related
 **/doc/api/
 **/ios/Flutter/.last_build_id
