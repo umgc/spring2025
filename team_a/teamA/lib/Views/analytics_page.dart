@@ -10,7 +10,8 @@ import 'package:pdf/widgets.dart' as pw; // PDF package
 import 'package:excel/excel.dart'; // Excel package
 
 // Import the LMS services using prefixes so that type checks work correctly.
-import 'package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart' as moodle;
+import 'package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart'
+    as moodle;
 import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
 
@@ -35,7 +36,7 @@ enum ExportFormat { pdf, excel }
 ///
 /// When a student is clicked in the breakdown table, a detail panel appears
 /// on the right showing that student's assignment details (non-editable).
-/// 
+///
 /// A simple wrapper to hold either an essay assignment or a quiz.
 /// The `type` property distinguishes between the two.
 class Assessment {
@@ -133,7 +134,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         _selectedCourse = _coursesData.first;
         _selectedSubject = _selectedCourse!.subject ?? "General";
         // Fetch essays.
-        List<Assignment> essayList = await lmsService.getEssays(_selectedCourse!.id);
+        List<Assignment> essayList =
+            await lmsService.getEssays(_selectedCourse!.id);
         // Fetch quizzes (if available).
         List<Quiz> quizList = [];
         try {
@@ -153,7 +155,9 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       }
       setState(() {
         analyticsData = {
-          'source': lmsService is moodle.MoodleLmsService ? 'Moodle' : 'Google Classroom',
+          'source': lmsService is moodle.MoodleLmsService
+              ? 'Moodle'
+              : 'Google Classroom',
           'totalCourses': totalCourses,
           'studentPerformance': 'Live Performance Data',
           'iepProgress': 'Live IEP Data',
@@ -191,7 +195,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         // Grab participants for this quiz.
         int quizId = _selectedAssessment!.assessment.id;
         _participantsData = await (lmsService as moodle.MoodleLmsService)
-            .getQuizGradesForParticipants(_selectedCourse!.id.toString(), quizId);
+            .getQuizGradesForParticipants(
+                _selectedCourse!.id.toString(), quizId);
         // Filter out non-students, if needed.
         _participantsData = _participantsData
             .where((i) => i.roles.contains('student'))
@@ -200,7 +205,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         // Grab participants for this essay.
         int assignmentId = _selectedAssessment!.assessment.id;
         _participantsData = await (lmsService as moodle.MoodleLmsService)
-            .getEssayGradesForParticipants(_selectedCourse!.id.toString(), assignmentId);
+            .getEssayGradesForParticipants(
+                _selectedCourse!.id.toString(), assignmentId);
       } else {
         throw Exception("Unsupported Assessment Type");
       }
@@ -229,8 +235,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   void getStudentBreakdown(List<Participant> participantsData) {
     _studentBreakdown = participantsData.map((participant) {
       double? grade = participant.avgGrade;
-      String displayGrade =
-          (grade != null) ? '${grade.toInt()}%' : '0%';
+      String displayGrade = (grade != null) ? '${grade.toInt()}%' : '0%';
       return {
         'id': participant.id,
         'studentName': participant.fullname,
@@ -277,7 +282,9 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       anchor.remove();
       html.Url.revokeObjectUrl(url);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Report exported as $extension via browser download.')),
+        SnackBar(
+            content:
+                Text('Report exported as $extension via browser download.')),
       );
     } else {
       final savePath = await _pickFileLocation(defaultName);
@@ -309,7 +316,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       builder: (context) {
         return AlertDialog(
           title: const Text('Select Export Format'),
-          content: const Text('Would you like to export the report as PDF or Excel?'),
+          content: const Text(
+              'Would you like to export the report as PDF or Excel?'),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context, ExportFormat.pdf),
@@ -338,34 +346,60 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     final pdf = pw.Document();
     pdf.addPage(
       pw.MultiPage(
-        build: (pw.Context context) => [
-          pw.Header(level: 0, child: pw.Text("Student Breakdown Report")),
-          pw.Table.fromTextArray(
-            headers: ['Student Name', 'Average Grade', 'Class Rank'],
-            data: _studentBreakdown.map((student) => [
-              student['studentName'],
-              student['avgGrade'],
-              student['classRank'].toString(),
-            ]).toList(),
-          ),
-          if (isQuiz())
-            pw.Column(children: [
-              pw.SizedBox(height: 20),
-              pw.Header(level: 0, child: pw.Text("Question Breakdown")),
+        build: (pw.Context context) {
+          List<pw.Widget> widgets = [];
+
+          // Dynamic export for student breakdown.
+          if (_studentBreakdown.isNotEmpty) {
+            // Dynamically capture all keys as headers.
+            final studentHeaders = _studentBreakdown.first.keys.toList();
+            // Map each student to a list of string values.
+            final studentData = _studentBreakdown
+                .map((student) =>
+                    student.values.map((value) => value.toString()).toList())
+                .toList();
+            widgets.add(pw.Header(
+                level: 0, child: pw.Text("Student Breakdown Report")));
+            widgets.add(
               pw.Table.fromTextArray(
-                headers: ['Q#', 'Question Type', 'Question', '% Answered Correct', '# Correct', '# Incorrect', '# Total Attempts'],
-                data: _questionBreakdown.map((q) => [
-                  q.id.toString(),
-                  q.questionType,
-                  q.questionText,
-                  "${computePercentCorrect(q).toStringAsFixed(2)}%",
-                  q.numCorrect.toString(),
-                  q.numIncorrect.toString(),
-                  q.totalAttempts.toString(),
-                ]).toList(),
+                headers: studentHeaders,
+                data: studentData,
               ),
-            ]),
-        ],
+            );
+          }
+
+          // Export question breakdown (only for quizzes).
+          if (isQuiz() && _questionBreakdown.isNotEmpty) {
+            widgets.add(pw.SizedBox(height: 20));
+            widgets
+                .add(pw.Header(level: 0, child: pw.Text("Question Breakdown")));
+            widgets.add(
+              pw.Table.fromTextArray(
+                headers: [
+                  'Q#',
+                  'Question Type',
+                  'Question',
+                  '% Answered Correct',
+                  '# Correct',
+                  '# Incorrect',
+                  '# Total Attempts'
+                ],
+                data: _questionBreakdown
+                    .map((q) => [
+                          q.id.toString(),
+                          q.questionType,
+                          q.questionText,
+                          "${computePercentCorrect(q).toStringAsFixed(2)}%",
+                          q.numCorrect.toString(),
+                          q.numIncorrect.toString(),
+                          q.totalAttempts.toString(),
+                        ])
+                    .toList(),
+              ),
+            );
+          }
+          return widgets;
+        },
       ),
     );
     return pdf.save();
@@ -378,18 +412,32 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   // ---------------------------------------------------------------------------
   Future<List<int>> _exportReportAsExcel() async {
     var excel = Excel.createExcel();
+
+    // Dynamic export for student breakdown.
     Sheet studentSheet = excel['Student Breakdown'];
-    studentSheet.appendRow(['Student Name', 'Average Grade', 'Class Rank']);
-    for (var student in _studentBreakdown) {
-      studentSheet.appendRow([
-        student['studentName'],
-        student['avgGrade'],
-        student['classRank'],
-      ]);
+    if (_studentBreakdown.isNotEmpty) {
+      // Get headers dynamically from the first map.
+      var studentHeaders = _studentBreakdown.first.keys.toList();
+      studentSheet.appendRow(studentHeaders);
+      // Append each student row by mapping the values to strings.
+      for (var student in _studentBreakdown) {
+        studentSheet.appendRow(
+            student.values.map((value) => value.toString()).toList());
+      }
     }
-    if (isQuiz()) {
+
+    // Export question breakdown if it's a quiz.
+    if (isQuiz() && _questionBreakdown.isNotEmpty) {
       Sheet questionSheet = excel['Question Breakdown'];
-      questionSheet.appendRow(['Q#', 'Question Type', 'Question', '% Answered Correct', '# Correct', '# Incorrect', '# Total Attempts']);
+      questionSheet.appendRow([
+        'Q#',
+        'Question Type',
+        'Question',
+        '% Answered Correct',
+        '# Correct',
+        '# Incorrect',
+        '# Total Attempts'
+      ]);
       for (var q in _questionBreakdown) {
         questionSheet.appendRow([
           q.id,
@@ -402,6 +450,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         ]);
       }
     }
+
     return excel.encode()!;
   }
 
@@ -454,15 +503,18 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               });
               if (_selectedCourse != null) {
                 // Fetch essays and quizzes, then combine them.
-                List<Assignment> essays = await lmsService.getEssays(_selectedCourse!.id);
+                List<Assignment> essays =
+                    await lmsService.getEssays(_selectedCourse!.id);
                 List<Quiz> quizzes = [];
                 try {
-                  quizzes = await (lmsService as dynamic).getQuizzes(_selectedCourse!.id);
+                  quizzes = await (lmsService as dynamic)
+                      .getQuizzes(_selectedCourse!.id);
                 } catch (e) {
                   print("getQuizzes not available or failed: $e");
                 }
                 _assessmentsData = [
-                  ...essays.map((a) => Assessment(assessment: a, type: "essay")),
+                  ...essays
+                      .map((a) => Assessment(assessment: a, type: "essay")),
                   ...quizzes.map((q) => Assessment(assessment: q, type: "quiz"))
                 ];
                 if (_assessmentsData.isNotEmpty) {
@@ -496,7 +548,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             items: _assessmentsData.map((assessment) {
               return DropdownMenuItem<Assessment>(
                 value: assessment,
-                child: Text('${assessment.name} (${assessment.type.toUpperCase()})'),
+                child: Text(
+                    '${assessment.name} (${assessment.type.toUpperCase()})'),
               );
             }).toList(),
             onChanged: (val) {
@@ -578,10 +631,15 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                         DataCell(IntrinsicWidth(child: Text(q.id.toString()))),
                         DataCell(IntrinsicWidth(child: Text(q.questionType))),
                         DataCell(IntrinsicWidth(child: Text(q.questionText))),
-                        DataCell(IntrinsicWidth(child: Text("${computePercentCorrect(q).toStringAsFixed(2)}%"))),
-                        DataCell(IntrinsicWidth(child: Text(q.numCorrect.toString()))),
-                        DataCell(IntrinsicWidth(child: Text(q.numIncorrect.toString()))),
-                        DataCell(IntrinsicWidth(child: Text(q.totalAttempts.toString()))),
+                        DataCell(IntrinsicWidth(
+                            child: Text(
+                                "${computePercentCorrect(q).toStringAsFixed(2)}%"))),
+                        DataCell(IntrinsicWidth(
+                            child: Text(q.numCorrect.toString()))),
+                        DataCell(IntrinsicWidth(
+                            child: Text(q.numIncorrect.toString()))),
+                        DataCell(IntrinsicWidth(
+                            child: Text(q.totalAttempts.toString()))),
                       ],
                     );
                   }).toList(),
@@ -673,7 +731,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
       );
     }
     int studentId = _selectedStudent!['id'];
-    return FutureBuilder<List<Map<String, String>>>( 
+    return FutureBuilder<List<Map<String, String>>>(
       future: _fetchAllAssessmentsForStudent(studentId),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -725,7 +783,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   // _fetchAllAssessmentsForStudent:
   // Helper function to fetch ALL assessments (quiz or essay) for ONE student.
   // ---------------------------------------------------------------------------
-  Future<List<Map<String, String>>> _fetchAllAssessmentsForStudent(int studentId) async {
+  Future<List<Map<String, String>>> _fetchAllAssessmentsForStudent(
+      int studentId) async {
     if (_selectedCourse == null) return [];
     List<Future<Map<String, String>>> futureList = [];
     for (var assessment in _assessmentsData) {
@@ -734,9 +793,9 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         if (assessment.type == "quiz") {
           final participants = await (lmsService as moodle.MoodleLmsService)
               .getQuizGradesForParticipants(
-                _selectedCourse!.id.toString(),
-                assessment.id,
-              );
+            _selectedCourse!.id.toString(),
+            assessment.id,
+          );
           final participant = participants.firstWhere(
             (p) => p.id == studentId,
             orElse: () => Participant.empty(),
@@ -747,9 +806,9 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         } else if (assessment.type == "essay") {
           final participants = await (lmsService as moodle.MoodleLmsService)
               .getEssayGradesForParticipants(
-                _selectedCourse!.id.toString(),
-                assessment.id,
-              );
+            _selectedCourse!.id.toString(),
+            assessment.id,
+          );
           final participant = participants.firstWhere(
             (p) => p.id == studentId,
             orElse: () => Participant.empty(),
@@ -776,8 +835,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     if (isQuiz()) {
       try {
         int quizId = _selectedAssessment!.assessment.id;
-        _questionBreakdown = await (lmsService as dynamic)
-            .getQuestionStatsFromQuiz(quizId);
+        _questionBreakdown =
+            await (lmsService as dynamic).getQuestionStatsFromQuiz(quizId);
         setState(() {});
       } catch (e) {
         print("Failed to fetch question breakdown: $e");
@@ -796,7 +855,7 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   // ---------------------------------------------------------------------------
   // _buildMainGrid:
   // Creates a 2×2 grid layout:
-  //  Top-left: Report form (narrower)
+  //  Top-left: Report form
   //  Bottom-left: Student breakdown table
   //  Top-right: Question breakdown
   //  Bottom-right: Selected student detail
@@ -892,7 +951,8 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
                     style: const TextStyle(fontSize: 16)),
                 Text('Total Courses: ${analyticsData!['totalCourses']}',
                     style: const TextStyle(fontSize: 16)),
-                Text('Student Performance: ${analyticsData!['studentPerformance']}',
+                Text(
+                    'Student Performance: ${analyticsData!['studentPerformance']}',
                     style: const TextStyle(fontSize: 16)),
                 Text('IEP Progress: ${analyticsData!['iepProgress']}',
                     style: const TextStyle(fontSize: 16)),
