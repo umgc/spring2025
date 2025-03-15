@@ -8,7 +8,7 @@ import 'package:learninglens_app/Views/g_quiz_question_page.dart';
 
 import 'package:learninglens_app/Views/m_assessment_view.dart';
 import 'package:learninglens_app/Views/quiz_generator.dart';
-import 'package:learninglens_app/Views/view_submissions.dart';
+import 'package:learninglens_app/Views/essays_view.dart';
 import 'package:learninglens_app/beans/quiz.dart';
 import 'package:learninglens_app/beans/assignment.dart';
 import 'package:learninglens_app/beans/course.dart';
@@ -73,7 +73,7 @@ class _ContentState extends State<ContentCarousel> {
   }
   //todo filtering features
 
-   bool isMoodle() {
+  bool isMoodle() {
     print(LocalStorageService.getSelectedClassroom());
     return LocalStorageService.getSelectedClassroom() == LmsType.MOODLE;
   }
@@ -140,10 +140,11 @@ class _ContentState extends State<ContentCarousel> {
                     String assessmentIdStr =
                         (children[value] as CarouselCard).id.toString();
 
-                        print('Course ID I am sending: $courseIdStr');
-                        print('Assessment ID I am sending: $assessmentIdStr');
+                    print('Course ID I am sending: $courseIdStr');
+                    print('Assessment ID I am sending: $assessmentIdStr');
 
-                    if (!isMoodleSelected) { // Assuming "google" is !isMoodle()
+                    if (!isMoodleSelected) {
+                      // Assuming "google" is !isMoodle()
                       Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -158,27 +159,23 @@ class _ContentState extends State<ContentCarousel> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => MAssessmentsView(
-                            quizID:(children[value] as CarouselCard).id, 
-                            courseID: (children[value] as CarouselCard).courseId ?? 0,
+                            quizID: (children[value] as CarouselCard).id,
+                            courseID:
+                                (children[value] as CarouselCard).courseId ?? 0,
                           ),
                         ),
                       );
                     }
                   } else if (type == 'essay') {
-                    print((children[value] as CarouselCard)
-                        .courseId
-                        ?.toString());
+                    print(
+                        (children[value] as CarouselCard).courseId?.toString());
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => SubmissionList(
-                            assignmentId: (children[value] as CarouselCard).id,
-                            courseId: (children[value] as CarouselCard)
-                                    .courseId
-                                    ?.toString() ??
-                                '',
-                          ),
-                        ));
+                            builder: (context) => EssaysView(
+                                essayID: (children[value] as CarouselCard).id,
+                                courseID: (children[value] as CarouselCard)
+                                    .courseId)));
                   }
                 },
                 children: children,
@@ -300,8 +297,8 @@ class CreateButton extends StatelessWidget {
       return CreateButton._(type, "");
     }
   }
-  
-   bool isMoodle() {
+
+  bool isMoodle() {
     print(LocalStorageService.getSelectedClassroom());
     return LocalStorageService.getSelectedClassroom() == LmsType.MOODLE;
   }
@@ -314,18 +311,16 @@ class CreateButton extends StatelessWidget {
           if (type == 'assessment') {
             route = MaterialPageRoute(builder: (context) => CreateAssessment());
           } else if (type == 'essay') {
+            bool isMoodleSelected = isMoodle();
+            if (!isMoodleSelected) {
+              // Assuming "google" is !isMoodle()
 
-           bool isMoodleSelected = isMoodle();
-          if (!isMoodleSelected) {
-             // Assuming "google" is !isMoodle()
-
-            route = MaterialPageRoute(
-                builder: (context) => CreateAssignmentPage());
-          } else {
-            
-            route = MaterialPageRoute(
-                builder: (context) => EssayGeneration(title: 'New Essay'));
-          }
+              route = MaterialPageRoute(
+                  builder: (context) => CreateAssignmentPage());
+            } else {
+              route = MaterialPageRoute(
+                  builder: (context) => EssayGeneration(title: 'New Essay'));
+            }
           }
           if (route != null) {
             Navigator.push(context, route);

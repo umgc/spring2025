@@ -36,12 +36,14 @@ class _EssaysState extends State<EssaysView> {
   }
 
   // Helper method to fetch submissions with error handling
-  Future<List<SubmissionWithGrade>> fetchSubmissionsWithGrades(int essayId) async {
+  Future<List<SubmissionWithGrade>> fetchSubmissionsWithGrades(
+      int essayId) async {
     try {
       return await LmsFactory.getLmsService().getSubmissionsWithGrades(essayId);
     } on UnimplementedError catch (e) {
       setState(() {
-        submissionError = "Submissions/Grading feature is currently not available for Google Classroom. Please reach out to the developer for more information.";
+        submissionError =
+            "Submissions/Grading feature is currently not available for Google Classroom. Please reach out to the developer for more information.";
       });
       return []; // Return empty list to avoid breaking the FutureBuilder
     } catch (e) {
@@ -118,7 +120,8 @@ class _EssaysState extends State<EssaysView> {
                                 itemCount: essayList.length,
                                 itemBuilder: (context, index) {
                                   final essay = essayList[index];
-                                  final activeCourse = getCourse(essay.courseId);
+                                  final activeCourse =
+                                      getCourse(essay.courseId);
                                   if (essay.id == widget.essayID) {
                                     selectedEssay = essay;
                                   }
@@ -126,7 +129,8 @@ class _EssaysState extends State<EssaysView> {
                                     title: Text(
                                         '${essay.name} (${activeCourse.shortName}${activeCourse.courseId})'),
                                     subtitle: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                             'Due: ${essay.dueDate == null ? "No due date set" : Course.dateFormatted(essay.dueDate!)}'),
@@ -144,7 +148,8 @@ class _EssaysState extends State<EssaysView> {
                                         submissionError = null; // Reset error
                                         participantError = null; // Reset error
                                         futureSubmissionsWithGrades =
-                                            fetchSubmissionsWithGrades(essay.id!);
+                                            fetchSubmissionsWithGrades(
+                                                essay.id!);
                                         futureParticipants =
                                             fetchCourseParticipants(
                                                 essay.courseId.toString());
@@ -158,13 +163,17 @@ class _EssaysState extends State<EssaysView> {
                           Expanded(
                             flex: 2,
                             child: selectedEssay == null && widget.essayID == 0
-                                ? Center(child: Text('Select an essay to view details'))
+                                ? Center(
+                                    child:
+                                        Text('Select an essay to view details'))
                                 : Column(
                                     children: [
                                       Container(
                                         decoration: BoxDecoration(
-                                          border: Border.all(color: Colors.grey),
-                                          borderRadius: BorderRadius.circular(8.0),
+                                          border:
+                                              Border.all(color: Colors.grey),
+                                          borderRadius:
+                                              BorderRadius.circular(8.0),
                                         ),
                                         margin: EdgeInsets.all(8.0),
                                         child: Center(
@@ -174,11 +183,18 @@ class _EssaysState extends State<EssaysView> {
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
                                                 Padding(
-                                                    padding: const EdgeInsets.all(8.0),
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            8.0),
                                                     child: Text('Essay Prompt',
-                                                        style: TextStyle(fontSize: 20))),
-                                                Text(selectedEssay?.description ??
-                                                    "No description found."),
+                                                        style: TextStyle(
+                                                            fontSize: 20))),
+                                                Text(selectedEssay
+                                                        ?.description ??
+                                                    getEssay(widget.essayID,
+                                                            widget.courseID)
+                                                        ?.description ??
+                                                    "No description is available."),
                                               ],
                                             ),
                                           ),
@@ -188,8 +204,10 @@ class _EssaysState extends State<EssaysView> {
                                         flex: 1,
                                         child: Container(
                                           decoration: BoxDecoration(
-                                            border: Border.all(color: Colors.grey),
-                                            borderRadius: BorderRadius.circular(8.0),
+                                            border:
+                                                Border.all(color: Colors.grey),
+                                            borderRadius:
+                                                BorderRadius.circular(8.0),
                                           ),
                                           margin: EdgeInsets.all(8.0),
                                           child: Padding(
@@ -198,29 +216,42 @@ class _EssaysState extends State<EssaysView> {
                                               mainAxisSize: MainAxisSize.min,
                                               children: [
                                                 Padding(
-                                                  padding: const EdgeInsets.all(8.0),
-                                                  child: Text('Student Submissions',
-                                                      style: TextStyle(fontSize: 20)),
+                                                  padding:
+                                                      const EdgeInsets.all(8.0),
+                                                  child: Text(
+                                                      'Student Submissions',
+                                                      style: TextStyle(
+                                                          fontSize: 20)),
                                                 ),
                                                 Expanded(
                                                   child: submissionError != null
                                                       ? Center(
                                                           child: Column(
                                                             mainAxisAlignment:
-                                                                MainAxisAlignment.center,
+                                                                MainAxisAlignment
+                                                                    .center,
                                                             children: [
                                                               Icon(
-                                                                Icons.construction, // Under development icon
+                                                                Icons
+                                                                    .construction, // Under development icon
                                                                 size: 48.0,
-                                                                color: Colors.orange,
+                                                                color: Colors
+                                                                    .orange,
                                                               ),
-                                                              SizedBox(height: 16.0),
+                                                              SizedBox(
+                                                                  height: 16.0),
                                                               Text(
                                                                 submissionError!,
-                                                                textAlign: TextAlign.center,
-                                                                style: TextStyle(
-                                                                  fontSize: 16.0,
-                                                                  color: Colors.grey[700],
+                                                                textAlign:
+                                                                    TextAlign
+                                                                        .center,
+                                                                style:
+                                                                    TextStyle(
+                                                                  fontSize:
+                                                                      16.0,
+                                                                  color: Colors
+                                                                          .grey[
+                                                                      700],
                                                                 ),
                                                               ),
                                                             ],
@@ -228,11 +259,15 @@ class _EssaysState extends State<EssaysView> {
                                                         )
                                                       : SubmissionList(
                                                           key: ValueKey(
-                                                              selectedEssay?.id ??
-                                                                  widget.essayID),
+                                                              selectedEssay
+                                                                      ?.id ??
+                                                                  widget
+                                                                      .essayID),
                                                           assignmentId:
-                                                              selectedEssay?.id ??
-                                                                  widget.essayID,
+                                                              selectedEssay
+                                                                      ?.id ??
+                                                                  widget
+                                                                      .essayID,
                                                           courseId: selectedEssay
                                                                   ?.courseId
                                                                   .toString() ??
@@ -268,6 +303,20 @@ Future<List<Assignment>> getAllEssays(int? courseID) async {
   for (Course c in LmsFactory.getLmsService().courses ?? []) {
     if (courseID == 0 || courseID == null || c.id == courseID) {
       result.addAll(c.essays ?? []);
+    }
+  }
+  return result;
+}
+
+Assignment? getEssay(int? essayID, int? courseID) {
+  Assignment? result;
+  for (Course c in LmsFactory.getLmsService().courses ?? []) {
+    if (courseID == 0 || courseID == null || c.id == courseID) {
+      for (Assignment a in c.essays ?? []) {
+        if (a.id == essayID) {
+          result = a;
+        }
+      }
     }
   }
   return result;
