@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:yappy/audiowave_widget.dart';
-import 'package:yappy/industry_menu.dart';
-import 'package:yappy/tool_bar.dart';
-import 'package:yappy/transcription_box.dart';
-import 'package:yappy/speech_state.dart';
+import 'audiowave_widget.dart';
+import 'industry_menu.dart';
+import 'tool_bar.dart';
+import 'transcription_box.dart';
+import 'services/speech_state.dart';
 import 'services/model_manager.dart';
+import 'search_bar_widget.dart';
 
 void main() {
   runApp(MechanicalAidApp());
@@ -32,23 +33,29 @@ class MechanicalAidPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 0, 0, 0),
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(140),
+        preferredSize: Size.fromHeight(100),
         child: ToolBar(),
       ),
       drawer: HamburgerDrawer(),
       body: ListenableBuilder(
         listenable: speechState,
         builder: (context, child) {
-          return Column(
-            children: [
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: SearchBarWidget(industry: "Vehicle Maintenance"),
+              ),
+
               IndustryMenu(
                 title: "Vehicle Maintenance",
                 icon: Icons.directions_car,
                 speechState: speechState,
                 modelManager: modelManager,
               ),
-              Expanded(
-                child: Padding(
+              
+              Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(children: [
                     AudiowaveWidget(speechState: speechState),
@@ -57,9 +64,9 @@ class MechanicalAidPage extends StatelessWidget {
                     ),
                   ],)
 
-                ),
               ),
             ],
+            )
           );
         }
       ),

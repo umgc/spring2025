@@ -1,0 +1,68 @@
+{
+  "models": [
+    {
+      "id": "speaker_recognition",
+      "name": "Speaker Recognition Model",
+      "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/3dspeaker_speech_eres2net_sv_en_voxceleb_16k.onnx",
+      "isCompressed": false,
+      "type": "speaker",
+      "outputFiles": [
+        {
+          "source": "3dspeaker_speech_eres2net_sv_en_voxceleb_16k.onnx",
+          "destination": "speaker_model.onnx"
+        }
+      ],
+      "size": 25.3
+    },
+    {
+      "id": "whisper_tiny",
+      "name": "Offline Whisper Model (Tiny)",
+      "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-whisper-tiny.en.tar.bz2",
+      "isCompressed": true,
+      "type": "offline",
+      "modelType": "whisper",
+      "outputFiles": [
+        {
+          "source": "sherpa-onnx-whisper-tiny.en/tiny.en-tokens.txt",
+          "destination": "offline_tokens.txt"
+        },
+        {
+          "source": "sherpa-onnx-whisper-tiny.en/tiny.en-decoder.int8.onnx",
+          "destination": "offline_decoder.onnx"
+        },
+        {
+          "source": "sherpa-onnx-whisper-tiny.en/tiny.en-encoder.int8.onnx",
+          "destination": "offline_encoder.onnx"
+        }
+      ],
+      "size": 113.0
+    },
+    {
+      "id": "zipformer_online",
+      "name": "Online Zipformer Model",
+      "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-streaming-zipformer-en-20M-2023-02-17-mobile.tar.bz2",
+      "isCompressed": true,
+      "type": "online",
+      "modelType": "zipformer",
+      "outputFiles": [
+        {
+          "source": "sherpa-onnx-streaming-zipformer-en-20M-2023-02-17-mobile/tokens.txt",
+          "destination": "online_tokens.txt"
+        },
+        {
+          "source": "sherpa-onnx-streaming-zipformer-en-20M-2023-02-17-mobile/decoder-epoch-99-avg-1.onnx",
+          "destination": "online_decoder.onnx"
+        },
+        {
+          "source": "sherpa-onnx-streaming-zipformer-en-20M-2023-02-17-mobile/encoder-epoch-99-avg-1.int8.onnx",
+          "destination": "online_encoder.onnx"
+        },
+        {
+          "source": "sherpa-onnx-streaming-zipformer-en-20M-2023-02-17-mobile/joiner-epoch-99-avg-1.int8.onnx",
+          "destination": "online_joiner.onnx"
+        }
+      ],
+      "size": 103.0
+    }
+  ]
+}
