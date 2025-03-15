@@ -54,9 +54,16 @@ class _WaveformPainter extends CustomPainter {
     // Actually paints the individual lines
     for (int i = 0; i < audioSamples.length; i++) {
       final double x = i * sampleSpacing;
-      final double normalizedSample = (audioSamples[i].toDouble() / 32768.0) * size.height;
-      final double yStart = midY - normalizedSample / 2;
-      final double yEnd = midY + normalizedSample / 2;
+      
+      // Scale the sample but ensure it doesn't exceed half of the available height
+      final double maxAmplitude = size.height / 2 - 4; // Subtract 4 for a small margin
+      
+      // Normalize then clamp the value between -maxAmplitude and maxAmplitude
+      double normalizedSample = (audioSamples[i].toDouble() / 32768.0) * maxAmplitude;
+      normalizedSample = normalizedSample.clamp(-maxAmplitude, maxAmplitude);
+      
+      final double yStart = midY - normalizedSample;
+      final double yEnd = midY + normalizedSample;
 
       canvas.drawLine(Offset(x, yStart), Offset(x, yEnd), paint);
     }
