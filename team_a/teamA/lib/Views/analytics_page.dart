@@ -24,6 +24,14 @@ import 'package:learninglens_app/beans/quiz_type.dart';
 import 'package:learninglens_app/Views/dashboard.dart';
 import 'package:learninglens_app/Views/user_settings.dart';
 
+// Import the APIs for the Learning Lens Model (LLM).
+import 'package:learninglens_app/Api/llm/enum/llm_enum.dart';
+import 'package:learninglens_app/Api/llm/openai_api.dart';
+import 'package:learninglens_app/Api/llm/grok_api.dart';
+import 'package:learninglens_app/Api/llm/perplexity_api.dart';
+import 'package:learninglens_app/services/local_storage_service.dart';
+import 'dart:convert';
+
 /// Enum to represent export formats.
 enum ExportFormat { pdf, excel }
 
@@ -98,6 +106,10 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   late ScrollController _horizontalStudentController;
   late ScrollController _verticalQuestionController;
   late ScrollController _horizontalQuestionController;
+
+  // AI Analysis data.
+  List<Map<String, dynamic>> _aiAnalysisData = [];
+  bool _isAnalyzingAI = false;
 
   @override
   void initState() {
@@ -469,6 +481,96 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
   }
 
   // ---------------------------------------------------------------------------
+  // Export AI Analysis Functions
+  // ---------------------------------------------------------------------------
+  Future<void> _exportAIAnalysis() async {
+    final format = await _chooseExportFormat();
+    if (format == null) return;
+    String extension = (format == ExportFormat.pdf) ? 'pdf' : 'xlsx';
+    String defaultName = 'ai_analysis_report.$extension';
+
+    if (kIsWeb) {
+      List<int> bytes = (format == ExportFormat.pdf)
+          ? await _exportAIAnalysisAsPdf()
+          : await _exportAIAnalysisAsExcel();
+      final blob = html.Blob([bytes]);
+      final url = html.Url.createObjectUrlFromBlob(blob);
+      final anchor = html.AnchorElement(href: url)
+        ..style.display = 'none'
+        ..download = defaultName;
+      html.document.body?.append(anchor);
+      anchor.click();
+      anchor.remove();
+      html.Url.revokeObjectUrl(url);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text(
+                'AI Analysis exported as $extension via browser download.')),
+      );
+    } else {
+      final savePath = await _pickFileLocation(defaultName);
+      if (savePath == null) return;
+      try {
+        List<int> bytes = (format == ExportFormat.pdf)
+            ? await _exportAIAnalysisAsPdf()
+            : await _exportAIAnalysisAsExcel();
+        final file = File(savePath);
+        await file.writeAsBytes(bytes);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('AI Analysis saved as $extension at:\n$savePath')),
+        );
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to save AI Analysis: $e')),
+        );
+      }
+    }
+  }
+
+  Future<List<int>> _exportAIAnalysisAsPdf() async {
+    final pdf = pw.Document();
+    pdf.addPage(
+      pw.MultiPage(
+        build: (pw.Context context) {
+          if (_aiAnalysisData.isEmpty) {
+            return [
+              pw.Center(child: pw.Text("No AI Analysis Data available."))
+            ];
+          }
+          final headers = ['Student', 'Status', 'Comments'];
+          final data = _aiAnalysisData
+              .map((row) => [
+                    row['Student']?.toString() ?? '',
+                    row['Status']?.toString() ?? '',
+                    row['Comments']?.toString() ?? '',
+                  ])
+              .toList();
+          return [
+            pw.Header(level: 0, child: pw.Text("AI Analysis Summary")),
+            pw.Table.fromTextArray(headers: headers, data: data),
+          ];
+        },
+      ),
+    );
+    return pdf.save();
+  }
+
+  Future<List<int>> _exportAIAnalysisAsExcel() async {
+    var excel = Excel.createExcel();
+    Sheet sheet = excel['AI Analysis'];
+    sheet.appendRow(['Student', 'Status', 'Comments']);
+    for (var row in _aiAnalysisData) {
+      sheet.appendRow([
+        row['Student']?.toString() ?? '',
+        row['Status']?.toString() ?? '',
+        row['Comments']?.toString() ?? '',
+      ]);
+    }
+    return excel.encode()!;
+  }
+
+  // ---------------------------------------------------------------------------
   // _buildReportForm:
   // Displays dropdowns for selecting course, subject, and assessment,
   // along with Generate and Export buttons.
@@ -500,6 +602,11 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               setState(() {
                 _selectedCourse = val;
                 _selectedSubject = val?.subject ?? "General";
+                // Clear dependent tables when course changes.
+                _studentBreakdown.clear();
+                _questionBreakdown.clear();
+                _aiAnalysisData.clear();
+                _selectedStudent = null;
               });
               if (_selectedCourse != null) {
                 // Fetch essays and quizzes, then combine them.
@@ -538,6 +645,11 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               onChanged: (val) {
                 setState(() {
                   _selectedSubject = val;
+                  // Optionally clear dependent tables if needed.
+                  _studentBreakdown.clear();
+                  _questionBreakdown.clear();
+                  _aiAnalysisData.clear();
+                  _selectedStudent = null;
                 });
               },
             ),
@@ -555,8 +667,11 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
             onChanged: (val) {
               setState(() {
                 _selectedAssessment = val;
-                // Clear question breakdown when assessment changes.
+                // Clear question breakdown, student breakdown and AI analysis when assessment changes.
                 _questionBreakdown.clear();
+                _studentBreakdown.clear();
+                _aiAnalysisData.clear();
+                _selectedStudent = null;
               });
             },
           ),
@@ -571,6 +686,17 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
               ElevatedButton(
                 onPressed: _studentBreakdown.isNotEmpty ? _saveReport : null,
                 child: const Text('Export'),
+              ),
+              const SizedBox(width: 8),
+              ElevatedButton(
+                onPressed: _studentBreakdown.isNotEmpty ? _analyzeReport : null,
+                child: _isAnalyzingAI
+                    ? const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('AI Analyze'),
               ),
             ],
           ),
@@ -964,6 +1090,25 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
           const SizedBox(height: 20),
           // 2x2 grid view.
           _buildMainGrid(),
+          // AI Analysis table below the grid with an export button.
+          if (_aiAnalysisData.isNotEmpty) ...[
+            const SizedBox(height: 30),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'AI Analysis Summary',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                ElevatedButton(
+                  onPressed: _exportAIAnalysis,
+                  child: const Text('Export AI Analysis'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            _buildAIAnalysisTable(),
+          ],
           const SizedBox(height: 30),
         ],
       ),
@@ -987,6 +1132,30 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
         padding: const EdgeInsets.all(16.0),
         child: _buildContent(),
       ),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // build:
+  // Builds the overall AI analyisis summary below the 2x2 grid.
+  // ---------------------------------------------------------------------------
+  Widget _buildAIAnalysisTable() {
+    if (_aiAnalysisData.isEmpty) return const SizedBox.shrink();
+    return DataTable(
+      columns: const [
+        DataColumn(label: Text('Student')),
+        DataColumn(label: Text('Status')),
+        DataColumn(label: Text('Comments')),
+      ],
+      rows: _aiAnalysisData.map((row) {
+        return DataRow(
+          cells: [
+            DataCell(Text(row['Student']?.toString() ?? '')),
+            DataCell(Text(row['Status']?.toString() ?? '')),
+            DataCell(Text(row['Comments']?.toString() ?? '')),
+          ],
+        );
+      }).toList(),
     );
   }
 
@@ -1020,5 +1189,92 @@ class _AnalyticsPageState extends State<AnalyticsPage> {
     }
     if (questionCount == 0) return 0;
     return (grandTotalAttempts / questionCount).round();
+  }
+
+  Future<void> _analyzeReport() async {
+    if (_studentBreakdown.isEmpty) return;
+
+    // Check for available AI credentials
+    LlmType? selectedLLM;
+    if (LocalStorageService.userHasLlmKey(LlmType.CHATGPT)) {
+      selectedLLM = LlmType.CHATGPT;
+    } else if (LocalStorageService.userHasLlmKey(LlmType.GROK)) {
+      selectedLLM = LlmType.GROK;
+    } else if (LocalStorageService.userHasLlmKey(LlmType.PERPLEXITY)) {
+      selectedLLM = LlmType.PERPLEXITY;
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text(
+                "No AI credentials found. Please log in to an AI platform.")),
+      );
+      return;
+    }
+
+    String courseName = _selectedCourse?.fullName ?? "Unknown Course";
+    String assessmentName = _selectedAssessment?.name ?? "Unknown Assessment";
+
+    // Build a summary string from the student breakdown data.
+    String studentSummary = _studentBreakdown.map((student) {
+      return "Name: ${student['studentName']}, Avg Grade: ${student['avgGrade']}, Rank: ${student['classRank']}";
+    }).join("\n");
+
+    String prompt =
+        "Analyze the following analytics data for course '$courseName' and assignment '$assessmentName'.\n"
+        "Student Breakdown Data:\n$studentSummary\n"
+        "Based on this data, provide a thorough analysis indicating which students are excelling, "
+        "which are struggling, and which may not have completed the assignment. "
+        "Return your analysis as a JSON array where each element is an object with keys 'Student', 'Status', and 'Comments'.";
+
+    // Select the AI model based on the available credentials.
+    dynamic aiModel;
+    if (selectedLLM == LlmType.CHATGPT) {
+      aiModel = OpenAiLLM(LocalStorageService.getOpenAIKey());
+    } else if (selectedLLM == LlmType.GROK) {
+      aiModel = GrokLLM(LocalStorageService.getGrokKey());
+    } else {
+      aiModel = PerplexityLLM(LocalStorageService.getPerplexityKey());
+    }
+
+    setState(() {
+      _isAnalyzingAI = true;
+    });
+
+    try {
+      var result = await aiModel.postToLlm(prompt);
+      String normalizedResult = result.trim();
+      // Remove markdown code block wrappers if present.
+      if (normalizedResult.startsWith("```json")) {
+        normalizedResult = normalizedResult.substring(7);
+      }
+      if (normalizedResult.endsWith("```")) {
+        normalizedResult =
+            normalizedResult.substring(0, normalizedResult.length - 3);
+      }
+      normalizedResult = normalizedResult.trim();
+
+      var jsonData = json.decode(normalizedResult);
+      if (jsonData is List) {
+        setState(() {
+          _aiAnalysisData = List<Map<String, dynamic>>.from(jsonData);
+        });
+      } else {
+        setState(() {
+          _aiAnalysisData = [];
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+              content: Text("AI analysis did not return a valid JSON array.")),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error during AI analysis: $e")),
+      );
+    } finally {
+      setState(() {
+        _isAnalyzingAI = false;
+      });
+    }
   }
 }
