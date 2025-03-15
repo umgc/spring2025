@@ -27,44 +27,74 @@ environment:
 # dependencies can be manually updated by changing the version numbers below to
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
-dependencies:
-    flutter:
-      sdk: flutter
+# dependencies can be manually updated by changing the version numbers below to
+# the latest version available on pub.dev. To see which dependencies have newer
+# versions available, run `flutter pub outdated`.
+dependencies:  
+  flutter:  
+    sdk: flutter  
 
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
-    cupertino_icons: ^1.0.8
-    logging: ^1.2.0
-    local_auth: ^2.1.7
-    geolocator: ^10.1.0
-    sqflite: ^2.3.0
-    moment_dart: ^4.0.1
-    timeago: ^3.5.0
-    path_provider: ^2.1.1
-    video_thumbnail: ^0.5.3
-    flutter_dotenv: ^5.1.0
-    aws_rekognition_api: ^2.0.0
-    aws_s3_api: ^2.0.0
-    camera: ^0.11.1
-    image_picker: ^1.0.4
-    permission_handler: ^11.0.1
-    geocoding: ^3.0.0
-    speech_to_text: ^7.0.0
-    flutter_sound: ^9.2.13
-    chewie: ^1.7.1
-    video_player: ^2.7.2
-    dart_openai: ^3.0.0
-    flutter_tts: ^4.2.2
-    aws_transcribe_api: ^2.0.0
-    avatar_glow: ^3.0.1
-    external_path: ^2.0.1
-    gallery_saver: ^2.3.2
-    url_launcher: ^6.0.12
-dev_dependencies:
+  # Core packages  
+  cupertino_icons: ^1.0.8  
+  http: ^1.2.0  
+  logging: ^1.2.0  
+  path_provider: ^2.1.2  
+  permission_handler: ^11.2.1  
+  url_launcher: ^6.2.4  
+
+  # Firebase packages  
+  firebase_core: ^2.25.4  
+  firebase_messaging: ^14.7.10  # Downgraded version  
+  firebase_crashlytics: ^3.4.14  
+
+  # Authentication & Security  
+  local_auth: ^2.1.8  
+
+  # Location Services  
+  geolocator: ^10.1.0  
+  geocoding: ^3.0.0  
+
+  # Database  
+  sqflite: ^2.3.2  
+
+  # Date & Time  
+  moment_dart: ^4.0.1  
+  timeago: ^3.6.1  
+
+  # Media handling  
+  video_thumbnail: ^0.5.3  
+  camera: ^0.10.5+9  
+  image_picker: ^1.0.7  
+  flutter_sound: ^9.2.13  
+  chewie: ^1.7.4  
+  video_player: ^2.8.2  
+  image_gallery_saver: ^2.0.3  
+  external_path: ^2.0.1  
+
+  # AWS Services  
+  aws_rekognition_api: ^2.0.0  
+  aws_s3_api: ^2.0.0  
+  aws_transcribe_api: ^2.0.0  
+
+  # AI & Speech  
+  speech_to_text: ^6.6.0  # Downgraded version  
+  dart_openai: ^5.0.0  
+  flutter_tts: ^4.0.1  
+
+  # UI Components  
+  avatar_glow: ^3.0.1  
+  flutter_local_notifications: ^16.3.2  
+  flutter_dotenv: ^5.1.0  
+  intl: ^0.19.0
+
+dev_dependencies:    
   flutter_test:
     sdk: flutter
-
-  # The "flutter_lints" package below contains a set of recommended lints to
+  mockito: ^5.4.4 
+  build_runner: ^2.4.8  
+  
+  
+    # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
