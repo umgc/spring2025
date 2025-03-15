@@ -372,7 +372,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       context: context,
                       icon: Icon(Icons.flag,
                           size: iconSize, color: Colors.black54),
-                      text: 'Free Tour',
+                      text: 'Tour Guide',
                       screen: TourScreen(),
                       keyName: "TourGuideButtonKey",
                     ),

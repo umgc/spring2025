@@ -28,13 +28,7 @@ flutter_macos_podfile_setup
 
 target 'Runner' do
   use_frameworks!
-  use_modular_headers!
-
-  flutter_install_all_macos_pods File.dirname(File.realpath(__FILE__))
-   # ✅ Fix modular headers for Firebase
-    pod 'Firebase/Core', :modular_headers => true
-    pod 'Firebase/Messaging', :modular_headers => true
-    pod 'Firebase/Analytics', :modular_headers => true
+  
 
   target 'RunnerTests' do
     inherit! :search_paths
