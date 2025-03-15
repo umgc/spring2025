@@ -561,22 +561,13 @@ Future<Map<String, String>?> getTranscriptDetails(String entry) async {    final
     }
     return null;
   }
-}
 
-
-  // Commented out this method for future use
-  /* getTranscriptCountForDate(String date) {
-    // Get the number of transcripts for a given date
-    Future<int> getTranscriptCountForDate(String date) async {
-        final db = await database;
-        List<Map<String, dynamic>> results = await db.rawQuery(
-          'SELECT COUNT(*) as count FROM Transcript WHERE DATE(transcript_timestamp) = ?',
-          [date],
-        );
-        if (results.isNotEmpty) {
-          return results.first['count'] as int;
-        }
-        return 0;
-      }
+  Future<Map<String, dynamic>?> getTranscriptAIResponse(int transcriptId) async {
+      // Implement the logic to fetch the AI response for the given transcript ID
+      // This is a placeholder implementation, replace it with your actual database query
+      return {
+        'transcript_id': transcriptId,
+        'transcript_text_data': 'Sample AI response for transcript $transcriptId'
+      };
     }
-  }*/
+}

@@ -393,33 +393,30 @@ class _IndustryMenuState extends State<IndustryMenu> {
                           onTap: () async {
                             Navigator.pop(context);
                             if (widget.title == 'Restaurant') {
-                              // Show Kanban style list for restaurant
-                              // Run the Transcript ai response to the Validatemenuitems 
-                                // Fetch the order transcript from the restaurant table
-                                String orderTranscript = transcript['transcript_text_data'] ?? 'No content available';
+                                // Fetch the AI response from the database
+                                DatabaseHelper dbHelper = DatabaseHelper();
+                                Map<String, dynamic>? aiResponse = await dbHelper.getTranscriptAIResponse(transcript['transcript_id']);
 
                                 // Run it through the API to validate menu items
-                                //var openAIHelper = OpenAIHelper();
                                 List<String> validatedMenuItems = [];
                                 try {
-                                var restaurantAPI = RestaurantAPI();
-                                // This is the ai response output [OpenAIChatCompletionChoiceMessageContentItemModel(type: text, text: Seat 1: Burger, fries, soda. Seat 2: Burger, fries, soda. Seat 3: Burger, fries, soda. Seat 4: Double burger, large fries, soda.  )]
-                                validatedMenuItems = await restaurantAPI.validateMenuItems([orderTranscript]);
-                                
-                                
-                                showModalBottomSheet(  
-                                  context: context,
-                                  builder: (BuildContext context) {
-                                  return KanbanBoard(tasks: validatedMenuItems);                                
-                                  }, 
-                                );
+                                  var restaurantAPI = RestaurantAPI();
+                                  validatedMenuItems = await restaurantAPI.validateMenuItems([aiResponse.toString()]);
+                                  //String testItems = 'Seat 1: Burger, Fries\nSeat 2: Pizza, Salad';
+
+                                  showModalBottomSheet(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      return KanbanBoard(tasks: validatedMenuItems);
+                                    },
+                                  );                         
                                 } catch (e) {
-                                // Handle API call failure
-                                if (context.mounted) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Failed to validate menu items: $e')),
-                                  );
-                                }
+                                  // Handle API call failure
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Failed to validate menu items: $e')),
+                                    );
+                                  }
                                 }
                             } else {
                               // Show regular transcript for other industries
