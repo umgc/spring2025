@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:memoryminder/src/features/account_creation_and_login/presentation/eula_screen.dart';
 import 'package:memoryminder/src/features/account_creation_and_login/presentation/welcome_screen.dart';
+import 'package:memoryminder/src/features/caregiver-dashboard/service/notification_service.dart';
 import 'package:memoryminder/src/utils/logger.dart';
 import 'package:memoryminder/src/features/stml_user_dashboard/presentation/stml_user_dashboard.dart';
 import 'package:memoryminder/src/features/account_creation_and_login/presentation/login_screen.dart';
@@ -56,4 +57,5 @@ void initializeData() async {
   CameraManager cm = CameraManager();
   await PermissionManager.requestInitialPermissions();
   await cm.initializeCamera();
+  NotificationService().initialize();
 }

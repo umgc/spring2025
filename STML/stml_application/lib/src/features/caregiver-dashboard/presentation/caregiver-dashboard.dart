@@ -1,6 +1,11 @@
 // ignore_for_file: avoid_print, prefer_const_constructors
 // Imported libraries and packages
 
+import 'dart:async';
+
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:memoryminder/src/features/caregiver-dashboard/service/notification_service.dart';
+import 'package:memoryminder/src/features/caregiver-dashboard/service/notification_stream_service.dart';
 import 'package:memoryminder/ui/dementia_resources.dart';
 import 'package:memoryminder/ui/profile_screen.dart';
 import 'package:memoryminder/src/utils/ui_utils.dart';
@@ -17,10 +22,18 @@ class CaregiverDashboardScreen extends StatefulWidget {
 
 class _CaregiverDashboardScreen extends State<CaregiverDashboardScreen> {
   double iconSize = 65;
+  final NotificationService notificationService = NotificationService();
 
   @override
   void initState() {
     super.initState();
+    notificationService.getRecentNotifications();
+  }
+
+  @override
+  void dispose() {
+    NotificationStreamService().dispose();
+    super.dispose();
   }
 
   @override
@@ -31,7 +44,7 @@ class _CaregiverDashboardScreen extends State<CaregiverDashboardScreen> {
         extendBody: true,
         // Setting up the app bar at the top of the screen
         appBar: AppBar(
-          backgroundColor: const Color(0x44000FF0), // Set appbar background color
+          backgroundColor: Colors.blueAccent, // Set appbar background color
           elevation: 0.0,
           centerTitle: true, // This centers the title
           automaticallyImplyLeading: false,
@@ -95,6 +108,7 @@ class _CaregiverDashboardScreen extends State<CaregiverDashboardScreen> {
         ),
         ///////////////////////////
         // Main content of the screen
+
         body:
         Container(
           decoration: BoxDecoration(
@@ -106,131 +120,132 @@ class _CaregiverDashboardScreen extends State<CaregiverDashboardScreen> {
 
           child: Column(
             children: [
-              Container(
-                child: Column(
-                  children: [
-                    const Padding(
-                      padding: EdgeInsets.fromLTRB(2.0, 100, 16.0, 2),
-                      child: Text(
-                        'Notifications',
-                        textAlign: TextAlign.left,
-                        style: TextStyle(
-                          fontSize: 20.0,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 3),
-                    Container(
-                      padding: EdgeInsets.all(2),
-                      decoration: BoxDecoration(
-                        color: Colors.red[100],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        'You have 3 unread notifications.',
-                        style: TextStyle(
-                          color: Colors.red,
-                          fontSize: 16.0,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 3),
-                    _buildNotificationItem('Meeting with Dr. Smith at 3 PM'),
-                    SizedBox(height: 3),
-                    _buildNotificationItem('Medication reminder for John Doe'),
-                    SizedBox(height: 3),
-                    _buildNotificationItem('Weekly report due tomorrow'),
-                  ],
+              const Padding(
+                padding: EdgeInsets.fromLTRB(2.0, 100, 16.0, 2),
+                child: Text(
+                  'Notifications',
+                  textAlign: TextAlign.left,
+                  style: TextStyle(
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
                 ),
               ),
+              const SizedBox(height: 3),
               Container(
-                child: Divider(
-                  color: Colors.black54, // Optional: change the color
-                  thickness: 2, // Optional: change the thickness
-                  height: 10, // Optional: add vertical space around the line
-                  indent: 20, // Optional: indent the line from the start
-                  endIndent: 20, // Optional: indent the line from the end
+                padding: EdgeInsets.all(2),
+                decoration: BoxDecoration(
+                  color: Colors.red[100],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: StreamBuilder(stream: NotificationStreamService().stream,
+                  initialData: [],
+                  builder: (context, snapshot) {
+                    int itemCount = 0;
+                    if (snapshot.hasData) {
+                      List<dynamic> unReadNotifications = snapshot.data!.where((item) => item['read'] == false).toList();
+                      itemCount = unReadNotifications.length;
+                    }
+                    return Text(
+                      'You have $itemCount unread notifications.',
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontSize: 16.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    );
+                  }
+                ),
+              ),
+              const SizedBox(height: 3),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(2.0, 2, 2.0, 2),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.transparent,  // Light blue background
+                    borderRadius: BorderRadius.circular(10),  // Rounded corners
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black26,
+                      ),
+                    ],
+                  ),
+                  child:
+                  _buildNotificationList(
+                    context: context,
+                  ),
+
                 ),
               ),
 
-              Container(
-                child: Column(
-                  children: [
+              const Divider(
+                color: Colors.black54, // Optional: change the color
+                thickness: 2, // Optional: change the thickness
+                height: 10, // Optional: add vertical space around the line
+                indent: 20, // Optional: indent the line from the start
+                endIndent: 20, // Optional: indent the line from the end
+              ),
 
-                    // Grid view to display multiple options/buttons
-                    Container(
-                      child: GridView.count(
-                        shrinkWrap: true, // Add shrinkWrap
-                        physics: const NeverScrollableScrollPhysics(),
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 12.0,
-                        mainAxisSpacing: 12.0,
-                        childAspectRatio: 1.30,
-                        padding: const EdgeInsets.all(26.0),
-                        children: [
-                          // Using the helper function to build each button in the grid
-                          _buildElevatedButton(
-                            context: context,
-                            icon: Icon(Icons.person_2,
-                                size: iconSize, color: Colors.black87),
-                            text: 'Jessica Thompson',
-                            screen: ProfileScreen(),
-                            keyName: "VirtualAssistantButtonKey",
-                          ),
-                          _buildElevatedButton(
-                            context: context,
-                            icon: Icon(Icons.person_2,
-                                size: iconSize, color: Colors.black87),
-                            text: 'Michael Brown',
-                            screen: ProfileScreen(),
-                            keyName: "GalleryButtonKey",
-                          ),
+              // Grid view to display multiple options/buttons
+              GridView.count(
+                shrinkWrap: true, // Add shrinkWrap
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: 2,
+                crossAxisSpacing: 12.0,
+                mainAxisSpacing: 12.0,
+                childAspectRatio: 1.30,
+                padding: const EdgeInsets.all(6.0),
+                children: [
+                  // Using the helper function to build each button in the grid
+                  _buildElevatedButton(
+                    context: context,
+                    icon: Icon(Icons.person_2,
+                        size: iconSize, color: Colors.black87),
+                    text: 'Jessica Thompson',
+                    screen: ProfileScreen(),
+                    keyName: "VirtualAssistantButtonKey",
+                  ),
+                  _buildElevatedButton(
+                    context: context,
+                    icon: Icon(Icons.person_2,
+                        size: iconSize, color: Colors.black87),
+                    text: 'Michael Brown',
+                    screen: ProfileScreen(),
+                    keyName: "GalleryButtonKey",
+                  ),
 
-                        ],
-                      ),
-                    ),
+                ],
+              ),
 
-                    Container(
-                      child: Column(
-                        children: [
-                          Divider(
-                            color: Colors.black, // Optional: change the color
-                            thickness: 2, // Optional: change the thickness
-                            height: 10, // Optional: add vertical space around the line
-                            indent: 20, // Optional: indent the line from the start
-                            endIndent: 20, // Optional: indent the line from the end
-                          ),
-                          // Grid view to display multiple options/buttons
-                          Container(
-                            child: GridView.count(
-                              shrinkWrap: true, // Add shrinkWrap
-                              physics: const NeverScrollableScrollPhysics(),
-                              crossAxisCount: 2,
-                              crossAxisSpacing: 12.0,
-                              mainAxisSpacing: 12.0,
-                              childAspectRatio: 1.30,
-                              padding: const EdgeInsets.all(26.0),
-                              children: [
-                                _buildElevatedButton(
-                                  context: context,
-                                  icon: Icon(Icons.bookmark_outline,
-                                      size: iconSize, color: Colors.black87),
-                                  text: 'Dementia Resources',
-                                  screen: DementiaResourcesScreen(),
-                                  keyName: "DementiaResourcesButtonKey",
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+              const Divider(
+                color: Colors.black, // Optional: change the color
+                thickness: 2, // Optional: change the thickness
+                height: 10, // Optional: add vertical space around the line
+                indent: 20, // Optional: indent the line from the start
+                endIndent: 20, // Optional: indent the line from the end
+              ),
 
-                  ],
-                ),
+              // Grid view to display multiple options/buttons
+
+              GridView.count(
+                shrinkWrap: true, // Add shrinkWrap
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: 1,
+                crossAxisSpacing: 12.0,
+                mainAxisSpacing: 12.0,
+                childAspectRatio: 1,
+                padding: const EdgeInsets.fromLTRB(130.0,2, 130.0, 2),
+                children: [
+                  _buildElevatedButton(
+                    context: context,
+                    icon: Icon(Icons.bookmark_outline,
+                        size: iconSize, color: Colors.black87),
+                    text: 'Dementia Resources',
+                    screen: DementiaResourcesScreen(),
+                    keyName: "DementiaResourcesButtonKey",
+                  ),
+                ],
               ),
             ],
           ),
@@ -241,51 +256,12 @@ class _CaregiverDashboardScreen extends State<CaregiverDashboardScreen> {
         bottomNavigationBar: UiUtils.createBottomNavigationBar(context));
   }
 
-  Widget _buildNotificationItem(String text) {
-    return LayoutBuilder(
-        builder: (BuildContext context, BoxConstraints constraints) {
-          return ElevatedButton(
-              key: Key(text),
-              style: ElevatedButton.styleFrom(
-                minimumSize: Size(constraints.maxWidth, 50), // Use screen width
-                backgroundColor: const Color(0xADD8E6DD).withOpacity(0.30), // Button text color
-
-                foregroundColor: Colors.black,
-
-                padding: const EdgeInsets.all(2.0),
-                elevation: 5.0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(2.0),
-                ),
-                alignment: Alignment.centerLeft,
-              ),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ProfileScreen()),
-                );
-              },
-              child: Padding(
-                padding: EdgeInsets.only(left: 16.0), // Example: padding only on the left
-                child: Text(
-                  text,
-                  style: const TextStyle(
-                    fontSize: 13.0,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0XFF000000),
-                  ),
-                  textAlign: TextAlign.left,
-                ),
-              )
-          );
-        }
-    );
-  }
   String _currentDate() {
     final now = DateTime.now();
     final formatter = DateFormat('MMMM dd, yyyy'); // You can customize the format here
     return formatter.format(now);
   }
+
   // Helper function to create each button for the GridView
   Widget _buildElevatedButton({
     required BuildContext context,
@@ -329,5 +305,57 @@ class _CaregiverDashboardScreen extends State<CaregiverDashboardScreen> {
         ],
       ),
     );
+  }
+
+  Widget _buildNotificationList({
+    required BuildContext context,
+  }) {
+    return StreamBuilder<List<Map<String, dynamic>>>(
+      stream: NotificationStreamService().stream,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        }
+
+        if (snapshot.hasError) {
+          return Center(child: Text('Error: ${snapshot.error}'));
+        }
+
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return Center(child: Text('No notifications available'));
+        }
+
+        // List of notifications
+        List<Map<String, dynamic>> notifications = snapshot.data!;
+
+        return Container(height: 300, child: ListView.builder(
+          itemCount: notifications.length,
+          itemBuilder: (context, index) {
+            var notification = notifications[index];
+
+            return ListTile(
+              title: Text(notification['title'],
+                style: TextStyle(
+                  fontWeight: notification['read'] ? FontWeight.normal : FontWeight.bold,
+                  fontSize: notification['read'] ? 16 : 18,
+                  color: Colors.black,
+                ),
+              ),
+
+              leading: notification['read']
+                  ? Icon(Icons.check_circle_outline_sharp, color: Colors.green)
+                  : Icon(Icons.notifications, color: Colors.red),
+
+              onTap: () {
+                // Handle notification tap and mark as read
+                notificationService.markNotificationAsRead(notification['id']);
+              },
+            );
+          },
+        )
+        );
+      },
+    );
+
   }
 }
