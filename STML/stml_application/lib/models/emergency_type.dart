@@ -1,4 +1,5 @@
 // lib/models/emergency_type.dart
+// Autor: Sandrine
 
 /// Represents different types of emergencies that can be handled by the MemoryMinder application
 enum EmergencyType {

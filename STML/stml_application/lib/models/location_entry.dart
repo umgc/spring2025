@@ -1,4 +1,5 @@
 // lib/models/location_entry.dart
+//By SAndrine
 
 /// Represents a location entry with timestamp information for patient tracking
 class LocationEntry {

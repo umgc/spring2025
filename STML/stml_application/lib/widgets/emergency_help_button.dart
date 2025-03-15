@@ -1,4 +1,5 @@
 // lib/widgets/emergency_help_button.dart
+// By sandrine
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
