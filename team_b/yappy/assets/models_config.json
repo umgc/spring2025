@@ -15,27 +15,27 @@
       "size": 25.3
     },
     {
-      "id": "whisper_tiny",
-      "name": "Offline Whisper Model (Tiny)",
-      "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-whisper-tiny.en.tar.bz2",
+      "id": "whisper_base",
+      "name": "Offline Whisper Model (Base)",
+      "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/sherpa-onnx-whisper-base.en.tar.bz2",
       "isCompressed": true,
       "type": "offline",
       "modelType": "whisper",
       "outputFiles": [
         {
-          "source": "sherpa-onnx-whisper-tiny.en/tiny.en-tokens.txt",
+          "source": "sherpa-onnx-whisper-base.en/base.en-tokens.txt",
           "destination": "offline_tokens.txt"
         },
         {
-          "source": "sherpa-onnx-whisper-tiny.en/tiny.en-decoder.int8.onnx",
+          "source": "sherpa-onnx-whisper-base.en/base.en-decoder.int8.onnx",
           "destination": "offline_decoder.onnx"
         },
         {
-          "source": "sherpa-onnx-whisper-tiny.en/tiny.en-encoder.int8.onnx",
+          "source": "sherpa-onnx-whisper-base.en/base.en-encoder.int8.onnx",
           "destination": "offline_encoder.onnx"
         }
       ],
-      "size": 113.0
+      "size": 199.0
     },
     {
       "id": "zipformer_online",
