@@ -50,7 +50,6 @@ dependencies:
   file_picker: ^9.0.2
   flutter_audio_waveforms: ^1.2.1+8
   dart_openai: ^5.1.0
-  assistant_openai: ^1.0.4
 
 dev_dependencies:
   flutter_test:

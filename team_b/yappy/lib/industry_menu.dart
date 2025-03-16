@@ -376,21 +376,96 @@ class _IndustryMenuState extends State<IndustryMenu> {
 
               // Creates a chatbot button
               Container(
-                decoration:
-                    BoxDecoration(shape: BoxShape.circle, color: Colors.grey),
+                decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.grey),
                 padding: EdgeInsets.all(5),
                 child: IconButton(
                   icon: Icon(
-                    Icons.android,
-                    color: Colors.white,
-                    size: screenHeight * .05,
+                  Icons.android,
+                  color: Colors.white,
+                  size: screenHeight * .05,
                   ),
                   onPressed: () async {
-                    // Kick off the AI chat session
-                    var openAIHelper = OpenAIHelper();
-                    // todo: start with one response at a time? then move onto streaming?
-                    var aiResponse = openAIHelper.startTranscriptChatAssistant();
-                    // todo: display the response in a dialog box
+                  // Kick off the AI chat session
+                  var openAIHelper = OpenAIHelper();
+                  TextEditingController chatController = TextEditingController();
+                  String? aiResponse = '';
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text('Ask Yappy about stored transcripts'),
+                      content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextField(
+                        controller: chatController,
+                        decoration: InputDecoration(hintText: 'Enter a question'),
+                        ),
+                      ],
+                      ),
+                      actions: [
+                      TextButton(
+                        onPressed: () async {
+                        String userInput = chatController.text;
+                        if (userInput.isNotEmpty) {
+                          // Show intermediary dialog
+                          showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (BuildContext context) {
+                            return AlertDialog(
+                            title: Text('Generating Response'),
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                              CircularProgressIndicator(),
+                              SizedBox(height: 20),
+                              Text('Please wait while the response is being generated...'),
+                              ],
+                            ),
+                            );
+                          },
+                          );
+
+                          aiResponse = await openAIHelper.startTranscriptChatAssistant(userInput, widget.title);
+                          if (!context.mounted) return;
+                          Navigator.of(context).pop(); // Close the intermediary dialog
+                          Navigator.of(context).pop(); // Close the first dialog
+                          if (aiResponse != null) {
+                          showDialog(
+                            context: context,
+                            builder: (BuildContext context) {
+                            return AlertDialog(
+                              title: Text('Yappy Response'),
+                              content: SingleChildScrollView(
+                              child: Text(aiResponse ?? "No response"),
+                              ),
+                              actions: [
+                              TextButton(
+                                onPressed: () {
+                                Navigator.of(context).pop();
+                                },
+                                child: Text('Close'),
+                              ),
+                              ],
+                            );
+                            },
+                          );
+                          }
+                        }
+                        },
+                        child: Text('Submit'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                        Navigator.of(context).pop();
+                        },
+                        child: Text('Cancel'),
+                      ),
+                      ],
+                    );
+                    },
+                  );
                   },
                 ),
               ),
