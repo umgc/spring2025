@@ -348,6 +348,29 @@ class _IndustryMenuState extends State<IndustryMenu> {
                   },
                 ),
               ),
+
+              SizedBox(width: screenWidth * .06),
+
+              // Creates a chatbot button
+              Container(
+                decoration:
+                    BoxDecoration(shape: BoxShape.circle, color: Colors.grey),
+                padding: EdgeInsets.all(5),
+                child: IconButton(
+                  icon: Icon(
+                    Icons.android,
+                    color: Colors.white,
+                    size: screenHeight * .05,
+                  ),
+                  onPressed: () async {
+                    // Kick off the AI chat session
+                    var openAIHelper = OpenAIHelper();
+                    // todo: start with one response at a time? then move onto streaming?
+                    var aiResponse = openAIHelper.startTranscriptChatAssistant();
+                    // todo: display the response in a dialog box
+                  },
+                ),
+              ),
             ],
           ),
         ],
