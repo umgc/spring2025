@@ -163,13 +163,8 @@ class _CaregiverDashboardScreen extends State<CaregiverDashboardScreen> {
                 padding: const EdgeInsets.fromLTRB(2.0, 2, 2.0, 2),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: Colors.transparent,  // Light blue background
+                    color: Colors.transparent,
                     borderRadius: BorderRadius.circular(10),  // Rounded corners
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black26,
-                      ),
-                    ],
                   ),
                   child:
                   _buildNotificationList(
