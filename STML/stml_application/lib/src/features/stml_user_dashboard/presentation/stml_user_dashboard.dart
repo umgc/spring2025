@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print, prefer_const_constructors
 // Imported libraries and packages
 
+import 'package:memoryminder/src/features/caregiver-dashboard/presentation/caregiver-dashboard.dart';
 import 'package:memoryminder/ui/dementia_resources.dart';
 import 'package:memoryminder/ui/response_screen.dart';
 import 'package:memoryminder/ui/assistant_screen.dart';
@@ -14,6 +15,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:memoryminder/src/camera_manager.dart';
 import 'package:memoryminder/src/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:memoryminder/features/caregiver_task_management/caregiver_task_screen.dart';
+
 
 
 // Main HomeScreen widget which is a stateless widget.
@@ -221,6 +224,21 @@ class _HomeScreenState extends State<HomeScreen> {
                       text: 'Dementia Resources',
                       screen: DementiaResourcesScreen(),
                       keyName: "DementiaResourcesButtonKey",
+                    ),
+                    _buildElevatedButton(
+                      context: context,
+                      icon: Icon(Icons.bookmark_outline,
+                          size: iconSize, color: Colors.black54),
+                      text: 'Caregiver Dashboard',
+                      screen: CaregiverDashboardScreen(),
+                      keyName: "DementiaResourcesButtonKey",
+                    ),
+                    _buildElevatedButton(
+                      context: context,
+                      icon: Icon(Icons.task_alt, size: iconSize, color: Colors.black54),
+                      text: 'Caregiver Tasks',
+                      screen: CaregiverTaskScreen(),
+                      keyName: "CaregiverTaskButtonKey",
                     ),
                   ],
                 ),

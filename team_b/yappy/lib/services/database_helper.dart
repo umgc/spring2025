@@ -89,7 +89,8 @@ class DatabaseHelper {
       user_id INTEGER,
       transcript_text_data TEXT,
       transcript_timestamp DATETIME,
-      transcript_ai_response TEXT,  -- Added transcript_ai_response column
+      transcript_ai_response TEXT,
+      transcript_document BLOB,
       industry TEXT,
       FOREIGN KEY (user_id) REFERENCES Users(user_id)
       )
@@ -559,9 +560,82 @@ Future<Map<String, String>?> getTranscriptDetails(String entry) async {    final
     }
     return null;
   }
+
+  // Method to insert a document into the Transcript table
+  Future<int> insertDocument(int transcriptId, String fileName, List<int> fileBytes) async {
+    final db = await database;
+    Map<String, dynamic> document = {
+      'transcript_id': transcriptId,
+      'transcript_document': fileBytes,
+    };
+    return await db.update(
+      'Transcript',
+      document,
+      where: 'transcript_id = ?',
+      whereArgs: [transcriptId],
+    );
+  }
+
+  // Method to get transcript text data and industry by transcriptId
+  Future<Map<String, String>?> getTranscriptTextDataAndIndustryById(int transcriptId) async {
+    final db = await database;
+    List<Map<String, dynamic>> results = await db.query(
+      'Transcript',
+      columns: ['transcript_text_data', 'industry'],
+      where: 'transcript_id = ?',
+      whereArgs: [transcriptId],
+    );
+    if (results.isNotEmpty) {
+      return {
+        'transcript_text_data': results.first['transcript_text_data'] as String,
+        'industry': results.first['industry'] as String,
+      };
+    }
+    return null;
+  }
+
+  // Method to get document (BLOB) and industry by transcriptId
+  Future<Map<String, dynamic>?> getDocumentAndIndustryById(int transcriptId) async {
+    final db = await database;
+    List<Map<String, dynamic>> results = await db.query(
+      'Transcript',
+      columns: ['transcript_document', 'industry'],
+      where: 'transcript_id = ?',
+      whereArgs: [transcriptId],
+    );
+    if (results.isNotEmpty) {
+      return {
+        'transcript_document': results.first['transcript_document'],
+        'industry': results.first['industry'] as String,
+      };
+    }
+    return null;
+  }
+
+  // Method to insert AI response into the Transcript table by transcriptId
+  Future<int> insertAiResponse(int transcriptId, String aiResponse) async {
+    final db = await database;
+    Map<String, dynamic> values = {
+      'transcript_ai_response': aiResponse,
+    };
+    return await db.update(
+      'Transcript',
+      values,
+      where: 'transcript_id = ?',
+      whereArgs: [transcriptId],
+    );
+  }
+
+  Future<void> updateTranscriptDocument(int transcriptId, List<int> documentBytes) async {
+    final db = await database;
+    await db.update(
+      'Transcript',
+      {'transcript_document': documentBytes},
+      where: 'transcript_id = ?',
+      whereArgs: [transcriptId],
+    );
+  }
 }
-
-
   // Commented out this method for future use
   /* getTranscriptCountForDate(String date) {
     // Get the number of transcripts for a given date
