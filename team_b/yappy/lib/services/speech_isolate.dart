@@ -46,11 +46,6 @@ class SpeechProcessingIsolate {
   // Stream controller for receiving results
   final _resultController = StreamController<ProcessSegmentResult>.broadcast();
   Stream<ProcessSegmentResult> get results => _resultController.stream;
-
-  // Initializers for the recognizers
-  sherpa_onnx.OfflineRecognizer? _offlineRecognizer;
-  sherpa_onnx.SpeakerEmbeddingExtractor? _speakerExtractor;
-  sherpa_onnx.SpeakerEmbeddingManager? _speakerManager;
   
   // Initialize the isolate and recognizers
   Future<void> initialize(Map<String, dynamic> configs) async {

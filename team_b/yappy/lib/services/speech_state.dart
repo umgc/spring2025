@@ -178,13 +178,7 @@ class SpeechState extends ChangeNotifier {
   sherpa_onnx.OnlineRecognizer? onlineRecognizer;
   sherpa_onnx.OnlineStream? onlineStream;
 
-  // Second pass - offline recognition
-  sherpa_onnx.OfflineRecognizer? offlineRecognizer;
-
-  // Speaker identification
-  sherpa_onnx.SpeakerEmbeddingExtractor? speakerExtractor;
-  sherpa_onnx.SpeakerEmbeddingManager? speakerManager;
-
+  // Second pass - offline processing
   SpeechProcessingIsolate? speechIsolate;
 
   List<Float32List> allAudioSamples = [];
@@ -209,13 +203,6 @@ class SpeechState extends ChangeNotifier {
         sherpa_onnx.initBindings();
         onlineRecognizer = await createOnlineRecognizer();
         onlineStream = onlineRecognizer?.createStream();
-
-        // init offline recognizer
-        offlineRecognizer = await createOfflineRecognizer();
-
-        // init speaker identification components
-        speakerExtractor = await createSpeakerExtractor();
-        speakerManager = sherpa_onnx.SpeakerEmbeddingManager(speakerExtractor!.dim);
 
         // Initialize the isolate with configuration
         speechIsolate = SpeechProcessingIsolate();
@@ -323,9 +310,7 @@ Future<void> processSegmentOffline(AudioSegment segment) async {
 
   try {
     if (speechIsolate == null) {
-      debugPrint('Speech isolate not initialized, using in-process method');
-      // Fall back to the original implementation if isolate is not available
-      // ... original code here ...
+      debugPrint('Speech isolate not initialized, failing silently');
       return;
     }
     
@@ -696,9 +681,6 @@ Future<void> processSegmentOffline(AudioSegment segment) async {
     audioRecorder.dispose();
     onlineStream?.free();
     onlineRecognizer?.free();
-    offlineRecognizer?.free();
-    speakerExtractor?.free();
-    speakerManager?.free();
     speechIsolate?.dispose();
     super.dispose();
   }
