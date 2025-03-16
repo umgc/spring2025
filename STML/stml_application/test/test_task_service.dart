@@ -1,5 +1,5 @@
-import 'caregiver_task_service.dart';
-import 'caregiver_task_model.dart';
+import 'package:memoryminder/features/caregiver_task_management/caregiver_task_service.dart';
+import 'package:memoryminder/features/caregiver_task_management/caregiver_task_model.dart';
 
 void main() {
   final taskService = CaregiverTaskService();
