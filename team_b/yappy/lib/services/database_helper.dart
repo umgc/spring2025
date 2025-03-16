@@ -562,12 +562,21 @@ Future<Map<String, String>?> getTranscriptDetails(String entry) async {    final
     return null;
   }
 
-  Future<Map<String, dynamic>?> getTranscriptAIResponse(int transcriptId) async {
-      // Implement the logic to fetch the AI response for the given transcript ID
-      // This is a placeholder implementation, replace it with your actual database query
-      return {
-        'transcript_id': transcriptId,
-        'transcript_text_data': 'Sample AI response for transcript $transcriptId'
-      };
-    }
+  // Future<Map<String, dynamic>?> getTranscriptAIResponse(int transcriptId) async {
+  //   var result = await db.rawQuery(
+  //     "SELECT transcript_text_data, transcript_timestamp, transcript_ai_response FROM Transcript WHERE transcript_text_data = ? OR transcript_ai_response = ?",
+  //     [entry, entry]
+  //   );
+
+  // // Grabs the results and return them
+  //   if (result.isNotEmpty) {
+  //     return {
+  //       'text': result.first['transcript_text_data'] as String,
+  //       'timestamp': result.first['transcript_timestamp'] as String,
+  //       'ai_response': result.first['transcript_ai_response'] as String,
+  //     };
+  //   }
+  //   return null;
+  //     };
+  //   }
 }

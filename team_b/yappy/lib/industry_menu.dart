@@ -394,20 +394,28 @@ class _IndustryMenuState extends State<IndustryMenu> {
                             Navigator.pop(context);
                             if (widget.title == 'Restaurant') {
                                 // Fetch the AI response from the database
-                                DatabaseHelper dbHelper = DatabaseHelper();
-                                Map<String, dynamic>? aiResponse = await dbHelper.getTranscriptAIResponse(transcript['transcript_id']);
-
-                                // Run it through the API to validate menu items
                                 List<String> validatedMenuItems = [];
                                 try {
-                                  var restaurantAPI = RestaurantAPI();
-                                  validatedMenuItems = await restaurantAPI.validateMenuItems([aiResponse.toString()]);
-                                  //String testItems = 'Seat 1: Burger, Fries\nSeat 2: Pizza, Salad';
+                                  //if (transcript != null) {
+                                  final aiResponse = transcript['transcript_ai_response'];
+                                  // [OpenAIChatCompletionChoiceMessageContentItemModel(type: text, text: Seat 1: Burger, fries, and a soda.
+                                  // I/flutter (17322): 
+                                  // I/flutter (17322): Seat 2: Burger, fries, and a soda.
+                                  // I/flutter (17322): 
+                                  // I/flutter (17322): Seat 3: Burger, fries, and a soda.
+                                  // I/flutter (17322): 
+                                  // I/flutter (17322): Seat 4: Double burger with large fries and a soda.)]
 
+
+                                  var restaurantAPI = RestaurantAPI();
+                                  validatedMenuItems = await restaurantAPI.validateMenuItems([aiResponse]);
+                                  if (!context.mounted) return;
                                   showModalBottomSheet(
                                     context: context,
                                     builder: (BuildContext context) {
-                                      return KanbanBoard(tasks: validatedMenuItems);
+                                      // Parse the AI response to extract the text content
+                                      String parsedResponse = aiResponse.replaceAll(RegExp(r'\[OpenAIChatCompletionChoiceMessageContentItemModel\(type: text, text: '), '').replaceAll(RegExp(r'\)\]'), '');
+                                      return KanbanBoard(tasks: parsedResponse.split('.'));
                                     },
                                   );                         
                                 } catch (e) {
