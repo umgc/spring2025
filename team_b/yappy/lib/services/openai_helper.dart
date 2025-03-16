@@ -77,7 +77,7 @@ class OpenAIHelper {
       await dbHelper.saveTranscriptAiResponse(userId: userId,
         transcriptId: transcriptId,
         text: transcript['transcript_text_data'],
-        aiResponse: completion.choices[0].message.content.toString());
+        aiResponse: completion.choices[0].message.content.toString(), industry: industry);
       return completion.choices[0].message.content.toString();
     } catch (e) {
       rethrow;
