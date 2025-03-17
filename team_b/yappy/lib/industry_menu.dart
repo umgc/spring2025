@@ -187,6 +187,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
   }
 
   // This method builds the industry menu widget where the user can record, view transcripts, and view transcript history
+  // Added the fourth button for Chat Bot
   @override
   Widget build(BuildContext context) {
     // Gets the width and height of the current screen
