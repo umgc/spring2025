@@ -395,9 +395,13 @@ class _IndustryMenuState extends State<IndustryMenu> {
                             if (widget.title == 'Restaurant') {
                                 // Fetch the AI response from the database
                                 List<String> validatedMenuItems = [];
+                                
                                 try {
                                   //if (transcript != null) {
                                   final aiResponse = transcript['transcript_ai_response'];
+                                  String parsedResponse = aiResponse.replaceAll(RegExp(r'\[OpenAIChatCompletionChoiceMessageContentItemModel\(type: text, text: '), '').replaceAll(RegExp(r'\)\]'), '');
+                                  List<String> parsedResponseList = parsedResponse.split('\n').where((item) => item.trim().isNotEmpty).toList();
+                                  print(parsedResponseList);
                                   // [OpenAIChatCompletionChoiceMessageContentItemModel(type: text, text: Seat 1: Burger, fries, and a soda.
                                   // I/flutter (17322): 
                                   // I/flutter (17322): Seat 2: Burger, fries, and a soda.
@@ -408,14 +412,15 @@ class _IndustryMenuState extends State<IndustryMenu> {
 
 
                                   var restaurantAPI = RestaurantAPI();
-                                  validatedMenuItems = await restaurantAPI.validateMenuItems([aiResponse]);
+                                  validatedMenuItems = await restaurantAPI.validateMenuItems(parsedResponseList);
                                   if (!context.mounted) return;
                                   showModalBottomSheet(
                                     context: context,
                                     builder: (BuildContext context) {
                                       // Parse the AI response to extract the text content
-                                      String parsedResponse = aiResponse.replaceAll(RegExp(r'\[OpenAIChatCompletionChoiceMessageContentItemModel\(type: text, text: '), '').replaceAll(RegExp(r'\)\]'), '');
-                                      return KanbanBoard(tasks: parsedResponse.split('.'));
+                                      //String parsedResponse = aiResponse.replaceAll(RegExp(r'\[OpenAIChatCompletionChoiceMessageContentItemModel\(type: text, text: '), '').replaceAll(RegExp(r'\)\]'), '');
+                                      print(validatedMenuItems);
+                                      return KanbanBoard(tasks: validatedMenuItems);
                                     },
                                   );                         
                                 } catch (e) {

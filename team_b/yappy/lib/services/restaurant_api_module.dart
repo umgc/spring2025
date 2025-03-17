@@ -24,8 +24,11 @@ class RestaurantAPI {
     // 2) Check which extracted items exist in the menu
     List<String> validItems = [];
     for (var item in extractedItems) {
-      if (menuNames.contains(item.toLowerCase())) {
-        validItems.add(item);
+      for (var menuItem in menuNames) {
+        if (item.toLowerCase().contains(menuItem)) {
+          validItems.add(item);
+          break;
+        }
       }
     }
 
