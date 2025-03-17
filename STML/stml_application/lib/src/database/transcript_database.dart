@@ -31,36 +31,12 @@ class TranscriptDatabaseHelper {
           ")",
         );
 
-        // 5 sample notes for testing
+        // sample notes for testing/demo
         await db.insert('transcribed_notes', {
-          'note': 'Do you want me to send you money',
+          'note': 'It is great news that I won the lottery and I am ready to make the payment needed to release the reward. How much do I need to send? Also how can I send the payments to you',
           'source': 'Mic recording',
           'date': '2025-03-12',
           'create_time': '10:00 AM'
-        });
-        await db.insert('transcribed_notes', {
-          'note': 'how much do you want me to pay for it. I always paid my balances on due date.  Why I have to pay a again',
-          'source': 'Meeting notes',
-          'date': '2025-03-14',
-          'create_time': '10:30 AM'
-        });
-        await db.insert('transcribed_notes', {
-          'note': 'Is this a call from ',
-          'source': 'Phone call',
-          'date': '2025-03-15',
-          'create_time': '11:00 AM'
-        });
-        await db.insert('transcribed_notes', {
-          'note': 'Thank you for letting me know. I will send you the payment in the next few weeks',
-          'source': 'recoding notes',
-          'date': '2025-03-15',
-          'create_time': '11:30 AM'
-        });
-        await db.insert('transcribed_notes', {
-          'note': 'I will let you know How much do I need to send?',
-          'source': 'phone call',
-          'date': '2025-03-17',
-          'create_time': '12:00 PM'
         });
       },
     );
