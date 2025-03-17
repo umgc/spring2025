@@ -95,28 +95,39 @@ class OpenAIHelper {
 
     FileHandler fileHandler = FileHandler();
     OpenAIHelper openAIHelper = OpenAIHelper();
-    // todo: use specific industry to filter pulled transcripts
+    // todo: use specific industry pull all filtered industry transcripts
     String? response = "";
     String? apiKey = preferences.getString('openai_api_key');
-    String transcriptId = 'transcript_text_1742141070949_Restaurant.txt'; // todo: list
-    String path = '${await fileHandler.localStoragePath}/$transcriptId'; // todo: multiple paths
-    String? fileId = await openAIHelper.uploadFile(path, apiKey); // todo: multiple ids
+    
+    List<String> transcriptIds = [
+      'transcript_text_1742141070949_Restaurant.txt',
+      'transcript_text_1742143430893_Medical Doctor.txt',
+      'transcript_text_1742143395726_Vehicle Maintenance.txt'
+    ];
+
+    List<String> transcriptPaths = [];
+    for (String transcriptId in transcriptIds) {
+      String path = '${await fileHandler.localStoragePath}/$transcriptId';
+      transcriptPaths.add(path);
+    }
+
+    List<String>? fileIds = await openAIHelper.uploadFile(transcriptPaths, apiKey);
     String? vectorStoreId = "", assistantId = "", threadId = "";
 
     bool successfulSetup = false;
-    if (fileId != null) {
-      vectorStoreId = await openAIHelper.createVectorStore(fileId, apiKey);
+    if (fileIds != null) {
+      vectorStoreId = await openAIHelper.createVectorStore(apiKey);
       if (vectorStoreId != null) {
-        // Attach the file to the vector store
-        bool attached = await openAIHelper.attachFileToVectorStore(vectorStoreId, fileId, apiKey); // todo: make plural
+        // Attach the files to the vector store
+        bool attached = await openAIHelper.attachFilesToVectorStore(vectorStoreId, fileIds, apiKey);
         if (attached) {
           // Create an Assistant
-          assistantId = await createOpenAIAssistant(vectorStoreId, fileId, apiKey);
+          assistantId = await createOpenAIAssistant(vectorStoreId, fileIds, apiKey);
           if (assistantId != null) {
             // Create a Thread
             threadId = await createNewThreadForAssistant(apiKey);
             if (threadId != null) {
-              debugPrint("🚀 All chat setup steps completed successfully!");
+              debugPrint("✅ All chat setup steps completed successfully!");
               successfulSetup = true;
             }
           }
@@ -142,31 +153,33 @@ class OpenAIHelper {
     return response;
   }
 
-  // todo: look for industry keywords in the request text to determine the industry
-
-  Future<String?> uploadFile(String filePath, apiKey) async {
+  Future<List<String>?> uploadFile(List<String> filePaths, apiKey) async {
     var url = Uri.parse("https://api.openai.com/v1/files");
 
-    var request = http.MultipartRequest("POST", url)
+    List<String> fileIds = [];
+    for (String filePath in filePaths) {
+      var request = http.MultipartRequest("POST", url)
       ..headers["Authorization"] = "Bearer $apiKey"
       ..headers["OpenAI-Beta"] = "assistants=v2"
       ..fields["purpose"] = "assistants"
       ..files.add(await http.MultipartFile.fromPath("file", filePath));
 
-    var response = await request.send();
-    var responseBody = await response.stream.bytesToString();
-    var jsonResponse = jsonDecode(responseBody);
+      var response = await request.send();
+      var responseBody = await response.stream.bytesToString();
+      var jsonResponse = jsonDecode(responseBody);
 
-    if (response.statusCode == 200) {
-      debugPrint("✅ File uploaded: ${jsonResponse["id"]}");
-      return jsonResponse["id"];
-    } else {
+      if (response.statusCode == 200) {
+        debugPrint("✅ File uploaded: ${jsonResponse["id"]}");
+        fileIds.add(jsonResponse["id"]);
+      } else {
       debugPrint("❌ File upload failed: $responseBody");
       return null;
+      }
     }
+    return fileIds;
   }
 
-  Future<String?> createVectorStore(String fileId, apiKey) async {
+  Future<String?> createVectorStore(apiKey) async {
     var url = Uri.parse("https://api.openai.com/v1/vector_stores");
 
     var response = await http.post(
@@ -188,28 +201,30 @@ class OpenAIHelper {
     }
   }
 
-  Future<bool> attachFileToVectorStore(String vectorStoreId, String fileId, apiKey) async {
+  Future<bool> attachFilesToVectorStore(String vectorStoreId, List<String> fileIds, apiKey) async {
     var url = Uri.parse("https://api.openai.com/v1/vector_stores/$vectorStoreId/files");
 
-    var response = await http.post(
+    for (String fileId in fileIds) {
+      var response = await http.post(
       url,
       headers: {
         "Authorization": "Bearer $apiKey",
         "Content-Type": "application/json",
       },
       body: jsonEncode({"file_id": fileId}),
-    );
+      );
 
-    if (response.statusCode == 200) {
-      debugPrint("✅ File attached to vector store.");
-      return true;
-    } else {
-      debugPrint("❌ Attaching file failed: ${response.body}");
-      return false;
+      if (response.statusCode != 200) {
+        debugPrint("❌ Attaching file failed: ${response.body}");
+        return false;
+      } else {
+        debugPrint("✅ File with ID $fileId attached to vector store.");
+      }
     }
+    return true;
   }
 
-  Future<String?> createOpenAIAssistant(String vectorStoreId, String fileId, apiKey) async {
+  Future<String?> createOpenAIAssistant(String vectorStoreId, List<String> fileIds, apiKey) async {
     var url = Uri.parse("https://api.openai.com/v1/assistants");
 
     var response = await http.post(
@@ -232,7 +247,7 @@ class OpenAIHelper {
             "vector_store_ids": [vectorStoreId]
           },
           "code_interpreter": {
-            "file_ids": [fileId]
+            "file_ids": fileIds
           }
         }
       }),
@@ -307,7 +322,8 @@ class OpenAIHelper {
 
     if (response.statusCode == 200) {
       var jsonResponse = jsonDecode(response.body);
-      return jsonResponse["id"];  // ✅ Return run ID
+      debugPrint("✅ Run created: ${jsonResponse["id"]}");
+      return jsonResponse["id"];
     } else {
       debugPrint("❌ Failed to run assistant: ${response.body}");
       return null;
@@ -357,6 +373,7 @@ class OpenAIHelper {
   }
 
   Future<String?> getLatestAssistantMessage(String threadId, apiKey) async {
+    debugPrint("Fetching latest assistant response on thread with ID $threadId");
     var url = Uri.parse("https://api.openai.com/v1/threads/$threadId/messages");
 
     var response = await http.get(url, headers: {
