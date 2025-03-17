@@ -8,6 +8,7 @@ import 'package:memoryminder/ui/assistant_screen.dart';
 import 'package:memoryminder/ui/audio_screen.dart';
 import 'package:memoryminder/ui/gallery_screen.dart';
 import 'package:memoryminder/ui/profile_screen.dart';
+import 'package:memoryminder/ui/scam_detection_screen.dart';
 import 'package:memoryminder/ui/tour_screen.dart';
 import 'package:memoryminder/ui/location_history_screen.dart';
 import 'package:geocoding/geocoding.dart';
@@ -207,14 +208,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       screen: LocationHistoryScreen(),
                       keyName: "LocationObjectButtonKey",
                     ),
-                    _buildElevatedButton(
-                      context: context,
-                      icon: Icon(Icons.flag,
-                          size: iconSize, color: Colors.black54),
-                      text: 'Tour Guide',
-                      screen: TourScreen(),
-                      keyName: "TourGuideButtonKey",
-                    ),
+                    // _buildElevatedButton(
+                    //   context: context,
+                    //   icon: Icon(Icons.flag,
+                    //       size: iconSize, color: Colors.black54),
+                    //   text: 'Tour Guide',
+                    //   screen: TourScreen(),
+                    //   keyName: "TourGuideButtonKey",
+                    // ),
                     _buildElevatedButton(
                       context: context,
                       icon: Icon(Icons.bookmark_outline,
@@ -222,6 +223,14 @@ class _HomeScreenState extends State<HomeScreen> {
                       text: 'Dementia Resources',
                       screen: DementiaResourcesScreen(),
                       keyName: "DementiaResourcesButtonKey",
+                    ),
+                    _buildElevatedButton(
+                      context: context,
+                      icon: Icon(Icons.warning_rounded,
+                          size: iconSize, color: Colors.black54),
+                      text: 'Potential scam Detection',
+                      screen: ScamDetectionScreen(),
+                      keyName: "potentialScamScanner",
                     ),
                     _buildElevatedButton(
                       context: context,

@@ -127,13 +127,25 @@ class _AudioScreenState extends State<AudioScreen> {
   }
 
   /// This function requests necessary permissions for audio recording and storage.
-  Future<bool> _requestPermissions() async {
+  /*
+  Future<bool> _oorequestPermissions() async {
     Map<Permission, PermissionStatus> statuses = await [
       Permission.microphone,
       Permission.storage,
     ].request();
     return statuses[Permission.microphone]!.isGranted &&
         statuses[Permission.storage]!.isGranted;
+  }
+  */
+
+/// This function requests necessary permissions for audio recording and storage.
+  Future<bool> _requestPermissions() async {
+    final micStatus = await Permission.microphone.request();
+    final storageStatus = Platform.isAndroid
+        ? await Permission.manageExternalStorage.request()
+        : PermissionStatus.granted;
+ 
+    return micStatus.isGranted && storageStatus.isGranted;
   }
 
   @override
