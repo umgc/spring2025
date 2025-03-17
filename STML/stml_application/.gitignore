@@ -43,3 +43,26 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+/android/.gradle/
+/android/app/build/
+/android/.idea/
+/android/local.properties
+/android/key.properties
+
+# Firebase configruation
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+
+# Any generated Firebase config
+lib/firebase_options.dart
+
+# XCode & Cocoapods generated files
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.podspec
+ios/Flutter/ephemeral/
+ios/.dart_tool/
+ios/Runner.xcworkspace/
+ios/Runner.xcodeproj/project.xcworkspace/
+ios/Runner.xcodeproj/xcuserdata/
+ios/Runner.xcodeproj/project.xcworkspace/xcuserdata/
