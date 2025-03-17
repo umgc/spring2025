@@ -7,7 +7,9 @@ import 'package:yappy/medical_patient.dart';
 import 'package:yappy/restaurant.dart';
 import 'package:yappy/tool_bar.dart';
 import 'package:yappy/settings_page.dart';
+import 'package:yappy/tutorialPage.dart';
 import './services/model_manager.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -19,16 +21,43 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final ModelManager _modelManager = ModelManager();
   
-  @override
-  void initState() {
-    super.initState();
-    // Check if models exist after the first frame is rendered
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _checkModelsExist();
-    });
-  }
   
-  Future<void> _checkModelsExist() async {
+  Future<void> _checkFirstTimeUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    final isFirstTime = prefs.getBool('isFirstTime') ?? true;
+
+    if (isFirstTime) {
+      final shouldShowDialog = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Welcome!'),
+          content: const Text('Is this your first time using the app?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('No'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Yes'),
+            ),
+          ],
+        ),
+      );
+
+      if (shouldShowDialog != null && shouldShowDialog) {
+        await prefs.setBool('isFirstTime', false);
+        if (mounted) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => TutorialPage()),
+          );
+        }
+      }
+    }
+  }
+
+    Future<void> _checkModelsExist() async {
     try {
       // Skip check if downloads are already in progress
       if (_modelManager.isDownloadInProgress()) {
@@ -46,6 +75,16 @@ class _HomePageState extends State<HomePage> {
     } catch (e) {
       debugPrint('Error checking models: $e');
     }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    // Check if models exist after the first frame is rendered
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkModelsExist();
+      _checkFirstTimeUser();
+    });
   }
 
   @override
