@@ -13,6 +13,8 @@ import 'services/file_handler.dart';
 import 'services/model_manager.dart';
 import 'services/speech_state.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:yappy/services/restaurant_api_module.dart';
+
 
 class IndustryMenu extends StatefulWidget {
   final String title;
@@ -432,18 +434,45 @@ class _IndustryMenuState extends State<IndustryMenu> {
                                     transcript['transcript_id'])),
                             style: TextStyle(color: Colors.white),
                           ),
-                          onTap: () {
+                          onTap: () async {
                             Navigator.pop(context);
                             if (widget.title == 'Restaurant') {
-                              // Show Kanban style list for restaurant
-                              showModalBottomSheet(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return KanbanBoard(tasks: [
-                                    // get the order_transcript from the restaurant table if industy is restaurant
-                                  ]);
-                                },
-                              );
+                                                              // Fetch the AI response from the database
+                                List<String> validatedMenuItems = [];
+                                
+                                try {
+                                  //if (transcript != null) {
+                                  final aiResponse = transcript['transcript_ai_response'];
+                                  String parsedResponse = aiResponse.replaceAll(RegExp(r'\[OpenAIChatCompletionChoiceMessageContentItemModel\(type: text, text: '), '').replaceAll(RegExp(r'\)\]'), '');
+                                  List<String> parsedResponseList = parsedResponse.split('\n').where((item) => item.trim().isNotEmpty).toList();
+                                  //print(parsedResponseList);
+                                  // [OpenAIChatCompletionChoiceMessageContentItemModel(type: text, text: Seat 1: Burger, fries, and a soda.
+                                  // I/flutter (17322): 
+                                  // I/flutter (17322): Seat 2: Burger, fries, and a soda.
+                                  // I/flutter (17322): 
+                                  // I/flutter (17322): Seat 3: Burger, fries, and a soda.
+                                  // I/flutter (17322): 
+                                  // I/flutter (17322): Seat 4: Double burger with large fries and a soda.)]
+                                  var restaurantAPI = RestaurantAPI();
+                                  validatedMenuItems = await restaurantAPI.validateMenuItems(parsedResponseList);
+                                  if (!context.mounted) return;
+                                  showModalBottomSheet(
+                                    context: context,
+                                    builder: (BuildContext context) {
+                                      // Parse the AI response to extract the text content
+                                      //String parsedResponse = aiResponse.replaceAll(RegExp(r'\[OpenAIChatCompletionChoiceMessageContentItemModel\(type: text, text: '), '').replaceAll(RegExp(r'\)\]'), '');
+                                      //print(validatedMenuItems);
+                                      return KanbanBoard(tasks: validatedMenuItems);
+                                    },
+                                  );                         
+                                } catch (e) {
+                                  // Handle API call failure
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Failed to validate menu items: $e')),
+                                    );
+                                  }
+                                }
                             } else {
                               // Show regular transcript for other industries
                               showDialog(
