@@ -270,6 +270,17 @@ class DatabaseHelper {
     );
   }
 
+  // Retrieve all transcripts by industry
+  Future<List<Map<String, dynamic>>> getAllTranscriptsByIndustry(String industry) async {
+    final db = await database;
+    return await db.query(
+      'Transcript',
+      where: 'industry = ?',
+      whereArgs: [industry],
+      orderBy: 'transcript_timestamp DESC',
+    );
+  }
+
   // Retrieve a specific transcript by ID
   Future<Map<String, dynamic>?> getTranscriptById(int transcriptId) async {
     final db = await database;
@@ -543,12 +554,13 @@ Future<List<String>> searchTranscripts(String query, String industry) async {
     return results.map((row) => row['transcript_text_data'] as String).toList();
 }
 
-Future<Map<String, String>?> getTranscriptDetails(String entry) async {    final db = await database;
+Future<Map<String, String>?> getTranscriptDetails(String entry) async {
+  final db = await database;
   // Select the information i want to display from database
-    var result = await db.rawQuery(
-      "SELECT transcript_text_data, transcript_timestamp, transcript_ai_response FROM Transcript WHERE transcript_text_data = ? OR transcript_ai_response = ?",
-      [entry, entry]
-    );
+  var result = await db.rawQuery(
+    "SELECT transcript_text_data, transcript_timestamp, transcript_ai_response FROM Transcript WHERE transcript_text_data = ? OR transcript_ai_response = ?",
+    [entry, entry]
+  );
 
   // Grabs the results and return them
     if (result.isNotEmpty) {
