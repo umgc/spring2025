@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:yappy/tool_bar.dart';
-import 'package:yappy/tutorialPage.dart';
+import 'package:yappy/tutorial_page.dart';
 
 
 class HelpApp extends StatelessWidget {
