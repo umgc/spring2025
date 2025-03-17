@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:dart_openai/dart_openai.dart';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:yappy/main.dart';
 import 'package:yappy/services/file_handler.dart';
@@ -96,7 +97,7 @@ class OpenAIHelper {
     OpenAIHelper openAIHelper = OpenAIHelper();
     // todo: use specific industry to filter pulled transcripts
     String? response = "";
-    var apiKey = preferences.getString('openai_api_key');
+    String? apiKey = preferences.getString('openai_api_key');
     String transcriptId = 'transcript_text_1742141070949_Restaurant.txt'; // todo: list
     String path = '${await fileHandler.localStoragePath}/$transcriptId'; // todo: multiple paths
     String? fileId = await openAIHelper.uploadFile(path, apiKey); // todo: multiple ids
@@ -115,7 +116,7 @@ class OpenAIHelper {
             // Create a Thread
             threadId = await createNewThreadForAssistant(apiKey);
             if (threadId != null) {
-              print("🚀 All chat setup steps completed successfully!");
+              debugPrint("🚀 All chat setup steps completed successfully!");
               successfulSetup = true;
             }
           }
@@ -132,12 +133,10 @@ class OpenAIHelper {
      */
     if (successfulSetup) {
       await openAIHelper.sendMessageToThread(threadId!, userQuery, apiKey);
-      String? runId = await openAIHelper.runAssistantOnThread(threadId, assistantId!, apiKey); // todo: replace "!" with null check
+      String? runId = await openAIHelper.runAssistantOnThread(threadId, assistantId!, apiKey!);
       if (runId != null) {
-        print("🚀 Polling for Yappy assistant response!");
-        response = await openAIHelper.getAssistantResponse(threadId, runId, apiKey);
-        // Remove any unwanted characters
-        response = response?.replaceAll(RegExp(r'[\u0000-\u001F]'), ''); // todo: fix weird characters
+        debugPrint("🚀 Polling in background for Yappy assistant response!");
+        response = await openAIHelper.getAssistantResponseInBackground(threadId, runId, apiKey);
       }
     }
     return response;
@@ -159,10 +158,10 @@ class OpenAIHelper {
     var jsonResponse = jsonDecode(responseBody);
 
     if (response.statusCode == 200) {
-      print("✅ File uploaded: ${jsonResponse["id"]}");
+      debugPrint("✅ File uploaded: ${jsonResponse["id"]}");
       return jsonResponse["id"];
     } else {
-      print("❌ File upload failed: $responseBody");
+      debugPrint("❌ File upload failed: $responseBody");
       return null;
     }
   }
@@ -181,10 +180,10 @@ class OpenAIHelper {
     var jsonResponse = jsonDecode(response.body);
 
     if (response.statusCode == 200) {
-      print("✅ Vector store created: ${jsonResponse["id"]}");
+      debugPrint("✅ Vector store created: ${jsonResponse["id"]}");
       return jsonResponse["id"];
     } else {
-      print("❌ Vector store creation failed: ${response.body}");
+      debugPrint("❌ Vector store creation failed: ${response.body}");
       return null;
     }
   }
@@ -202,10 +201,10 @@ class OpenAIHelper {
     );
 
     if (response.statusCode == 200) {
-      print("✅ File attached to vector store.");
+      debugPrint("✅ File attached to vector store.");
       return true;
     } else {
-      print("❌ Attaching file failed: ${response.body}");
+      debugPrint("❌ Attaching file failed: ${response.body}");
       return false;
     }
   }
@@ -222,7 +221,7 @@ class OpenAIHelper {
       },
       body: jsonEncode({
         "name": "Yappy",
-        "instructions": "You can retrieve information from a vector store.",
+        "instructions": "You can retrieve transcript information from a vector store. No need to cite sources.",
         "model": "gpt-4o-mini",  // Ensure it's a valid model
         "tools": [
           {"type": "file_search"},
@@ -241,10 +240,10 @@ class OpenAIHelper {
 
     if (response.statusCode == 200) {
       var jsonResponse = jsonDecode(response.body);
-      print("✅ Assistant created: ${jsonResponse["id"]}");
+      debugPrint("✅ Assistant created: ${jsonResponse["id"]}");
       return jsonResponse["id"];  // Return Assistant ID
     } else {
-      print("❌ Assistant creation failed: ${response.body}");
+      debugPrint("❌ Assistant creation failed: ${response.body}");
       return null;
     }
   }
@@ -264,10 +263,10 @@ class OpenAIHelper {
 
     if (response.statusCode == 200) {
       var jsonResponse = jsonDecode(response.body);
-      print("✅ Thread created: ${jsonResponse["id"]}");
+      debugPrint("✅ Thread created: ${jsonResponse["id"]}");
       return jsonResponse["id"];  // Return Thread ID
     } else {
-      print("❌ Thread creation failed: ${response.body}");
+      debugPrint("❌ Thread creation failed: ${response.body}");
       return null;
     }
   }
@@ -310,16 +309,31 @@ class OpenAIHelper {
       var jsonResponse = jsonDecode(response.body);
       return jsonResponse["id"];  // ✅ Return run ID
     } else {
-      print("❌ Failed to run assistant: ${response.body}");
+      debugPrint("❌ Failed to run assistant: ${response.body}");
       return null;
     }
   }
 
+  Future<String?> getAssistantResponseInBackground(String threadId, String runId, String apiKey) async {
+    return compute(getAssistantResponseIsolate, {"threadId": threadId, "runId": runId, "apiKey": apiKey});
+  }
+
+  Future<String?> getAssistantResponseIsolate(Map<String, String> params) async {
+    String threadId = params["threadId"]!;
+    String runId = params["runId"]!;
+    String apiKey = params["apiKey"]!;
+
+    return await getAssistantResponse(threadId, runId, apiKey);
+  }
+
   Future<String?> getAssistantResponse(String threadId, String runId, apiKey) async {
     var url = Uri.parse("https://api.openai.com/v1/threads/$threadId/runs/$runId");
-    
-    while (true) {
-      await Future.delayed(Duration(seconds: 3)); // Poll every 3 seconds
+    int maxAttempts = 5; // Limit retries
+    int attempt = 0;
+
+    while (attempt < maxAttempts) {
+      await Future.delayed(Duration(seconds: 3)); // Poll every 3 seconds => on separate thread to prevent blocking the UI
+      attempt++;
 
       var response = await http.get(url, headers: {
         "Authorization": "Bearer $apiKey",
@@ -327,13 +341,13 @@ class OpenAIHelper {
         "OpenAI-Beta" : "assistants=v2"
       });
 
-      var jsonResponse = jsonDecode(response.body);
+      var jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
       String status = jsonResponse["status"];
 
       if (status == "completed") {
         break; // Exit loop when assistant has finished processing
       } else if (status == "failed" || status == "cancelled") {
-        print("❌ Assistant run failed: $jsonResponse");
+        debugPrint("❌ Assistant run failed: $jsonResponse");
         return null;
       }
     }
@@ -352,18 +366,27 @@ class OpenAIHelper {
     });
 
     if (response.statusCode == 200) {
-      var jsonResponse = jsonDecode(response.body);
+      var jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
       var messages = jsonResponse["data"];
 
       for (var message in messages.reversed) { // Read messages from newest to oldest
         if (message["role"] == "assistant") {
-          return message["content"][0]["text"]["value"];
+          String textResponse = message["content"][0]["text"]["value"];
+          return cleanResponse(textResponse);
         }
       }
     } else {
-      print("❌ Failed to fetch messages: ${response.body}");
+      debugPrint("❌ Failed to fetch messages: ${response.body}");
     }
 
     return null;
+  }
+
+  // Helper function to remove unwanted characters
+  String cleanResponse(String response) {
+    // Remove source citations
+    response = response.replaceAll(RegExp(r'【\d+:\d+†source】'), '').trim();
+    // Remove unwanted characters and return
+    return response.replaceAll(RegExp(r'[\u0000-\u001F\u007F-\u009F]'), '').trim();
   }
 }
