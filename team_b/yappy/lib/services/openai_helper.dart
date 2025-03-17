@@ -4,11 +4,12 @@ import 'package:dart_openai/dart_openai.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:yappy/main.dart';
+import 'package:yappy/services/database_helper.dart';
 import 'package:yappy/services/file_handler.dart';
-
 
 class OpenAIHelper {
   final List<Map<String, String>> messages = [];
+  final currentOpenAIModel = "gpt-4o-mini"; // Ensure this is a current and valid model
 
   final String restaurantContextPrompt =
       '''You are a restaurant assistant.  Take the following audio transcript of a waiter taking patrons' orders and generate a summary of patrons' orders at a restaurant. You must separate out different speakers' orders and refer to them using using "Seat 1", "Seat 2", "Seat 3", etc.
@@ -70,7 +71,7 @@ class OpenAIHelper {
 
     try {
       final completion = await OpenAI.instance.chat
-        .create(model: "gpt-4o-mini", messages: messages);
+        .create(model: currentOpenAIModel, messages: messages);
       // Adds the AI response to the previously saved transcript in the database
       await dbHelper.saveTranscriptAiResponse(userId: userId,
         transcriptId: transcriptId,
@@ -95,18 +96,21 @@ class OpenAIHelper {
 
     FileHandler fileHandler = FileHandler();
     OpenAIHelper openAIHelper = OpenAIHelper();
-    // todo: use specific industry pull all filtered industry transcripts
+    DatabaseHelper dbHelper = DatabaseHelper();
     String? response = "";
     String? apiKey = preferences.getString('openai_api_key');
     
-    List<String> transcriptIds = [
-      'transcript_text_1742141070949_Restaurant.txt',
-      'transcript_text_1742143430893_Medical Doctor.txt',
-      'transcript_text_1742143395726_Vehicle Maintenance.txt'
-    ];
+    // Pulls all transcripts for the current industry
+    List<Map<String, dynamic>> transcripts = await dbHelper.getAllTranscriptsByIndustry(industry);
+    // Saves all industry transcripts to local storage
+    List<String> localTranscriptFileNames = [];
+    for (var transcript in transcripts) {
+      String currentFileName = await fileHandler.saveTranscriptTextToLocal(dbHelper, transcript['transcript_id']);
+      localTranscriptFileNames.add(currentFileName);
+    }
 
     List<String> transcriptPaths = [];
-    for (String transcriptId in transcriptIds) {
+    for (String transcriptId in localTranscriptFileNames) {
       String path = '${await fileHandler.localStoragePath}/$transcriptId';
       transcriptPaths.add(path);
     }
@@ -150,6 +154,12 @@ class OpenAIHelper {
         response = await openAIHelper.getAssistantResponseInBackground(threadId, runId, apiKey);
       }
     }
+
+    // Clean up local storage after assistant processing has completed
+    for (String currentFileName in localTranscriptFileNames) {
+      await fileHandler.deleteFile(currentFileName);
+    }
+
     return response;
   }
 
@@ -236,8 +246,8 @@ class OpenAIHelper {
       },
       body: jsonEncode({
         "name": "Yappy",
-        "instructions": "You can retrieve transcript information from a vector store. No need to cite sources.",
-        "model": "gpt-4o-mini",  // Ensure it's a valid model
+        "instructions": "You can retrieve transcript information from a vector store. No need to cite sources, and please use complete sentences rather then bullet points.",
+        "model": currentOpenAIModel,
         "tools": [
           {"type": "file_search"},
           {"type": "code_interpreter"},
@@ -279,7 +289,7 @@ class OpenAIHelper {
     if (response.statusCode == 200) {
       var jsonResponse = jsonDecode(response.body);
       debugPrint("✅ Thread created: ${jsonResponse["id"]}");
-      return jsonResponse["id"];  // Return Thread ID
+      return jsonResponse["id"];
     } else {
       debugPrint("❌ Thread creation failed: ${response.body}");
       return null;
@@ -348,7 +358,8 @@ class OpenAIHelper {
     int attempt = 0;
 
     while (attempt < maxAttempts) {
-      await Future.delayed(Duration(seconds: 3)); // Poll every 3 seconds => on separate thread to prevent blocking the UI
+      // Poll at an interval => on separate thread to prevent blocking the UI
+      await Future.delayed(Duration(seconds: 3));
       attempt++;
 
       var response = await http.get(url, headers: {
