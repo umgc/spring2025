@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
-import 'package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart';
 import 'package:learninglens_app/Views/essay_generation.dart';
 import 'package:learninglens_app/Views/quiz_generator.dart';
 import 'package:learninglens_app/Views/view_quiz.dart';
@@ -96,16 +95,20 @@ class _ContentState extends State<ContentCarousel> {
                       ),
                     );
                   } else if (type == 'essay') {
-                    print ((children[value] as CarouselCard).courseId?.toString());
+                    print(
+                        (children[value] as CarouselCard).courseId?.toString());
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => SubmissionList(
-                              assignmentId:
-                                  (children[value] as CarouselCard).id,
-                              courseId: (children[value] as CarouselCard).courseId?.toString() ?? '',
-                              // courseId.toString()),
-                        )));
+                            builder: (context) => SubmissionList(
+                                  assignmentId:
+                                      (children[value] as CarouselCard).id,
+                                  courseId: (children[value] as CarouselCard)
+                                          .courseId
+                                          ?.toString() ??
+                                      '',
+                                  // courseId.toString()),
+                                )));
                   }
                 },
                 children: children,
@@ -175,7 +178,8 @@ class CarouselCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     List<Course>? theCourses = LmsFactory.getLmsService().courses;
-    Course matchedCourse = theCourses!.firstWhere((element) => element.id == courseId);
+    Course matchedCourse =
+        theCourses.firstWhere((element) => element.id == courseId);
     return Card(
       color: Theme.of(context).colorScheme.secondaryContainer,
       elevation: 2,
@@ -183,26 +187,26 @@ class CarouselCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(25.0), // Rounded corners
       ),
       child: SizedBox(
-        height: 200, // Adjust this value based on the desired height
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(title, style: Theme.of(context).textTheme.titleLarge),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(information),
-            ), 
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text('Course: ${matchedCourse.fullName}'),
-            ),
-            Spacer(), // Pushes the buttons to the bottom
-          ],
-        )
-      ),
+          height: 200, // Adjust this value based on the desired height
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child:
+                    Text(title, style: Theme.of(context).textTheme.titleLarge),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(information),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text('Course: ${matchedCourse.fullName}'),
+              ),
+              Spacer(), // Pushes the buttons to the bottom
+            ],
+          )),
     );
   }
 }

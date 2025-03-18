@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
 import 'package:learninglens_app/beans/course.dart';
 
 class MainController {
@@ -16,6 +15,4 @@ class MainController {
   final ValueNotifier<bool> isUserLoggedInNotifier = ValueNotifier(false);
   Course? selectedCourse;
   String? username;
-
- 
 }

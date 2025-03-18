@@ -9,9 +9,6 @@ import 'package:learninglens_app/Views/dashboard.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
 import '../Api/lms/moodle/moodle_lms_service.dart'; // Make sure this path is correct
 
-
-
-
 class QuizMoodle extends StatefulWidget {
   final Quiz quiz;
   QuizMoodle({required this.quiz});
@@ -343,8 +340,8 @@ class QuizMoodleState extends State<QuizMoodle> {
                         if (selectedCourse == 'Select a course') {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                                content: Text(
-                                    'Please select a course to proceed.')),
+                                content:
+                                    Text('Please select a course to proceed.')),
                           );
                           return;
                         }
@@ -371,8 +368,8 @@ class QuizMoodleState extends State<QuizMoodle> {
                               "${dueDate.year}-${dueDate.month.toString().padLeft(2, '0')}-${dueDate.day.toString().padLeft(2, '0')}-${dueDate.hour.toString().padLeft(2, '0')}-${dueDate.minute.toString().padLeft(2, '0')}";
 
                           // Call Moodle-specific methods
-                          var quizid = await LmsFactory.getLmsService()
-                              .createQuiz(
+                          var quizid =
+                              await LmsFactory.getLmsService().createQuiz(
                             selectedCourse,
                             widget.quiz.name ?? 'Quiz Name',
                             widget.quiz.description ?? 'Quiz Description',
@@ -383,8 +380,7 @@ class QuizMoodleState extends State<QuizMoodle> {
                           print('Quiz ID: $quizid');
 
                           var categoryid = await LmsFactory.getLmsService()
-                              .importQuizQuestions(
-                                  selectedCourse, quizasxml);
+                              .importQuizQuestions(selectedCourse, quizasxml);
                           print('Category ID: $categoryid');
 
                           var randomresult = await LmsFactory.getLmsService()
@@ -420,8 +416,7 @@ class QuizMoodleState extends State<QuizMoodle> {
                         } catch (e) {
                           print('Error during quiz creation: $e');
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                                content: Text('An error occurred: ${e}')),
+                            SnackBar(content: Text('An error occurred: $e')),
                           );
                         }
                       },
@@ -437,8 +432,8 @@ class QuizMoodleState extends State<QuizMoodle> {
                         if (selectedCourse == 'Select a course') {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                                content: Text(
-                                    'Please select a course to proceed.')),
+                                content:
+                                    Text('Please select a course to proceed.')),
                           );
                           return;
                         }
@@ -499,8 +494,7 @@ class QuizMoodleState extends State<QuizMoodle> {
                         } catch (e) {
                           print('Error during quiz creation: $e');
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                                content: Text('An error occurred: ${e}')),
+                            SnackBar(content: Text('An error occurred: $e')),
                           );
                         }
                       },

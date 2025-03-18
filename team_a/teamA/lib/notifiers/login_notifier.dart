@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
 import 'package:learninglens_app/Api/lms/lms_interface.dart';
-import 'package:learninglens_app/Api/lms/google_classroom/google_lms_service.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
 
 enum LLMKey { openAI, perplexity, claude, grok }
@@ -55,25 +54,28 @@ class LoginNotifier with ChangeNotifier {
 
     return openAIKey != null && openAIKey.isNotEmpty ||
         perplexityKey != null && perplexityKey.isNotEmpty ||
-        claudeKey != null && claudeKey.isNotEmpty || 
+        claudeKey != null && claudeKey.isNotEmpty ||
         grokKey != null && grokKey.isNotEmpty;
   }
 
   Future<void> _autoLogin() async {
-  if (_username != null && _username!.isNotEmpty &&
-      _password != null && _password!.isNotEmpty &&
-      _moodleUrl != null && _moodleUrl!.isNotEmpty) {
-    try {
-      // Attempt to auto-login with saved credentials
-      await login(_username!, _password!, _moodleUrl!);
-    } catch (e) {
-      // Handle any exceptions during auto-login
-      print('Auto-login Error: $e');
+    if (_username != null &&
+        _username!.isNotEmpty &&
+        _password != null &&
+        _password!.isNotEmpty &&
+        _moodleUrl != null &&
+        _moodleUrl!.isNotEmpty) {
+      try {
+        // Attempt to auto-login with saved credentials
+        await login(_username!, _password!, _moodleUrl!);
+      } catch (e) {
+        // Handle any exceptions during auto-login
+        print('Auto-login Error: $e');
+      }
+    } else {
+      print('Auto-login skipped: Missing or empty credentials.');
     }
-  } else {
-    print('Auto-login skipped: Missing or empty credentials.');
   }
-}
 
   Future<void> login(String username, String password, String moodleUrl) async {
     try {
@@ -135,7 +137,7 @@ class LoginNotifier with ChangeNotifier {
   }
 
   ///
-  /// Google classroom login steps 
+  /// Google classroom login steps
   ///
   Future<void> signInWithGoogle() async {
     if (_clientID == null) {
@@ -152,7 +154,7 @@ class LoginNotifier with ChangeNotifier {
         // 2. Save login state and credentials to local storage:
         LocalStorageService.saveGoogleLoginState(_isLoggedIn);
         LocalStorageService.saveGoogleAccessToken(
-                  LmsFactory.getLmsServiceGoogle().getGoogleAccessToken());
+            LmsFactory.getLmsServiceGoogle().getGoogleAccessToken());
 
         // check the hasLLMKey state
         notifyListeners(); // Notify listeners (widgets) about the login

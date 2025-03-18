@@ -42,10 +42,11 @@ class SubmissionListState extends State<SubmissionList> {
   // API keys
   final perplexityApiKey = LocalStorageService.getPerplexityKey();
   final openApiKey = LocalStorageService.getOpenAIKey();
-  final claudeApiKey =  LocalStorageService.getClaudeKey();
+  final claudeApiKey = LocalStorageService.getClaudeKey();
 
   // Filter state
-  String filterOption = 'All'; // Options: 'All', 'With Submission', 'Without Submission'
+  String filterOption =
+      'All'; // Options: 'All', 'With Submission', 'Without Submission'
   String fullNameFilter = ''; // Last name filter
 
   // Get API key for selected LLM
@@ -93,7 +94,7 @@ class SubmissionListState extends State<SubmissionList> {
     });
   }
 
-   // Handle last name filter change
+  // Handle last name filter change
   void _handleFullNameFilterChanged(String newValue) {
     setState(() {
       fullNameFilter = newValue;
@@ -107,7 +108,7 @@ class SubmissionListState extends State<SubmissionList> {
             title: 'Submissions',
             userprofileurl: LmsFactory.getLmsService().profileImage ?? ''),
         body: Column(
-children: [
+          children: [
             // Filter Row
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -118,8 +119,11 @@ children: [
                     child: DropdownButton<String>(
                       value: filterOption,
                       onChanged: _handleFilterChanged,
-                      items: <String>['All', 'With Submission', 'Without Submission']
-                          .map<DropdownMenuItem<String>>((String value) {
+                      items: <String>[
+                        'All',
+                        'With Submission',
+                        'Without Submission'
+                      ].map<DropdownMenuItem<String>>((String value) {
                         return DropdownMenuItem<String>(
                           value: value,
                           child: Text(value),
@@ -127,7 +131,9 @@ children: [
                       }).toList(),
                     ),
                   ),
-                  SizedBox(width: 8.0), // Add some spacing between the dropdown and the text field
+                  SizedBox(
+                      width:
+                          8.0), // Add some spacing between the dropdown and the text field
                   // Full Name Filter Text Field
                   Expanded(
                     child: TextField(
@@ -202,14 +208,15 @@ children: [
                                 }).toList();
                               }
 
-                          // Apply full name filter
-                          if (fullNameFilter.isNotEmpty) {
-                            participants = participants.where((participant) {
-                              return participant.fullname
-                                  .toLowerCase()
-                                  .contains(fullNameFilter.toLowerCase());
-                            }).toList();
-                          }
+                              // Apply full name filter
+                              if (fullNameFilter.isNotEmpty) {
+                                participants =
+                                    participants.where((participant) {
+                                  return participant.fullname
+                                      .toLowerCase()
+                                      .contains(fullNameFilter.toLowerCase());
+                                }).toList();
+                              }
 
                               return SingleChildScrollView(
                                 child: Wrap(
@@ -384,30 +391,31 @@ children: [
                                                                       submissionWithGrade
                                                                           .submission
                                                                           .onlineText;
-                                                                  int? contextId =
-                                                                      await LmsFactory.getLmsService().getContextId(
+                                                                  int? contextId = await LmsFactory
+                                                                          .getLmsService()
+                                                                      .getContextId(
                                                                           widget
                                                                               .assignmentId,
                                                                           widget
                                                                               .courseId);
 
-                                                                  var fetchedRubric;
-                                                                  if (contextId !=
+                                                                  Object?
+                                                                      fetchedRubric;
+                                                                  fetchedRubric = await LmsFactory
+                                                                          .getLmsService()
+                                                                      .getRubric(widget
+                                                                          .assignmentId
+                                                                          .toString());
+                                                                  if (fetchedRubric ==
                                                                       null) {
-                                                                    fetchedRubric =
-                                                                        await LmsFactory.getLmsService().getRubric(widget
-                                                                            .assignmentId
-                                                                            .toString());
-                                                                    if (fetchedRubric ==
-                                                                        null) {
-                                                                      print(
-                                                                          'Failed to fetch rubric.');
-                                                                      return;
-                                                                    }
-                                                                    fetchedRubric =
-                                                                        jsonEncode(fetchedRubric?.toJson() ??
-                                                                            {});
+                                                                    print(
+                                                                        'Failed to fetch rubric.');
+                                                                    return;
                                                                   }
+                                                                  fetchedRubric =
+                                                                      jsonEncode(
+                                                                          fetchedRubric.toJson() ??
+                                                                              {});
 
                                                                   String
                                                                       queryPrompt =
@@ -528,12 +536,14 @@ children: [
                                                                           '```',
                                                                           '')
                                                                       .trim();
-                                                                  var results = await LmsFactory.getLmsService().setRubricGrades(
-                                                                      widget
-                                                                          .assignmentId,
-                                                                      participant
-                                                                          .id,
-                                                                      gradedResponse);
+                                                                  var results = await LmsFactory
+                                                                          .getLmsService()
+                                                                      .setRubricGrades(
+                                                                          widget
+                                                                              .assignmentId,
+                                                                          participant
+                                                                              .id,
+                                                                          gradedResponse);
                                                                   _fetchData();
                                                                   Navigator
                                                                       .push(

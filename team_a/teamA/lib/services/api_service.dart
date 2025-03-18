@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
 
@@ -18,7 +17,7 @@ class ApiService {
     // if we ever want to turn this logging off, we can use the following:
     // level: dotenv.env['LOGGING_ENABLED'] == 'true'
     //     ? Level.verbose
-    //     : Level.nothing, 
+    //     : Level.nothing,
   );
 
   /// Sends an HTTP POST request to the specified [url].
@@ -55,7 +54,6 @@ class ApiService {
       );
       rethrow;
     }
-    
   }
 
   /// Sends an HTTP GET request to the specified [url].

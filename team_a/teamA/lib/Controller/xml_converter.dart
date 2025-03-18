@@ -8,7 +8,6 @@ import 'package:learninglens_app/beans/answer.dart';
 
 // Static utility class for Moodle XML related functions.
 class XmlConverter {
-
   static const cdata1 = '<![CDATA[';
   static const cdata2 = ']]>';
 
@@ -22,7 +21,8 @@ class XmlConverter {
     builder.element(XmlConsts.quiz, nest: () {
       // build category dummy node
       builder.element(XmlConsts.name, nest: quiz.name ?? 'Unnamed Quiz');
-      builder.element(XmlConsts.description, nest: quiz.description ?? 'No description');
+      builder.element(XmlConsts.description,
+          nest: quiz.description ?? 'No description');
       builder.element(XmlConsts.question, nest: () {
         builder.attribute(XmlConsts.type, 'category');
         builder.element('category', nest: () {
@@ -36,7 +36,8 @@ class XmlConverter {
           // question name
           builder.element(XmlConsts.name, nest: () {
             if (convertForMoodle) {
-              builder.element(XmlConsts.text, nest: getShortenedDesc(question.questionText));
+              builder.element(XmlConsts.text,
+                  nest: getShortenedDesc(question.questionText));
             } else {
               builder.element(XmlConsts.text, nest: question.name);
             }
@@ -59,19 +60,23 @@ class XmlConverter {
           }
           // default grade
           if (question.defaultGrade != null) {
-            builder.element(XmlConsts.defaultgrade, nest: question.defaultGrade);
+            builder.element(XmlConsts.defaultgrade,
+                nest: question.defaultGrade);
           }
           // response format
           if (question.responseFormat != null) {
-            builder.element(XmlConsts.responseformat, nest: question.responseFormat);
+            builder.element(XmlConsts.responseformat,
+                nest: question.responseFormat);
           }
           // response required
           if (question.responseRequired != null) {
-            builder.element(XmlConsts.responserequired, nest: question.responseRequired);
+            builder.element(XmlConsts.responserequired,
+                nest: question.responseRequired);
           }
           // attachments required
           if (question.attachmentsRequired != null) {
-            builder.element(XmlConsts.attachmentsrequired, nest: question.attachmentsRequired);
+            builder.element(XmlConsts.attachmentsrequired,
+                nest: question.attachmentsRequired);
           }
           // response template
           if (question.responseTemplate != null) {
@@ -124,14 +129,14 @@ class XmlConverter {
     switch (quiz.questionList.first.type) {
       case 'essay':
         qperq = 1;
-        break;
       case 'multichoice':
       case 'truefalse':
       case 'shortanswer':
       default:
         qperq = 4;
     }
-    List<List<Question>> splitQuizzes = quiz.questionList.slices(qperq).toList();
+    List<List<Question>> splitQuizzes =
+        quiz.questionList.slices(qperq).toList();
     List<Quiz> quizList = [];
     for (List<Question> q in splitQuizzes) {
       quizList.add(Quiz(questionList: q));

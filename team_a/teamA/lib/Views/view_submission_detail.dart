@@ -6,7 +6,6 @@ import 'package:learninglens_app/Views/view_submissions.dart';
 import 'package:learninglens_app/beans/participant.dart';
 import 'package:learninglens_app/beans/submission.dart';
 import 'package:learninglens_app/beans/moodle_rubric.dart';
-import '../Api/lms/moodle/moodle_lms_service.dart';
 import 'dart:math';
 
 class SubmissionDetail extends StatefulWidget {
@@ -42,34 +41,27 @@ class SubmissionDetailState extends State<SubmissionDetail> {
   Future<void> fetchRubric() async {
     int? contextId = await LmsFactory.getLmsService()
         .getContextId(widget.submission.assignmentId, widget.courseId);
-    if (contextId != null) {
-      var fetchedRubric = await LmsFactory.getLmsService()
-          .getRubric(widget.submission.assignmentId.toString());
-      var submissionScores = await LmsFactory.getLmsService().getRubricGrades(
-          widget.submission.assignmentId, widget.participant.id);
+    var fetchedRubric = await LmsFactory.getLmsService()
+        .getRubric(widget.submission.assignmentId.toString());
+    var submissionScores = await LmsFactory.getLmsService()
+        .getRubricGrades(widget.submission.assignmentId, widget.participant.id);
 
-      setState(() {
-        rubric = fetchedRubric;
-        scores = submissionScores;
-        // Populate selectedLevels and remarks from submissionScores
-        for (var score in scores!) {
-          selectedLevels[score['criterionid']] = score['levelid'];
-          remarks[score['criterionid']] = score['remark'] ?? '';
-          remarkControllers[score['criterionid']] =
-              TextEditingController(text: remarks[score['criterionid']]);
-        }
-        isLoading = false;
-      });
-
-      if (fetchedRubric == null) {
-        setState(() {
-          errorMessage = 'No rubric available for this assignment.';
-        });
+    setState(() {
+      rubric = fetchedRubric;
+      scores = submissionScores;
+      // Populate selectedLevels and remarks from submissionScores
+      for (var score in scores!) {
+        selectedLevels[score['criterionid']] = score['levelid'];
+        remarks[score['criterionid']] = score['remark'] ?? '';
+        remarkControllers[score['criterionid']] =
+            TextEditingController(text: remarks[score['criterionid']]);
       }
-    } else {
+      isLoading = false;
+    });
+
+    if (fetchedRubric == null) {
       setState(() {
-        isLoading = false;
-        errorMessage = 'Failed to retrieve context ID for the assignment.';
+        errorMessage = 'No rubric available for this assignment.';
       });
     }
   }
@@ -123,7 +115,9 @@ class SubmissionDetailState extends State<SubmissionDetail> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(title: 'Submission Details', userprofileurl: LmsFactory.getLmsService().profileImage ?? ''),
+      appBar: CustomAppBar(
+          title: 'Submission Details',
+          userprofileurl: LmsFactory.getLmsService().profileImage ?? ''),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : Padding(
@@ -161,9 +155,10 @@ class SubmissionDetailState extends State<SubmissionDetail> {
                           TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
                     SizedBox(height: 8),
-                    widget.submission.onlineText.isNotEmpty 
+                    widget.submission.onlineText.isNotEmpty
                         ? Text(
-                            widget.submission.onlineText.replaceAll(RegExp(r"<[^>]*>"), ""),
+                            widget.submission.onlineText
+                                .replaceAll(RegExp(r"<[^>]*>"), ""),
                             style: TextStyle(fontSize: 16),
                           )
                         : Text(
@@ -216,8 +211,9 @@ class SubmissionDetailState extends State<SubmissionDetail> {
 
 // Interactive rubric table with dynamic width expansion
   Widget buildInteractiveRubricTable() {
-    if (rubric == null)
+    if (rubric == null) {
       return Container(); // No rubric, return an empty container
+    }
 
     List<TableRow> tableRows = [];
 
@@ -260,7 +256,7 @@ class SubmissionDetailState extends State<SubmissionDetail> {
                 ),
               ),
             );
-          }).toList(),
+          }),
           TableCell(
             child: Padding(
               padding: EdgeInsets.all(8.0),

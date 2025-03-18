@@ -1,6 +1,3 @@
-import 'dart:convert';
-import 'dart:io';
-import 'package:http/http.dart' as http;
 import 'package:learninglens_app/beans/course.dart';
 import 'package:learninglens_app/beans/quiz.dart';
 import 'package:learninglens_app/beans/quiz_type.dart';
@@ -11,9 +8,7 @@ import 'package:learninglens_app/beans/grade.dart';
 import 'package:learninglens_app/beans/submission.dart';
 import 'package:learninglens_app/beans/submission_with_grade.dart';
 import 'package:learninglens_app/beans/moodle_rubric.dart';
-import 'package:learninglens_app/services/api_service.dart';
 import 'package:learninglens_app/Api/lms/lms_interface.dart';
-
 
 class ApiSingleton implements LmsInterface {
   static final ApiSingleton _instance = ApiSingleton._internal();
@@ -28,7 +23,7 @@ class ApiSingleton implements LmsInterface {
 
   @override
   String serverUrl = '';
-  
+
   @override
   String apiURL = '';
 
@@ -52,7 +47,6 @@ class ApiSingleton implements LmsInterface {
 
   @override
   List<Course>? courses;
-  
 
   // Authentication/Login methods
   @override
@@ -65,19 +59,19 @@ class ApiSingleton implements LmsInterface {
   bool isLoggedIn() {
     return _userToken != null;
   }
-  
+
   @override
   Future<bool> isUserTeacher(List<Course> moodleCourses) {
     // TODO: implement isUserTeacher
     throw UnimplementedError();
   }
-  
+
   @override
   void logout() {
     print('Logging out of LMS...');
     resetLMSUserInfo();
   }
-  
+
   @override
   void resetLMSUserInfo() {
     _userToken = null;
@@ -90,7 +84,7 @@ class ApiSingleton implements LmsInterface {
     profileImage = null;
     courses = [];
   }
-  
+
   // Course methods
   @override
   Future<List<Course>> getCourses() {
@@ -109,8 +103,7 @@ class ApiSingleton implements LmsInterface {
     // TODO: implement getCourseParticipants
     throw UnimplementedError();
   }
-  
-  
+
   // Quiz methods
   @override
   Future<void> importQuiz(String courseid, String quizXml) {
@@ -125,7 +118,8 @@ class ApiSingleton implements LmsInterface {
   }
 
   @override
-  Future<int?> createQuiz(String courseid, String quizname, String quizintro, String sectionid, String timeopen, String timeclose) {
+  Future<int?> createQuiz(String courseid, String quizname, String quizintro,
+      String sectionid, String timeopen, String timeclose) {
     // TODO: implement createQuiz
     throw UnimplementedError();
   }
@@ -137,7 +131,8 @@ class ApiSingleton implements LmsInterface {
   }
 
   @override
-  Future<String> addRandomQuestions(String categoryid, String quizid, String numquestions) {
+  Future<String> addRandomQuestions(
+      String categoryid, String quizid, String numquestions) {
     // TODO: implement addRandomQuestions
     throw UnimplementedError();
   }
@@ -147,8 +142,7 @@ class ApiSingleton implements LmsInterface {
     // TODO: implement google api code
     throw UnimplementedError();
   }
-  
-  
+
   // Assignment methods
   @override
   Future<List<Assignment>> getEssays(int? courseID, {int? topicId}) {
@@ -157,7 +151,14 @@ class ApiSingleton implements LmsInterface {
   }
 
   @override
-  Future<Map<String, dynamic>?> createAssignment(String courseid, String sectionid, String assignmentName, String startdate, String enddate, String rubricJson, String description) {
+  Future<Map<String, dynamic>?> createAssignment(
+      String courseid,
+      String sectionid,
+      String assignmentName,
+      String startdate,
+      String enddate,
+      String rubricJson,
+      String description) {
     // TODO: implement createAssignment
     throw UnimplementedError();
   }
@@ -167,7 +168,7 @@ class ApiSingleton implements LmsInterface {
     // TODO: implement getContextId
     throw UnimplementedError();
   }
-  
+
   // Submission and grading methods
   @override
   Future<List<Submission>> getAssignmentSubmissions(int assignmentId) {
@@ -186,7 +187,7 @@ class ApiSingleton implements LmsInterface {
     // TODO: implement getSubmissionStatus
     throw UnimplementedError();
   }
-  
+
   @override
   Future<List<Grade>> getAssignmentGrades(int assignmentId) {
     // TODO: implement getAssignmentGrades
@@ -194,7 +195,8 @@ class ApiSingleton implements LmsInterface {
   }
 
   @override
-  Future<bool> setRubricGrades(int assignmentId, int userId, String jsonGrades) {
+  Future<bool> setRubricGrades(
+      int assignmentId, int userId, String jsonGrades) {
     // TODO: implement setRubricGrades
     throw UnimplementedError();
   }
@@ -204,18 +206,17 @@ class ApiSingleton implements LmsInterface {
     // TODO: implement getRubricGrades
     throw UnimplementedError();
   }
-  
+
   @override
   Grade? findGradeForUser(List<Grade> grades, int userId) {
     // TODO: implement findGradeForUser
     throw UnimplementedError();
   }
-  
+
   // Rubric methods
   @override
   Future<MoodleRubric?> getRubric(String assignmentid) {
     // TODO: implement getRubric
     throw UnimplementedError();
   }
-
 }

@@ -36,18 +36,20 @@ class Participant implements LearningLensInterface {
     }
     return Participant(
       id: json['id'] as int,
-      fullname: json['fullname'] as String, 
+      fullname: json['fullname'] as String,
       firstname: json['firstname'] as String,
       lastname: json['lastname'] as String,
       roles: rolesList,
       // Parse avgGrade if available; otherwise, leave as null.
-      avgGrade: json['avggrade'] != null ? double.tryParse(json['avggrade'].toString()) : null,
+      avgGrade: json['avggrade'] != null
+          ? double.tryParse(json['avggrade'].toString())
+          : null,
     );
   }
 
   @override
   String toString() {
-    return "$fullname";
+    return fullname;
   }
 
   @override

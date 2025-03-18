@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:learninglens_app/Api/lms/enum/lms_enum.dart';
 import 'package:learninglens_app/Views/assessments_view.dart';
-import 'package:learninglens_app/Views/g_dashboard.dart';
 import 'package:learninglens_app/Views/user_settings.dart';
 import 'package:learninglens_app/notifiers/login_notifier.dart';
 import 'package:learninglens_app/notifiers/theme_notifier.dart';
@@ -14,8 +13,7 @@ import 'Views/essay_generation.dart';
 import 'Views/quiz_generator.dart';
 import 'Views/edit_questions.dart';
 
-
-void main() async{
+void main() async {
   await dotenv.load();
   // runApp(MyApp());
   await LocalStorageService.init(); // Initialize SharedPreferences
@@ -23,8 +21,10 @@ void main() async{
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => ThemeNotifier()), // Theme provider
-        ChangeNotifierProvider(create: (_) => LoginNotifier()), // Login provider
+        ChangeNotifierProvider(
+            create: (_) => ThemeNotifier()), // Theme provider
+        ChangeNotifierProvider(
+            create: (_) => LoginNotifier()), // Login provider
       ],
       child: MyApp(),
     ),
@@ -50,20 +50,24 @@ class MyApp extends StatelessWidget {
 
     // used to determine which dashboard to show based on the local storage system
     var selectedClassroom = LocalStorageService.getSelectedClassroom();
-    var home = selectedClassroom == LmsType.MOODLE ? TeacherDashboard() : TeacherDashboard(); //GoogleTeacherDashboard(); 
-    
+    var home = selectedClassroom == LmsType.MOODLE
+        ? TeacherDashboard()
+        : TeacherDashboard(); //GoogleTeacherDashboard();
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: "Learning Lens",
-      home:  home,
+      home: home,
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Provider.of<ThemeNotifier>(context).primaryColor),
+        colorScheme: ColorScheme.fromSeed(
+            seedColor: Provider.of<ThemeNotifier>(context).primaryColor),
       ),
       scrollBehavior: CustomScrollBehavior(),
       routes: {
         // '/EssayEditPage': (context) => EssayEditPage(jsonData),
         // '/Content': (context) => ViewCourseContents(),
-        '/EssayGenerationPage': (context) => EssayGeneration(title: 'Essay Generation'),
+        '/EssayGenerationPage': (context) =>
+            EssayGeneration(title: 'Essay Generation'),
         '/QuizGenerationPage': (context) => CreateAssessment(),
         '/EditQuestions': (context) => EditQuestions(''),
         // '/create': (context) => const CreatePage(),
@@ -149,10 +153,8 @@ class _DevLaunch extends State {
           ElevatedButton(
             child: const Text('Quiz Generator'),
             onPressed: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => CreateAssessment()));
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => CreateAssessment()));
             },
           ),
           ElevatedButton(
@@ -163,16 +165,11 @@ class _DevLaunch extends State {
             },
           ),
           ElevatedButton(
-            child: const Text('View Quizzes'),
-            onPressed: (){
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AssessmentsView())
-              );
-            }
-          )
+              child: const Text('View Quizzes'),
+              onPressed: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => AssessmentsView()));
+              })
         ]));
   }
-
-} 
+}
