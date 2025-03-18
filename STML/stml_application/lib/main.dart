@@ -1,3 +1,4 @@
+﻿import 'package:memoryminder/src/features/caregiver-dashboard/presentation/health_data_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:memoryminder/src/features/account_creation_and_login/presentation/eula_screen.dart';
 import 'package:memoryminder/src/features/account_creation_and_login/presentation/welcome_screen.dart';
@@ -26,6 +27,7 @@ void main() async {
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -34,15 +36,14 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      initialRoute:
-          '/welcomeScreen', // The initial screen when the application starts
+      initialRoute: '/welcomeScreen', // The initial screen when the application starts
       routes: {
         '/welcomeScreen': (context) => WelcomeScreem(),
         '/loginScreen': (context) => LoginScreen(),
         '/registrationScreen': (context) => RegistrationScreen(),
         '/eulaScreen': (context) => EulaScreen(),
         '/homeScreen': (context) => HomeScreen(),
-        // You can add other routes as needed
+        '/healthDataScreen': (context) => HealthDataScreen(heartRate: 75, steps: 5000), // ✅ Added this route
       },
     );
   }
@@ -50,8 +51,7 @@ class MyApp extends StatelessWidget {
 
 // These are all singleton objects and should be initialized at the beginning
 void initializeData() async {
-  //initialize backend services
-  // ignore: unused_local_variable
+  // Initialize backend services
   S3Bucket s3 = S3Bucket();
   CameraManager cm = CameraManager();
   await PermissionManager.requestInitialPermissions();
