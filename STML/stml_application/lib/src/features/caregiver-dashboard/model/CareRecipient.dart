@@ -1,16 +1,26 @@
-import 'package:memoryminder/src/features/caregiver-dashboard/presentation/add_care_recipient.dart';
+import 'package:memoryminder/src/features/caregiver-dashboard/model/emergency_contact.dart';
 
 class CareRecipient {
   final String firstName;
   final String lastName;
-  final String? location;
+  final String? address;
+  final String? city;
+  final String? state;
+  final String? county;
+  final String? email;
+  final String? phone;
   final int? age;
-  final List<EmergencyContact> emergencyContacts;
+  final List<EmergencyContact>? emergencyContacts;
 
   CareRecipient({
     required this.firstName,
     required this.lastName,
-    this.location,
+    this.address,
+    this.city,
+    this.state,
+    this.county,
+    this.email,
+    this.phone,
     this.age,
     required this.emergencyContacts,
   });
@@ -19,7 +29,12 @@ class CareRecipient {
     return {
       'firstName': firstName,
       'lastName': lastName,
-      'location': location,
+      'address': address,
+      'city': city,
+      'state': state,
+      'county': county,
+      'email': email,
+      'phone': phone,
       'age': age,
       'emergencyContacts': emergencyContacts
     };
@@ -30,9 +45,17 @@ class CareRecipient {
     return CareRecipient(
       firstName: map['firstName'],
       lastName: map['lastName'],
-      location: map['location'],
+      address: map['address'],
+      city: map['city'],
+      state: map['state'],
+      county: map['county'],
+      email: map['email'],
+      phone: map['phone'],
       age: map['age'],
-      emergencyContacts: map['emergencyContacts'],
+      emergencyContacts: (map['emergencyContacts'] as List<dynamic>?)
+          ?.map((item) => EmergencyContact.fromMap(item as Map<String, dynamic>))
+          .toList(),
     );
   }
 }
+

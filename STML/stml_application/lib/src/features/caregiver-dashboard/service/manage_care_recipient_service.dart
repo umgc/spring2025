@@ -15,19 +15,38 @@ class ManageCareRecipientService {
   }
 
   Future<void> createCareRecipient(CareRecipient careRecipient) async {
+    List<Map<String,dynamic>>? emergencyContactsMap = careRecipient.emergencyContacts?.map((obj)=> obj.toMap()).toList();
+
     await _firestore.collection('careRecipients').add({
       'firstName': careRecipient.firstName,
       'lastName': careRecipient.lastName,
-      'location': careRecipient.location,
+      'address': careRecipient.address,
+      'city': careRecipient.city,
+      'state': careRecipient.state,
+      'county': careRecipient.county,
+      'email': careRecipient.email,
+      'phone': careRecipient.phone,
       'age': careRecipient.age,
+      'emergencyContacts': emergencyContactsMap
     });
     print('Care Recipient added successfully.');
   }
 
-  Future<void> markNotificationAsRead(String messageId) async {
+  Future<void> updateCareRecipient(String? careRecipientId, CareRecipient careRecipient) async {
+    List<Map<String,dynamic>>? emergencyContactsMap = careRecipient.emergencyContacts?.map((obj)=> obj.toMap()).toList();
+
     try {
-      DocumentReference notificationRef = _firestore.collection('notifications').doc(messageId);
-      await notificationRef.update({'read':true});
+      DocumentReference notificationRef = _firestore.collection('careRecipients').doc(careRecipientId);
+      await notificationRef.update({'firstName': careRecipient.firstName,
+        'lastName': careRecipient.lastName,
+        'address': careRecipient.address,
+        'city': careRecipient.city,
+        'state': careRecipient.state,
+        'county': careRecipient.county,
+        'email': careRecipient.email,
+        'phone': careRecipient.phone,
+        'age': careRecipient.age,
+        'emergencyContacts': emergencyContactsMap});
       print('Notification updated as read');
 
     } catch(e) {
@@ -44,8 +63,14 @@ class ManageCareRecipientService {
         return {'id': doc.id,
           'firstName': doc['firstName'],
           'lastName': doc['lastName'],
-          'location': doc['location'],
+          'address': doc['address'],
+          'city': doc['city'],
+          'state': doc['state'],
+          'county': doc['county'],
+          'email': doc['email'],
+          'phone': doc['phone'],
           'age': doc['age'],
+          'emergencyContacts': doc['emergencyContacts'],
         };
       }).toList();
       print('-------${careRecipients.length}');

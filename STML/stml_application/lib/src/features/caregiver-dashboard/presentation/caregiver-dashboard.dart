@@ -3,12 +3,13 @@
 
 import 'dart:async';
 
-import 'package:memoryminder/src/features/account_creation_and_login/presentation/onboarding_screen.dart';
+import 'package:memoryminder/src/features/caregiver-dashboard/model/CareRecipient.dart';
 import 'package:memoryminder/src/features/caregiver-dashboard/presentation/add_care_recipient.dart';
+import 'package:memoryminder/src/features/caregiver-dashboard/presentation/app_bar.dart';
+import 'package:memoryminder/src/features/caregiver-dashboard/presentation/care_recipient_profile.dart';
 import 'package:memoryminder/src/features/caregiver-dashboard/service/manage_care_recipient_service.dart';
 import 'package:memoryminder/src/features/caregiver-dashboard/service/notification_service.dart';
 import 'package:memoryminder/src/features/caregiver-dashboard/service/notification_stream_service.dart';
-import 'package:memoryminder/ui/dementia_resources.dart';
 import 'package:memoryminder/ui/profile_screen.dart';
 import 'package:memoryminder/src/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
@@ -41,82 +42,11 @@ class _CaregiverDashboardScreen extends State<CaregiverDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        // Set the background color for the entire screen
-        extendBodyBehindAppBar: true,
         extendBody: true,
         // Setting up the app bar at the top of the screen
-        appBar: AppBar(
-          backgroundColor: Colors.blueAccent,
-          // Set appbar background color
-          elevation: 0.0,
-          centerTitle: true,
-          // This centers the title
-          automaticallyImplyLeading: false,
-
-          title: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                // This ensures the Row takes the least amount of space
-                children: [
-                  Image.asset(
-                    'assets/icons/app_icon.png',
-                    // Replace this with your icon's path
-                    fit: BoxFit.contain,
-                    height: 32, // Adjust the size as needed
-                  ),
-                  const SizedBox(width: 10),
-                  // Spacing between the icon and title
-                  const Text('Caregiver Dashboard',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                          fontSize: 24.0,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87)),
-                ],
-              ),
-              Text(
-                _currentDate(),
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.black87,
-                ),
-              ),
-            ],
-          ),
-
-          // Widgets on the right side of the AppBar
-          actions: [
-            // First page icon to navigate back
-            IconButton(
-              icon: const Icon(
-                Icons.settings,
-                color: Colors.black87,
-              ),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => ProfileScreen()),
-                );
-              },
-            ),
-
-            // First page icon to navigate back
-            IconButton(
-              icon: const Icon(
-                Icons.first_page,
-                color: Colors.black87,
-              ),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-          ],
+        appBar: const CustomAppBar(
+          title: 'Caregiver Dashboard',
         ),
-        ///////////////////////////
-        // Main content of the screen
 
         body: Container(
           decoration: BoxDecoration(
@@ -129,7 +59,7 @@ class _CaregiverDashboardScreen extends State<CaregiverDashboardScreen> {
           child: Column(
             children: [
               const Padding(
-                padding: EdgeInsets.fromLTRB(2.0, 100, 16.0, 2),
+                padding: EdgeInsets.fromLTRB(2.0, 2, 16.0, 2),
                 child: Text(
                   'Notifications',
                   textAlign: TextAlign.left,
@@ -232,10 +162,6 @@ class _CaregiverDashboardScreen extends State<CaregiverDashboardScreen> {
                     context: context,
                   ),
               ),
-
-
-
-
               const Divider(
                 color: Colors.black,
                 thickness: 2,
@@ -262,20 +188,59 @@ class _CaregiverDashboardScreen extends State<CaregiverDashboardScreen> {
             return GridView.builder(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3, // Adjust as needed
+                childAspectRatio: 1.0,
+                mainAxisSpacing: 3,
+                crossAxisSpacing: 3
               ),
               itemCount: data.length,
               itemBuilder: (context, index) {
                 final item = data[index];
-                return Card(
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(item['firstName'].toString()),
-                        Text(item['lastName'].toString()),
+                final String labelText = '${item['firstName'].toString()} ${item['lastName'].toString()}';
+                final careRecipient = CareRecipient.fromMap(item);
+                return InkWell( // Or InkWell for ripple effect
+                  onTap: () {
+                    // Handle item click
+                    print('Item ${item['firstName'].toString()} clicked');
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => CareRecipientProfileScreen(careRecipientId: item['itemId'].toString(), careRecipientData: careRecipient.toMap())),
+                    );
+                  },
+                  borderRadius: BorderRadius.circular(12.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.lightGreen[100],
+                      borderRadius: BorderRadius.circular(12.0),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.lightGreen.withOpacity(0.5),
+                          spreadRadius: 1,
+                          blurRadius: 3,
+                          offset: const Offset(0, 2),
+                        ),
                       ],
                     ),
-                  ),
+                    padding: const EdgeInsets.all(3.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Icon(
+                          Icons.person,
+                          size: 40.0,
+                          color: Colors.green,
+                        ),
+                        const SizedBox(height: 8.0),
+                        Text(
+                          labelText,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
+                  )
                 );
               },
             );
@@ -343,78 +308,4 @@ class _CaregiverDashboardScreen extends State<CaregiverDashboardScreen> {
   }
 }
 
-/* GridView.count(
-                shrinkWrap: true,
-                // Add shrinkWrap
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 1,
-                crossAxisSpacing: 12.0,
-                mainAxisSpacing: 12.0,
-                childAspectRatio: 1,
-                padding: const EdgeInsets.fromLTRB(130.0, 2, 130.0, 2),
-                children: [
-                  _buildElevatedButton(
-                    context: context,
-                    icon: Icon(Icons.bookmark_outline,
-                        size: iconSize, color: Colors.black87),
-                    text: 'Dementia Resources',
-                    screen: DementiaResourcesScreen(),
-                    keyName: "DementiaResourcesButtonKey",
-                  ),
-                ],
-              ),*/
 
-String _currentDate() {
-  final now = DateTime.now();
-  final formatter =
-      DateFormat('MMMM dd, yyyy'); // You can customize the format here
-  return formatter.format(now);
-}
-
-// Helper function to create each button for the GridView
-Widget _buildElevatedButton({
-  required BuildContext context,
-  required Icon icon,
-  required String text,
-  required Widget screen,
-  required String keyName,
-}) {
-  return SizedBox(
-      width: 200,
-      height: 200,
-      child: ElevatedButton(
-        key: Key(keyName),
-        style: ElevatedButton.styleFrom(
-          foregroundColor: Colors.black,
-          backgroundColor: const Color(0xFFFFFFDD).withOpacity(0.30),
-          // Button text color
-          padding: const EdgeInsets.all(2.0),
-          elevation: 0.0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10.0),
-          ),
-        ),
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => screen),
-          );
-        },
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            icon,
-            const SizedBox(height: 7.0),
-            Text(
-              text,
-              style: const TextStyle(
-                fontSize: 13.0,
-                fontWeight: FontWeight.bold,
-                color: Color(0XFF000000),
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ));
-}
