@@ -516,7 +516,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
                           onTap: () async {
                             Navigator.pop(context);
                             if (widget.title == 'Restaurant') {
-                                                              // Fetch the AI response from the database
+                                // Fetch the AI response from the database
                                 List<String> validatedMenuItems = [];
                                 
                                 try {
@@ -553,19 +553,29 @@ class _IndustryMenuState extends State<IndustryMenu> {
                                   }
                                 }
                             } else {
-                              // Show regular transcript for other industries
-                              showDialog(
+                              final aiResponse = transcript['transcript_ai_response'];
+                              String parsedResponse = aiResponse.replaceAll(RegExp(r'\[OpenAIChatCompletionChoiceMessageContentItemModel\(type: text, text: '), '').replaceAll(RegExp(r'\)\]'), '');
+                                // Show regular transcript for other industries
+                                // Show the parsedResponse in a regular dialog with a close button at the bottom
+                                showDialog(
                                 context: context,
                                 builder: (BuildContext context) {
-                                  return generateTranscript(
-                                    context,
-                                    'Transcript',
-                                    transcript['transcript_text_data'] ??
-                                        'No content available',
-                                    transcript['transcript_id'],
+                                  return AlertDialog(
+                                  title: Text('Transcript'),
+                                  content: SingleChildScrollView(
+                                    child: Text(parsedResponse),
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: Text('Close'),
+                                    ),
+                                  ],
                                   );
                                 },
-                              );
+                                );
                             }
                           },
                         );
@@ -582,6 +592,8 @@ class _IndustryMenuState extends State<IndustryMenu> {
       },
     );
   }
+              
+
 
   // Extract the functionality to show transcript history into a separate method
   void _showTranscriptsHistoryBottomSheet(BuildContext context) async {

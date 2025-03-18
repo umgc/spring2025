@@ -33,7 +33,7 @@ class MechanicAPI {
       return {
         'vehicle': 'Honda Civic 2015',
         'diagnosis':
-            'Brake pads require inspection, possible wear; engine knocking suggests immediate engine checkup.',
+        'Brake pads require inspection, possible wear; engine knocking suggests immediate engine checkup.',
         'parts': 'Brake pads, Engine oil'
       };
     } else {
