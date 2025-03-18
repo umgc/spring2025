@@ -127,14 +127,25 @@ class _AudioScreenState extends State<AudioScreen> {
     await _recorder!.openRecorder();
   }
 
-  // This function requests necessary permissions for audio recording and storage.
+  /// This function requests necessary permissions for audio recording and storage.
   Future<bool> _requestPermissions() async {
-    final micStatus = await Permission.microphone.request();
-    final storageStatus = Platform.isAndroid
-        ? await Permission.manageExternalStorage.request()
-        : PermissionStatus.granted;
+    final micStatus = await Permission.microphone.status;
+    final storageStatus = await Permission.storage.status;
 
-    return micStatus.isGranted && storageStatus.isGranted;
+    if (micStatus.isGranted) {
+      return true; // Already granted
+    }
+
+    // Request permissions
+    Map<Permission, PermissionStatus> statuses = await [
+      Permission.microphone,
+      Permission.storage,
+    ].request();
+
+    print(micStatus);
+    print(storageStatus);
+    return statuses[Permission.microphone]!.isGranted &&
+        statuses[Permission.storage]!.isGranted;
   }
 
   @override
@@ -159,8 +170,12 @@ class _AudioScreenState extends State<AudioScreen> {
         '${appDocDirectory.path}/files/audios/$key2.wav'; // creates unique name
     debugPrint('initial app directory $appDocDirectory');
 
-    await _recorder!
-        .startRecorder(toFile: _pathToSaveRecording, codec: Codec.pcm16WAV);
+    await _recorder!.startRecorder(
+        toFile: _pathToSaveRecording,
+        codec: Codec.pcm16WAV,
+        sampleRate: 16000,
+        numChannels: 1,
+        bitRate: 134000);
     setState(() {
       _isRecording = true;
     });
@@ -400,8 +415,6 @@ class _AudioScreenState extends State<AudioScreen> {
       final file =
           File('${directory.path}/files/audios/transcripts/$fileName.txt');
       String content = await file.readAsString();
-      print(API_URL);
-      print(API_KEY);
 
       print("Sending to OpenAI for summarization");
       // Send to OpenAI for Summarization
@@ -425,14 +438,27 @@ class _AudioScreenState extends State<AudioScreen> {
       );
       if (response.statusCode == 200) {
         var jsonResponse = jsonDecode(response.body);
-        print(jsonResponse['choices'][0]['text'].trim());
-        return jsonResponse['choices'][0]['text'].trim();
+
+        if (jsonResponse['choices'] == null ||
+            jsonResponse['choices'].isEmpty) {
+          throw Exception("No choices return from OpenAI.");
+        }
+
+        var summary =
+            jsonResponse['choices'][0]['message']['content']?.trim() ?? "";
+
+        if (summary.isEmpty) {
+          throw Exception("OpenAI response was empty");
+        }
+
+        return summary;
       } else {
-        print('Failed to summarize. Response code: ${response.statusCode}');
+        print(
+            'Failed to detect sensitive information. Response code: ${response.statusCode}');
         return '';
       }
     } catch (e) {
-      print('Error during summarization: $e');
+      print('Error detecting sensitive information: $e');
       return '';
     }
   }
