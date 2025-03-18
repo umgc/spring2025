@@ -6,6 +6,7 @@ Author: Eyerusalme (Jerry)
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:memoryminder/src/features/caregiver-dashboard/presentation/caregiver-dashboard.dart';
 import 'package:memoryminder/src/utils/permission_manager.dart';
 import 'registration_screen.dart';
 import '../../stml_user_dashboard/presentation/stml_user_dashboard.dart';
@@ -60,7 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => HomeScreen()),
+        MaterialPageRoute(builder: (context) => CaregiverDashboardScreen()),
       );
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -113,7 +114,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             height: 80, width: 80),
                         const SizedBox(width: 10),
                         Text(
-                          "CogniOpen",
+                          "Memoryminder",
                           style: TextStyle(
                             color: Colors.blueGrey[900],
                             fontSize: 32.0,
