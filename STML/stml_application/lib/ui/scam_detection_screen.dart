@@ -24,7 +24,7 @@ class _ScamDetectionScreenState extends State<ScamDetectionScreen> {
   }
 
   Future<void> _performScan() async {
-    int result = await _scamDetectionService.checkPhraseInNotes(); // Check for scam in notes
+    var result = await _scamDetectionService.checkPhraseInNotes(); // Check for scam in notes
     if (mounted) {
       setState(() {
         _isScanning = false;
@@ -32,7 +32,8 @@ class _ScamDetectionScreenState extends State<ScamDetectionScreen> {
       });
       // If a scam is detected, show an alert dialog
       if (result != 0) {
-        _scamId = result;
+        _scamId = result.keys.first;
+        _notificationService.sendNotificationToFirestore(result[_scamId]!);
         _showAlertDialog();
       }
     }

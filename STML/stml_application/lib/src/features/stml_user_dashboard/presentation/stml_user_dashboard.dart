@@ -208,14 +208,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       screen: LocationHistoryScreen(),
                       keyName: "LocationObjectButtonKey",
                     ),
-                    // _buildElevatedButton(
-                    //   context: context,
-                    //   icon: Icon(Icons.flag,
-                    //       size: iconSize, color: Colors.black54),
-                    //   text: 'Tour Guide',
-                    //   screen: TourScreen(),
-                    //   keyName: "TourGuideButtonKey",
-                    // ),
                     _buildElevatedButton(
                       context: context,
                       icon: Icon(Icons.bookmark_outline,

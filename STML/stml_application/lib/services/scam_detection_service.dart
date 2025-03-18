@@ -11,7 +11,7 @@ class ScamDetectionService {
     return await _transcriptDatabaseHelper.getAllNotes();
   }
 
-  Future<int> checkPhraseInNotes() async {
+  Future<Map<int,String>> checkPhraseInNotes() async {
     final List<String> phrases = [
       "What’s wrong with my iPad or computer",
       "What do you need me to do?",
@@ -25,12 +25,12 @@ class ScamDetectionService {
       if (note['note'] != null) {
         for (var phrase in phrases) {
           if (note['note'].toString().contains(phrase)) {
-            return note['id'];
+            return {note['id']: phrase};
           }
         }
       }
     }
-    return 0;
+    return {0:""};
   }
 
   Future<String> getNoteById(int id) async {
