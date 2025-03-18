@@ -2,7 +2,7 @@
 
 import 'dart:async';
 
-import 'package:memoryminder/src/database/model/audio.dart';
+import 'package:memoryminder/src/features/sensitive_information_detection/domain/audio.dart';
 import 'package:memoryminder/src/typingIndicator.dart';
 import 'package:dart_openai/dart_openai.dart';
 import 'dart:io';

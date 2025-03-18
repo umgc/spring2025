@@ -4,7 +4,7 @@
 import 'package:memoryminder/ui/dementia_resources.dart';
 import 'package:memoryminder/ui/response_screen.dart';
 import 'package:memoryminder/ui/assistant_screen.dart';
-import 'package:memoryminder/ui/audio_screen.dart';
+import 'package:memoryminder/src/features/sensitive_information_detection/presentation/audio_screen.dart';
 import 'package:memoryminder/ui/gallery_screen.dart';
 import 'package:memoryminder/ui/profile_screen.dart';
 import 'package:memoryminder/ui/tour_screen.dart';
@@ -14,7 +14,6 @@ import 'package:geolocator/geolocator.dart';
 import 'package:memoryminder/src/camera_manager.dart';
 import 'package:memoryminder/src/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
-
 
 // Main HomeScreen widget which is a stateless widget.
 class HomeScreen extends StatefulWidget {
@@ -65,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
             }
 
             final newEntry =
-            LocationEntry(address: address, startTime: DateTime.now());
+                LocationEntry(address: address, startTime: DateTime.now());
             final id = await LocationDatabase.instance.create(newEntry);
             newEntry.id = id;
             currentLocationEntry = newEntry;
@@ -80,7 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Set the background color for the entire screen
+        // Set the background color for the entire screen
         extendBodyBehindAppBar: true,
         extendBody: true,
         // Setting up the app bar at the top of the screen
@@ -246,7 +245,7 @@ class _HomeScreenState extends State<HomeScreen> {
       style: ElevatedButton.styleFrom(
         foregroundColor: Colors.black,
         backgroundColor:
-        const Color(0xFFFFFFFF).withOpacity(0.30), // Button text color
+            const Color(0xFFFFFFFF).withOpacity(0.30), // Button text color
         padding: const EdgeInsets.all(16.0),
         elevation: 0.0,
         shape: RoundedRectangleBorder(

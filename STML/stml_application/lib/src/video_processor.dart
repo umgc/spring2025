@@ -258,7 +258,7 @@ class VideoProcessor {
 
   Future<void> uploadVideoToS3() async {
     FormatUtils.logBigMessage("UPLOADING VIDEO TO S3");
-    S3Bucket s3 = S3Bucket();
+    S3Service s3 = S3Service();
     // Set the name for the file to be added to the bucket based on the file name
     FileManager.getMostRecentVideo();
     videoTitle = FileManager.mostRecentVideoName;
@@ -267,7 +267,7 @@ class VideoProcessor {
     appLogger.info("Video title to S3: $videoTitle");
     appLogger.info("Video file path uploading to S3: $videoPath");
 
-    String uploadedVideo = await s3.addVideoToS3(videoTitle, videoPath);
+    String uploadedVideo = await s3.addVideoToS3(videoTitle, videoPath) ?? "";
 
     await sendRequestToProcessVideo(uploadedVideo);
 

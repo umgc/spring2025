@@ -52,7 +52,7 @@ class MyApp extends StatelessWidget {
 void initializeData() async {
   //initialize backend services
   // ignore: unused_local_variable
-  S3Bucket s3 = S3Bucket();
+  S3Service s3 = S3Service();
   CameraManager cm = CameraManager();
   await PermissionManager.requestInitialPermissions();
   await cm.initializeCamera();

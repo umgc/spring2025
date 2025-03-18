@@ -257,4 +257,33 @@ class TranscriptionService {
         return awsSpeakerLabel;
     }
   }
+
+  //  Uses OpenAI API to detect and redact sensitive info
+  Future<String> filterSensitiveInformation(String text) async {
+    try {
+      final response = await http.post(
+        Uri.parse(API_URL),
+        headers: {
+          'Authorization': 'Bearer $API_KEY',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          "model": "gpt-4",
+          "prompt":
+              "Redact sensitive personal information from this text:\n\n$text",
+          "max_tokens": 500
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body)['choices'][0]['text'].trim();
+      } else {
+        appLogger.warning('Failed to filter text: ${response.statusCode}');
+        return text;
+      }
+    } catch (e) {
+      appLogger.severe('Error calling OpenAI API: $e');
+      return text; // Return original text if OpenAI fails
+    }
+  }
 }
