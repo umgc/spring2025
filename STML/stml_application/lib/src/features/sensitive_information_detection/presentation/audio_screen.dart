@@ -496,12 +496,7 @@ class _AudioScreenState extends State<AudioScreen> {
               style: TextStyle(color: Colors.black54)),
         ),
         body: Container(
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage("assets/images/background.jpg"),
-              fit: BoxFit.cover,
-            ),
-          ),
+          decoration: const BoxDecoration(),
           child: Column(
             children: [
               Expanded(
@@ -588,16 +583,22 @@ class _AudioScreenState extends State<AudioScreen> {
                                       IconButton(
                                         icon: _isPlaying
                                             ? Icon(Icons.pause,
-                                                size: 40, color: Colors.blue)
+                                                size: 40,
+                                                color: Color.fromARGB(
+                                                    255, 2, 63, 129))
                                             : Icon(Icons.play_arrow,
-                                                size: 40, color: Colors.blue),
+                                                size: 40,
+                                                color: Color.fromARGB(
+                                                    255, 2, 63, 129)),
                                         onPressed: _isPlaying
                                             ? _startPlayback
                                             : _startPlayback,
                                       ),
                                       IconButton(
                                         icon: Icon(Icons.stop,
-                                            size: 40, color: Colors.blue),
+                                            size: 40,
+                                            color: Color.fromARGB(
+                                                255, 2, 63, 129)),
                                         onPressed: _isPlaying || _isPaused
                                             ? _stopPlayback
                                             : null,
@@ -616,6 +617,12 @@ class _AudioScreenState extends State<AudioScreen> {
                                             transcription = '';
                                           });
                                         },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Color.fromARGB(255,
+                                              2, 63, 129), // Background color
+                                          foregroundColor:
+                                              Colors.white, // Text color
+                                        ),
                                         child: const Text('New Recording'),
                                       ),
                                       SizedBox(width: 32),
