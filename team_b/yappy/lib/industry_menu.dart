@@ -409,15 +409,6 @@ class _IndustryMenuState extends State<IndustryMenu> {
                                   // I/flutter (17322): Seat 3: Burger, fries, and a soda.
                                   // I/flutter (17322): 
                                   // I/flutter (17322): Seat 4: Double burger with large fries and a soda.)]
-                                      // for (var item in extractedItems) {
-                                    //   for (var menuItem in menuNames) {
-                                    //     if (item.toLowerCase().contains(menuItem)) {
-                                    //       validItems.add(item);
-                                    //       break;
-                                    //     }
-                                    //   }
-                                    // }
-
 
                                   var restaurantAPI = RestaurantAPI();
                                   validatedMenuItems = await restaurantAPI.validateMenuItems(parsedResponseList);
