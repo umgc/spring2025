@@ -33,8 +33,8 @@ class TranscriptDatabaseHelper {
 
         // sample notes for testing/demo
         await db.insert('transcribed_notes', {
-          'note': 'It is great news that I won the lottery and I am ready to make the payment needed to release the reward. How much do I need to send? Also how can I send the payments to you',
-          'source': 'Mic recording',
+          'note': 'How much does it cost? My laptop is not working properly.',
+          'source': 'transcribed notes',
           'date': '2025-03-12',
           'create_time': '10:00 AM'
         });

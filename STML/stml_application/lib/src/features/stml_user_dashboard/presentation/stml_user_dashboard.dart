@@ -226,9 +226,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     _buildElevatedButton(
                       context: context,
-                      icon: Icon(Icons.warning_rounded,
+                      icon: Icon(Icons.warning_amber_rounded,
                           size: iconSize, color: Colors.black54),
-                      text: 'Potential scam Detection',
+                      text: 'Scam Detection',
                       screen: ScamDetectionScreen(),
                       keyName: "potentialScamScanner",
                     ),
