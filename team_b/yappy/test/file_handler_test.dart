@@ -9,21 +9,24 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   late MockDatabaseHelper mockDbHelper;
   late FileHandler fileHandler;
+  const MethodChannel pathProviderChannel = MethodChannel('plugins.flutter.io/path_provider');
   // I have to cache the temp directory path as multiple calls 
   // to getApplicationDocumentsDirectory() return different paths
   late String tempDirectoryPath; 
 
   setUpAll(() async {
     // Register the path_provider plugin
-    const MethodChannel('plugins.flutter.io/path_provider')
-        .setMockMethodCallHandler((MethodCall methodCall) async {
-      if (methodCall.method == 'getApplicationDocumentsDirectory') {
-        final directory = Directory.systemTemp.createTempSync();
-        tempDirectoryPath = directory.path;
-        return tempDirectoryPath;
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(
+      pathProviderChannel,
+      (MethodCall methodCall) async {
+        if (methodCall.method == 'getApplicationDocumentsDirectory') {
+          final directory = Directory.systemTemp.createTempSync();
+          tempDirectoryPath = directory.path;
+          return tempDirectoryPath;
+        }
+        return null;
       }
-      return null;
-    });
+    );
 
     // Initialize the database
     mockDbHelper = MockDatabaseHelper();
