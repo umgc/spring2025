@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:yappy/home_page.dart';
 import 'package:yappy/services/database_helper.dart';
 import 'package:dart_openai/dart_openai.dart';
@@ -8,14 +9,17 @@ import './toast_widget.dart';
 // Create a global instance of DatabaseHelper
 final DatabaseHelper dbHelper = DatabaseHelper();
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+late SharedPreferences preferences;
 
 void main() async{
   WidgetsFlutterBinding.ensureInitialized();
+  preferences = await SharedPreferences.getInstance();
 
   // Env file setup for local development
   String apiKey = Env.apiKey;
   if (apiKey.isNotEmpty) {
     OpenAI.apiKey = apiKey;
+    await preferences.setString('openai_api_key', apiKey);
   }
 
   await dbHelper.database;

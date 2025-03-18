@@ -16,6 +16,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:memoryminder/src/camera_manager.dart';
 import 'package:memoryminder/src/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:memoryminder/features/caregiver_task_management/caregiver_task_screen.dart';
+
 
 
 // Main HomeScreen widget which is a stateless widget.
@@ -176,6 +178,13 @@ class _HomeScreenState extends State<HomeScreen> {
                       screen: TourScreen(),
                       keyName: "TourGuideButtonKey",
                       backgroundColor: const Color(0xFFFFFFFF).withOpacity(0.30)
+                    ),
+                    _buildElevatedButton(
+                      context: context,
+                      icon: Icon(Icons.task_alt, size: iconSize, color: Colors.black54),
+                      text: 'Caregiver Tasks',
+                      screen: CaregiverTaskScreen(),
+                      keyName: "CaregiverTaskButtonKey",
                     ),
                   ],
                 ),
