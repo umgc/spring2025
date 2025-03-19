@@ -13,6 +13,8 @@ import 'services/file_handler.dart';
 import 'services/model_manager.dart';
 import 'services/speech_state.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:yappy/services/restaurant_api_module.dart';
+
 
 class IndustryMenu extends StatefulWidget {
   final String title;
@@ -187,6 +189,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
   }
 
   // This method builds the industry menu widget where the user can record, view transcripts, and view transcript history
+  // Added the fourth button for Chat Bot
   @override
   Widget build(BuildContext context) {
     // Gets the width and height of the current screen
@@ -371,6 +374,104 @@ class _IndustryMenuState extends State<IndustryMenu> {
                   },
                 ),
               ),
+
+              SizedBox(width: screenWidth * .06),
+
+              // Creates a chatbot button
+              Container(
+                decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.grey),
+                padding: EdgeInsets.all(5),
+                child: IconButton(
+                  icon: Icon(
+                  Icons.android,
+                  color: Colors.white,
+                  size: screenHeight * .05,
+                  ),
+                  onPressed: () async {
+                    // Kick off the AI chat session
+                    var openAIHelper = OpenAIHelper();
+                    TextEditingController chatController = TextEditingController();
+                    String? aiResponse = '';
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text('Ask Yappy about stored transcripts'),
+                        content: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          TextField(
+                          controller: chatController,
+                          decoration: InputDecoration(hintText: 'Enter a question'),
+                          ),
+                        ],
+                        ),
+                        actions: [
+                        TextButton(
+                          onPressed: () async {
+                          String userInput = chatController.text;
+                          if (userInput.isNotEmpty) {
+                            // Show intermediary dialog
+                            showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (BuildContext context) {
+                              return AlertDialog(
+                              title: Text('Generating Response'),
+                              content: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                CircularProgressIndicator(),
+                                SizedBox(height: 20),
+                                Text('Please wait while the response is being generated...'),
+                                ],
+                              ),
+                              );
+                            },
+                            );
+
+                            aiResponse = await openAIHelper.startTranscriptChatAssistant(userInput, widget.title);
+                            if (!context.mounted) return;
+                            Navigator.of(context).pop(); // Close the intermediary dialog
+                            Navigator.of(context).pop(); // Close the first dialog
+                            if (aiResponse != null) {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                              return AlertDialog(
+                                title: Text('Yappy Response'),
+                                content: SingleChildScrollView(
+                                child: Text(aiResponse ?? "No response"),
+                                ),
+                                actions: [
+                                TextButton(
+                                  onPressed: () {
+                                  Navigator.of(context).pop();
+                                  },
+                                  child: Text('Close'),
+                                ),
+                                ],
+                              );
+                              },
+                            );
+                            }
+                          }
+                          },
+                          child: Text('Submit'),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                          Navigator.of(context).pop();
+                          },
+                          child: Text('Cancel'),
+                        ),
+                        ],
+                      );
+                      },
+                    );
+                  },
+                ),
+              ),
             ],
           ),
         ],
@@ -412,32 +513,65 @@ class _IndustryMenuState extends State<IndustryMenu> {
                                     transcript['transcript_id'])),
                             style: TextStyle(color: Colors.white),
                           ),
-                          onTap: () {
+                          onTap: () async {
                             Navigator.pop(context);
                             if (widget.title == 'Restaurant') {
-                              // Show Kanban style list for restaurant
-                              showModalBottomSheet(
-                                context: context,
-                                builder: (BuildContext context) {
-                                  return KanbanBoard(tasks: [
-                                    // get the order_transcript from the restaurant table if industy is restaurant
-                                  ]);
-                                },
-                              );
+                                // Fetch the AI response from the database
+                                List<String> validatedMenuItems = [];
+                                
+                                try {
+                                  final aiResponse = transcript['transcript_ai_response'];
+                                  String parsedResponse = aiResponse.replaceAll(RegExp(r'\[OpenAIChatCompletionChoiceMessageContentItemModel\(type: text, text: '), '').replaceAll(RegExp(r'\)\]'), '');
+                                  List<String> parsedResponseList = parsedResponse.split('\n').where((item) => item.trim().isNotEmpty).toList();
+                                  // [OpenAIChatCompletionChoiceMessageContentItemModel(type: text, text: Seat 1: Burger, fries, and a soda.
+                                  // I/flutter (17322): 
+                                  // I/flutter (17322): Seat 2: Burger, fries, and a soda.
+                                  // I/flutter (17322): 
+                                  // I/flutter (17322): Seat 3: Burger, fries, and a soda.
+                                  // I/flutter (17322): 
+                                  // I/flutter (17322): Seat 4: Double burger with large fries and a soda.)]
+                                  var restaurantAPI = RestaurantAPI();
+                                  validatedMenuItems = await restaurantAPI.validateMenuItems(parsedResponseList);
+                                  if (!context.mounted) return;
+                                  showModalBottomSheet(
+                                    context: context,
+                                    builder: (BuildContext context) {
+
+                                      return KanbanBoard(tasks: validatedMenuItems);
+                                    },
+                                  );                         
+                                } catch (e) {
+                                  // Handle API call failure
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Failed to validate menu items: $e')),
+                                    );
+                                  }
+                                }
                             } else {
-                              // Show regular transcript for other industries
-                              showDialog(
+                              final aiResponse = transcript['transcript_ai_response'];
+                              String parsedResponse = aiResponse.replaceAll(RegExp(r'\[OpenAIChatCompletionChoiceMessageContentItemModel\(type: text, text: '), '').replaceAll(RegExp(r'\)\]'), '');
+                                // Show regular transcript for other industries
+                                // Show the parsedResponse in a regular dialog with a close button at the bottom
+                                showDialog(
                                 context: context,
                                 builder: (BuildContext context) {
-                                  return generateTranscript(
-                                    context,
-                                    'Transcript',
-                                    transcript['transcript_text_data'] ??
-                                        'No content available',
-                                    transcript['transcript_id'],
+                                  return AlertDialog(
+                                  title: Text('Transcript'),
+                                  content: SingleChildScrollView(
+                                    child: Text(parsedResponse),
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                    child: Text('Close'),
+                                    ),
+                                  ],
                                   );
                                 },
-                              );
+                                );
                             }
                           },
                         );
@@ -454,6 +588,8 @@ class _IndustryMenuState extends State<IndustryMenu> {
       },
     );
   }
+              
+
 
   // Extract the functionality to show transcript history into a separate method
   void _showTranscriptsHistoryBottomSheet(BuildContext context) async {
