@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class TranscriptionBox extends StatelessWidget {
+class TranscriptionBox extends StatefulWidget {
   final TextEditingController controller;
 
   const TranscriptionBox({
@@ -9,30 +9,58 @@ class TranscriptionBox extends StatelessWidget {
   });
 
   @override
+  TranscriptionBoxState createState() => TranscriptionBoxState();
+}
+
+class TranscriptionBoxState extends State<TranscriptionBox> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(_scrollToBottom);
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_scrollToBottom);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // Gets the height of the user's screen
     double screenHeight = MediaQuery.of(context).size.height;
 
-    // Wraps the UI in a sized box so that it can be adjusted to the screen's height
     return SizedBox(
-      height: screenHeight *.4,
+      height: screenHeight * 0.4,
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8.0),
           color: const Color.fromARGB(255, 67, 67, 67),
         ),
-        // Wraps the UI in a scrollbar so that the transcription data is scrollable and won't overflow
         child: Scrollbar(
+          controller: _scrollController,
           child: SingleChildScrollView(
+            controller: _scrollController,
             scrollDirection: Axis.vertical,
             child: TextField(
-              controller: controller,
+              controller: widget.controller,
               maxLines: null,
               readOnly: true,
               decoration: InputDecoration(
-                  hintStyle: TextStyle(
-                  color: Colors.white,
-                ),
+                hintText: "Transcription will appear here...",
+                hintStyle: TextStyle(color: Colors.white),
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.all(10),
               ),
