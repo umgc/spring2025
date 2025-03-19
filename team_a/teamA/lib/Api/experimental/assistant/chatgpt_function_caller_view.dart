@@ -16,6 +16,7 @@ class _ChatGPTFunctionCallerViewState extends State<ChatGPTFunctionCallerView> {
   final FocusNode _focusNode = FocusNode();
   final List<Map<String, String>> _messages = [];
   late ChatGPTClient _chatGPT;
+  bool _isThinking = false; // Tracks if the bot is thinking
 
   @override
   void initState() {
@@ -31,19 +32,26 @@ class _ChatGPTFunctionCallerViewState extends State<ChatGPTFunctionCallerView> {
 
     setState(() {
       _messages.add({"sender": "user", "text": _controller.text});
+      _isThinking = true; // Show thinking dots
     });
 
     final userMessage = _controller.text;
     _controller.clear();
 
+    // Add a "thinking" message
+    setState(() {
+      _messages.add({"sender": "bot", "text": "..."});
+    });
+
     String response = await _chatGPT.sendMessage(userMessage);
 
     setState(() {
+      _messages.removeLast(); // Remove "thinking" message
       _messages.add({"sender": "bot", "text": response});
+      _isThinking = false; // Bot has finished responding
     });
 
-    // Refocus on input field after sending
-    _focusNode.requestFocus();
+    _focusNode.requestFocus(); // Refocus input field
   }
 
   @override
@@ -55,7 +63,6 @@ class _ChatGPTFunctionCallerViewState extends State<ChatGPTFunctionCallerView> {
       ),
       body: Column(
         children: [
-          // Beta disclaimer
           Container(
             color: Colors.yellow[200],
             padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
