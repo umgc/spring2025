@@ -520,11 +520,9 @@ class _IndustryMenuState extends State<IndustryMenu> {
                                 List<String> validatedMenuItems = [];
                                 
                                 try {
-                                  //if (transcript != null) {
                                   final aiResponse = transcript['transcript_ai_response'];
                                   String parsedResponse = aiResponse.replaceAll(RegExp(r'\[OpenAIChatCompletionChoiceMessageContentItemModel\(type: text, text: '), '').replaceAll(RegExp(r'\)\]'), '');
                                   List<String> parsedResponseList = parsedResponse.split('\n').where((item) => item.trim().isNotEmpty).toList();
-                                  //print(parsedResponseList);
                                   // [OpenAIChatCompletionChoiceMessageContentItemModel(type: text, text: Seat 1: Burger, fries, and a soda.
                                   // I/flutter (17322): 
                                   // I/flutter (17322): Seat 2: Burger, fries, and a soda.
@@ -538,9 +536,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
                                   showModalBottomSheet(
                                     context: context,
                                     builder: (BuildContext context) {
-                                      // Parse the AI response to extract the text content
-                                      //String parsedResponse = aiResponse.replaceAll(RegExp(r'\[OpenAIChatCompletionChoiceMessageContentItemModel\(type: text, text: '), '').replaceAll(RegExp(r'\)\]'), '');
-                                      //print(validatedMenuItems);
+
                                       return KanbanBoard(tasks: validatedMenuItems);
                                     },
                                   );                         
