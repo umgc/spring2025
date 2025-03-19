@@ -150,6 +150,7 @@ class TutorialPage extends StatelessWidget {
         onPressed: () {
         Navigator.of(context).pop();
         Navigator.of(context).pushReplacement(
+          
           MaterialPageRoute(builder: (context) => HomePage())
         );
         },
