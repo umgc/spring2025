@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:learninglens_app/Api/llm/prompt_engine.dart';
 import 'package:learninglens_app/Api/llm/perplexity_api.dart';
+import 'package:learninglens_app/Api/lms/constants/learning_lens.constants.dart';
 import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
 import 'package:learninglens_app/beans/assignment_form.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
@@ -38,7 +39,6 @@ class _AssessmentState extends State<CreateAssessment> {
   // String? selectedLLM, selectedSubject, selectedGradeLevel;
   String? selectedSubject, selectedGradeLevel;
   LlmType? selectedLLM;
-  List<String> _gradeLevels = ['K', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th'];
   List<String> _subjects = ['Math', 'Science', 'Language Arts', 'Social Studies', 'Health', 'Art', 'Music'];
   bool _isLoading = false;
   _AssessmentState();
@@ -161,7 +161,7 @@ class _AssessmentState extends State<CreateAssessment> {
                                         selectedGradeLevel = newValue;
                                       });
                                     },
-                                    items: _gradeLevels.map((String value) {
+                                    items: LearningLensConstants.gradeLevels.map((String value) {
                                             return DropdownMenuItem(value: value, child: Text(value),);
                                           }).toList(),
                                   )]),
