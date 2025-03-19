@@ -40,7 +40,7 @@ class MyApp extends StatelessWidget {
       initialRoute:
           '/welcomeScreen', // The initial screen when the application starts
       routes: {
-        '/welcomeScreen': (context) => WelcomeScreem(),
+        '/welcomeScreen': (context) => WelcomeScreen(),
         '/loginScreen': (context) => LoginScreen(),
         '/registrationScreen': (context) => RegistrationScreen(),
         '/eulaScreen': (context) => EulaScreen(),

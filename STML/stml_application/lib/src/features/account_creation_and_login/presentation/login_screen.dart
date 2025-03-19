@@ -113,7 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             height: 80, width: 80),
                         const SizedBox(width: 10),
                         Text(
-                          "CogniOpen",
+                          "MemoryMinder",
                           style: TextStyle(
                             color: Colors.blueGrey[900],
                             fontSize: 32.0,

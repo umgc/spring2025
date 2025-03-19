@@ -103,7 +103,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 height: 32, // Adjust the size as needed
               ),
               const SizedBox(width: 10), // Spacing between the icon and title
-              const Text('CogniOpen',
+              const Text('MemoryMinder',
                   textAlign: TextAlign.center,
                   style: TextStyle(color: Colors.black54)),
             ],
@@ -150,7 +150,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const Padding(
                 padding: EdgeInsets.fromLTRB(16.0, 140, 16.0, 25),
                 child: Text(
-                  'Helping you remember the important things.\n Choose a feature to get started!',
+                  'Stay organized, never miss important tasks, and regain control of your daily life with ease.\n Choose a feature to get started!',
                   style: TextStyle(
                     fontSize: 16.0,
                     color: Colors.black54,
