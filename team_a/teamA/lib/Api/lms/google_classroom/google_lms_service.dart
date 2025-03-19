@@ -249,9 +249,61 @@ class GoogleLmsService extends LmsInterface {
 
   @override
   Future<List<Participant>> getCourseParticipants(String courseId) async {
-    // TODO: implement google api code
-    throw UnimplementedError('This feature is not supported by Google Classroom. Please contact the developer.');
+    if (_userToken == null) {
+      throw StateError('User not logged in to Google Classroom');
+    }
+
+    final List<Participant> participants = [];
+
+    // Fetch students
+    final studentsResponse = await ApiService().httpGet(
+      Uri.parse(apiURL + '/courses/$courseId/students'),
+      headers: {'Authorization': 'Bearer $_userToken'},
+    );
+
+    if (studentsResponse.statusCode == 200) {
+      final studentsJson = jsonDecode(studentsResponse.body);
+      if (studentsJson.containsKey('students')) {
+        for (var student in studentsJson['students']) {
+          participants.add(Participant(
+            id: student['userId'].hashCode, // Google Classroom does not provide numeric IDs
+            fullname: student['profile']['name']['fullName'],
+            firstname: student['profile']['name']['givenName'],
+            lastname: student['profile']['name']['familyName'],
+            roles: ['student'],
+          ));
+        }
+      }
+    } else {
+      throw HttpException('Failed to fetch students: ${studentsResponse.body}');
+    }
+
+    // Fetch teachers
+    final teachersResponse = await ApiService().httpGet(
+      Uri.parse(apiURL + '/courses/$courseId/teachers'),
+      headers: {'Authorization': 'Bearer $_userToken'},
+    );
+
+    if (teachersResponse.statusCode == 200) {
+      final teachersJson = jsonDecode(teachersResponse.body);
+      if (teachersJson.containsKey('teachers')) {
+        for (var teacher in teachersJson['teachers']) {
+          participants.add(Participant(
+            id: teacher['userId'].hashCode,
+            fullname: teacher['profile']['name']['fullName'],
+            firstname: teacher['profile']['name']['givenName'],
+            lastname: teacher['profile']['name']['familyName'],
+            roles: ['teacher'],
+          ));
+        }
+      }
+    } else {
+      throw HttpException('Failed to fetch teachers: ${teachersResponse.body}');
+    }
+
+    return participants;
   }
+
 
   // ****************************************************************************************
   // Quiz methods
