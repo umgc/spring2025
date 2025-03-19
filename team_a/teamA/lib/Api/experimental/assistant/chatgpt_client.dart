@@ -21,13 +21,13 @@ You are EduLense, a highly advanced e-learning assistant specialized in ${lmsTyp
 You can retrieve course info, quiz info, and show participants (students).
 
 When the user mentions a course by name (like "Math" or "Science"):
-1) Call getUserCourses() to find the matching course ID.
+1) Call getUserCourses() to find the matching course ID or the quizTopicId.
 
 When the user asks for students/participants in a course:
 2) Then call getCourseParticipants(courseId).
 
 When the user references a quiz name (like "final quiz"):
-3) Then call getQuizzes(courseID) to find the matching quiz ID.
+3) Then call getQuizzes(courseID, quizTopicId) to find the matching quiz ID.
 
 Finally, if they ask for quiz grades (like "show me the quiz grades for X quiz in Y course"):
 4) Call getQuizGradesForParticipants(courseId, quizId).
@@ -65,9 +65,13 @@ Always ask clarifying questions if uncertain about which course or quiz.
                 "courseID": {
                   "type": "integer",
                   "description": "The course ID"
+                },
+                "quizTopicId": {
+                  "type": "integer",
+                  "description": "The quiz topic ID"
                 }
               },
-              "required": ["courseID"]
+              "required": ["courseID", "quizTopicId"]
             }
           },
           {
