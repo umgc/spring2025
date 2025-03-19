@@ -52,15 +52,44 @@ class ViewQuiz extends StatelessWidget {
                     headingRowColor: MaterialStateProperty.all(
                         Theme.of(context).colorScheme.primary.withOpacity(0.1)),
                     columns: const [
-                      DataColumn(label: Text('Question Number')),
+                      DataColumn(label: Text('Question No.')),
                       DataColumn(label: Text('Type')),
                       DataColumn(label: Text('Question Text')),
                     ],
                     rows: questionsData.map((row) {
                       return DataRow(cells: [
-                        DataCell(Text(row['questionNumber'].toString())),
-                        DataCell(Text(row['questionType'].toString())),
-                        DataCell(Text(row['questionText'].toString())),
+                        DataCell(
+                          SizedBox(
+                            width: 90,
+                            child: Text(
+                              row['questionNumber'].toString(),
+                              softWrap: true,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                          ),
+                        ),
+                        DataCell(
+                          SizedBox(
+                            width: 90,
+                            child: Text(
+                              row['questionType'].toString(),
+                              softWrap: true,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                          ),
+                        ),
+                        DataCell(
+                          SizedBox(
+                            child: Text(
+                              row['questionText'].toString(),
+                              softWrap: true,
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 4,
+                            ),
+                          ),
+                        ),
                       ]);
                     }).toList(),
                   ),

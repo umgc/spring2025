@@ -39,7 +39,7 @@ class _AssessmentsState extends State<AssessmentsView> {
     return LocalStorageService.getSelectedClassroom() == LmsType.MOODLE;
   }
 
- // Method to refresh quizzes
+  // Method to refresh quizzes
   void _refreshQuizzes() {
     setState(() {
       quizzes = getAllQuizzes();
@@ -52,7 +52,6 @@ class _AssessmentsState extends State<AssessmentsView> {
       appBar: CustomAppBar(
         title: 'Assessments',
         onRefresh: _refreshQuizzes,
-       
         userprofileurl: LmsFactory.getLmsService().profileImage ?? '',
       ),
       body: Column(
@@ -61,7 +60,6 @@ class _AssessmentsState extends State<AssessmentsView> {
             Padding(
                 padding: const EdgeInsets.all(4.0),
                 child: CreateButton('assessment'))
-                  
           ]),
           Expanded(
             child: FutureBuilder<List<Quiz>?>(
@@ -118,8 +116,8 @@ class _AssessmentsState extends State<AssessmentsView> {
                                       setState(() {
                                         selectedQuiz = quiz;
                                         if (!isMoodle()) {
-                                          _formDataFuture =
-                                              googleLmsService.getAssignmentFormQuestions(
+                                          _formDataFuture = googleLmsService
+                                              .getAssignmentFormQuestions(
                                                   quiz.coursedId.toString(),
                                                   quiz.id.toString());
                                         }
@@ -191,15 +189,44 @@ class _AssessmentsState extends State<AssessmentsView> {
                   headingRowColor: MaterialStateProperty.all(
                       Theme.of(context).colorScheme.primary.withOpacity(0.1)),
                   columns: const [
-                    DataColumn(label: Text('Question Number')),
+                    DataColumn(label: Text('Question No.')),
                     DataColumn(label: Text('Type')),
                     DataColumn(label: Text('Question Text')),
                   ],
                   rows: questionsData.map((row) {
                     return DataRow(cells: [
-                      DataCell(Text(row['questionNumber'].toString())),
-                      DataCell(Text(row['questionType'].toString())),
-                      DataCell(Text(row['questionText'].toString())),
+                      DataCell(
+                        SizedBox(
+                          width: 90,
+                          child: Text(
+                            row['questionNumber'].toString(),
+                            softWrap: true,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                      ),
+                      DataCell(
+                        SizedBox(
+                          width: 90,
+                          child: Text(
+                            row['questionType'].toString(),
+                            softWrap: true,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                      ),
+                      DataCell(
+                        SizedBox(
+                          child: Text(
+                            row['questionText'].toString(),
+                            softWrap: true,
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 4,
+                          ),
+                        ),
+                      ),
                     ]);
                   }).toList(),
                 ),
