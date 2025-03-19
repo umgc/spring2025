@@ -9,6 +9,7 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:memoryminder/src/features/caregiver-dashboard/service/notification_stream_service.dart';
 
 
+
 class NotificationService {
   final FirebaseMessaging _messaging = FirebaseMessaging.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -111,6 +112,15 @@ class NotificationService {
       print('Error fetching notifications $e');
     }
   }
+
+Future<void> sendNotificationToFirestore(String title) async {
+  await FirebaseFirestore.instance.collection('notifications').add({
+    'title': title,
+    'read': false, // Mark as unread by default
+    'createdDate': FieldValue.serverTimestamp(),
+  });
+
+}
 }
 
 Future<void> _backgroundMessageHandler(RemoteMessage message) async {
@@ -123,5 +133,4 @@ Future<void> _backgroundMessageHandler(RemoteMessage message) async {
   await Future.delayed(Duration(seconds: 5));
   NotificationService().getRecentNotifications();
   NotificationService()._showLocalNotification(message);
-
 }

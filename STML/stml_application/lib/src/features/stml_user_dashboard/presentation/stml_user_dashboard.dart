@@ -9,6 +9,7 @@ import 'package:memoryminder/ui/assistant_screen.dart';
 import 'package:memoryminder/ui/audio_screen.dart';
 import 'package:memoryminder/ui/gallery_screen.dart';
 import 'package:memoryminder/ui/profile_screen.dart';
+import 'package:memoryminder/ui/scam_detection_screen.dart';
 import 'package:memoryminder/ui/tour_screen.dart';
 import 'package:memoryminder/ui/location_history_screen.dart';
 import 'package:geocoding/geocoding.dart';
@@ -172,6 +173,21 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     _buildElevatedButton(
                       context: context,
+                    _buildElevatedButton(
+                      context: context,
+                      icon: Icon(Icons.warning_amber_rounded,
+                          size: iconSize, color: Colors.black54),
+                      text: 'Scam Detection',
+                      screen: ScamDetectionScreen(),
+                      keyName: "potentialScamScanner",
+                    ),
+                    _buildElevatedButton(
+                      context: context,
+                      icon: Icon(Icons.bookmark_outline,
+                          size: iconSize, color: Colors.black54),
+                      text: 'Caregiver Dashboard',
+                      screen: CaregiverDashboardScreen(),
+                      keyName: "DementiaResourcesButtonKey",
                       icon: Icon(Icons.health_and_safety_outlined,
                           size: iconSize, color: Colors.black54),
                       text: 'My Health',
