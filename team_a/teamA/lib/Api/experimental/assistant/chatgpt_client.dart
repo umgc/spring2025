@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:learninglens_app/Api/experimental/assistant/chatgpt_function_caller.dart';
+import 'package:learninglens_app/Api/lms/enum/lms_enum.dart';
+import 'package:learninglens_app/services/local_storage_service.dart';
 
 class ChatGPTClient {
   final String apiKey;
@@ -8,13 +10,14 @@ class ChatGPTClient {
 
   // Keep a conversation so ChatGPT can chain calls
   final List<Map<String, dynamic>> _conversation = [];
+  LmsType lmsType = LocalStorageService.getSelectedClassroom();
 
   ChatGPTClient(this.apiKey, this.functionCaller) {
     // Insert a system message once
     _conversation.add({
       "role": "system",
       "content": """
-You are Athena, a highly advanced e-learning assistant specialized in Moodle. 
+You are EduLense, a highly advanced e-learning assistant specialized in ${lmsType}. 
 You can retrieve course info, quiz info, and show participants (students).
 
 When the user mentions a course by name (like "Math" or "Science"):

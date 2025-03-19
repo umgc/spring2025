@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:learninglens_app/Api/experimental/assistant/chatgpt_client.dart';
 import 'package:learninglens_app/Api/experimental/assistant/chatgpt_function_caller.dart';
+import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
 import 'package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart';
+import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
 
 class ChatGPTFunctionCallerView extends StatefulWidget {
@@ -20,7 +22,7 @@ class _ChatGPTFunctionCallerViewState extends State<ChatGPTFunctionCallerView> {
     super.initState();
     _chatGPT = ChatGPTClient(
       LocalStorageService.getOpenAIKey(),
-      ChatGPTFunctionCaller(MoodleLmsService()),
+      ChatGPTFunctionCaller(LmsFactory.getLmsService()),
     );
   }
 
@@ -47,8 +49,9 @@ class _ChatGPTFunctionCallerViewState extends State<ChatGPTFunctionCallerView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("EduLense Assistant (beta)"),
+      appBar: CustomAppBar(
+        title: 'EduLense Assistant (Beta)',
+        userprofileurl: LmsFactory.getLmsService().profileImage ?? '',
       ),
       body: Column(
         children: [

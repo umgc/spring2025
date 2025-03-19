@@ -947,4 +947,10 @@ Future<String?> _getToken() async {
       }
     };
   }
+  
+  @override
+  Future<List<Participant>> getQuizGradesForParticipants(String courseId, int quizId) {
+    // TODO: implement getQuizGradesForParticipants
+    throw UnimplementedError();
+  }
 }

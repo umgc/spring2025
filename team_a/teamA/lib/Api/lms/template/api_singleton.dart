@@ -226,5 +226,11 @@ class ApiSingleton implements LmsInterface {
     // TODO: implement google api code
     throw UnimplementedError();
   }
+  
+  @override
+  Future<List<Participant>> getQuizGradesForParticipants(String courseId, int quizId) {
+    // TODO: implement getQuizGradesForParticipants
+    throw UnimplementedError();
+  }
 
 }

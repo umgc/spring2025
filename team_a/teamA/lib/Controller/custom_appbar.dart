@@ -78,17 +78,17 @@ class _CustomAppBarState extends State<CustomAppBar> {
       ),
       actions: <Widget>[
 
-        // Flexible(
-        //     child: IconButton(
-        //       icon: Icon(Icons.science), // Science Icon
-        //       onPressed: () {
-        //         Navigator.push(
-        //           context,
-        //           MaterialPageRoute(builder: (context) => ChatGPTFunctionCallerView()),
-        //         );
-        //       },
-        //     ),
-        //   ),
+        Flexible(
+            child: IconButton(
+              icon: Icon(Icons.science), // Science Icon
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ChatGPTFunctionCallerView()),
+                );
+              },
+            ),
+          ),
         // Refresh button: Instead of relying on an external callback,
         // try to obtain the current route's name and then replace the route,
         // effectively refreshing the current view.

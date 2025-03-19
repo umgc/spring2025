@@ -1,10 +1,11 @@
+import 'package:learninglens_app/Api/lms/lms_interface.dart';
 import 'package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart';
 import 'package:learninglens_app/beans/course.dart';
 import 'package:learninglens_app/beans/quiz.dart';
 import 'package:learninglens_app/beans/participant.dart';
 
 class ChatGPTFunctionCaller {
-  final MoodleLmsService moodleService;
+  final LmsInterface moodleService;
   ChatGPTFunctionCaller(this.moodleService);
 
   /// The central dispatcher
