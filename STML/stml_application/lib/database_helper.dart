@@ -26,24 +26,30 @@ class DatabaseHelper {
 
   // Create or open the database
   Future<Database> _initDatabase() async {
-    return await openDatabase(
-      join(await getDatabasesPath(), 'location_history.db'),
-      onCreate: (db, version) {
-        db.execute(
-          'CREATE TABLE location_history(id INTEGER PRIMARY KEY, latitude REAL, longitude REAL, timestamp TEXT)',
-        );
-        db.execute(
-          'CREATE TABLE emergency_events(id INTEGER PRIMARY KEY, type TEXT, caregiver_fcm_token TEXT, timestamp TEXT)',
-        );
-        db.execute(
-        'CREATE TABLE safe_zone(id INTEGER PRIMARY KEY, latitude REAL, longitude REAL, radius REAL)',
-        );
-      },
-      version: 1,
-    );
-  }
+  return await openDatabase(
+    join(await getDatabasesPath(), 'location_history.db'),
+    onCreate: (db, version) {
+      db.execute(
+        'CREATE TABLE location_history(id INTEGER PRIMARY KEY, latitude REAL, longitude REAL, timestamp TEXT)',
+      );
+      db.execute(
+        'CREATE TABLE emergency_events(id INTEGER PRIMARY KEY, type TEXT, caregiver_fcm_token TEXT, timestamp TEXT)',
+      );
+      db.execute(
+        'CREATE TABLE safe_zone(id INTEGER PRIMARY KEY, latitude REAL, longitude REAL, radius REAL, address TEXT)', // This includes the new 'address' column
+      );
+    },
+    onUpgrade: (db, oldVersion, newVersion) {
+      if (oldVersion < 2) {
+        // Add the missing column if upgrading from version 1 to version 2
+        db.execute('ALTER TABLE safe_zone ADD COLUMN address TEXT');
+      }
+    },
+    version: 2, // Increment this version number
+  );
+}
 
-  Future<void> saveSafeZone(double latitude, double longitude, double radius) async {
+  Future<void> saveSafeZone(double latitude, double longitude, double radius, String address) async {
   final db = await database;
   await db.insert(
     'safe_zone',
@@ -52,6 +58,7 @@ class DatabaseHelper {
       'latitude': latitude,
       'longitude': longitude,
       'radius': radius,
+      'address': address,
     },
     conflictAlgorithm: ConflictAlgorithm.replace,
   );
@@ -62,11 +69,29 @@ class DatabaseHelper {
   final List<Map<String, dynamic>> safeZones = await db.query('safe_zone');
 
   if (safeZones.isNotEmpty) {
-    return safeZones.first;
+    return safeZones.first; // Returns {latitude, longitude, radius, address}
   }
   return null;
 }
 
+  Future<List<Map<String, dynamic>>> getAllSafeZones() async {
+    final db = await database;
+    return await db.query('safe_zone');
+}
+
+  Future<void> clearSafeZone() async {
+    final db = await database;
+    await db.delete('safe_zone');
+    print("🧹 Safe zone table cleared");
+}
+
+  // Reset the database completely (use with caution!)
+  Future<void> resetDatabase() async {
+    final db = await database;
+    await db.execute('DROP TABLE IF EXISTS safe_zone');
+    await db.execute('CREATE TABLE safe_zone(id INTEGER PRIMARY KEY, latitude REAL, longitude REAL, radius REAL, address TEXT)');
+    print("🔄 Database reset complete");
+}
 
 
   // Insert a location entry and trigger notification if user leaves safe zone

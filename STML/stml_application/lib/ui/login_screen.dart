@@ -10,6 +10,8 @@ import 'registration_screen.dart';
 import 'home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
@@ -129,9 +131,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                 builder: (context) => RegistrationScreen()),
                           );
                         },
-                        child: Text('Create Account'),
                         style:
                         ElevatedButton.styleFrom(backgroundColor: Colors.blueGrey[600]),
+                        child: Text('Create Account'),
                       ),
                       SizedBox(height: 30),
                       ElevatedButton(
@@ -141,9 +143,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             MaterialPageRoute(builder: (context) => HomeScreen()),
                           );
                         },
-                        child: Text('HomeScreen(Test)'),
                         style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.red), // This is for testing purpose
+                            backgroundColor: Colors.red),
+                        child: Text('HomeScreen(Test)'), // This is for testing purpose
                       ),
                     ],
                   ),

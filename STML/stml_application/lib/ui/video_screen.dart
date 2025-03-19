@@ -49,8 +49,8 @@ class _CameraHomeState extends State<VideoScreen>
   late CameraController cameraController;
   bool enableAudio = true;
 
-  double _minAvailableZoom = 1.0;
-  double _maxAvailableZoom = 1.0;
+  final double _minAvailableZoom = 1.0;
+  final double _maxAvailableZoom = 1.0;
   double _currentScale = 1.0;
   double _baseScale = 1.0;
 

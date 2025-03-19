@@ -7,15 +7,17 @@ import 'package:path_provider/path_provider.dart';
 import 'onboardingScreen.dart';
 
 class RegistrationScreen extends StatefulWidget {
+  const RegistrationScreen({super.key});
+
   @override
   _RegistrationScreenState createState() => _RegistrationScreenState();
 }
 
 class _RegistrationScreenState extends State<RegistrationScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  TextEditingController _firstNameController = TextEditingController();
-  TextEditingController _lastNameController = TextEditingController();
-  TextEditingController _emailController = TextEditingController();
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _lastNameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
   bool _useFaceID = true;
   bool _isButtonActive = false;
 
@@ -45,7 +47,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       extendBodyBehindAppBar: true,
       extendBody: true,
       appBar: AppBar(
-        backgroundColor: const Color(0x440000), // Set appbar background color
+        backgroundColor: const Color(0x00440000), // Set appbar background color
         elevation: 0.0,
         centerTitle: true,
         leading: const BackButton(color: Colors.black54),

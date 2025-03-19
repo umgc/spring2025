@@ -6,6 +6,8 @@ import 'home_screen.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
 class OnboardingScreen extends StatefulWidget {
+  const OnboardingScreen({super.key});
+
   @override
   _OnboardingScreenState createState() => _OnboardingScreenState();
 }
@@ -23,11 +25,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0x440000),
+      backgroundColor: const Color(0x00440000),
       extendBodyBehindAppBar: true,
       extendBody: true,
       appBar: AppBar(
-        backgroundColor: const Color(0x440000), // Set appbar background color
+        backgroundColor: const Color(0x00440000), // Set appbar background color
         elevation: 0.0,
         centerTitle: true,
         leading: const BackButton(color: Colors.black54),
@@ -69,7 +71,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 class OnboardingUI extends StatefulWidget {
   final Onboarding functionality;
   final FlutterTts flutterTts; // Define the parameter here
-  OnboardingUI({
+  const OnboardingUI({super.key, 
     required this.functionality,
     required this.flutterTts, // Add this parameter
   });
@@ -140,7 +142,7 @@ class _OnboardingUIState extends State<OnboardingUI> {
                   style: TextStyle(fontSize: 18),
                 ),
                 SizedBox(height: 14),
-                Container(
+                SizedBox(
                   height: 200,
                   child: ConversationView(
                     conversation: currentPage.conversation,
@@ -207,12 +209,12 @@ class _OnboardingUIState extends State<OnboardingUI> {
                       FloatingActionButton(
                         onPressed: widget.functionality.startListening,
                         mini: true,
-                        child: widget.functionality.isListening
-                            ? Icon(Icons.mic_off)
-                            : Icon(Icons.mic),
                         backgroundColor: widget.functionality.isListening
                             ? Colors.red
                             : Theme.of(context).primaryColor,
+                        child: widget.functionality.isListening
+                            ? Icon(Icons.mic_off)
+                            : Icon(Icons.mic),
                       ),
                     ],
                   ),
@@ -230,7 +232,7 @@ class ConversationView extends StatefulWidget {
   final ScrollController scrollController;
   final FlutterTts flutterTts; // Pass the FlutterTts instance as a parameter
 
-  ConversationView({
+  const ConversationView({super.key, 
     required this.conversation,
     required this.scrollController,
     required this.flutterTts, // Add this parameter
@@ -280,6 +282,8 @@ class _ConversationViewState extends State<ConversationView> {
 }
 
 class NextOnboardingScreen extends StatelessWidget {
+  const NextOnboardingScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

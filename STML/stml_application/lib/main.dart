@@ -15,6 +15,7 @@ import 'package:memoryminder/src/utils/directory_manager.dart';
 import 'package:memoryminder/src/utils/permission_manager.dart';
 import 'package:memoryminder/location_permission_manager.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 
 
@@ -81,7 +82,7 @@ void main() async {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
   @override
   Widget build(BuildContext context) {
     return MaterialApp(

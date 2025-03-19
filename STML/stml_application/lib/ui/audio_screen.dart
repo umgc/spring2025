@@ -1,5 +1,7 @@
 // ignore_for_file: avoid_print, prefer_const_constructors
 /// Importing required packages and screens.
+library;
+
 import 'package:memoryminder/src/data_service.dart';
 import 'package:memoryminder/src/database/model/audio.dart';
 import 'package:memoryminder/src/s3_connection.dart';
@@ -31,6 +33,8 @@ final API_KEY = dotenv.env['OPEN_AI_API_KEY']; // Replace with your API key
 
 /// AudioScreen widget provides the main interface for audio recording.
 class AudioScreen extends StatefulWidget {
+  const AudioScreen({super.key});
+
   @override
   _AudioScreenState createState() => _AudioScreenState();
 }
@@ -444,7 +448,7 @@ class _AudioScreenState extends State<AudioScreen> {
         extendBodyBehindAppBar: true,
         extendBody: true,
         appBar: AppBar(
-          backgroundColor: const Color(0x440000),
+          backgroundColor: const Color(0x00440000),
           elevation: 0,
           centerTitle: true,
           leading: const BackButton(color: Colors.black54),
@@ -490,7 +494,7 @@ class _AudioScreenState extends State<AudioScreen> {
                                     children: [
                                       TextButton(
                                         style: ButtonStyle(
-                                            shape: MaterialStateProperty.all<
+                                            shape: WidgetStateProperty.all<
                                                 RoundedRectangleBorder>(
                                                 RoundedRectangleBorder(
                                                   borderRadius:
@@ -638,7 +642,7 @@ class _AudioScreenState extends State<AudioScreen> {
                               child: TextButton(
                                 onPressed: _startRecording,
                                 style: ButtonStyle(
-                                    shape: MaterialStateProperty.all<
+                                    shape: WidgetStateProperty.all<
                                         RoundedRectangleBorder>(
                                         RoundedRectangleBorder(
                                           borderRadius: BorderRadius.circular(75.0),

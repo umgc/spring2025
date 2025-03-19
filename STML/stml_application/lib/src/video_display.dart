@@ -11,7 +11,7 @@ import 'package:video_player/video_player.dart';
 class VideoDisplay extends StatefulWidget {
   final String fullFilePath;
 
-  const VideoDisplay({Key? key, required this.fullFilePath}) : super(key: key);
+  const VideoDisplay({super.key, required this.fullFilePath});
 
   @override
   _VideoDisplayState createState() => _VideoDisplayState();

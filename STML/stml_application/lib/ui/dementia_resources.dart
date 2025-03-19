@@ -31,6 +31,8 @@ class ResourceEntry {
 }
 
 class DementiaResourcesScreen extends StatefulWidget {
+  const DementiaResourcesScreen({super.key});
+
   @override
    _DementiaResourcesScreenState createState() => _DementiaResourcesScreenState();
 }
@@ -44,14 +46,17 @@ class _DementiaResourcesScreenState extends State<DementiaResourcesScreen> {
 
   // Fetch the search results from Google (or any search engine with a query)
   Future<List<ResourceEntry>> _fetchSearchResults() async {
+    
     String apiKeyEnv = dotenv.get('GOOGLE_SEARCH_API_KEY', fallback: "");
     String searchEngineIdEnv = dotenv.get('SEARCH_ENGINE_ID', fallback: "");
+
+  
 
     //The location is temporarily hard-coded to complete the implementation of this story.
 
     Uri.encodeComponent('Dementia Resources in Bethesda, Montgomery County, Maryland');
     final query = 'https://www.googleapis.com/customsearch/v1?q=Dementia+Resources&cx=$searchEngineIdEnv&key=$apiKeyEnv';
-    final url = Uri.parse('$query');
+    final url = Uri.parse(query);
 
     // Send the HTTP request to fetch the page
     final response = await http.get(url);

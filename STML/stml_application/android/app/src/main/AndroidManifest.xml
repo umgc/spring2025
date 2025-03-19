@@ -9,6 +9,8 @@
     <!-- Required for foreground service usage (Android 9+) -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
 
+    <uses-permission android:name="android.permission.INTERNET"/>
+
 
     <application
         android:label="memoryminder"
@@ -28,6 +30,9 @@
                  while the Flutter UI initializes. After that, this theme continues
                  to determine the Window background behind the Flutter UI. -->
             <meta-data android:name="flutterEmbedding" android:value="2" />
+            <meta-data
+                android:name="com.google.android.geo.API_KEY"
+                android:value="${GOOGLE_MAPS_API_KEY}"/>
 
             <!-- This allows foreground location access -->
             <service android:name=".LocationService" android:foregroundServiceType="location"/>
@@ -56,6 +61,10 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="https"/>
         </intent>
     </queries>
 </manifest>

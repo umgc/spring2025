@@ -1,5 +1,5 @@
 # Uncomment this line to define a global platform for your project
-platform :ios, '13.0'
+platform :ios, '14.0'
 # Force Firebase to use the correct version
 $FirebaseSDKVersion = '11.8.0'
 
@@ -44,6 +44,7 @@ target 'Runner' do
    pod 'Firebase/Core'
    pod 'Firebase/Messaging' 
    pod 'Firebase/Analytics' 
+   pod 'GoogleMaps'
  
    
 

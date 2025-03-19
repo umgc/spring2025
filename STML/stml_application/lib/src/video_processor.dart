@@ -105,7 +105,7 @@ class VideoProcessor {
 
     GetLabelDetectionResponse labelResponses = await grabResults(jobId);
 
-    List<AWSVideoResponse> responses = await createResponseList(labelResponses);
+    List<AWSVideoResponse> responses = createResponseList(labelResponses);
 
     await DataService.instance.addVideoResponses(responses);
     FormatUtils.logBigMessage("Rekognition results saved locally.");
