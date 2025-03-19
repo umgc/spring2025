@@ -4,11 +4,19 @@ import 'package:flutter/material.dart';
 
 class EmergencyHelpButton extends StatefulWidget {
   const EmergencyHelpButton({
-    super.key, // Changed this line to use super parameter
+    super.key,
     required this.onPressed,
+    required this.buttonText,
+    required this.successMessage,
+    required this.errorMessage,
+    this.isLoading = false,
   });
 
   final Future<bool> Function() onPressed;
+  final String buttonText;
+  final String successMessage;
+  final String errorMessage;
+  final bool isLoading;
 
   @override
   State<EmergencyHelpButton> createState() => _EmergencyHelpButtonState();
@@ -29,13 +37,12 @@ class _EmergencyHelpButtonState extends State<EmergencyHelpButton> {
     try {
       final success = await widget.onPressed();
       setState(() {
-        _feedbackMessage = success
-            ? 'Help is on the way!'
-            : 'Request sent but no confirmation received.';
+        _feedbackMessage =
+            success ? widget.successMessage : widget.errorMessage;
       });
     } catch (e) {
       setState(() {
-        _feedbackMessage = 'Failed to send help request. Please try again.';
+        _feedbackMessage = widget.errorMessage;
       });
     } finally {
       setState(() {
@@ -70,9 +77,9 @@ class _EmergencyHelpButtonState extends State<EmergencyHelpButton> {
                     strokeWidth: 2,
                   ),
                 )
-              : const Text(
-                  'EMERGENCY HELP',
-                  style: TextStyle(
+              : Text(
+                  widget.buttonText,
+                  style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -85,9 +92,9 @@ class _EmergencyHelpButtonState extends State<EmergencyHelpButton> {
             child: Text(
               _feedbackMessage!,
               style: TextStyle(
-                color: _feedbackMessage!.contains('Failed')
-                    ? Colors.red
-                    : Colors.green,
+                color: _feedbackMessage == widget.successMessage
+                    ? Colors.green
+                    : Colors.red,
                 fontWeight: FontWeight.bold,
               ),
             ),

@@ -11,7 +11,6 @@ void main() {
     late http.Client mockClient;
 
     setUp(() {
-      print('Setting up test'); // Message de débogage
       mockClient = MockClient((request) async {
         if (request.url.toString().contains('/api/emergency')) {
           return http.Response(
@@ -34,8 +33,6 @@ void main() {
 
     test('createEmergencyRequest should return EmergencyRequest on success',
         () async {
-      print(
-          'Running test: createEmergencyRequest should return EmergencyRequest on success'); // Message de débogage
       final request = await emergencyService.createEmergencyRequest(
         type: EmergencyType.urgent,
         location: '123 Main St',
@@ -46,6 +43,23 @@ void main() {
       expect(request.type, EmergencyType.urgent);
       expect(request.location, '123 Main St');
       expect(request.userId, 'user123');
+    });
+
+    test('createEmergencyRequest should throw on failure', () async {
+      mockClient = MockClient((request) async {
+        return http.Response('Error', 500);
+      });
+      emergencyService = EmergencyService(
+          baseUrl: 'https://api.example.com', client: mockClient);
+
+      expect(
+        () => emergencyService.createEmergencyRequest(
+          type: EmergencyType.urgent,
+          location: '123 Main St',
+          userId: 'user123',
+        ),
+        throwsA(isA<EmergencyServiceException>()),
+      );
     });
   });
 }
@@ -59,7 +73,7 @@ class MockClient extends http.BaseClient {
   Future<http.StreamedResponse> send(http.BaseRequest request) async {
     final response = await handler(request);
     return http.StreamedResponse(
-      Stream.value(response.bodyBytes),
+      Stream.value(response.bodyBytes), // Correction ici
       response.statusCode,
       contentLength: response.contentLength,
       request: request,

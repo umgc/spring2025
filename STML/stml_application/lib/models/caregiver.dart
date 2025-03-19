@@ -1,22 +1,15 @@
 // lib/models/caregiver.dart
-//By Sandrine
+import 'package:memoryminder/models/user.dart';
 
-import 'user.dart';
-
-/// Represents a caregiver user in the MemoryMinder application
-/// Inherits from the base User class as specified in the class diagram
 class Caregiver extends User {
-  /// Relationship to the STML user (e.g., spouse, child, friend)
   final String relationship;
-
-  /// List of STML users assigned to this caregiver
   final List<String> assignedSTMLUsers;
-
-  /// Alert preferences for patient events
-  final Map<String, dynamic> alertPreferences;
-
-  /// Whether the caregiver has camera access permission
-  final bool? cameraAccess;
+  final Map<String, bool> alertPreferences;
+  final bool cameraAccess;
+  final bool enableEmergencyNotifications;
+  final bool enableLocationSharing;
+  final bool enableCameraAccess;
+  final String preferredLanguage;
 
   Caregiver({
     required super.userId,
@@ -27,46 +20,43 @@ class Caregiver extends User {
     required this.relationship,
     this.assignedSTMLUsers = const [],
     this.alertPreferences = const {},
-    this.cameraAccess,
+    this.cameraAccess = false,
     required super.fcmToken,
-  }) : super(
-          userType: 'Caregiver',
-        );
+    this.enableEmergencyNotifications = true,
+    this.enableLocationSharing = true,
+    this.enableCameraAccess = false,
+    required this.preferredLanguage,
+  }) : super(userType: 'Caregiver');
+
+  factory Caregiver.fromJson(Map<String, dynamic> json) => Caregiver(
+        userId: json['userId'],
+        firstName: json['firstName'],
+        lastName: json['lastName'],
+        email: json['email'],
+        phoneNumber: json['phoneNumber'],
+        relationship: json['relationship'],
+        assignedSTMLUsers: List<String>.from(json['assignedSTMLUsers'] ?? []),
+        alertPreferences:
+            Map<String, bool>.from(json['alertPreferences'] ?? {}),
+        cameraAccess: json['cameraAccess'] ?? false,
+        fcmToken: json['fcmToken'],
+        enableEmergencyNotifications:
+            json['enableEmergencyNotifications'] ?? true,
+        enableLocationSharing: json['enableLocationSharing'] ?? true,
+        enableCameraAccess: json['enableCameraAccess'] ?? false,
+        preferredLanguage: json['preferredLanguage'] ?? 'en',
+      );
 
   @override
-  Map<String, dynamic> toJson() {
-    return {
-      ...super.toJson(),
-      'relationship': relationship,
-      'assignedSTMLUsers': assignedSTMLUsers,
-      'alertPreferences': alertPreferences,
-      'cameraAccess': cameraAccess,
-    };
-  }
-
-  factory Caregiver.fromJson(Map<String, dynamic> json) {
-    return Caregiver(
-      userId: json['userId'],
-      firstName: json['firstName'],
-      lastName: json['lastName'],
-      email: json['email'],
-      phoneNumber: json['phoneNumber'],
-      relationship: json['relationship'],
-      assignedSTMLUsers: List<String>.from(json['assignedSTMLUsers'] ?? []),
-      alertPreferences:
-          Map<String, dynamic>.from(json['alertPreferences'] ?? {}),
-      cameraAccess: json['cameraAccess'],
-      fcmToken: json['fcmToken'],
-    );
-  }
-
-  /// Receives alerts for assigned STML users
-  Future<void> receiveAlert(String alertType, String stmlUserId) async {
-    // Implementation for receiving alerts
-  }
-
-  /// Views the current location of an assigned STML user
-  Future<void> viewSTMLUserLocation(String stmlUserId) async {
-    // Implementation for viewing STML user location
-  }
+  Map<String, dynamic> toJson() => {
+        ...super.toJson(),
+        'relationship': relationship,
+        'assignedSTMLUsers': assignedSTMLUsers,
+        'alertPreferences': alertPreferences,
+        'cameraAccess': cameraAccess,
+        'enableEmergencyNotifications': enableEmergencyNotifications,
+        'enableLocationSharing': enableLocationSharing,
+        'enableCameraAccess': enableCameraAccess,
+        'preferredLanguage': preferredLanguage,
+      };
 }

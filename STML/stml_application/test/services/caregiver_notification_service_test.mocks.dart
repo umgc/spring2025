@@ -29,13 +29,13 @@ import 'package:mockito/src/dummies.dart' as _i5;
 
 class _FakeResponse_0 extends _i1.SmartFake implements _i2.Response {
   _FakeResponse_0(Object parent, Invocation parentInvocation)
-    : super(parent, parentInvocation);
+      : super(parent, parentInvocation);
 }
 
 class _FakeStreamedResponse_1 extends _i1.SmartFake
     implements _i2.StreamedResponse {
   _FakeStreamedResponse_1(Object parent, Invocation parentInvocation)
-    : super(parent, parentInvocation);
+      : super(parent, parentInvocation);
 }
 
 /// A class which mocks [Client].
@@ -49,28 +49,26 @@ class MockClient extends _i1.Mock implements _i2.Client {
   @override
   _i3.Future<_i2.Response> head(Uri? url, {Map<String, String>? headers}) =>
       (super.noSuchMethod(
+        Invocation.method(#head, [url], {#headers: headers}),
+        returnValue: _i3.Future<_i2.Response>.value(
+          _FakeResponse_0(
+            this,
             Invocation.method(#head, [url], {#headers: headers}),
-            returnValue: _i3.Future<_i2.Response>.value(
-              _FakeResponse_0(
-                this,
-                Invocation.method(#head, [url], {#headers: headers}),
-              ),
-            ),
-          )
-          as _i3.Future<_i2.Response>);
+          ),
+        ),
+      ) as _i3.Future<_i2.Response>);
 
   @override
   _i3.Future<_i2.Response> get(Uri? url, {Map<String, String>? headers}) =>
       (super.noSuchMethod(
+        Invocation.method(#get, [url], {#headers: headers}),
+        returnValue: _i3.Future<_i2.Response>.value(
+          _FakeResponse_0(
+            this,
             Invocation.method(#get, [url], {#headers: headers}),
-            returnValue: _i3.Future<_i2.Response>.value(
-              _FakeResponse_0(
-                this,
-                Invocation.method(#get, [url], {#headers: headers}),
-              ),
-            ),
-          )
-          as _i3.Future<_i2.Response>);
+          ),
+        ),
+      ) as _i3.Future<_i2.Response>);
 
   @override
   _i3.Future<_i2.Response> post(
@@ -80,23 +78,22 @@ class MockClient extends _i1.Mock implements _i2.Client {
     _i4.Encoding? encoding,
   }) =>
       (super.noSuchMethod(
+        Invocation.method(
+          #post,
+          [url],
+          {#headers: headers, #body: body, #encoding: encoding},
+        ),
+        returnValue: _i3.Future<_i2.Response>.value(
+          _FakeResponse_0(
+            this,
             Invocation.method(
               #post,
               [url],
               {#headers: headers, #body: body, #encoding: encoding},
             ),
-            returnValue: _i3.Future<_i2.Response>.value(
-              _FakeResponse_0(
-                this,
-                Invocation.method(
-                  #post,
-                  [url],
-                  {#headers: headers, #body: body, #encoding: encoding},
-                ),
-              ),
-            ),
-          )
-          as _i3.Future<_i2.Response>);
+          ),
+        ),
+      ) as _i3.Future<_i2.Response>);
 
   @override
   _i3.Future<_i2.Response> put(
@@ -106,23 +103,22 @@ class MockClient extends _i1.Mock implements _i2.Client {
     _i4.Encoding? encoding,
   }) =>
       (super.noSuchMethod(
+        Invocation.method(
+          #put,
+          [url],
+          {#headers: headers, #body: body, #encoding: encoding},
+        ),
+        returnValue: _i3.Future<_i2.Response>.value(
+          _FakeResponse_0(
+            this,
             Invocation.method(
               #put,
               [url],
               {#headers: headers, #body: body, #encoding: encoding},
             ),
-            returnValue: _i3.Future<_i2.Response>.value(
-              _FakeResponse_0(
-                this,
-                Invocation.method(
-                  #put,
-                  [url],
-                  {#headers: headers, #body: body, #encoding: encoding},
-                ),
-              ),
-            ),
-          )
-          as _i3.Future<_i2.Response>);
+          ),
+        ),
+      ) as _i3.Future<_i2.Response>);
 
   @override
   _i3.Future<_i2.Response> patch(
@@ -132,23 +128,22 @@ class MockClient extends _i1.Mock implements _i2.Client {
     _i4.Encoding? encoding,
   }) =>
       (super.noSuchMethod(
+        Invocation.method(
+          #patch,
+          [url],
+          {#headers: headers, #body: body, #encoding: encoding},
+        ),
+        returnValue: _i3.Future<_i2.Response>.value(
+          _FakeResponse_0(
+            this,
             Invocation.method(
               #patch,
               [url],
               {#headers: headers, #body: body, #encoding: encoding},
             ),
-            returnValue: _i3.Future<_i2.Response>.value(
-              _FakeResponse_0(
-                this,
-                Invocation.method(
-                  #patch,
-                  [url],
-                  {#headers: headers, #body: body, #encoding: encoding},
-                ),
-              ),
-            ),
-          )
-          as _i3.Future<_i2.Response>);
+          ),
+        ),
+      ) as _i3.Future<_i2.Response>);
 
   @override
   _i3.Future<_i2.Response> delete(
@@ -158,36 +153,34 @@ class MockClient extends _i1.Mock implements _i2.Client {
     _i4.Encoding? encoding,
   }) =>
       (super.noSuchMethod(
+        Invocation.method(
+          #delete,
+          [url],
+          {#headers: headers, #body: body, #encoding: encoding},
+        ),
+        returnValue: _i3.Future<_i2.Response>.value(
+          _FakeResponse_0(
+            this,
             Invocation.method(
               #delete,
               [url],
               {#headers: headers, #body: body, #encoding: encoding},
             ),
-            returnValue: _i3.Future<_i2.Response>.value(
-              _FakeResponse_0(
-                this,
-                Invocation.method(
-                  #delete,
-                  [url],
-                  {#headers: headers, #body: body, #encoding: encoding},
-                ),
-              ),
-            ),
-          )
-          as _i3.Future<_i2.Response>);
+          ),
+        ),
+      ) as _i3.Future<_i2.Response>);
 
   @override
   _i3.Future<String> read(Uri? url, {Map<String, String>? headers}) =>
       (super.noSuchMethod(
+        Invocation.method(#read, [url], {#headers: headers}),
+        returnValue: _i3.Future<String>.value(
+          _i5.dummyValue<String>(
+            this,
             Invocation.method(#read, [url], {#headers: headers}),
-            returnValue: _i3.Future<String>.value(
-              _i5.dummyValue<String>(
-                this,
-                Invocation.method(#read, [url], {#headers: headers}),
-              ),
-            ),
-          )
-          as _i3.Future<String>);
+          ),
+        ),
+      ) as _i3.Future<String>);
 
   @override
   _i3.Future<_i6.Uint8List> readBytes(
@@ -195,29 +188,27 @@ class MockClient extends _i1.Mock implements _i2.Client {
     Map<String, String>? headers,
   }) =>
       (super.noSuchMethod(
-            Invocation.method(#readBytes, [url], {#headers: headers}),
-            returnValue: _i3.Future<_i6.Uint8List>.value(_i6.Uint8List(0)),
-          )
-          as _i3.Future<_i6.Uint8List>);
+        Invocation.method(#readBytes, [url], {#headers: headers}),
+        returnValue: _i3.Future<_i6.Uint8List>.value(_i6.Uint8List(0)),
+      ) as _i3.Future<_i6.Uint8List>);
 
   @override
   _i3.Future<_i2.StreamedResponse> send(_i2.BaseRequest? request) =>
       (super.noSuchMethod(
+        Invocation.method(#send, [request]),
+        returnValue: _i3.Future<_i2.StreamedResponse>.value(
+          _FakeStreamedResponse_1(
+            this,
             Invocation.method(#send, [request]),
-            returnValue: _i3.Future<_i2.StreamedResponse>.value(
-              _FakeStreamedResponse_1(
-                this,
-                Invocation.method(#send, [request]),
-              ),
-            ),
-          )
-          as _i3.Future<_i2.StreamedResponse>);
+          ),
+        ),
+      ) as _i3.Future<_i2.StreamedResponse>);
 
   @override
   void close() => super.noSuchMethod(
-    Invocation.method(#close, []),
-    returnValueForMissingStub: null,
-  );
+        Invocation.method(#close, []),
+        returnValueForMissingStub: null,
+      );
 }
 
 /// A class which mocks [NotificationSettings].
@@ -230,100 +221,76 @@ class MockNotificationSettings extends _i1.Mock
   }
 
   @override
-  _i7.AppleNotificationSetting get alert =>
-      (super.noSuchMethod(
-            Invocation.getter(#alert),
-            returnValue: _i7.AppleNotificationSetting.disabled,
-          )
-          as _i7.AppleNotificationSetting);
+  _i7.AppleNotificationSetting get alert => (super.noSuchMethod(
+        Invocation.getter(#alert),
+        returnValue: _i7.AppleNotificationSetting.disabled,
+      ) as _i7.AppleNotificationSetting);
 
   @override
-  _i7.AppleNotificationSetting get announcement =>
-      (super.noSuchMethod(
-            Invocation.getter(#announcement),
-            returnValue: _i7.AppleNotificationSetting.disabled,
-          )
-          as _i7.AppleNotificationSetting);
+  _i7.AppleNotificationSetting get announcement => (super.noSuchMethod(
+        Invocation.getter(#announcement),
+        returnValue: _i7.AppleNotificationSetting.disabled,
+      ) as _i7.AppleNotificationSetting);
 
   @override
-  _i7.AuthorizationStatus get authorizationStatus =>
-      (super.noSuchMethod(
-            Invocation.getter(#authorizationStatus),
-            returnValue: _i7.AuthorizationStatus.authorized,
-          )
-          as _i7.AuthorizationStatus);
+  _i7.AuthorizationStatus get authorizationStatus => (super.noSuchMethod(
+        Invocation.getter(#authorizationStatus),
+        returnValue: _i7.AuthorizationStatus.authorized,
+      ) as _i7.AuthorizationStatus);
 
   @override
-  _i7.AppleNotificationSetting get timeSensitive =>
-      (super.noSuchMethod(
-            Invocation.getter(#timeSensitive),
-            returnValue: _i7.AppleNotificationSetting.disabled,
-          )
-          as _i7.AppleNotificationSetting);
+  _i7.AppleNotificationSetting get timeSensitive => (super.noSuchMethod(
+        Invocation.getter(#timeSensitive),
+        returnValue: _i7.AppleNotificationSetting.disabled,
+      ) as _i7.AppleNotificationSetting);
 
   @override
-  _i7.AppleNotificationSetting get criticalAlert =>
-      (super.noSuchMethod(
-            Invocation.getter(#criticalAlert),
-            returnValue: _i7.AppleNotificationSetting.disabled,
-          )
-          as _i7.AppleNotificationSetting);
+  _i7.AppleNotificationSetting get criticalAlert => (super.noSuchMethod(
+        Invocation.getter(#criticalAlert),
+        returnValue: _i7.AppleNotificationSetting.disabled,
+      ) as _i7.AppleNotificationSetting);
 
   @override
-  _i7.AppleNotificationSetting get badge =>
-      (super.noSuchMethod(
-            Invocation.getter(#badge),
-            returnValue: _i7.AppleNotificationSetting.disabled,
-          )
-          as _i7.AppleNotificationSetting);
+  _i7.AppleNotificationSetting get badge => (super.noSuchMethod(
+        Invocation.getter(#badge),
+        returnValue: _i7.AppleNotificationSetting.disabled,
+      ) as _i7.AppleNotificationSetting);
 
   @override
-  _i7.AppleNotificationSetting get carPlay =>
-      (super.noSuchMethod(
-            Invocation.getter(#carPlay),
-            returnValue: _i7.AppleNotificationSetting.disabled,
-          )
-          as _i7.AppleNotificationSetting);
+  _i7.AppleNotificationSetting get carPlay => (super.noSuchMethod(
+        Invocation.getter(#carPlay),
+        returnValue: _i7.AppleNotificationSetting.disabled,
+      ) as _i7.AppleNotificationSetting);
 
   @override
-  _i7.AppleNotificationSetting get lockScreen =>
-      (super.noSuchMethod(
-            Invocation.getter(#lockScreen),
-            returnValue: _i7.AppleNotificationSetting.disabled,
-          )
-          as _i7.AppleNotificationSetting);
+  _i7.AppleNotificationSetting get lockScreen => (super.noSuchMethod(
+        Invocation.getter(#lockScreen),
+        returnValue: _i7.AppleNotificationSetting.disabled,
+      ) as _i7.AppleNotificationSetting);
 
   @override
-  _i7.AppleNotificationSetting get notificationCenter =>
-      (super.noSuchMethod(
-            Invocation.getter(#notificationCenter),
-            returnValue: _i7.AppleNotificationSetting.disabled,
-          )
-          as _i7.AppleNotificationSetting);
+  _i7.AppleNotificationSetting get notificationCenter => (super.noSuchMethod(
+        Invocation.getter(#notificationCenter),
+        returnValue: _i7.AppleNotificationSetting.disabled,
+      ) as _i7.AppleNotificationSetting);
 
   @override
-  _i7.AppleShowPreviewSetting get showPreviews =>
-      (super.noSuchMethod(
-            Invocation.getter(#showPreviews),
-            returnValue: _i7.AppleShowPreviewSetting.always,
-          )
-          as _i7.AppleShowPreviewSetting);
+  _i7.AppleShowPreviewSetting get showPreviews => (super.noSuchMethod(
+        Invocation.getter(#showPreviews),
+        returnValue: _i7.AppleShowPreviewSetting.always,
+      ) as _i7.AppleShowPreviewSetting);
 
   @override
-  _i7.AppleNotificationSetting get sound =>
-      (super.noSuchMethod(
-            Invocation.getter(#sound),
-            returnValue: _i7.AppleNotificationSetting.disabled,
-          )
-          as _i7.AppleNotificationSetting);
+  _i7.AppleNotificationSetting get sound => (super.noSuchMethod(
+        Invocation.getter(#sound),
+        returnValue: _i7.AppleNotificationSetting.disabled,
+      ) as _i7.AppleNotificationSetting);
 
-  @override
   _i7.AppleNotificationSetting get providesAppNotificationSettings =>
       (super.noSuchMethod(
-            Invocation.getter(#providesAppNotificationSettings),
-            returnValue: _i7.AppleNotificationSetting.disabled,
-          )
-          as _i7.AppleNotificationSetting);
+        Invocation.getter(#providesAppNotificationSettings),
+        returnValue: _i7.AppleNotificationSetting.disabled,
+      ) as _i7.AppleNotificationSetting);
 }
 
 /// A class which mocks [RemoteMessage].
@@ -335,34 +302,26 @@ class MockRemoteMessage extends _i1.Mock implements _i7.RemoteMessage {
   }
 
   @override
-  bool get contentAvailable =>
-      (super.noSuchMethod(
-            Invocation.getter(#contentAvailable),
-            returnValue: false,
-          )
-          as bool);
+  bool get contentAvailable => (super.noSuchMethod(
+        Invocation.getter(#contentAvailable),
+        returnValue: false,
+      ) as bool);
 
   @override
-  Map<String, dynamic> get data =>
-      (super.noSuchMethod(
-            Invocation.getter(#data),
-            returnValue: <String, dynamic>{},
-          )
-          as Map<String, dynamic>);
+  Map<String, dynamic> get data => (super.noSuchMethod(
+        Invocation.getter(#data),
+        returnValue: <String, dynamic>{},
+      ) as Map<String, dynamic>);
 
   @override
-  bool get mutableContent =>
-      (super.noSuchMethod(
-            Invocation.getter(#mutableContent),
-            returnValue: false,
-          )
-          as bool);
+  bool get mutableContent => (super.noSuchMethod(
+        Invocation.getter(#mutableContent),
+        returnValue: false,
+      ) as bool);
 
   @override
-  Map<String, dynamic> toMap() =>
-      (super.noSuchMethod(
-            Invocation.method(#toMap, []),
-            returnValue: <String, dynamic>{},
-          )
-          as Map<String, dynamic>);
+  Map<String, dynamic> toMap() => (super.noSuchMethod(
+        Invocation.method(#toMap, []),
+        returnValue: <String, dynamic>{},
+      ) as Map<String, dynamic>);
 }

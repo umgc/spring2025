@@ -7,8 +7,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:memoryminder/main.dart';
 import 'package:memoryminder/src/features/stml_user_dashboard/presentation/stml_user_dashboard.dart';
 
 void main() {

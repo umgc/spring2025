@@ -1,25 +1,29 @@
-//lib/services/caregiver_notification_service.dart
-//Sandrine
-
+// lib/services/caregiver_notification_service.dart
+import 'dart:async';
+import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:http/http.dart' as http;
 import 'package:logging/logging.dart';
 import 'package:memoryminder/models/caregiver.dart';
 import 'package:memoryminder/services/navigation_service.dart';
-import 'dart:convert';
 import 'package:memoryminder/models/emergency_type.dart';
+import 'package:memoryminder/config/config.dart';
+import 'package:memoryminder/services/esri_client.dart';
 
 class CaregiverNotificationService {
   final FirebaseMessaging _firebaseMessaging;
-  final _logger = Logger('CaregiverNotificationService');
-  final String _fcmServerUrl = 'YOUR_FIREBASE_CLOUD_FUNCTION_URL';
-  final String _serverKey = 'YOUR_SERVER_KEY';
-  final FlutterLocalNotificationsPlugin _localNotifications =
-      FlutterLocalNotificationsPlugin();
-  final NavigationService _navigationService = NavigationService();
+  final Logger _logger = Logger('CaregiverNotificationService');
+  final FlutterLocalNotificationsPlugin _localNotifications;
+  final NavigationService _navigationService;
+  final EsriClient _esriClient;
 
-  static const AndroidNotificationChannel _emergencyChannel =
+  final Map<EmergencyType, DateTime> _lastAlertTimestamps = {};
+  static const Duration _alertThrottleDuration = Duration(minutes: 5);
+
+  static final AndroidNotificationChannel _emergencyChannel =
       AndroidNotificationChannel(
     'emergency_alerts',
     'Emergency Alerts',
@@ -28,12 +32,19 @@ class CaregiverNotificationService {
     playSound: true,
     enableVibration: true,
     showBadge: true,
-    sound: RawResourceAndroidNotificationSound('emergency_alert'),
+    sound: const RawResourceAndroidNotificationSound('emergency_alert'),
   );
 
   CaregiverNotificationService({
     FirebaseMessaging? firebaseMessaging,
-  }) : _firebaseMessaging = firebaseMessaging ?? FirebaseMessaging.instance {
+    FlutterLocalNotificationsPlugin? notificationsPlugin,
+    NavigationService? navigationService,
+    EsriClient? esriClient,
+  })  : _firebaseMessaging = firebaseMessaging ?? FirebaseMessaging.instance,
+        _localNotifications =
+            notificationsPlugin ?? FlutterLocalNotificationsPlugin(),
+        _navigationService = navigationService ?? NavigationService(),
+        _esriClient = esriClient ?? EsriClient(apiKey: Config.esriApiKey) {
     _setupLogging();
   }
 
@@ -41,31 +52,19 @@ class CaregiverNotificationService {
     Logger.root.level = Level.ALL;
     Logger.root.onRecord.listen((record) {
       _logger.info('${record.level.name}: ${record.time}: ${record.message}');
-      if (record.level >= Level.SEVERE) {}
+      if (record.level >= Level.SEVERE) {
+        _sendErrorToMonitoring(record);
+      }
     });
   }
 
   Future<bool> initialize() async {
     try {
       await _initializeLocalNotifications();
-      final settings = await _firebaseMessaging.requestPermission(
-        alert: true,
-        badge: true,
-        sound: true,
-        criticalAlert: true,
-        provisional: false,
-        announcement: true,
-      );
-
-      String? token = await _firebaseMessaging.getToken();
-      _logger.info('FCM Token: $token');
-
-      _firebaseMessaging.onTokenRefresh.listen(_handleTokenRefresh);
-      configureMessageHandling();
-
-      return settings.authorizationStatus == AuthorizationStatus.authorized;
+      await _setupFCM();
+      return true;
     } catch (e, stackTrace) {
-      _logger.severe('Error initializing FCM', e, stackTrace);
+      _logger.severe('Initialization failed', e, stackTrace);
       return false;
     }
   }
@@ -77,9 +76,6 @@ class CaregiverNotificationService {
       requestSoundPermission: true,
       requestBadgePermission: true,
       requestAlertPermission: true,
-      defaultPresentAlert: true,
-      defaultPresentBadge: true,
-      defaultPresentSound: true,
     );
 
     await _localNotifications.initialize(
@@ -93,74 +89,47 @@ class CaregiverNotificationService {
         ?.createNotificationChannel(_emergencyChannel);
   }
 
-  Future<void> _triggerUrgentProtocol(String location) async {
-    final logger = Logger('UrgentProtocol');
-    try {
-      // Implement urgent protocol logic here
-      logger.info('Urgent protocol triggered for location: $location');
-    } catch (e, stackTrace) {
-      logger.severe('Failed to trigger urgent protocol', e, stackTrace);
-    }
-  }
+  Future<void> _setupFCM() async {
+    final settings = await _firebaseMessaging.requestPermission(
+      alert: true,
+      badge: true,
+      sound: true,
+      criticalAlert: true,
+    );
 
-  Future<void> _triggerConfusionProtocol(String location) async {
-    final logger = Logger('ConfusionProtocol');
-    try {
-      // Implement confusion protocol logic here
-      logger.info('Confusion protocol triggered for location: $location');
-    } catch (e, stackTrace) {
-      logger.severe('Failed to trigger confusion protocol', e, stackTrace);
+    if (settings.authorizationStatus != AuthorizationStatus.authorized) {
+      throw Exception('FCM permission denied');
     }
-  }
 
-  Future<void> _triggerGeneralProtocol(String location) async {
-    final logger = Logger('GeneralProtocol');
-    try {
-      // Implement general protocol logic here
-      logger.info(
-          'General assistance protocol triggered for location: $location');
-    } catch (e, stackTrace) {
-      logger.severe(
-          'Failed to trigger general assistance protocol', e, stackTrace);
-    }
+    final token = await _firebaseMessaging.getToken();
+    _logger.info('FCM Token: $token');
+
+    _firebaseMessaging.onTokenRefresh.listen(_handleTokenRefresh);
+    configureMessageHandling();
   }
 
   Future<void> _handleTokenRefresh(String newToken) async {
     try {
-      await http.post(
-        Uri.parse('$_fcmServerUrl/update-token'),
+      final response = await http.post(
+        Uri.parse('${Config.fcmServerUrl}/update-token'),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer $_serverKey',
+          'Authorization': 'Bearer ${Config.serverKey}',
+          'X-HIPAA-Compliance': 'true',
         },
         body: jsonEncode({
           'token': newToken,
           'timestamp': DateTime.now().toIso8601String(),
+          'device_id': await _firebaseMessaging.getToken(),
         }),
       );
-      _logger.info('Token updated successfully in backend');
-    } catch (e, stackTrace) {
-      _logger.severe('Failed to update token in backend', e, stackTrace);
-    }
-  }
 
-  EmergencyType _parseEmergencyType(String? type) {
-    switch (type?.toLowerCase()) {
-      case 'urgent':
-        return EmergencyType.urgent;
-      case 'fall':
-        return EmergencyType.fall;
-      case 'medical':
-        return EmergencyType.medical;
-      case 'confusion':
-        return EmergencyType.confusion;
-      case 'general':
-        return EmergencyType.general;
-      case 'help':
-        return EmergencyType.urgent;
-      default:
-        _logger.warning('Unknown emergency type: $type, defaulting to urgent');
-        return EmergencyType.urgent;
+      if (response.statusCode != 200) {
+        throw Exception('Token update failed: ${response.body}');
+      }
+    } catch (e, stackTrace) {
+      _logger.severe('Token refresh error', e, stackTrace);
+      rethrow;
     }
   }
 
@@ -171,67 +140,161 @@ class CaregiverNotificationService {
     Map<String, dynamic>? additionalData,
   }) async {
     try {
-      final alertData = {
-        'to': caregiver.fcmToken,
-        'priority': 'high',
-        'data': {
-          'type': 'emergency',
-          'emergencyType': emergencyType.toString().split('.').last,
-          'location': patientLocation,
-          'timestamp': DateTime.now().toIso8601String(),
-          if (additionalData != null) ...additionalData,
-        },
-        'notification': {
-          'title': _getEmergencyTitle(emergencyType),
-          'body': _getEmergencyBody(emergencyType, patientLocation),
-          'sound': 'emergency_alert.wav',
-          'badge': 1,
-          'priority': 'high',
-        },
-        'android': {
-          'priority': 'high',
-          'notification': {
-            'channel_id': _emergencyChannel.id,
-            'priority': 'high',
-            'default_sound': false,
-            'sound': 'emergency_alert',
-            'default_vibrate_timings': false,
-            'vibrate_timings': ['0s', '0.5s', '0.5s', '0.5s'],
-          },
-        },
-        'apns': {
-          'payload': {
-            'aps': {
-              'sound': 'emergency_alert.wav',
-              'badge': 1,
-              'content-available': 1,
-            },
-          },
-        },
-      };
-
-      final response = await http.post(
-        Uri.parse(_fcmServerUrl),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'key=$_serverKey',
-        },
-        body: jsonEncode(alertData),
-      );
-
-      if (response.statusCode == 200) {
-        _logger.info(
-            'Emergency alert sent successfully to ${caregiver.firstName} ${caregiver.lastName}');
-        return true;
-      } else {
-        _logger.warning(
-            'Failed to send emergency alert. Status: ${response.statusCode}, Body: ${response.body}');
+      if (!_isHIPAACompliant(patientLocation)) {
+        _logger.warning('HIPAA compliance check failed for location data');
         return false;
       }
+
+      if (_isThrottled(emergencyType, patientLocation)) {
+        _logger.info('Alert throttled for $emergencyType at $patientLocation');
+        return false;
+      }
+
+      final message = _buildFCMMessage(
+          caregiver, patientLocation, emergencyType, additionalData);
+      final response = await _sendFCMRequest(message);
+
+      if (response.statusCode == 200) {
+        _handleSuccessfulAlert(caregiver, emergencyType, patientLocation);
+        return true;
+      }
+
+      _handleFailedAlert(response);
+      return false;
     } catch (e, stackTrace) {
-      _logger.severe('Error sending emergency alert', e, stackTrace);
+      _logger.severe('Emergency alert failed', e, stackTrace);
       return false;
     }
+  }
+
+  Map<String, dynamic> _buildFCMMessage(
+    Caregiver caregiver,
+    String location,
+    EmergencyType type,
+    Map<String, dynamic>? data,
+  ) {
+    final translatedTitle =
+        _getTranslatedTitle(caregiver.preferredLanguage, type);
+    final translatedBody =
+        _getTranslatedBody(caregiver.preferredLanguage, type, location);
+
+    return {
+      'to': caregiver.fcmToken,
+      'priority': 'high',
+      'data': {
+        'type': 'emergency',
+        'emergencyType': type.name,
+        'location': location,
+        'timestamp': DateTime.now().toIso8601String(),
+        'hipaa_compliant': true,
+        if (data != null) ...data,
+      },
+      'notification':
+          _buildPlatformNotifications(translatedTitle, translatedBody),
+    };
+  }
+
+  Map<String, dynamic> _buildPlatformNotifications(String title, String body) {
+    return {
+      'title': title,
+      'body': body,
+      'sound': 'emergency_alert.wav',
+      'badge': '1',
+      'android': {
+        'channelId': _emergencyChannel.id,
+        'priority': 'high',
+        'vibrateTimingsMillis': [0, 500, 500, 500],
+      },
+      'apns': {
+        'payload': {
+          'aps': {
+            'sound': 'emergency_alert.wav',
+            'interruption-level': 'time-sensitive',
+          },
+        },
+      },
+    };
+  }
+
+  Future<http.Response> _sendFCMRequest(Map<String, dynamic> message) async {
+    return await http.post(
+      Uri.parse(Config.fcmServerUrl),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'key=${Config.serverKey}',
+        'X-Platform': 'Flutter/${Config.appVersion}',
+      },
+      body: jsonEncode(message),
+    );
+  }
+
+  void _handleSuccessfulAlert(
+      Caregiver caregiver, EmergencyType type, String location) {
+    _lastAlertTimestamps[type] = DateTime.now();
+    _logger.info('Alert sent to ${caregiver.userId} for $type at $location');
+    _triggerEmergencyProtocol(type, location);
+  }
+
+  void _handleFailedAlert(http.Response response) {
+    _logger.warning('''
+      FCM Error: ${response.statusCode}
+      Headers: ${response.headers}
+      Body: ${response.body}
+    ''');
+  }
+
+  bool _isThrottled(EmergencyType type, String location) {
+    final lastTimestamp = _lastAlertTimestamps[type];
+    return lastTimestamp != null &&
+        DateTime.now().difference(lastTimestamp) < _alertThrottleDuration;
+  }
+
+  bool _isHIPAACompliant(String locationData) {
+    return !locationData.contains(
+        RegExp(r'\b(?:street|address|zipcode)\b', caseSensitive: false));
+  }
+
+  String _getTranslatedTitle(String language, EmergencyType type) {
+    final translations = {
+      'en': {
+        EmergencyType.urgent: 'Urgent Assistance Needed',
+        EmergencyType.fall: 'Fall Detected',
+        EmergencyType.medical: 'Medical Emergency',
+        EmergencyType.confusion: 'Disorientation Alert',
+        EmergencyType.general: 'General Assistance',
+      },
+      'es': {
+        EmergencyType.urgent: 'Asistencia Urgente Necesaria',
+        EmergencyType.fall: 'Caída Detectada',
+        EmergencyType.medical: 'Emergencia Médica',
+        EmergencyType.confusion: 'Alerta de Desorientación',
+        EmergencyType.general: 'Asistencia General',
+      },
+    };
+    return translations[language]?[type] ?? _getEmergencyTitle(type);
+  }
+
+  String _getTranslatedBody(
+      String language, EmergencyType type, String location) {
+    final translations = {
+      'en': {
+        EmergencyType.urgent: 'Patient needs immediate help at: %location%',
+        EmergencyType.fall: 'Fall detected at: %location%',
+        EmergencyType.medical: 'Medical emergency at: %location%',
+        EmergencyType.confusion: 'Patient disoriented at: %location%',
+        EmergencyType.general: 'Assistance needed at: %location%',
+      },
+      'es': {
+        EmergencyType.urgent:
+            'Paciente necesita ayuda inmediata en: %location%',
+        EmergencyType.fall: 'Caída detectada en: %location%',
+        EmergencyType.medical: 'Emergencia médica en: %location%',
+        EmergencyType.confusion: 'Paciente desorientado en: %location%',
+        EmergencyType.general: 'Asistencia necesaria en: %location%',
+      },
+    };
+    return (translations[language]?[type] ?? _getEmergencyBody(type, location))
+        .replaceAll('%location%', location);
   }
 
   String _getEmergencyTitle(EmergencyType type) {
@@ -264,111 +327,8 @@ class CaregiverNotificationService {
     }
   }
 
-  Future<String?> refreshToken() async {
-    try {
-      final token = await _firebaseMessaging.getToken();
-      if (token != null) {
-        await _handleTokenRefresh(token);
-      }
-      return token;
-    } catch (e, stackTrace) {
-      _logger.severe('Error refreshing FCM token', e, stackTrace);
-      return null;
-    }
-  }
-
-  void configureMessageHandling() {
-    FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
-    FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageOpenedApp);
-  }
-
-  Future<void> _handleForegroundMessage(RemoteMessage message) async {
-    _logger.info('Received foreground message: ${message.messageId}');
-
-    final notification = message.notification;
-    final data = message.data;
-
-    if (notification != null) {
-      await _localNotifications.show(
-        message.hashCode,
-        notification.title,
-        notification.body,
-        NotificationDetails(
-          android: AndroidNotificationDetails(
-            _emergencyChannel.id,
-            _emergencyChannel.name,
-            channelDescription: _emergencyChannel.description,
-            importance: Importance.max,
-            priority: Priority.high,
-            fullScreenIntent: true,
-            category: AndroidNotificationCategory.alarm,
-            sound: const RawResourceAndroidNotificationSound('emergency_alert'),
-            playSound: true,
-            enableLights: true,
-            enableVibration: true,
-            visibility: NotificationVisibility.public,
-          ),
-          iOS: const DarwinNotificationDetails(
-            presentAlert: true,
-            presentBadge: true,
-            presentSound: true,
-            sound: 'emergency_alert.wav',
-            interruptionLevel: InterruptionLevel.timeSensitive,
-          ),
-        ),
-        payload: jsonEncode(data),
-      );
-
-      _processEmergencyData(data);
-    }
-  }
-
-  Future<void> _handleMessageOpenedApp(RemoteMessage message) async {
-    _logger.info('Message opened app: ${message.messageId}');
-    await _navigateBasedOnMessage(message.data);
-  }
-
-  void _onLocalNotificationTapped(NotificationResponse response) async {
-    if (response.payload != null) {
-      final data = jsonDecode(response.payload!) as Map<String, dynamic>;
-      await _navigateBasedOnMessage(data);
-    }
-  }
-
-  Future<void> _navigateBasedOnMessage(Map<String, dynamic> data) async {
-    final type = _parseEmergencyType(data['emergencyType']);
-    final location = data['location'];
-    final timestamp = DateTime.parse(data['timestamp']);
-
-    switch (type) {
-      case EmergencyType.urgent:
-        await _navigationService.navigateToEmergencyHelp(location, timestamp);
-        break;
-      case EmergencyType.fall:
-        await _navigationService.navigateToFallAlert(location, timestamp);
-        break;
-      case EmergencyType.medical:
-        await _navigationService.navigateToMedicalEmergency(
-            location, timestamp);
-        break;
-      case EmergencyType.confusion:
-        await _navigationService.navigateToConfusionAlert(location, timestamp);
-        break;
-      case EmergencyType.general:
-        await _navigationService.navigateToGeneralAssistance(
-            location, timestamp);
-        break;
-    }
-  }
-
-  Future<void> _processEmergencyData(Map<String, dynamic> data) async {
-    final type = _parseEmergencyType(data['emergencyType']);
-    final location = data['location'];
-    final timestamp = DateTime.parse(data['timestamp']);
-
-    await _storeEmergencyEvent(type, location, timestamp);
-    await _updateEmergencyStatus(type, true);
-
+  Future<void> _triggerEmergencyProtocol(
+      EmergencyType type, String location) async {
     switch (type) {
       case EmergencyType.urgent:
         await _triggerUrgentProtocol(location);
@@ -388,157 +348,131 @@ class CaregiverNotificationService {
     }
   }
 
-  Future<void> _storeEmergencyEvent(
-    EmergencyType type,
-    String location,
-    DateTime timestamp,
-  ) async {
-    final logger = Logger('EmergencyStorage');
+  Future<void> _triggerUrgentProtocol(String location) async {
     try {
-      // Implement your storage logic here
-      logger.info('Emergency event stored successfully');
+      final route = await _esriClient.getRouteToHome(location);
+      await _esriClient.sendDirectionsToCaregiver(route);
+      await _localNotifications.show(
+        0,
+        'Emergency Protocol Activated',
+        'Safety measures initiated for location: $location',
+        const NotificationDetails(
+          android: AndroidNotificationDetails(
+            'emergency_protocols',
+            'Emergency Protocols',
+            importance: Importance.max,
+          ),
+        ),
+      );
     } catch (e, stackTrace) {
-      logger.severe('Failed to store emergency event', e, stackTrace);
-    }
-  }
-
-  Future<void> _updateEmergencyStatus(EmergencyType type, bool isActive) async {
-    final logger = Logger('EmergencyStatus');
-    try {
-      // Implement your status update logic here
-      logger.info('Emergency status updated successfully');
-    } catch (e, stackTrace) {
-      logger.severe('Failed to update emergency status', e, stackTrace);
+      _logger.severe('Urgent protocol failed', e, stackTrace);
     }
   }
 
   Future<void> _triggerFallProtocol(String location) async {
-    final logger = Logger('FallProtocol');
-    try {
-      // Implement fall protocol logic here
-      logger.info('Fall protocol triggered for location: $location');
-    } catch (e, stackTrace) {
-      logger.severe('Failed to trigger fall protocol', e, stackTrace);
-    }
+    _logger.info('Fall protocol triggered for $location');
+    // Implement fall-specific logic
   }
 
   Future<void> _triggerMedicalProtocol(String location) async {
-    final logger = Logger('MedicalProtocol');
+    _logger.info('Medical protocol triggered for $location');
+    // Implement medical-specific logic
+  }
+
+  Future<void> _triggerConfusionProtocol(String location) async {
+    _logger.info('Confusion protocol triggered for $location');
+    // Implement confusion-specific logic
+  }
+
+  Future<void> _triggerGeneralProtocol(String location) async {
+    _logger.info('General protocol triggered for $location');
+    // Implement general assistance logic
+  }
+
+  Future<void> _storeEmergencyEvent(EmergencyType type, String location) async {
     try {
-      // Implement medical protocol logic here
-      logger.info('Medical protocol triggered for location: $location');
+      await FirebaseFirestore.instance.collection('emergency_events').add({
+        'type': type.name,
+        'location': location,
+        'timestamp': FieldValue.serverTimestamp(),
+        'handled': false,
+      });
     } catch (e, stackTrace) {
-      logger.severe('Failed to trigger medical protocol', e, stackTrace);
+      _logger.severe('Failed to store emergency event', e, stackTrace);
     }
+  }
+
+  void configureMessageHandling() {
+    FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
+    FirebaseMessaging.onMessageOpenedApp.listen(_handleMessageOpenedApp);
+  }
+
+  Future<void> _handleForegroundMessage(RemoteMessage message) async {
+    _logger.info('Received foreground message: ${message.messageId}');
+    await _processEmergencyData(message.data);
+  }
+
+  Future<void> _handleMessageOpenedApp(RemoteMessage message) async {
+    _logger.info('Message opened app: ${message.messageId}');
+    await _processEmergencyData(message.data);
+  }
+
+  void _onLocalNotificationTapped(NotificationResponse response) {
+    if (response.payload != null) {
+      final data = jsonDecode(response.payload!) as Map<String, dynamic>;
+      _processEmergencyData(data);
+    }
+  }
+
+  Future<void> _processEmergencyData(Map<String, dynamic> data) async {
+    try {
+      final type = _parseEmergencyType(data['emergencyType']);
+      final location = data['location'];
+      final timestamp = DateTime.parse(data['timestamp']);
+
+      await _storeEmergencyEvent(type, location);
+
+      // Utilisation des méthodes existantes avec le switch case
+      switch (type) {
+        case EmergencyType.urgent:
+          await _navigationService.navigateToEmergencyHelp(location, timestamp);
+          break;
+        case EmergencyType.fall:
+          await _navigationService.navigateToFallAlert(location, timestamp);
+          break;
+        case EmergencyType.medical:
+          await _navigationService.navigateToMedicalEmergency(
+              location, timestamp);
+          break;
+        case EmergencyType.confusion:
+          await _navigationService.navigateToConfusionAlert(
+              location, timestamp);
+          break;
+        case EmergencyType.general:
+          await _navigationService.navigateToGeneralAssistance(
+              location, timestamp);
+          break;
+      }
+    } catch (e, stackTrace) {
+      _logger.severe('Error processing emergency data', e, stackTrace);
+    }
+  }
+
+  EmergencyType _parseEmergencyType(String typeString) {
+    return EmergencyType.values.firstWhere(
+      (type) => type.name == typeString.toLowerCase(),
+      orElse: () => EmergencyType.urgent,
+    );
   }
 
   static Future<void> backgroundMessageHandler(RemoteMessage message) async {
-    final logger = Logger('BackgroundHandler');
-    final data = message.data;
-    final notification = message.notification;
-
-    if (notification != null) {
-      logger.info('Background message received');
-      logger.info('Title: ${notification.title}');
-      logger.info('Body: ${notification.body}');
-      logger.info('Data: $data');
-
-      await _storeBackgroundEmergency(data);
-      await _showBackgroundNotification(notification, data);
-    }
+    await Firebase.initializeApp();
+    final service = CaregiverNotificationService();
+    await service.initialize();
+    await service._processEmergencyData(message.data);
   }
 
-  static Future<void> _storeBackgroundEmergency(
-      Map<String, dynamic> data) async {
-    final logger = Logger('BackgroundStorage');
-    try {
-      // Implement your background storage logic here
-      logger.info('Background emergency data stored successfully');
-    } catch (e, stackTrace) {
-      logger.severe('Failed to store background emergency data', e, stackTrace);
-    }
-  }
-
-  static Future<void> _showBackgroundNotification(
-    RemoteNotification notification,
-    Map<String, dynamic> data,
-  ) async {
-    final logger = Logger('BackgroundNotification');
-    try {
-      final flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-
-      const androidSettings =
-          AndroidInitializationSettings('@mipmap/ic_launcher');
-      const iosSettings = DarwinInitializationSettings(
-        requestSoundPermission: true,
-        requestBadgePermission: true,
-        requestAlertPermission: true,
-      );
-
-      await flutterLocalNotificationsPlugin.initialize(
-        const InitializationSettings(
-          android: androidSettings,
-          iOS: iosSettings,
-        ),
-      );
-
-      const androidChannel = AndroidNotificationChannel(
-        'emergency_alerts',
-        'Emergency Alerts',
-        description: 'High priority alerts for emergency situations',
-        importance: Importance.max,
-        playSound: true,
-        enableVibration: true,
-        showBadge: true,
-        sound: RawResourceAndroidNotificationSound('emergency_alert'),
-      );
-
-      await flutterLocalNotificationsPlugin
-          .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>()
-          ?.createNotificationChannel(androidChannel);
-
-      const androidDetails = AndroidNotificationDetails(
-        'emergency_alerts',
-        'Emergency Alerts',
-        channelDescription: 'High priority alerts for emergency situations',
-        importance: Importance.max,
-        priority: Priority.high,
-        fullScreenIntent: true,
-        category: AndroidNotificationCategory.alarm,
-        sound: RawResourceAndroidNotificationSound('emergency_alert'),
-        playSound: true,
-        enableLights: true,
-        enableVibration: true,
-        visibility: NotificationVisibility.public,
-        ticker: 'Emergency Alert',
-      );
-
-      const iosDetails = DarwinNotificationDetails(
-        presentAlert: true,
-        presentBadge: true,
-        presentSound: true,
-        sound: 'emergency_alert.wav',
-        interruptionLevel: InterruptionLevel.timeSensitive,
-        threadIdentifier: 'emergency_alerts',
-      );
-
-      const notificationDetails = NotificationDetails(
-        android: androidDetails,
-        iOS: iosDetails,
-      );
-
-      await flutterLocalNotificationsPlugin.show(
-        notification.hashCode,
-        notification.title,
-        notification.body,
-        notificationDetails,
-        payload: jsonEncode(data),
-      );
-
-      logger.info('Background notification shown successfully');
-    } catch (e, stackTrace) {
-      logger.severe('Failed to show background notification', e, stackTrace);
-    }
+  void _sendErrorToMonitoring(LogRecord record) {
+    // Implement error reporting integration (Sentry, Crashlytics, etc.)
   }
 }

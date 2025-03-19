@@ -3,6 +3,7 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:memoryminder/models/emergency_type.dart';
 import 'package:mockito/mockito.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
@@ -86,9 +87,12 @@ void main() {
     test('should send emergency notification to caregiver', () async {
       // Arrange
       final caregiver = Caregiver(
-        id: 'caregiver123',
-        name: 'John Doe',
+        lastName: 'John Doe',
         fcmToken: 'fake-fcm-token',
+        userId: '',
+        firstName: '',
+        email: '',
+        relationship: '',
       );
 
       when(mockHttpClient.post(
@@ -101,7 +105,7 @@ void main() {
       final result = await notificationService.sendEmergencyAlert(
         caregiver: caregiver,
         patientLocation: 'Home',
-        emergencyType: EmergencyType.help,
+        emergencyType: EmergencyType.urgent,
       );
 
       // Assert
@@ -168,9 +172,12 @@ void main() {
     test('should handle failed emergency alert sending', () async {
       // Arrange
       final caregiver = Caregiver(
-        id: 'caregiver123',
-        name: 'John Doe',
-        fcmToken: 'fake-fcm-token',
+        userId: '',
+        firstName: '',
+        lastName: '',
+        email: '',
+        relationship: '',
+        fcmToken: '',
       );
 
       when(mockHttpClient.post(
@@ -183,7 +190,7 @@ void main() {
       final result = await notificationService.sendEmergencyAlert(
         caregiver: caregiver,
         patientLocation: 'Home',
-        emergencyType: EmergencyType.help,
+        emergencyType: EmergencyType.urgent,
       );
 
       // Assert

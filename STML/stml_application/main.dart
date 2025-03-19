@@ -1,64 +1,32 @@
-//With my modifications
-
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:memoryminder/services/caregiver_notification_service.dart';
-import 'package:memoryminder/services/emergency_services.dart';
 import 'package:memoryminder/ui/home_screen.dart';
-import 'package:memoryminder/viewmodels/emergency_help_viewmodel.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize Firebase with error handling
   try {
     await Firebase.initializeApp();
   } catch (e) {
     debugPrint('Firebase initialization failed: $e');
   }
 
-  // Initialize services with null-safety
-  CaregiverNotificationService? notificationService;
-  EmergencyService? emergencyService;
-  EmergencyHelpViewModel? viewModel;
-
+  // Initialisation
   try {
-    // Initialize Emergency Service
-    emergencyService = EmergencyService(baseUrl: 'YOUR_API_BASE_URL');
-
-    // Initialize Notification Service
-    notificationService = CaregiverNotificationService();
-    await notificationService.initialize();
-
-    // Initialize ViewModel with Emergency Service
-    viewModel = EmergencyHelpViewModel(emergencyService);
-
-    // Set up background message handler
+    // Initialize services directly within HomeScreen
     FirebaseMessaging.onBackgroundMessage(
         CaregiverNotificationService.backgroundMessageHandler);
   } catch (e) {
     debugPrint('Service initialization failed: $e');
   }
 
-  runApp(MemoryMinderApp(
-    notificationService: notificationService,
-    emergencyService: emergencyService,
-    viewModel: viewModel,
-  ));
+  runApp(const MemoryMinderApp());
 }
 
 class MemoryMinderApp extends StatelessWidget {
-  final CaregiverNotificationService? notificationService;
-  final EmergencyService? emergencyService;
-  final EmergencyHelpViewModel? viewModel;
-
-  const MemoryMinderApp({
-    super.key,
-    this.notificationService,
-    this.emergencyService,
-    this.viewModel,
-  });
+  const MemoryMinderApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -66,29 +34,17 @@ class MemoryMinderApp extends StatelessWidget {
       title: 'Memory Minder',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+        useMaterial3: true,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: WelcomePage(
-        notificationService: notificationService,
-        emergencyService: emergencyService,
-        viewModel: viewModel,
-      ),
+      home: const WelcomePage(),
     );
   }
 }
 
 class WelcomePage extends StatelessWidget {
-  final CaregiverNotificationService? notificationService;
-  final EmergencyService? emergencyService;
-  final EmergencyHelpViewModel? viewModel;
-
-  const WelcomePage({
-    super.key,
-    this.notificationService,
-    this.emergencyService,
-    this.viewModel,
-  });
+  const WelcomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -122,11 +78,7 @@ class WelcomePage extends StatelessWidget {
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => HomeScreen(
-                          viewModel: viewModel,
-                          notificationService: notificationService,
-                          emergencyService: emergencyService,
-                        ),
+                        builder: (context) => const HomeScreen(),
                       ),
                     );
                   },
@@ -152,7 +104,7 @@ class WelcomePage extends StatelessWidget {
                 const SizedBox(height: 15),
                 OutlinedButton(
                   onPressed: () {
-                    // TODO: Implement account creation navigation
+                    // TODO: Implement account creation
                   },
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
