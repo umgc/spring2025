@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:learninglens_app/Api/lms/constants/learning_lens.constants.dart';
 import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/Views/essay_edit_page.dart';
@@ -30,8 +31,7 @@ class _EssayGenerationState extends State<EssayGeneration>
 {
     //Holds values for user input fields
   int _selectedPointScale = 3; // Default value
-  String _selectedGradeLevel =
-      '12th grade'; // Default value for GradeLevelDropdown
+  String _selectedGradeLevel = LearningLensConstants.gradeLevels.last; // Default value for GradeLevelDropdown
   bool _isLoading = false;
   // String? selectedLLM = 'Perplexity'; // default
   LlmType? selectedLLM;
@@ -591,7 +591,7 @@ class GradeLevelDropdown extends StatelessWidget {
     return DropdownButtonFormField<String>(
       decoration: const InputDecoration(labelText: "Grade Level"),
       value: selectedGradeLevel.isNotEmpty ? selectedGradeLevel : null,
-      items: <String>['9th grade', '10th grade', '11th grade', '12th grade']
+      items: LearningLensConstants.gradeLevels
           .map((String value) {
         return DropdownMenuItem<String>(
           value: value,

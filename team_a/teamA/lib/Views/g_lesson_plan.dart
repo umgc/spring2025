@@ -2,6 +2,7 @@ import "dart:convert";
 import "package:flutter/material.dart";
 import "package:http/http.dart" as http;
 import "package:learninglens_app/Api/llm/llm_api_modules_base.dart";
+import "package:learninglens_app/Api/lms/constants/learning_lens.constants.dart";
 import "package:learninglens_app/Api/lms/factory/lms_factory.dart";
 import "package:learninglens_app/Api/lms/google_classroom/google_classroom_api.dart";
 import "package:learninglens_app/Controller/custom_appbar.dart";
@@ -258,13 +259,11 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
                           SizedBox(height: 20),
                           DropdownButtonFormField<String>(
                             value: selectedGradeLevel,
-                            items: ['K', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12']
+                            items: LearningLensConstants.gradeLevels
                                 .map<DropdownMenuItem<String>>((grade) {
                               return DropdownMenuItem<String>(
                                 value: grade,
-                                child: Text(grade == 'K' 
-                                    ? 'Kindergarten' 
-                                    : '$grade${grade == '1' ? 'st' : grade == '2' ? 'nd' : grade == '3' ? 'rd' : 'th'} Grade'),
+                                child: Text(grade)
                               );
                             }).toList(),
                             onChanged: (value) {

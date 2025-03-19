@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import "package:learninglens_app/Api/lms/constants/learning_lens.constants.dart";
 import "package:learninglens_app/Api/lms/factory/lms_factory.dart";
 import "package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart";
 import "package:learninglens_app/Controller/custom_appbar.dart";
@@ -13,7 +14,6 @@ import 'package:learninglens_app/services/local_storage_service.dart';
 import 'dart:convert';
 
 // Define a constant for grade levels
-const List<String> gradeLevels = ['Kindergarten', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
 
 class LessonPlans extends StatefulWidget {
   @override
@@ -227,7 +227,7 @@ class _LessonPlanState extends State<LessonPlans> {
                                 border: OutlineInputBorder(),
                               ),
                               value: selectedGradeLevel,
-                              items: gradeLevels.map((String value) {
+                              items: LearningLensConstants.gradeLevels.map((String value) {
                                 return DropdownMenuItem<String>(
                                   value: value,
                                   child: Text(value),
@@ -587,7 +587,7 @@ class _LessonPlanState extends State<LessonPlans> {
                           border: OutlineInputBorder(),
                         ),
                         value: selectedGradeLevel,
-                        items: gradeLevels.map((String value) {
+                        items: LearningLensConstants.gradeLevels.map((String value) {
                           return DropdownMenuItem<String>(
                             value: value,
                             child: Text(value),

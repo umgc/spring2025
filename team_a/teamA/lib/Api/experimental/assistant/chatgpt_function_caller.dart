@@ -1,53 +1,58 @@
 import 'package:learninglens_app/Api/lms/lms_interface.dart';
-import 'package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart';
 import 'package:learninglens_app/beans/course.dart';
 import 'package:learninglens_app/beans/quiz.dart';
 import 'package:learninglens_app/beans/participant.dart';
 
 class ChatGPTFunctionCaller {
-  final LmsInterface moodleService;
-  ChatGPTFunctionCaller(this.moodleService);
+  final LmsInterface lmsService;
+  ChatGPTFunctionCaller(this.lmsService);
 
   /// The central dispatcher
   Future<String> handleFunctionCall(String functionName, Map<String, dynamic>? args) async {
-    switch (functionName) {
-      case "getUserCourses":
-        final userCourses = await moodleService.getUserCourses();
-        return _formatCourses(userCourses);
 
-      case "getQuizzes":
-        if (args == null || !args.containsKey("courseID")) {
-          return "Error: Missing required parameter 'courseID'.";
-        }
-        final quizzes = await moodleService.getQuizzes(args["courseID"]);
-        return _formatQuizzes(quizzes);
+    try{
+      switch (functionName) {
+        case "getUserCourses":
+          final userCourses = await lmsService.getUserCourses();
+          return _formatCourses(userCourses);
 
-      case "getQuizGradesForParticipants":
-        if (args == null || !args.containsKey("courseId") || !args.containsKey("quizId")) {
-          return "Error: Missing 'courseId' or 'quizId' argument.";
-        }
-        final participants = await moodleService.getQuizGradesForParticipants(
-          args["courseId"].toString(),
-          args["quizId"],
-        );
-        return _formatGrades(participants);
+        case "getQuizzes":
+          if (args == null || !args.containsKey("courseID")) {
+            return "Error: Missing required parameter 'courseID'.";
+          }
+          print(args);
+          final quizzes = await lmsService.getQuizzes(args["courseID"], topicId: args["quizTopicId"]);
+          return _formatQuizzes(quizzes);
 
-      // NEW: getCourseParticipants
-      case "getCourseParticipants":
-        if (args == null || !args.containsKey("courseId")) {
-          return "Error: Missing required parameter 'courseId'.";
-        }
-        final participants = await moodleService.getCourseParticipants(args["courseId"]);
-        return _formatParticipants(participants);
+        case "getQuizGradesForParticipants":
+          if (args == null || !args.containsKey("courseId") || !args.containsKey("quizId")) {
+            return "Error: Missing 'courseId' or 'quizId' argument.";
+          }
+          final participants = await lmsService.getQuizGradesForParticipants(
+            args["courseId"].toString(),
+            args["quizId"],
+          );
+          return _formatGrades(participants);
 
-      default:
-        return "Error: Unknown function '$functionName'.";
+        // NEW: getCourseParticipants
+        case "getCourseParticipants":
+          if (args == null || !args.containsKey("courseId")) {
+            return "Error: Missing required parameter 'courseId'.";
+          }
+          final participants = await lmsService.getCourseParticipants(args["courseId"]);
+          return _formatParticipants(participants);
+
+        default:
+          return "Error: Unknown function '$functionName'.";
+      }
+    } catch (e){
+      return "Method has not yet been implmeneted.";
     }
   }
 
   String _formatCourses(List<Course> courses) {
     if (courses.isEmpty) return "No enrolled courses found.";
-    return courses.map((c) => "Course: ${c.fullName} (ID: ${c.id})").join("\n");
+    return courses.map((c) => "Course: ${c.fullName} (ID: ${c.id}) (quizTopicId: ${c.quizTopicId})").join("\n");
   }
 
   String _formatQuizzes(List<Quiz> quizzes) {
