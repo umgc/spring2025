@@ -93,6 +93,7 @@ void main() {
         firstName: '',
         email: '',
         relationship: '',
+        preferredLanguage: '',
       );
 
       when(mockHttpClient.post(
@@ -178,6 +179,7 @@ void main() {
         email: '',
         relationship: '',
         fcmToken: '',
+        preferredLanguage: '',
       );
 
       when(mockHttpClient.post(

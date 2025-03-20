@@ -3,7 +3,7 @@
 
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:url_launcher/url_launcher.dart'; // To handle phone calls
+import 'package:url_launcher/url_launcher.dart';
 import '../models/emergency_request.dart';
 import 'package:memoryminder/models/emergency_type.dart';
 

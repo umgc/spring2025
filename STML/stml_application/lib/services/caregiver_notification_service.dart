@@ -475,4 +475,6 @@ class CaregiverNotificationService {
   void _sendErrorToMonitoring(LogRecord record) {
     // Implement error reporting integration (Sentry, Crashlytics, etc.)
   }
+
+  refreshToken() {}
 }
