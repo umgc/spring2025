@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:learninglens_app/Api/experimental/assistant/textbased_function_caller_view.dart';
 import 'package:learninglens_app/Api/lms/enum/lms_enum.dart';
 import 'package:learninglens_app/Api/experimental/assistant/chatgpt_function_caller_view.dart';
 import 'package:learninglens_app/Views/dashboard.dart';
@@ -84,7 +85,7 @@ class _CustomAppBarState extends State<CustomAppBar> {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => ChatGPTFunctionCallerView()),
+                  MaterialPageRoute(builder: (context) => TextBasedFunctionCallerView()),
                 );
               },
             ),

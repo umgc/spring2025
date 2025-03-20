@@ -5,7 +5,13 @@ import 'package:learninglens_app/services/api_service.dart';
 
 class PerplexityLLM implements LLM
 {
+  @override
   final String apiKey;
+  @override
+  final String url = 'https://api.perplexity.ai/chat/completions';
+  @override
+  final String model = 'llama-3.1-sonar-large-128k-online';
+
   PerplexityLLM(this.apiKey);
 
   Map<String, dynamic> convertHttpRespToJson(String httpResponseString) 
@@ -19,7 +25,7 @@ class PerplexityLLM implements LLM
     return jsonEncode({
       // 'model': 'llama-3-sonar-large-32k-online',
       //'model': 'llama-3.1-sonar-large-128k-chat',
-      'model': 'llama-3.1-sonar-large-128k-online',
+      'model': model,
       'messages': [
         {'role': 'system', 'content': 'Be precise and concise'},
         {'content': queryMessage, 'role': 'user'}
@@ -38,7 +44,7 @@ class PerplexityLLM implements LLM
   }
 
   //
-  Uri getPostUrl() => Uri.https('api.perplexity.ai', '/chat/completions');
+  Uri getPostUrl() => Uri.https(this.url);
 
   //
   Future<String> postMessage(

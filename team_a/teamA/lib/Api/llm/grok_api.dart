@@ -5,9 +5,14 @@ import 'package:learninglens_app/Api/llm/llm_api_modules_base.dart';
 import 'package:learninglens_app/services/api_service.dart';
 
 class GrokLLM implements LLM {
-  final String grokKey;
+  @override
+  final String apiKey;
+  @override
+  final String url = 'https://api.x.ai/v1/chat/completions';
+  @override
+  final String model = 'grok-2-latest';
 
-  GrokLLM(this.grokKey);
+  GrokLLM(this.apiKey);
 
   Map<String, dynamic> convertHttpRespToJson(String httpResponseString) {
     return (json.decode(httpResponseString) as Map<String, dynamic>);
@@ -18,7 +23,7 @@ class GrokLLM implements LLM {
   ///
   String getPostBody(String queryMessage) {
     return jsonEncode({
-      'model': 'grok-2-latest',
+      'model': model,
       'messages': [
         {'role': 'system', 'content': 'Be precise and concise'},
         {'role': 'user', 'content': queryMessage}
@@ -33,7 +38,7 @@ class GrokLLM implements LLM {
     return ({
       'accept': 'application/json',
       'Content-Type': 'application/json',
-      'Authorization': 'Bearer $grokKey',
+      'Authorization': 'Bearer $apiKey',
     });
   }
 
@@ -161,13 +166,13 @@ class GrokLLM implements LLM {
   
   @override
   Future<String> generate(String prompt) async {
-    final url = Uri.parse('https://api.xai.com/v1/chat/completions'); // Hypothetical endpoint
+    final url = Uri.parse(this.url); // Hypothetical endpoint
     final headers = {
-      'Authorization': 'Bearer $grokKey',
+      'Authorization': 'Bearer $apiKey',
       'Content-Type': 'application/json',
     };
     final body = jsonEncode({
-      'model': 'grok-2-latest', // Use the configurable model
+      'model': model, // Use the configurable model
       'messages': [
         {'role': 'user', 'content': prompt},
       ],

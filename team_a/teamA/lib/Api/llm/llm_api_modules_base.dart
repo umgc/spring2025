@@ -7,5 +7,11 @@ class Awesome {
 //This is the abstract class for the LLM API module
 //It has a single method called generate which takes a string prompt and returns a string
 abstract class LLM {
+  final String apiKey;
+  String get url; 
+  String get model;
+
+  LLM(this.apiKey);
+
   Future<String> generate(String prompt);
 }

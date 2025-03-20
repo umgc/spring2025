@@ -40,6 +40,44 @@ class PromptEngine {
       // 'Please use this XML sample as a template for your response: <?xml version="1.0" encoding="UTF-8"?><quiz><question type="essay"><name><text><![CDATA[ Name of assignment goes here ]]></text></name><questiontext format="html"><text><![CDATA[ Assignment description goes here ]]></text></questiontext><generalfeedback format="html"><text><![CDATA[ Assignment criteria goes here ]]></text></generalfeedback><defaultgrade>Maximum grade goes here</defaultgrade><penalty>0</penalty><hidden>0</hidden><responseformat>editorfilepicker</responseformat><responserequired>1</responserequired><responsefieldlines>15</responsefieldlines><attachments>0</attachments><attachmentsrequired>1</attachmentsrequired><rubric><rubric_criteria><criterion><description><text><![CDATA[ Criteria description goes here ]]></text></description><levels><level><score>Level 4, the highest criteria score goes here.</score><definition><text><![CDATA[ Level 4 criteria definition goes here ]]></text></definition></level><level><score>Level 3 criteria score goes here</score><definition><text><![CDATA[ Level 3 criteria definition goes here ]]></text></definition></level><level><score>Level 2 criteria score goes here</score><definition><text><![CDATA[ Level 2 criteria definition goes here ]]></text></definition></level><level><score>Level 1, the lowest criteria score goes here</score><definition><text><![CDATA[ Level 1 criteria definition goes here ]]></text></definition></level></levels></criterion></rubric_criteria></rubric></question></quiz><dataset><data><inputs><input>Input goes here</input></inputs><expectedoutput>Expected output goes here</expectedoutput></data></dataset> ';
   // 'Please use this XML sample as a template for your response: <?xml version="1.0" encoding="UTF-8"?><quiz><question type="essay"><name><text>Recursive Functions in Dart</text></name><questiontext format="html"><text>Implement a recursive function in Dart that calculates the nth Fibonacci number. The Fibonacci sequence is defined as follows: the first two numbers are 0 and 1, and each subsequent number is the sum of the two preceding ones. Your function should take an integer n as input and return the nth Fibonacci number. Additionally, explain the time complexity of your recursive solution and suggest how you might optimize it using memoization. Provide your code implementation and explanation below.</text></questiontext><generalfeedback format="html"><text>A well-implemented recursive Fibonacci function should correctly calculate the nth Fibonacci number. The explanation should discuss the exponential time complexity of the naive recursive solution and how memoization can improve it to linear time complexity.</text></generalfeedback><defaultgrade>10</defaultgrade><penalty>0</penalty><hidden>0</hidden><responseformat>editor</responseformat><responserequired>1</responserequired><responsefieldlines>15</responsefieldlines><attachments>0</attachments></question></quiz>';
 
+  static const prompt_assistant = """
+        You are EduLense, a specialized e-learning assistant. You have these possible functions:
+        1) getUserCourses()
+        2) getCourseParticipants(courseId=?)
+        3) getQuizzes(courseID=?, quizTopicId=?)
+        4) getQuizGradesForParticipants(courseId=?, quizId=?)
+
+        If you need to call a function to fulfill the user's request, 
+        respond EXACTLY in the format (on a single line):
+          CALL functionName(arg1=value1, arg2=value2)
+
+        You can make multiple function calls if you need step-by-step data:
+        - For example, if the user says "What quizzes do I have for my Math course?",
+          you might first call: 
+            CALL getUserCourses()
+          to find the course ID for "Math" (like 101).
+        - Then parse that result. If you see "Math 101 (ID: 101, quizTopicId: 201)",
+          call:
+            CALL getQuizzes(courseID=101, quizTopicId=)
+        - Once you have the quizzes, produce a final text answer (like "You have a midterm quiz...").
+
+        Avoid calling getUserCourses() repeatedly if you already have the data.
+
+        If you do not need any function call, just provide a direct answer in plain text.
+
+        Example conversation:
+        User: "Who is in my Math course?"
+        You might do:
+        CALL getUserCourses()
+        (assume the result shows "Math 101" => ID=101)
+        Then:
+        CALL getCourseParticipants(courseId=101)
+        Finally, once you get the participants, answer in plain text.
+
+        Always provide a final text summary once you have enough data from function calls.
+        Do not keep calling functions indefinitely.
+        """;
+        
   static String _FormatQuestionNumbers(AssignmentForm form) {
     String ret = 'The quiz should have ';
     List<String> questionsCount = <String>[];

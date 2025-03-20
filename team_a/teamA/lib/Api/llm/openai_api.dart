@@ -5,8 +5,13 @@ import 'package:learninglens_app/Api/llm/llm_api_modules_base.dart';
 import 'package:learninglens_app/services/api_service.dart';
 
 class OpenAiLLM implements LLM {
-  final String openAiKey;
-  OpenAiLLM(this.openAiKey);
+  @override
+  final String apiKey;
+  @override
+  final String url = 'https://api.openai.com/v1/chat/completions';
+  @override
+  final String model = 'gpt-4o-mini';
+  OpenAiLLM(this.apiKey);
 
   Map<String, dynamic> convertHttpRespToJson(String httpResponseString) {
     return (json.decode(httpResponseString) as Map<String, dynamic>);
@@ -17,7 +22,7 @@ class OpenAiLLM implements LLM {
   ///
   String getPostBody(String queryMessage) {
     return jsonEncode({
-      'model': 'gpt-4o-mini',
+      'model': model,
       'messages': [
         {'role': 'system', 'content': 'Be precise and concise'},
         {'role': 'user', 'content': queryMessage}
@@ -32,7 +37,7 @@ class OpenAiLLM implements LLM {
     return ({
       'accept': 'application/json',
       'content-type': 'application/json',
-      'authorization': 'Bearer $openAiKey',
+      'authorization': 'Bearer $apiKey',
     });
   }
 
@@ -159,13 +164,13 @@ class OpenAiLLM implements LLM {
   Future<String> generate(String prompt) async {
     print("In generate - prompt : $prompt");
   
-final url = Uri.parse('https://api.openai.com/v1/chat/completions');
+final url = Uri.parse(this.url);
     final headers = {
-      'Authorization': 'Bearer $openAiKey',
+      'Authorization': 'Bearer $apiKey',
       'Content-Type': 'application/json',
     };
     final body = jsonEncode({
-      'model': 'gpt-4o-mini', 
+      'model': model, 
       'messages': [
         {'role': 'system', 'content': 'You are a helpful assistant.'},
         {'role': 'user', 'content': prompt},
