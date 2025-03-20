@@ -104,7 +104,7 @@ class WelcomePage extends StatelessWidget {
                 const SizedBox(height: 15),
                 OutlinedButton(
                   onPressed: () {
-                    // TODO: Implement account creation
+                    // TODO: Implement account creations
                   },
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
