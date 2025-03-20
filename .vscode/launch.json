@@ -1,0 +1,88 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "team_a",
+            "cwd": "team_a",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "team_a (profile mode)",
+            "cwd": "team_a",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "team_a (release mode)",
+            "cwd": "team_a",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "stml_application",
+            "cwd": "STML\\stml_application",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "stml_application (profile mode)",
+            "cwd": "STML\\stml_application",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "stml_application (release mode)",
+            "cwd": "STML\\stml_application",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "teamA",
+            "cwd": "team_a\\teamA",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "teamA (profile mode)",
+            "cwd": "team_a\\teamA",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "teamA (release mode)",
+            "cwd": "team_a\\teamA",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "yappy",
+            "cwd": "team_b\\yappy",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "yappy (profile mode)",
+            "cwd": "team_b\\yappy",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "yappy (release mode)",
+            "cwd": "team_b\\yappy",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        }
+    ]
+}
