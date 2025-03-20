@@ -14,6 +14,7 @@ import 'package:memoryminder/ui/profile_screen.dart';
 import 'package:memoryminder/src/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 // Main HomeScreen widget which is a stateless widget.
 class CaregiverDashboardScreen extends StatefulWidget {
@@ -33,6 +34,16 @@ class _CaregiverDashboardScreen extends State<CaregiverDashboardScreen> {
     _careRecipientData = ManageCareRecipientService().getAllCareRecipients();
   }
 
+  Future<void> _callEmergencyNumber() async {
+    const phoneNumber =
+        'tel:911'; // Remplacez par le numéro d'urgence approprié
+    if (await canLaunch(phoneNumber)) {
+      await launch(phoneNumber);
+    } else {
+      throw 'Could not launch $phoneNumber';
+    }
+  }
+
   @override
   void dispose() {
     NotificationStreamService().dispose();
@@ -47,7 +58,6 @@ class _CaregiverDashboardScreen extends State<CaregiverDashboardScreen> {
         appBar: const CustomAppBar(
           title: 'Caregiver Dashboard',
         ),
-
         body: Container(
           decoration: BoxDecoration(
             image: DecorationImage(
@@ -112,7 +122,6 @@ class _CaregiverDashboardScreen extends State<CaregiverDashboardScreen> {
                   ),
                 ),
               ),
-
               const Divider(
                 color: Colors.black54,
                 thickness: 2,
@@ -120,7 +129,33 @@ class _CaregiverDashboardScreen extends State<CaregiverDashboardScreen> {
                 indent: 20,
                 endIndent: 20,
               ),
-
+              const Divider(
+                color: Colors.black54,
+                thickness: 2,
+                height: 10,
+                indent: 20,
+                endIndent: 20,
+              ),
+              ElevatedButton(
+                onPressed: _callEmergencyNumber,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor:
+                      Colors.red, // Couleur rouge pour indiquer l'urgence
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                ),
+                child: const Text(
+                  'Emergency Call',
+                  style: TextStyle(fontSize: 18, color: Colors.white),
+                ),
+              ),
+              const Divider(
+                color: Colors.black54,
+                thickness: 2,
+                height: 10,
+                indent: 20,
+                endIndent: 20,
+              ),
               Padding(
                 padding: EdgeInsets.fromLTRB(2.0, 2, 2.0, 2),
                 child: Column(
@@ -138,7 +173,8 @@ class _CaregiverDashboardScreen extends State<CaregiverDashboardScreen> {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => AddCareRecipientForm()),
+                          MaterialPageRoute(
+                              builder: (context) => AddCareRecipientForm()),
                         );
                       },
                       icon: Icon(
@@ -149,18 +185,17 @@ class _CaregiverDashboardScreen extends State<CaregiverDashboardScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green,
                         foregroundColor: Colors.black,
-                        padding: EdgeInsets.fromLTRB(2.0, 2, 16.0, 2), // Apply padding here
+                        padding: EdgeInsets.fromLTRB(
+                            2.0, 2, 16.0, 2), // Apply padding here
                       ),
                     ),
                   ],
                 ),
               ),
-
-
               Expanded(
-                  child: _buildCareRecipientsGrid(
-                    context: context,
-                  ),
+                child: _buildCareRecipientsGrid(
+                  context: context,
+                ),
               ),
               const Divider(
                 color: Colors.black,
@@ -187,61 +222,64 @@ class _CaregiverDashboardScreen extends State<CaregiverDashboardScreen> {
             final data = snapshot.data!;
             return GridView.builder(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3, // Adjust as needed
-                childAspectRatio: 1.0,
-                mainAxisSpacing: 3,
-                crossAxisSpacing: 3
-              ),
+                  crossAxisCount: 3, // Adjust as needed
+                  childAspectRatio: 1.0,
+                  mainAxisSpacing: 3,
+                  crossAxisSpacing: 3),
               itemCount: data.length,
               itemBuilder: (context, index) {
                 final item = data[index];
-                final String labelText = '${item['firstName'].toString()} ${item['lastName'].toString()}';
+                final String labelText =
+                    '${item['firstName'].toString()} ${item['lastName'].toString()}';
                 final careRecipient = CareRecipient.fromMap(item);
-                return InkWell( // Or InkWell for ripple effect
-                  onTap: () {
-                    // Handle item click
-                    print('Item ${item['firstName'].toString()} clicked');
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => CareRecipientProfileScreen(careRecipientId: item['itemId'].toString(), careRecipientData: careRecipient.toMap())),
-                    );
-                  },
-                  borderRadius: BorderRadius.circular(12.0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.lightGreen[100],
-                      borderRadius: BorderRadius.circular(12.0),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.lightGreen.withOpacity(0.5),
-                          spreadRadius: 1,
-                          blurRadius: 3,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    padding: const EdgeInsets.all(3.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        Icon(
-                          Icons.person,
-                          size: 40.0,
-                          color: Colors.green,
-                        ),
-                        const SizedBox(height: 8.0),
-                        Text(
-                          labelText,
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black87,
+                return InkWell(
+                    // Or InkWell for ripple effect
+                    onTap: () {
+                      // Handle item click
+                      print('Item ${item['firstName'].toString()} clicked');
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => CareRecipientProfileScreen(
+                                careRecipientId: item['itemId'].toString(),
+                                careRecipientData: careRecipient.toMap())),
+                      );
+                    },
+                    borderRadius: BorderRadius.circular(12.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.lightGreen[100],
+                        borderRadius: BorderRadius.circular(12.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.lightGreen.withOpacity(0.5),
+                            spreadRadius: 1,
+                            blurRadius: 3,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      padding: const EdgeInsets.all(3.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          Icon(
+                            Icons.person,
+                            size: 40.0,
+                            color: Colors.green,
+                          ),
+                          const SizedBox(height: 8.0),
+                          Text(
+                            labelText,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black87,
                             ),
                           ),
                         ],
                       ),
-                  )
-                );
+                    ));
               },
             );
           } else if (snapshot.hasError) {
@@ -307,5 +345,3 @@ class _CaregiverDashboardScreen extends State<CaregiverDashboardScreen> {
     );
   }
 }
-
-

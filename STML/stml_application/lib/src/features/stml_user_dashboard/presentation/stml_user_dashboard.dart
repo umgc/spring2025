@@ -1,9 +1,11 @@
 // ignore_for_file: avoid_print, prefer_const_constructors
 // Imported libraries and packages
 
+import 'package:memoryminder/services/notification_service.dart';
 import 'package:memoryminder/src/features/caregiver-dashboard/presentation/app_bar.dart';
 import 'package:memoryminder/src/features/caregiver-dashboard/presentation/caregiver-dashboard.dart';
 import 'package:memoryminder/ui/dementia_resources.dart';
+import 'package:memoryminder/ui/help_screen.dart';
 import 'package:memoryminder/ui/response_screen.dart';
 import 'package:memoryminder/ui/assistant_screen.dart';
 import 'package:memoryminder/src/features/sensitive_information_detection/presentation/audio_screen.dart';
@@ -134,13 +136,12 @@ class _HomeScreenState extends State<HomeScreen> {
                             const Color(0xFF000000).withOpacity(0.30)),
                     _buildElevatedButton(
                         context: context,
-                        icon: Icon(Icons.location_history,
-                            size: iconSize, color: Colors.black54),
+                        icon: Icon(Icons.help_outline,
+                            size: iconSize, color: Colors.white),
                         text: 'HELP',
-                        screen: LocationHistoryScreen(),
+                        screen: HelpScreen(),
                         keyName: "HelpButtonKey",
-                        backgroundColor:
-                            const Color(0xFFFFFFFF).withOpacity(0.30)),
+                        backgroundColor: Colors.red.withOpacity(0.80)),
                     _buildElevatedButton(
                         context: context,
                         icon: Icon(Icons.photo,
