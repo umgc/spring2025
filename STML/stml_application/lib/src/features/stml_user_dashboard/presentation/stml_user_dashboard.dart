@@ -92,12 +92,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         // Main content of the screen
         body: Container(
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage("assets/images/background.jpg"),
-              fit: BoxFit.cover,
-            ),
-          ),
+
           child: Column(
             children: [
               const Padding(
@@ -219,8 +214,7 @@ class _HomeScreenState extends State<HomeScreen> {
       key: Key(keyName),
       style: ElevatedButton.styleFrom(
         foregroundColor: Colors.black,
-        backgroundColor: backgroundColor ??
-            const Color(0xFFFFFFFF).withOpacity(0.30), // Button text color
+        backgroundColor: Colors.lightBlue[100],
         padding: const EdgeInsets.all(16.0),
         elevation: 0.0,
         shape: RoundedRectangleBorder(
@@ -243,7 +237,7 @@ class _HomeScreenState extends State<HomeScreen> {
             style: const TextStyle(
               fontSize: 13.0,
               fontWeight: FontWeight.bold,
-              color: Color(0XFF000000),
+              color: Colors.black,
             ),
             textAlign: TextAlign.center,
           ),
