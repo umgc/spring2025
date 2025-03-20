@@ -1,8 +1,14 @@
 # Uncomment this line to define a global platform for your project
 platform :ios, '14.0'
+# Force Firebase to use the correct version
+$FirebaseSDKVersion = '11.8.0'
+
+
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
+
+
 
 project 'Runner', {
   'Debug' => :debug,
@@ -28,21 +34,35 @@ require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelpe
 flutter_ios_podfile_setup
 
 target 'Runner' do
-  use_frameworks!
-  use_modular_headers!
+ use_modular_headers!
+
+  
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
+
+   # ✅ Fix modular headers for Firebase
+   pod 'Firebase/Core'
+   pod 'Firebase/Messaging' 
+   pod 'Firebase/Analytics' 
+   pod 'GoogleMaps'
+ 
+   
+
+
+   #RunnerTests target
   target 'RunnerTests' do
     inherit! :search_paths
+
+    
   end
 end
 
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
-
-  target.build_configurations.each do |config|
-      config.build_settings['SWIFT_VERSION'] = '5.0'
+    target.build_configurations.each do |config|
+      config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
+      config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'  # ✅ Fix for modular header issue
     end
   end
-end
+end  
