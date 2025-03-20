@@ -19,7 +19,6 @@ import 'package:memoryminder/src/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:memoryminder/features/caregiver_task_management/caregiver_task_screen.dart';
 
-
 // Main HomeScreen widget which is a stateless widget.
 class HomeScreen extends StatefulWidget {
   @override
@@ -125,82 +124,77 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     // Using the helper function to build each button in the grid
                     _buildElevatedButton(
-                      context: context,
-                      icon: Icon(Icons.home_filled,
-                          size: iconSize, color: Colors.black54),
-                      text: 'Take Me Home',
-                      screen: ProfileScreen(),
-                      keyName: "TakeMeHomeButtonKey",
-                      backgroundColor: const Color(0xFF000000).withOpacity(0.30)
-                    ),
+                        context: context,
+                        icon: Icon(Icons.home_filled,
+                            size: iconSize, color: Colors.black54),
+                        text: 'Take Me Home',
+                        screen: ProfileScreen(),
+                        keyName: "TakeMeHomeButtonKey",
+                        backgroundColor:
+                            const Color(0xFF000000).withOpacity(0.30)),
                     _buildElevatedButton(
-                      context: context,
-                      icon: Icon(Icons.location_history,
-                          size: iconSize, color: Colors.black54),
-                      text: 'HELP',
-                      screen: LocationHistoryScreen(),
-                      keyName: "HelpButtonKey",
-                      backgroundColor: const Color(0xFFFFFFFF).withOpacity(0.30)
-                    ),
+                        context: context,
+                        icon: Icon(Icons.location_history,
+                            size: iconSize, color: Colors.black54),
+                        text: 'HELP',
+                        screen: LocationHistoryScreen(),
+                        keyName: "HelpButtonKey",
+                        backgroundColor:
+                            const Color(0xFFFFFFFF).withOpacity(0.30)),
                     _buildElevatedButton(
-                      context: context,
-                      icon: Icon(Icons.photo,
-                          size: iconSize, color: Colors.black54),
-                      text: 'Gallery',
-                      screen: GalleryScreen(),
-                      keyName: "GalleryButtonKey",
-                      backgroundColor: const Color(0xFFFFFFFF).withOpacity(0.30)
-
-                    ),
+                        context: context,
+                        icon: Icon(Icons.photo,
+                            size: iconSize, color: Colors.black54),
+                        text: 'Gallery',
+                        screen: GalleryScreen(),
+                        keyName: "GalleryButtonKey",
+                        backgroundColor:
+                            const Color(0xFFFFFFFF).withOpacity(0.30)),
                     _buildElevatedButton(
-                      context: context,
-                      icon: Icon(Icons.search,
-                          size: iconSize, color: Colors.black54),
-                      text: 'My Tasks',
-                      screen: ResponseScreen(),
-                      keyName: "MyTasksButtonKey",
-                      backgroundColor: const Color(0xFFFFFFFF).withOpacity(0.30)
-                    ),
+                        context: context,
+                        icon: Icon(Icons.search,
+                            size: iconSize, color: Colors.black54),
+                        text: 'My Tasks',
+                        screen: ResponseScreen(),
+                        keyName: "MyTasksButtonKey",
+                        backgroundColor:
+                            const Color(0xFFFFFFFF).withOpacity(0.30)),
                     _buildElevatedButton(
-                      context: context,
-                      icon: Icon(Icons.mic_rounded,
-                          size: iconSize, color: Colors.black54),
-                      text: 'Record Notes / Audio',
-                      screen: AudioScreen(),
-                      keyName: "AudioRecordingButtonKey",
-                      backgroundColor: const Color(0xFFFFFFFF).withOpacity(0.30)
-                    ),
+                        context: context,
+                        icon: Icon(Icons.mic_rounded,
+                            size: iconSize, color: Colors.black54),
+                        text: 'Record Notes / Audio',
+                        screen: AudioScreen(),
+                        keyName: "AudioRecordingButtonKey",
+                        backgroundColor:
+                            const Color(0xFFFFFFFF).withOpacity(0.30)),
                     _buildElevatedButton(
-                      context: context,
+                        context: context,
+                        icon: Icon(Icons.warning_amber_rounded,
+                            size: iconSize, color: Colors.black54),
+                        text: 'Scam Detection',
+                        screen: ScamDetectionScreen(),
+                        keyName: "potentialScamScanner",
+                        backgroundColor:
+                            const Color(0xFFFFFFFF).withOpacity(0.30)),
                     _buildElevatedButton(
-                      context: context,
-                      icon: Icon(Icons.warning_amber_rounded,
-                          size: iconSize, color: Colors.black54),
-                      text: 'Scam Detection',
-                      screen: ScamDetectionScreen(),
-                      keyName: "potentialScamScanner",
-                    ),
+                        context: context,
+                        icon: Icon(Icons.health_and_safety_outlined,
+                            size: iconSize, color: Colors.black54),
+                        text: 'My Health',
+                        screen: TourScreen(),
+                        keyName: "TourGuideButtonKey",
+                        backgroundColor:
+                            const Color(0xFFFFFFFF).withOpacity(0.30)),
                     _buildElevatedButton(
-                      context: context,
-                      icon: Icon(Icons.bookmark_outline,
-                          size: iconSize, color: Colors.black54),
-                      text: 'Caregiver Dashboard',
-                      screen: CaregiverDashboardScreen(),
-                      keyName: "DementiaResourcesButtonKey",
-                      icon: Icon(Icons.health_and_safety_outlined,
-                          size: iconSize, color: Colors.black54),
-                      text: 'My Health',
-                      screen: TourScreen(),
-                      keyName: "TourGuideButtonKey",
-                      backgroundColor: const Color(0xFFFFFFFF).withOpacity(0.30)
-                    ),
-                    _buildElevatedButton(
-                      context: context,
-                      icon: Icon(Icons.task_alt, size: iconSize, color: Colors.black54),
-                      text: 'Caregiver Tasks',
-                      screen: CaregiverTaskScreen(),
-                      keyName: "CaregiverTaskButtonKey",
-                    ),
+                        context: context,
+                        icon: Icon(Icons.task_alt,
+                            size: iconSize, color: Colors.black54),
+                        text: 'Caregiver Tasks',
+                        screen: CaregiverTaskScreen(),
+                        keyName: "CaregiverTaskButtonKey",
+                        backgroundColor:
+                            const Color(0xFFFFFFFF).withOpacity(0.30)),
                   ],
                 ),
               ),
@@ -225,7 +219,8 @@ class _HomeScreenState extends State<HomeScreen> {
       key: Key(keyName),
       style: ElevatedButton.styleFrom(
         foregroundColor: Colors.black,
-        backgroundColor: backgroundColor ?? const Color(0xFFFFFFFF).withOpacity(0.30), // Button text color
+        backgroundColor: backgroundColor ??
+            const Color(0xFFFFFFFF).withOpacity(0.30), // Button text color
         padding: const EdgeInsets.all(16.0),
         elevation: 0.0,
         shape: RoundedRectangleBorder(
