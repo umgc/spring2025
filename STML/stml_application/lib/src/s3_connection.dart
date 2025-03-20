@@ -10,120 +10,147 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:aws_s3_api/s3-2006-03-01.dart';
-import 'package:memoryminder/src/utils/file_manager.dart';
-import 'package:memoryminder/src/utils/logger.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:memoryminder/src/utils/logger.dart';
+import 'package:memoryminder/src/features/sensitive_information_detection/domain/audio_service.dart';
+import 'package:memoryminder/src/features/sensitive_information_detection/domain/transcription_service.dart';
 
-class S3Bucket {
-  S3? connection;
+class S3Service {
+  S3? _connection;
 
-  //attribute for singleton implementation
-  static final S3Bucket _instance = S3Bucket._internal();
+  // Attribute for singleton implementation
+  static final S3Service _instance = S3Service._internal();
+  factory S3Service() => _instance;
 
-  //method for singleton implementation
-  S3Bucket._internal() {
-    //initialize the service on object load
-    startService().then((value) {
-      createBucket();
+  S3Service._internal() {
+    _initializeS3().then((_) {
+      _createBucket();
     });
   }
 
-  //constructor for singlton implementation
-  factory S3Bucket() {
-    return _instance;
-  }
+  final TranscriptionService _transcriptionService = TranscriptionService();
+  final AudioService _audioService = AudioService();
 
   //establish connection based on .env values
-  Future<void> startService() async {
+  Future<void> _initializeS3() async {
     await dotenv.load(fileName: ".env"); //load .env file variables
 
-    //Known deficiency - no option to select sub-regions (ex: us-east-2), so configure for lead (ex: us-east-1) for consistency in AWS services
+    // Known deficiency - no option to select sub-regions (ex: us-east-2), so configure for lead (ex: us-east-1) for consistency in AWS services
     String region = (dotenv.get('region', fallback: "none"));
     String access = (dotenv.get('accessKey', fallback: "none"));
     String secret = (dotenv.get('secretKey', fallback: "none"));
 
     if (region == "none" || access == "none" || secret == "none") {
-      appLogger.severe("S3 needs to be initialized");
+      appLogger.severe("AWS S3 is not properly configured in .env file.");
       return;
     }
 
-    connection = S3(
+    _connection = S3(
         //this region is hard-coded because the 'us-east-2' region would not run/load.
         region: region,
         credentials:
             AwsClientCredentials(accessKey: access, secretKey: secret));
-    appLogger.info("S3 is connected...");
+    appLogger.info("AWS S3 connection established.");
   }
 
-  void createBucket() {
-    String bucket = (dotenv.get('videoS3Bucket', fallback: "none"));
+  // Creates the S3 bucket if it does not exist
+  void _createBucket() {
+    String bucketName = (dotenv.get('videoS3Service', fallback: "none"));
 
-    if (bucket == "none") {
-      appLogger.severe("S3 needs to be initialized");
+    if (bucketName == "none") {
+      appLogger.severe("S3 bucket is not configured");
       return;
     }
-    //impotent method that creates bucket if it is not already present.
+    // Important method that creates bucket if it is not already present.
     Future<CreateBucketOutput> creating =
-        connection!.createBucket(bucket: dotenv.get('videoS3Bucket'));
-    creating.then((value) {
-      appLogger.info("Bucket is created");
-    });
+        _connection!.createBucket(bucket: bucketName);
+    creating.then((_) => appLogger.info("S3 Bucket is set up."));
   }
 
-  Future<String> addAudioToS3(String title, String localPath) {
-    // TODO Specify folder structure
+  // Uploads an audio file to S3 and returns the full URL
+  Future<String?> addAudioToS3(String title, String localPath) async {
+    String fileName = title.endsWith('.wav') ? title : "$title.wav";
+
     Uint8List bytes = File(localPath).readAsBytesSync();
-    return _addToS3(title, bytes);
+    return _addToS3("audio", fileName, bytes);
   }
 
-  Future<String> addImageToS3(String title, String filepath) async {
-    // TODO Specify folder structure
+  // Uploads an image file to S3 and returns the full URL
+  Future<String?> addImageToS3(String title, String filepath) async {
     Uint8List bytes = File(filepath).readAsBytesSync();
-    return _addToS3("/images/$title", bytes);
+    return _addToS3("images", title, bytes);
   }
 
-  Future<String> addFileToS3(String title, String manifest) async {
-    // TODO Specify folder structure
+  // Uploads a video file to S3 and returns the full URL
+  Future<String?> addVideoToS3(String title, String localPath) {
+    Uint8List bytes = File(localPath).readAsBytesSync();
+    return _addToS3("video", title, bytes);
+  }
+
+  Future<String?> addFileToS3(String title, String manifest) async {
     List<int> list = utf8.encode(manifest);
     Uint8List bytes = Uint8List.fromList(list);
     //use utf8.decode(bytes) to bring back into String.
-    return _addToS3(title, bytes);
+    return _addToS3("files", title, bytes);
   }
 
-  Future<String> addVideoToS3(String title, String localPath) {
-    // TODO Specify folder structure
-    appLogger.info("ADDING THIS TO S3 $title");
-    Uint8List bytes = File(localPath).readAsBytesSync();
-    return _addToS3(title, bytes);
+  // Processes the recorded audio file: uploads to S3 and starts transcription.
+  Future<String> uploadAudioAndTranscribe() async {
+    try {
+      if (!_audioService.isRecorderStopped()) {
+        throw Exception("Recording is not stopped.");
+      }
+
+      // Get recorded file path from AudioService
+      String filePath = await _audioService.getRecordedFilePath();
+      String fileName = filePath.split('/').last;
+
+      // Upload to S3
+      final s3Service = S3Service();
+      String s3Url = await s3Service.addAudioToS3(fileName, filePath) ??
+          ""; // Ensures a non-null value
+
+      // Start Transcription
+      await _transcriptionService.transcribeAudio(
+          s3Url, DateTime.now().millisecondsSinceEpoch.toString());
+
+      return s3Url;
+    } catch (e) {
+      appLogger.severe("Error processing recording: $e");
+      throw Exception("Error processing recording.");
+    }
   }
 
-  //adds the Video to the S3 bucket
-  //if the file already exists with that name, it is overwritten
-  //method returns the name of the file being uploaded (used in queueing the object detection)
-  Future<String> _addToS3(String title, Uint8List content) async {
-    // TODO: Add logic to detect file type and create a folder
-    // .mp3 files go to bucket/audio, .mp4 files go to bucket/video
+  // Private method to upload files to S3 under a specific folder
+  Future<String?> _addToS3(
+      String folder, String title, Uint8List content) async {
+    if (_connection == null) await _initializeS3();
 
-    //^^ logic for this todo would be to include a "String prefix" parameter (for 'videos', 'images', etc.).
-    // The "formattedTitle" method clears any folder path information, so one would need to append it back on
-    // prior to content upload to S3
+    String bucketName = dotenv.get('videoS3Bucket');
+    if (bucketName == "none") {
+      appLogger.severe("S3 bucket name is not set in .env");
+      return null;
+    }
 
-    String formattedTitle = FileManager.getFileNameForAWS(title);
-    await connection!.putObject(
-      bucket: dotenv.get('videoS3Bucket'),
-      key: formattedTitle,
-      body: content,
-    );
-    appLogger.info("content added to bucket: $formattedTitle");
-    return title;
+    String uniqueFileName = "${DateTime.now().millisecondsSinceEpoch}_$title";
+    String s3Key = "$folder/$uniqueFileName";
+
+    await _connection!.putObject(bucket: bucketName, key: s3Key, body: content);
+
+    String s3Url = "https://$bucketName.s3.amazonaws.com/$s3Key";
+    appLogger.info("File uploaded to S3: $s3Url");
+    return s3Url;
   }
 
-  // Delete file from S3
+  // Deletes a file from S3
   Future<bool> deleteFileFromS3(String key) async {
     try {
-      await connection!
+      if (_connection == null) await _initializeS3();
+
+      await _connection!
           .deleteObject(bucket: dotenv.get('videoS3Bucket'), key: key);
+      appLogger.info("File deleted from S3: $key");
       return true;
     } catch (e) {
       appLogger.severe('Failed to delete the file from S3: $e');

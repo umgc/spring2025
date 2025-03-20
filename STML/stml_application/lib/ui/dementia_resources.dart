@@ -94,47 +94,58 @@ class _DementiaResourcesScreenState extends State<DementiaResourcesScreen> {
         title: Text("Dementia Resources"),
         backgroundColor: Colors.blueAccent,
       ),
-      body: FutureBuilder<List<ResourceEntry>>(
-        future: _fetchSearchResults(), // The Future you want to await
-        builder: (context, snapshot) {
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/background.jpg'), // Replace with your image path
+            fit: BoxFit.cover,
+          ),
+        ),
+
+        child: FutureBuilder<List<ResourceEntry>>(
+                  future: _fetchSearchResults(), // The Future you want to await
+                  builder: (context, snapshot) {
           // Handle different states of the Future
 
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            // While data is being fetched
-            return Center(child: CircularProgressIndicator());
-          }
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              // While data is being fetched
+              return Center(child: CircularProgressIndicator());
+            }
 
-          if (snapshot.hasError) {
-            // If there was an error
-            return Center(child: Text('Error: ${snapshot.error}'));
-          }
+            if (snapshot.hasError) {
+              // If there was an error
+              return Center(child: Text('Error: ${snapshot.error}'));
+            }
 
-          if (snapshot.hasData) {
-            // If data is available
-            final resources = snapshot.data!;
+            if (snapshot.hasData) {
+              // If data is available
+              final resources = snapshot.data!;
 
-            return ListView.builder(
-              itemCount: resources.length,
-              itemBuilder: (context, index) {
-                final resource = resources[index];
-                return Card(
-                  margin: EdgeInsets.symmetric(vertical: 8.0),
-                  child: ListTile(
-                    leading: Icon(Icons.bookmark_outline),
-                    title: Text(resource.text),
-                    subtitle: Text(resource.displayLink),
-                    onTap: () {
-                      _launchURL(resource.link); // Open the link
-                    },
-                  ),
+              return ListView.builder(
+                itemCount: resources.length,
+                itemBuilder: (context, index) {
+                    final resource = resources[index];
+                    return Card(
+                      margin: EdgeInsets.symmetric(vertical: 8.0),
+                      child: ListTile(
+                        leading: Icon(Icons.bookmark_outline),
+                        title: Text(resource.text),
+                        subtitle: Text(resource.displayLink, style: TextStyle(color: Colors.blue,)),
+                        onTap: () {
+                          _launchURL(resource.link); // Open the link
+                        },
+                      ),
+                    );
+                  },
                 );
-              },
-            );
-          }
+              }
 
-          return Center(child: Text("No data available"));
-        },
-      ),
+            return Center(child: Text("No data available"));
+          },
+
+
+        ),
+      )
     );
   }
 }
