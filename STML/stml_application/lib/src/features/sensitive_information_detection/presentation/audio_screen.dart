@@ -1,5 +1,6 @@
 // ignore_for_file: avoid_print, prefer_const_constructors
 // Importing required packages and screens.
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:memoryminder/src/data_service.dart';
 import 'package:memoryminder/src/features/sensitive_information_detection/domain/audio.dart';
 import 'package:memoryminder/src/s3_connection.dart';
@@ -164,7 +165,7 @@ class _AudioScreenState extends State<AudioScreen> {
         codec: Codec.pcm16WAV,
         sampleRate: 16000,
         numChannels: 1,
-        bitRate: 134000);
+        bitRate: 140000);
     setState(() {
       _isRecording = true;
     });
@@ -203,38 +204,53 @@ class _AudioScreenState extends State<AudioScreen> {
 
   // Function to handle starting the playback of the recorded audio.
   Future<void> _startPlayback() async {
-    if (_player!.isPlaying) {
-      // If the player is currently playing, pause it
-      await _player!.pausePlayer();
-      setState(() {
-        _isPlaying = false;
-        _isPaused = true;
-      });
-    } else if (_isPaused) {
-      // If the player is paused, resume playback
-      await _player!.resumePlayer();
-      setState(() {
-        _isPlaying = true;
-        _isPaused = false;
-      });
-    } else {
-      // If the player is stopped, start playing
-      await _player!.openPlayer();
+    if (_pathToSaveRecording == null || _pathToSaveRecording!.isEmpty) {
+      print("🚨 Error: No file path found for playback.");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Playback failed: No recording found')),
+      );
+      return;
+    }
+
+    File recordedFile = File(_pathToSaveRecording!);
+
+    if (!recordedFile.existsSync() || recordedFile.lengthSync() == 0) {
+      print("🚨 Error: The file does not exist or is empty.");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+            content: Text('Playback failed: File is missing or corrupted')),
+      );
+      return;
+    }
+
+    try {
+      // Ensure the player is open
+      if (!_player!.isOpen()) {
+        await _player!.openPlayer();
+      }
+
+      // Start Playback
       await _player!.startPlayer(
         fromURI: _pathToSaveRecording,
+        codec: Codec.pcm16WAV, // Make sure this matches the recording codec
         whenFinished: () {
           setState(() {
             _isPlaying = false;
-            _isPaused = false;
           });
-          _player!.closePlayer();
+          _player!.closePlayer(); // Close player when finished
         },
       );
 
       setState(() {
         _isPlaying = true;
-        _isPaused = false;
       });
+
+      print("🎵 Playback started: $_pathToSaveRecording");
+    } catch (e) {
+      print("🚨 Error during playback: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Playback failed: $e')),
+      );
     }
   }
 
@@ -418,7 +434,7 @@ class _AudioScreenState extends State<AudioScreen> {
             {
               'role': 'user',
               'content':
-                  'Redact sensitive personal information from this content: $content'
+                  'Does this content contain sensitive personal information?: $content'
             } // Your actual request
           ],
           'max_tokens': 500, // Adjust this as we need to
@@ -436,6 +452,12 @@ class _AudioScreenState extends State<AudioScreen> {
         var summary =
             jsonResponse['choices'][0]['message']['content']?.trim() ?? "";
 
+        if (summary.toLowerCase().contains("yes")) {
+          print("Sensitive Information Detected!");
+          sendFirebaseNotification("Sensitive Data Alert",
+              "Sensitive information detected in your transcript.");
+        }
+
         if (summary.isEmpty) {
           throw Exception("OpenAI response was empty");
         }
@@ -449,6 +471,40 @@ class _AudioScreenState extends State<AudioScreen> {
     } catch (e) {
       print('Error detecting sensitive information: $e');
       return '';
+    }
+  }
+
+  // Function to send Firebase notification
+  Future<void> sendFirebaseNotification(String title, String body) async {
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+
+    try {
+      String? token = await messaging.getToken();
+
+      if (token == null) {
+        print("Firebase token is null. Cannot send notfication.");
+        return;
+      }
+
+      final response = await http.post(
+        Uri.parse("https://fcm.googleapis.com/fcm/send"),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'key=${dotenv.env['GOOGLE_CLOUD_API']}'
+        },
+        body: jsonEncode({
+          "to": token,
+          "notification": {"title": title, "body": body}
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        print("Firebase Notification Sent!");
+      } else {
+        print("Failed to send notification: ${response.body}");
+      }
+    } catch (e) {
+      print("Error sending Firebase notification: $e");
     }
   }
 
@@ -631,9 +687,15 @@ class _AudioScreenState extends State<AudioScreen> {
                                           // Notify user that the recording has been deleted
                                           ScaffoldMessenger.of(context)
                                               .showSnackBar(
-                                            const SnackBar(
-                                                content:
-                                                    Text('Recording Deleted!')),
+                                            SnackBar(
+                                              content: const Text(
+                                                'Recording Deleted!',
+                                                textAlign: TextAlign
+                                                    .center, // Centers the text in the SnackBar
+                                              ),
+                                              backgroundColor: Colors
+                                                  .red, // Optional: Makes SnackBar red
+                                            ),
                                           );
                                         },
                                         style: ElevatedButton.styleFrom(
@@ -688,7 +750,8 @@ class _AudioScreenState extends State<AudioScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Icon(Icons.mic,
-                                        size: 60, color: Colors.green),
+                                        size: 60,
+                                        color: Color.fromARGB(255, 2, 63, 129)),
                                     Text(
                                       "Start Audio Recording",
                                       textAlign: TextAlign.center,
