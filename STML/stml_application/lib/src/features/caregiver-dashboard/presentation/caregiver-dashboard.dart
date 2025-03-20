@@ -49,13 +49,13 @@ class _CaregiverDashboardScreen extends State<CaregiverDashboardScreen> {
         ),
 
         body: Container(
-          decoration: BoxDecoration(
+          /*decoration: BoxDecoration(
             image: DecorationImage(
               image: AssetImage('assets/images/background.jpg'),
               // Replace with your image path
               fit: BoxFit.cover,
             ),
-          ),
+          ),*/
           child: Column(
             children: [
               const Padding(
@@ -188,9 +188,9 @@ class _CaregiverDashboardScreen extends State<CaregiverDashboardScreen> {
             return GridView.builder(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3, // Adjust as needed
-                childAspectRatio: 1.0,
-                mainAxisSpacing: 3,
-                crossAxisSpacing: 3
+                childAspectRatio: 1.30,
+                mainAxisSpacing: 10,
+                crossAxisSpacing: 10
               ),
               itemCount: data.length,
               itemBuilder: (context, index) {
@@ -209,25 +209,25 @@ class _CaregiverDashboardScreen extends State<CaregiverDashboardScreen> {
                   borderRadius: BorderRadius.circular(12.0),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.lightGreen[100],
+                      color: Colors.lightBlue[100],
                       borderRadius: BorderRadius.circular(12.0),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.lightGreen.withOpacity(0.5),
+                          color: Colors.lightBlueAccent,
                           spreadRadius: 1,
                           blurRadius: 3,
                           offset: const Offset(0, 2),
                         ),
                       ],
                     ),
-                    padding: const EdgeInsets.all(3.0),
+                    padding: const EdgeInsets.all(16.0),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
                         Icon(
                           Icons.person,
                           size: 40.0,
-                          color: Colors.green,
+                          color: Color.fromARGB(255, 2, 63, 129),
                         ),
                         const SizedBox(height: 8.0),
                         Text(
@@ -300,6 +300,7 @@ class _CaregiverDashboardScreen extends State<CaregiverDashboardScreen> {
                     notificationService
                         .markNotificationAsRead(notification['id']);
                   },
+
                 );
               },
             ));
