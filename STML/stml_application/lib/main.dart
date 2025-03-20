@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:memoryminder/src/features/account_creation_and_login/presentation/eula_screen.dart';
 import 'package:memoryminder/src/features/account_creation_and_login/presentation/welcome_screen.dart';
@@ -22,6 +23,7 @@ void main() async {
   await dotenv.load(fileName: ".env");
   await DirectoryManager.instance.initializeDirectories();
   await DataService.instance.initializeData();
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   initializeData();
   runApp(const MyApp());
 }
@@ -45,7 +47,8 @@ class MyApp extends StatelessWidget {
         '/registrationScreen': (context) => RegistrationScreen(),
         '/eulaScreen': (context) => EulaScreen(),
         '/homeScreen': (context) => HomeScreen(),
-        '/caregiverTaskScreen': (context) => CaregiverTaskScreen(), // Added route
+        '/caregiverTaskScreen': (context) =>
+            CaregiverTaskScreen(), // Added route
       },
     );
   }
@@ -53,9 +56,16 @@ class MyApp extends StatelessWidget {
 
 // Initialize backend services
 void initializeData() async {
-  S3Bucket s3 = S3Bucket();
+  //initialize backend services
+  // ignore: unused_local_variable
+  S3Service s3 = S3Service();
   CameraManager cm = CameraManager();
   await PermissionManager.requestInitialPermissions();
   await cm.initializeCamera();
   NotificationService().initialize();
+}
+
+// Handle notifications when the app is in the background
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  print("⚠️ Background message: ${message.notification?.title}");
 }

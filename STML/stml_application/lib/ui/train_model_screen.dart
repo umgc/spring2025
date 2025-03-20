@@ -32,7 +32,7 @@ class ModelScreen extends StatefulWidget {
 }
 
 class ModelScreenState extends State<ModelScreen> {
-  S3Bucket s3 = S3Bucket();
+  S3Service s3 = S3Service();
   VideoProcessor vp = VideoProcessor();
   VideoResponse response;
 

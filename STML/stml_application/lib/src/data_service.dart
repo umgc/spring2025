@@ -1,19 +1,19 @@
 import 'dart:io';
 
 import 'package:memoryminder/src/aws_video_response.dart';
-import 'package:memoryminder/src/database/controller/audio_controller.dart';
+import 'package:memoryminder/src/features/sensitive_information_detection/application/audio_controller.dart';
 import 'package:memoryminder/src/database/controller/photo_controller.dart';
 import 'package:memoryminder/src/database/controller/significant_object_controller.dart';
 import 'package:memoryminder/src/database/controller/video_controller.dart';
 import 'package:memoryminder/src/database/controller/video_response_controller.dart';
-import 'package:memoryminder/src/database/model/audio.dart';
+import 'package:memoryminder/src/features/sensitive_information_detection/domain/audio.dart';
 import 'package:memoryminder/src/database/model/media.dart';
 import 'package:memoryminder/src/database/model/photo.dart';
 import 'package:memoryminder/src/database/model/significant_object.dart';
 import 'package:memoryminder/src/database/model/video.dart';
 import 'package:memoryminder/src/utils/format_utils.dart';
 import 'package:memoryminder/src/database/model/video_response.dart';
-import 'package:memoryminder/src/database/repository/audio_repository.dart';
+import 'package:memoryminder/src/features/sensitive_information_detection/data/audio_repository.dart';
 import 'package:memoryminder/src/database/repository/photo_repository.dart';
 import 'package:memoryminder/src/database/repository/significant_object_repository.dart';
 import 'package:memoryminder/src/database/repository/video_repository.dart';
