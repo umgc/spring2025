@@ -7,7 +7,7 @@
 
 import 'dart:io';
 import 'package:memoryminder/src/data_service.dart';
-import 'package:memoryminder/src/database/model/audio.dart';
+import 'package:memoryminder/src/features/sensitive_information_detection/domain/audio.dart';
 import 'package:memoryminder/src/database/model/media.dart';
 import 'package:memoryminder/src/database/model/media_type.dart';
 import 'package:memoryminder/src/database/model/photo.dart';
@@ -972,7 +972,7 @@ class _FullObjectViewState extends State<FullObjectView> {
     String path =
         "${DirectoryManager.instance.audiosDirectory.path}/${activeAudio.audioFileName}";
     debugPrint(path);
-   /* await _player!.openPlayer();
+    /* await _player!.openPlayer();
     await _player!.startPlayer(
         fromURI: path,
         whenFinished: () {
@@ -988,7 +988,7 @@ class _FullObjectViewState extends State<FullObjectView> {
 
   /// Function to handle stopping the playback of the recorded audio.
   Future<void> _stopPlayback() async {
-   /* await _player!.stopPlayer();
+    /* await _player!.stopPlayer();
     setState(() {
       _isPlaying = false;
     });
