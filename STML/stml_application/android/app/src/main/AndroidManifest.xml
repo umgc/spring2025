@@ -1,19 +1,21 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Microphone Permission (Required for Recording) -->
-    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
-    <!-- Storage Permissions (Required for Saving Audio Files) -->
-    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO"/>
-    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" android:maxSdkVersion="32"/>
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" android:maxSdkVersion="28"/>
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!-- Required for foreground location tracking -->
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+    
+    <!-- Required for background location access (Android 10+) -->
+    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
+    
+    <!-- Required for foreground service usage (Android 9+) -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+
+    <uses-permission android:name="android.permission.INTERNET"/>
+
+
     <application
         android:label="memoryminder"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher"
-        android:allowBackup="true"
-        android:requestLegacyExternalStorage="true">
+        android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -22,12 +24,19 @@
             android:theme="@style/LaunchTheme"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
-            android:enableOnBackInvokedCallback="true"
             android:windowSoftInputMode="adjustResize">
             <!-- Specifies an Android theme to apply to this Activity as soon as
                  the Android process has started. This theme is visible to the user
                  while the Flutter UI initializes. After that, this theme continues
                  to determine the Window background behind the Flutter UI. -->
+            <meta-data android:name="flutterEmbedding" android:value="2" />
+            <meta-data
+                android:name="com.google.android.geo.API_KEY"
+                android:value="${GOOGLE_MAPS_API_KEY}"/>
+
+            <!-- This allows foreground location access -->
+            <service android:name=".LocationService" android:foregroundServiceType="location"/>
+
             <meta-data
               android:name="io.flutter.embedding.android.NormalTheme"
               android:resource="@style/NormalTheme"
@@ -53,11 +62,9 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
-    </queries>
-    <!-- Required for Recording Audio -->
-    <queries>
         <intent>
-            <action android:name="android.media.action.RECORD_SOUND"/>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="https"/>
         </intent>
     </queries>
 </manifest>
