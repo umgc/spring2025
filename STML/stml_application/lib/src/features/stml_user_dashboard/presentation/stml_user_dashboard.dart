@@ -3,6 +3,7 @@
 
 import 'package:memoryminder/src/features/caregiver-dashboard/presentation/app_bar.dart';
 import 'package:memoryminder/src/features/caregiver-dashboard/presentation/caregiver-dashboard.dart';
+import 'package:memoryminder/ui/ReturnMeHome.dart';
 import 'package:memoryminder/ui/dementia_resources.dart';
 import 'package:memoryminder/ui/response_screen.dart';
 import 'package:memoryminder/ui/assistant_screen.dart';
@@ -68,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
             }
 
             final newEntry =
-                LocationEntry(address: address, startTime: DateTime.now());
+            LocationEntry(address: address, startTime: DateTime.now());
             final id = await LocationDatabase.instance.create(newEntry);
             newEntry.id = id;
             currentLocationEntry = newEntry;
@@ -83,7 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        // Set the background color for the entire screen
+      // Set the background color for the entire screen
         extendBodyBehindAppBar: true,
         extendBody: true,
         // Setting up the app bar at the top of the screen
@@ -92,7 +93,12 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         // Main content of the screen
         body: Container(
-
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage("assets/images/background.jpg"),
+              fit: BoxFit.cover,
+            ),
+          ),
           child: Column(
             children: [
               const Padding(
@@ -123,10 +129,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         icon: Icon(Icons.home_filled,
                             size: iconSize, color: Colors.black54),
                         text: 'Take Me Home',
-                        screen: ProfileScreen(),
+                        screen: ReturnMeHomePage(),
                         keyName: "TakeMeHomeButtonKey",
                         backgroundColor:
-                            const Color(0xFF000000).withOpacity(0.30)),
+                        const Color(0xFF000000).withOpacity(0.30)),
                     _buildElevatedButton(
                         context: context,
                         icon: Icon(Icons.location_history,
@@ -135,7 +141,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         screen: LocationHistoryScreen(),
                         keyName: "HelpButtonKey",
                         backgroundColor:
-                            const Color(0xFFFFFFFF).withOpacity(0.30)),
+                        const Color(0xFFFFFFFF).withOpacity(0.30)),
                     _buildElevatedButton(
                         context: context,
                         icon: Icon(Icons.photo,
@@ -144,7 +150,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         screen: GalleryScreen(),
                         keyName: "GalleryButtonKey",
                         backgroundColor:
-                            const Color(0xFFFFFFFF).withOpacity(0.30)),
+                        const Color(0xFFFFFFFF).withOpacity(0.30)),
                     _buildElevatedButton(
                         context: context,
                         icon: Icon(Icons.search,
@@ -153,7 +159,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         screen: ResponseScreen(),
                         keyName: "MyTasksButtonKey",
                         backgroundColor:
-                            const Color(0xFFFFFFFF).withOpacity(0.30)),
+                        const Color(0xFFFFFFFF).withOpacity(0.30)),
                     _buildElevatedButton(
                         context: context,
                         icon: Icon(Icons.mic_rounded,
@@ -162,7 +168,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         screen: AudioScreen(),
                         keyName: "AudioRecordingButtonKey",
                         backgroundColor:
-                            const Color(0xFFFFFFFF).withOpacity(0.30)),
+                        const Color(0xFFFFFFFF).withOpacity(0.30)),
                     _buildElevatedButton(
                         context: context,
                         icon: Icon(Icons.warning_amber_rounded,
@@ -171,7 +177,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         screen: ScamDetectionScreen(),
                         keyName: "potentialScamScanner",
                         backgroundColor:
-                            const Color(0xFFFFFFFF).withOpacity(0.30)),
+                        const Color(0xFFFFFFFF).withOpacity(0.30)),
                     _buildElevatedButton(
                         context: context,
                         icon: Icon(Icons.health_and_safety_outlined,
@@ -180,7 +186,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         screen: TourScreen(),
                         keyName: "TourGuideButtonKey",
                         backgroundColor:
-                            const Color(0xFFFFFFFF).withOpacity(0.30)),
+                        const Color(0xFFFFFFFF).withOpacity(0.30)),
                     _buildElevatedButton(
                         context: context,
                         icon: Icon(Icons.task_alt,
@@ -189,7 +195,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         screen: CaregiverTaskScreen(),
                         keyName: "CaregiverTaskButtonKey",
                         backgroundColor:
-                            const Color(0xFFFFFFFF).withOpacity(0.30)),
+                        const Color(0xFFFFFFFF).withOpacity(0.30)),
                   ],
                 ),
               ),
@@ -214,7 +220,8 @@ class _HomeScreenState extends State<HomeScreen> {
       key: Key(keyName),
       style: ElevatedButton.styleFrom(
         foregroundColor: Colors.black,
-        backgroundColor: Colors.lightBlue[100],
+        backgroundColor: backgroundColor ??
+            const Color(0xFFFFFFFF).withOpacity(0.30), // Button text color
         padding: const EdgeInsets.all(16.0),
         elevation: 0.0,
         shape: RoundedRectangleBorder(
@@ -237,7 +244,7 @@ class _HomeScreenState extends State<HomeScreen> {
             style: const TextStyle(
               fontSize: 13.0,
               fontWeight: FontWeight.bold,
-              color: Colors.black,
+              color: Color(0XFF000000),
             ),
             textAlign: TextAlign.center,
           ),
