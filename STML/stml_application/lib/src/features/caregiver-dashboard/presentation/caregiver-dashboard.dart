@@ -59,13 +59,13 @@ class _CaregiverDashboardScreen extends State<CaregiverDashboardScreen> {
           title: 'Caregiver Dashboard',
         ),
         body: Container(
-          decoration: BoxDecoration(
+          /*decoration: BoxDecoration(
             image: DecorationImage(
               image: AssetImage('assets/images/background.jpg'),
               // Replace with your image path
               fit: BoxFit.cover,
             ),
-          ),
+          ),*/
           child: Column(
             children: [
               const Padding(
@@ -338,6 +338,7 @@ class _CaregiverDashboardScreen extends State<CaregiverDashboardScreen> {
                     notificationService
                         .markNotificationAsRead(notification['id']);
                   },
+
                 );
               },
             ));

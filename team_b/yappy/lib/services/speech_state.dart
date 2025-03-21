@@ -216,11 +216,26 @@ class SpeechState extends ChangeNotifier {
 
         // Set up listener for results from the isolate
         speechIsolate?.results.listen((result) {
+          debugPrint("Received result from isolate: ${result.segmentIndex}, Speaker: ${result.speakerId}");
+          
+          // Update speaker count if a new speaker was detected
+          if (result.newSpeakerCount != null && result.newSpeakerCount! > currentSpeakerCount) {
+            currentSpeakerCount = result.newSpeakerCount!;
+            debugPrint('Updated main thread speaker count to: $currentSpeakerCount');
+          }
+          
+          // Ignore empty results
           if (result.success && result.text.trim().isNotEmpty) {
+            // Make sure speakerId is not null or empty
+            String speakerId = result.speakerId;
+            if (speakerId.isEmpty) {
+              speakerId = 'Speaker Unknown';
+            }
+            
             _updateRecognizedSegment(
               result.segmentIndex,
               result.text,
-              speakerId: result.speakerId,
+              speakerId: speakerId,
               embedding: result.embedding,
             );
             _updateDisplayText();
@@ -250,7 +265,10 @@ class SpeechState extends ChangeNotifier {
         if (buffer.isNotEmpty) {
           buffer.write('\n');
         }
-        final prefix = segment.speakerId ?? 'Speaker Unknown';
+        // Make sure we have a speaker ID display string
+        final prefix = (segment.speakerId != null && segment.speakerId!.isNotEmpty) 
+            ? segment.speakerId! 
+            : 'Speaker Unknown';
         buffer.write('$prefix: ${segment.text}');
       }
     }
@@ -287,8 +305,10 @@ class SpeechState extends ChangeNotifier {
       }
       recognizedSegments[segmentIndex].isProcessed = true;
 
-      if (speakerId != null) {
+      // Make sure speakerId is not null or empty
+      if (speakerId != null && speakerId.isNotEmpty) {
         recognizedSegments[segmentIndex].speakerId = speakerId;
+        debugPrint('Updated segment $index with speaker: $speakerId');
       }
       
       if (embedding != null) {
@@ -314,13 +334,16 @@ Future<void> processSegmentOffline(AudioSegment segment) async {
       return;
     }
     
+    // Debug current speaker count
+    debugPrint('Sending segment with current speaker count: $currentSpeakerCount');
+    
     // Use the isolate to process this segment
     await speechIsolate!.processSegment(ProcessSegmentMessage(
       samples: segment.samples,
       sampleRate: sampleRate,
       segmentIndex: segment.index,
       recognizerConfigs: {
-        'nextSpeakerId': currentSpeakerCount + 1,
+        'currentSpeakerCount': currentSpeakerCount,
       },
     ));
     
