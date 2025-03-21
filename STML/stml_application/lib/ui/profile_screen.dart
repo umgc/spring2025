@@ -4,6 +4,8 @@
 Author: Eyerusalme (Jerry)
 */
 import 'package:flutter/material.dart';
+import 'package:memoryminder/src/features/caregiver-dashboard/presentation/app_bar.dart';
+import 'package:memoryminder/src/utils/ui_utils.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 
@@ -78,23 +80,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0XFF880E4F),
       extendBodyBehindAppBar: true,
       extendBody: true,
-      appBar: AppBar(
-        backgroundColor: const Color(0x440000), // Set appbar background color
-        elevation: 0.0,
-        centerTitle: true,
-        leading: const BackButton(color: Colors.black54),
-        title: const Text('Profile', style: TextStyle(color: Colors.black54)),
+      appBar: const CustomAppBar(
+        title: 'My Profile',
       ),
       body: Container(
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage("assets/images/background.jpg"),
-            fit: BoxFit.cover,
-          ),
-        ),
+
         child: Center(
           child: Padding(
             padding:
@@ -215,15 +207,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               }
                             },
                             child: const Text('Save'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.green,
+                            ),
                           ),
                           ElevatedButton(
                             onPressed: () {
                               Navigator.pop(context);
                             },
                             child: const Text('Cancel'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.red,
-                            ),
+
                           ),
                         ],
                       ),
@@ -235,6 +228,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
       ),
-    );
+        bottomNavigationBar: UiUtils.createBottomNavigationBar(context));
+
   }
 }
