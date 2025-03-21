@@ -69,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
             }
 
             final newEntry =
-                LocationEntry(address: address, startTime: DateTime.now());
+            LocationEntry(address: address, startTime: DateTime.now());
             final id = await LocationDatabase.instance.create(newEntry);
             newEntry.id = id;
             currentLocationEntry = newEntry;
@@ -84,7 +84,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        // Set the background color for the entire screen
+      // Set the background color for the entire screen
         extendBodyBehindAppBar: true,
         extendBody: true,
         // Setting up the app bar at the top of the screen
@@ -132,7 +132,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         screen: ReturnMeHomePage(),
                         keyName: "TakeMeHomeButtonKey",
                         backgroundColor:
-                            const Color(0xFF000000).withOpacity(0.30)),
+                        const Color(0xFF000000).withOpacity(0.30)),
                     _buildElevatedButton(
                         context: context,
                         icon: Icon(Icons.location_history,
@@ -141,7 +141,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         screen: LocationHistoryScreen(),
                         keyName: "HelpButtonKey",
                         backgroundColor:
-                            const Color(0xFFFFFFFF).withOpacity(0.30)),
+                        const Color(0xFFFFFFFF).withOpacity(0.30)),
                     _buildElevatedButton(
                         context: context,
                         icon: Icon(Icons.photo,
@@ -150,7 +150,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         screen: GalleryScreen(),
                         keyName: "GalleryButtonKey",
                         backgroundColor:
-                            const Color(0xFFFFFFFF).withOpacity(0.30)),
+                        const Color(0xFFFFFFFF).withOpacity(0.30)),
                     _buildElevatedButton(
                         context: context,
                         icon: Icon(Icons.search,
@@ -159,7 +159,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         screen: ResponseScreen(),
                         keyName: "MyTasksButtonKey",
                         backgroundColor:
-                            const Color(0xFFFFFFFF).withOpacity(0.30)),
+                        const Color(0xFFFFFFFF).withOpacity(0.30)),
                     _buildElevatedButton(
                         context: context,
                         icon: Icon(Icons.mic_rounded,
@@ -168,7 +168,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         screen: AudioScreen(),
                         keyName: "AudioRecordingButtonKey",
                         backgroundColor:
-                            const Color(0xFFFFFFFF).withOpacity(0.30)),
+                        const Color(0xFFFFFFFF).withOpacity(0.30)),
                     _buildElevatedButton(
                         context: context,
                         icon: Icon(Icons.warning_amber_rounded,
@@ -177,7 +177,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         screen: ScamDetectionScreen(),
                         keyName: "potentialScamScanner",
                         backgroundColor:
-                            const Color(0xFFFFFFFF).withOpacity(0.30)),
+                        const Color(0xFFFFFFFF).withOpacity(0.30)),
                     _buildElevatedButton(
                         context: context,
                         icon: Icon(Icons.health_and_safety_outlined,
@@ -186,7 +186,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         screen: TourScreen(),
                         keyName: "TourGuideButtonKey",
                         backgroundColor:
-                            const Color(0xFFFFFFFF).withOpacity(0.30)),
+                        const Color(0xFFFFFFFF).withOpacity(0.30)),
                     _buildElevatedButton(
                         context: context,
                         icon: Icon(Icons.task_alt,
@@ -195,7 +195,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         screen: CaregiverTaskScreen(),
                         keyName: "CaregiverTaskButtonKey",
                         backgroundColor:
-                            const Color(0xFFFFFFFF).withOpacity(0.30)),
+                        const Color(0xFFFFFFFF).withOpacity(0.30)),
                   ],
                 ),
               ),
