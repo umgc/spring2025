@@ -59,15 +59,17 @@ dependencies:
     avatar_glow: ^3.0.1
     external_path: ^2.0.1
     gallery_saver: ^2.3.2
-    url_launcher: ^6.0.12
-    firebase_core: ^3.8.0
-    firebase_auth: ^5.3.3
-    firebase_messaging: ^15.2.4
-    cloud_firestore: ^5.6.5
-    flutter_local_notifications: ^18.0.1
+    url_launcher: ^6.1.14
+    firebase_core: ^2.20.0  # Required for Firebase initialization
+    firebase_messaging: ^14.6.9
+    flutter_local_notifications: ^16.3.2
+    google_maps_flutter: ^2.10.1  # For Google Maps
+    
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
+    
 
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is

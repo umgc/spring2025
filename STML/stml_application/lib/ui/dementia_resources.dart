@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:memoryminder/src/features/caregiver-dashboard/presentation/app_bar.dart';
+import 'package:memoryminder/src/utils/ui_utils.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -31,6 +33,8 @@ class ResourceEntry {
 }
 
 class DementiaResourcesScreen extends StatefulWidget {
+  final String? loc;
+  const DementiaResourcesScreen({super.key, this.loc});
   @override
    _DementiaResourcesScreenState createState() => _DementiaResourcesScreenState();
 }
@@ -49,8 +53,9 @@ class _DementiaResourcesScreenState extends State<DementiaResourcesScreen> {
 
     //The location is temporarily hard-coded to complete the implementation of this story.
 
-    Uri.encodeComponent('Dementia Resources in Bethesda, Montgomery County, Maryland');
-    final query = 'https://www.googleapis.com/customsearch/v1?q=Dementia+Resources&cx=$searchEngineIdEnv&key=$apiKeyEnv';
+    String encodedQueryString = Uri.encodeComponent('Dementia Resources in ${widget.loc ?? 'USA'}');
+
+    final query = 'https://www.googleapis.com/customsearch/v1?q=$encodedQueryString&cx=$searchEngineIdEnv&key=$apiKeyEnv';
     final url = Uri.parse('$query');
 
     // Send the HTTP request to fetch the page
@@ -66,6 +71,8 @@ class _DementiaResourcesScreenState extends State<DementiaResourcesScreen> {
         for (var item in data['items']) {
           results.add(ResourceEntry(text: item['title'], link: item['link'], displayLink: item['displayLink']));  // Add the link to the result list
         }
+      } else {
+        results.add(ResourceEntry(text: 'No resources found. Check the care recipient location.', link: '', displayLink: ''));
       }
       return results;
     } else {
@@ -90,17 +97,10 @@ class _DementiaResourcesScreenState extends State<DementiaResourcesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Dementia Resources"),
-        backgroundColor: Colors.blueAccent,
+      appBar: const CustomAppBar(
+        title: 'Dementia Resources',
       ),
       body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('assets/images/background.jpg'), // Replace with your image path
-            fit: BoxFit.cover,
-          ),
-        ),
 
         child: FutureBuilder<List<ResourceEntry>>(
                   future: _fetchSearchResults(), // The Future you want to await
@@ -124,8 +124,10 @@ class _DementiaResourcesScreenState extends State<DementiaResourcesScreen> {
               return ListView.builder(
                 itemCount: resources.length,
                 itemBuilder: (context, index) {
+                  Color backgroundColor = index % 2 == 0 ? Colors.white : Colors.grey[300]!;
                     final resource = resources[index];
                     return Card(
+                      color: backgroundColor,
                       margin: EdgeInsets.symmetric(vertical: 8.0),
                       child: ListTile(
                         leading: Icon(Icons.bookmark_outline),
@@ -145,7 +147,8 @@ class _DementiaResourcesScreenState extends State<DementiaResourcesScreen> {
 
 
         ),
-      )
-    );
+      ),
+        bottomNavigationBar: UiUtils.createBottomNavigationBar(context));
+
   }
 }
