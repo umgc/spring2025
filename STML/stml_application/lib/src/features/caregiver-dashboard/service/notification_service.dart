@@ -7,29 +7,34 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:memoryminder/src/features/caregiver-dashboard/service/notification_stream_service.dart';
-
-
+import 'package:url_launcher/url_launcher.dart';
 
 class NotificationService {
   final FirebaseMessaging _messaging = FirebaseMessaging.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
 
   Future<void> initialize() async {
     await _messaging.subscribeToTopic("STML_USER_PRESSED_HELP");
 
-    _messaging.requestPermission(alert: true,
+    _messaging.requestPermission(
+      alert: true,
       announcement: true,
       badge: true,
       carPlay: false,
       criticalAlert: true,
       provisional: false,
-      sound: true,);
+      sound: true,
+    );
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) async {
-      print('---------------------------------------------------------------------');
-      print('---Received a notification message: ${message.notification?.title}---');
-      print('---------------------------------------------------------------------');
+      print(
+          '---------------------------------------------------------------------');
+      print(
+          '---Received a notification message: ${message.notification?.title}---');
+      print(
+          '---------------------------------------------------------------------');
 
       _storeMessage(message);
       await Future.delayed(Duration(seconds: 5));
@@ -38,25 +43,43 @@ class NotificationService {
     });
 
     FirebaseMessaging.onBackgroundMessage(_backgroundMessageHandler);
-    const AndroidInitializationSettings androidInitializationSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
-    const DarwinInitializationSettings iOSinitializationSettings = DarwinInitializationSettings(
+
+    const AndroidInitializationSettings androidInitializationSettings =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+    const DarwinInitializationSettings iOSinitializationSettings =
+        DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
       requestSoundPermission: true,
     );
-    const InitializationSettings initializationSettings = InitializationSettings(android: androidInitializationSettings, iOS: iOSinitializationSettings);
-    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
-
+    const InitializationSettings initializationSettings =
+        InitializationSettings(
+      android: androidInitializationSettings,
+      iOS: iOSinitializationSettings,
+    );
+    await flutterLocalNotificationsPlugin.initialize(
+      initializationSettings,
+      onDidReceiveNotificationResponse: (NotificationResponse response) async {
+        if (response.actionId == 'emergency_call') {
+          const phoneNumber = 'tel:911';
+          if (await canLaunch(phoneNumber)) {
+            await launch(phoneNumber);
+          } else {
+            throw 'Could not launch $phoneNumber';
+          }
+        }
+      },
+    );
 
     // Handle initial message when the app is opened from a terminated state
-    RemoteMessage? initialMessage = await FirebaseMessaging.instance.getInitialMessage();
+    RemoteMessage? initialMessage =
+        await FirebaseMessaging.instance.getInitialMessage();
     if (initialMessage != null) {
       _handleMessage(initialMessage);
     }
 
     // Handle when the app is opened from background state.
     FirebaseMessaging.onMessageOpenedApp.listen(_handleMessage);
-
   }
 
   static void _handleMessage(RemoteMessage message) {
@@ -65,68 +88,90 @@ class NotificationService {
     // Example: Navigator.of(navigatorKey.currentContext!).pushNamed('/details', arguments: message.data);
   }
 
-
-
-  Future<void> _showLocalNotification(RemoteMessage message) async{
-    const AndroidNotificationDetails androidChannelSpecifics = AndroidNotificationDetails('Help', 'Help', channelDescription: 'User pressed Help button', importance: Importance.max, priority: Priority.high, ticker: 'ticker');
-    const NotificationDetails channelSpecifics = NotificationDetails(android: androidChannelSpecifics, iOS: const DarwinNotificationDetails());
-    await flutterLocalNotificationsPlugin.show(0, message.notification?.title, message.notification?.title, channelSpecifics);
-
+  Future<void> _showLocalNotification(RemoteMessage message) async {
+    const AndroidNotificationDetails androidChannelSpecifics =
+        AndroidNotificationDetails(
+      'Help', //Canal ID
+      'Help Notifications', // canal name
+      channelDescription:
+          'Notifications when the STML user presses the HELP button',
+      importance: Importance.max,
+      priority: Priority.high,
+      ticker: 'ticker',
+      enableVibration: true, //vibrations
+      playSound: true, // play tone
+      actions: [
+        AndroidNotificationAction(
+          'emergency_call', // action Id
+          'Emergency Call', // action text
+        ),
+      ],
+    );
+    const NotificationDetails channelSpecifics = NotificationDetails(
+        android: androidChannelSpecifics,
+        iOS: const DarwinNotificationDetails());
+    await flutterLocalNotificationsPlugin.show(0, message.notification?.title,
+        message.notification?.body, channelSpecifics);
   }
 
   Future<void> _storeMessage(RemoteMessage message) async {
     await _firestore.collection('notifications').add({
       'title': message.notification?.title,
-      'read': false, //Flag to indicate if the message is read or not.
+      'read': false, // Flag to indicate if the message is read or not.
       'createdDate': FieldValue.serverTimestamp(),
+      'stmlUserId': 'USER_ID', // Replaced by STML's userID
     });
   }
 
   Future<void> markNotificationAsRead(String messageId) async {
     try {
-      DocumentReference notificationRef = _firestore.collection('notifications').doc(messageId);
-      await notificationRef.update({'read':true});
+      DocumentReference notificationRef =
+          _firestore.collection('notifications').doc(messageId);
+      await notificationRef.update({'read': true});
       print('Notification updated as read');
       getRecentNotifications();
-
-    } catch(e) {
+    } catch (e) {
       print('Error updating notification data: $e');
     }
   }
 
   Future<void> getRecentNotifications() async {
     try {
-      QuerySnapshot snapshot = await _firestore.collection('notifications')
+      QuerySnapshot snapshot = await _firestore
+          .collection('notifications')
           .orderBy('createdDate', descending: true)
           .limit(10)
           .get();
       List<Map<String, dynamic>> notifications = snapshot.docs.map((doc) {
-        return {'id': doc.id,
+        return {
+          'id': doc.id,
           'title': doc['title'],
           'read': doc['read'],
           'createDate': doc['createdDate'],
         };
       }).toList();
       NotificationStreamService().addData(notifications);
-    } catch(e) {
+    } catch (e) {
       print('Error fetching notifications $e');
     }
   }
 
-Future<void> sendNotificationToFirestore(String title) async {
-  await FirebaseFirestore.instance.collection('notifications').add({
-    'title': title,
-    'read': false, // Mark as unread by default
-    'createdDate': FieldValue.serverTimestamp(),
-  });
-
-}
+  Future<void> sendNotificationToFirestore(String title) async {
+    await FirebaseFirestore.instance.collection('notifications').add({
+      'title': title,
+      'read': false, // Mark as unread by default
+      'createdDate': FieldValue.serverTimestamp(),
+    });
+  }
 }
 
 Future<void> _backgroundMessageHandler(RemoteMessage message) async {
-  print('---------------------------------------------------------------------');
-  print('---Received a background data message----${message.notification?.title}---------------------------');
-  print('---------------------------------------------------------------------');
+  print(
+      '---------------------------------------------------------------------');
+  print(
+      '---Received a background data message----${message.notification?.title}---------------------------');
+  print(
+      '---------------------------------------------------------------------');
   await Firebase.initializeApp();
 
   NotificationService()._storeMessage(message);
