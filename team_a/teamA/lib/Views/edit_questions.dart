@@ -194,7 +194,7 @@ class EditQuestionsState extends State<EditQuestions> {
                     ),
                   );
                 },
-                child: const Text('Send to Moodle Set up'),
+                child: const Text('Accept questions and Submit'),
               ),
               
             ],

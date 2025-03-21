@@ -95,6 +95,7 @@ class GoogleLmsService extends LmsInterface {
         'https://www.googleapis.com/auth/classroom.courseworkmaterials.readonly',
         'https://www.googleapis.com/auth/classroom.courseworkmaterials',
         'https://www.googleapis.com/auth/forms.body.readonly',
+        'https://www.googleapis.com/auth/drive.file',
        
        
         
@@ -133,6 +134,11 @@ class GoogleLmsService extends LmsInterface {
     }
 
     courses = await getUserCourses();
+
+    for (Course course in courses!) {
+      print(course.courseId);
+      print('teacherFolderId: ${course.teacherFolderId}');
+    }
   }
 
   @override
@@ -228,20 +234,20 @@ class GoogleLmsService extends LmsInterface {
         for (var topic in topics) {
           if (topic['name'] == 'Quiz') {
             course.quizTopicId = int.parse(topic['topicId']);
-              print('Id for quiz');
-            print(topic['topicId']);
+            //   print('Id for quiz');
+            // print(topic['topicId']);
           } else if (topic['name'] == 'Essay') {
             course.essayTopicId = int.parse(topic['topicId']);
-             print('Id for essay');
-            print(topic['topicId']);
+            //  print('Id for essay');
+            // print(topic['topicId']);
           }
         }
       }
       
       course.quizzes = await getQuizzes(course.id, topicId: course.quizTopicId);
-      print('Quizzes for course ${course.id}: ${course.quizzes}');
+      // print('Quizzes for course ${course.id}: ${course.quizzes}');
       course.essays = await getEssays(course.id, topicId: course.essayTopicId);
-      print('Essays for course ${course.id}: ${course.essays}');
+      // print('Essays for course ${course.id}: ${course.essays}');
     }
 
     return courses;
@@ -332,8 +338,8 @@ class GoogleLmsService extends LmsInterface {
       throw HttpException(response.body);
     }
 
-    print('Getting quizzes from Google Classroom...');
-    print(response.body);
+    // print('Getting quizzes from Google Classroom...');
+    // print(response.body);
 
     final quizzesMap = jsonDecode(response.body) as Map<String, dynamic>;
     final decodedJson = quizzesMap['courseWork'] as List<dynamic>?;
@@ -344,7 +350,7 @@ class GoogleLmsService extends LmsInterface {
     
     List<Quiz> quizList = [];
     for (var item in decodedJson) {
-      print('Item: $item');
+      // print('Item: $item');
       // If courseID is null, return all quizzes; otherwise filter by course
       if (courseID == null || int.parse(item['courseId']) == courseID) {
         if (topicId != null && item.containsKey('topicId')) {
@@ -356,7 +362,7 @@ class GoogleLmsService extends LmsInterface {
       }
     }
 
-    print('I am getting this quiz list: $quizList');
+    // print('I am getting this quiz list: $quizList');
 
     return quizList;
   }
@@ -848,14 +854,21 @@ Future<String?> _getToken() async {
         print('Error: quizAsXml is empty.');
         return false;
       }
-      print('quizAsXml: $quizAsXml');
+      // print('quizAsXml: $quizAsXml');
       // 1. Parse the XML
       final document = xml.XmlDocument.parse(quizAsXml);
       final questions = document.findAllElements('question').toList();
+      String? teacherFolderId;
+
+      for (Course course in courses!) {
+        if (course.id == int.parse(courseId)) {
+          teacherFolderId = course.teacherFolderId;
+        }
+      }
 
       // 2. Create the Google Form
       Map<String, dynamic>? formResponse =
-          await _classroomApi.createForm(quizName);
+          await _classroomApi.createForm(teacherFolderId, quizName);
       if (formResponse == null) {
         print('Error: Failed to create Google Form.');
         return false;

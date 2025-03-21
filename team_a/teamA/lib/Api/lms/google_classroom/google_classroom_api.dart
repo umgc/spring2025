@@ -18,7 +18,7 @@ class GoogleClassroomApi {
   // -----------------------------------------------------------------------
   // Creates a new Google Form
   // -----------------------------------------------------------------------
-  Future<Map<String, dynamic>?> createForm(String title) async {
+  Future<Map<String, dynamic>?> createForm(String? teacherFolderId, String title) async {
     final token = await _getToken();
     if (token == null) return null;
 
@@ -29,7 +29,7 @@ class GoogleClassroomApi {
     };
 
     final body = jsonEncode({
-      'info': {'title': title, 'documentTitle': 'Untitled form'},
+      'info': {'title': title, 'documentTitle': title},
     });
 
     try {
@@ -37,9 +37,40 @@ class GoogleClassroomApi {
 
       print("Response Status: ${response.statusCode}");
       print("Response Body: ${response.body}");
+      print('teacherFolderId: $teacherFolderId');
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        
+        // Move the folder to where GC expects it to be. 
+        final driveUrl = Uri.https(
+          'www.googleapis.com',
+          '/drive/v3/files/${data['formId']}',
+          {
+            'addParents': teacherFolderId,
+            'removeParents': 'root',
+          },
+        );
+        final driveHeaders = {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        };
+        final driveBody = jsonEncode({
+          'addParents': teacherFolderId, // New parent folder
+          'removeParents': 'root',
+        });
+
+        // Remove from root (optional: fetch current parents if needed)
+        final driveResponse = await http.patch(
+          driveUrl,
+          headers: driveHeaders,
+          body: driveBody,
+        );
+        print('***********************************************************************************');
+        print("Drive Update Status: ${driveResponse.statusCode}");
+        print("Drive Update Body: ${driveResponse.body}");
+
+        
         return data;
       } else {
         print('Form creation failed: ${response.statusCode}');
