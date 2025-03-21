@@ -15,15 +15,23 @@ import 'package:memoryminder/src/utils/permission_manager.dart';
 import 'package:memoryminder/src/features/account_creation_and_login/presentation/registration_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:memoryminder/features/caregiver_task_management/caregiver_task_screen.dart';
+import 'package:memoryminder/firebase_options.dart';
 
 void main() async {
   initializeLogging();
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+
+  // Key fix: provide DefaultFirebaseOptions to Firebase.initializeApp
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
   await dotenv.load(fileName: ".env");
   await DirectoryManager.instance.initializeDirectories();
   await DataService.instance.initializeData();
+
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
   initializeData();
   runApp(const MyApp());
 }
@@ -39,16 +47,14 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      initialRoute:
-          '/welcomeScreen', // The initial screen when the application starts
+      initialRoute: '/welcomeScreen',
       routes: {
         '/welcomeScreen': (context) => WelcomeScreem(),
         '/loginScreen': (context) => LoginScreen(),
         '/registrationScreen': (context) => RegistrationScreen(),
         '/eulaScreen': (context) => EulaScreen(),
         '/homeScreen': (context) => HomeScreen(),
-        '/caregiverTaskScreen': (context) =>
-            CaregiverTaskScreen(), // Added route
+        '/caregiverTaskScreen': (context) => CaregiverTaskScreen(),
       },
     );
   }
@@ -56,8 +62,7 @@ class MyApp extends StatelessWidget {
 
 // Initialize backend services
 void initializeData() async {
-  //initialize backend services
-  // ignore: unused_local_variable
+  // Set up S3, camera, permissions, etc.
   S3Service s3 = S3Service();
   CameraManager cm = CameraManager();
   await PermissionManager.requestInitialPermissions();
@@ -65,7 +70,7 @@ void initializeData() async {
   NotificationService().initialize();
 }
 
-// Handle notifications when the app is in the background
+// Handle notifications when the app is backgrounded
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("⚠️ Background message: ${message.notification?.title}");
 }

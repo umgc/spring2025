@@ -3,6 +3,7 @@
 
 import 'package:memoryminder/src/features/caregiver-dashboard/presentation/app_bar.dart';
 import 'package:memoryminder/src/features/caregiver-dashboard/presentation/caregiver-dashboard.dart';
+import 'package:memoryminder/ui/ReturnMeHome.dart';
 import 'package:memoryminder/ui/dementia_resources.dart';
 import 'package:memoryminder/ui/response_screen.dart';
 import 'package:memoryminder/ui/assistant_screen.dart';
@@ -128,7 +129,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         icon: Icon(Icons.home_filled,
                             size: iconSize, color: Colors.black54),
                         text: 'Take Me Home',
-                        screen: ProfileScreen(),
+                        screen: ReturnMeHomePage(),
                         keyName: "TakeMeHomeButtonKey",
                         backgroundColor:
                             const Color(0xFF000000).withOpacity(0.30)),
