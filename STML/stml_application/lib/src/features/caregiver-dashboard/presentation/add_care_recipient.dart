@@ -4,6 +4,7 @@ import 'package:memoryminder/src/features/caregiver-dashboard/model/CareRecipien
 import 'package:memoryminder/src/features/caregiver-dashboard/model/emergency_contact.dart';
 import 'package:memoryminder/src/features/caregiver-dashboard/presentation/app_bar.dart';
 import 'package:memoryminder/src/features/caregiver-dashboard/service/manage_care_recipient_service.dart';
+import 'package:memoryminder/src/utils/ui_utils.dart';
 import 'package:memoryminder/ui/dementia_resources.dart';
 
 class AddCareRecipientForm extends StatefulWidget {
@@ -18,7 +19,7 @@ class AddCareRecipientForm extends StatefulWidget {
 
 class _AddCareRecipientFormState extends State<AddCareRecipientForm> {
   final ManageCareRecipientService manageCareRecipientService =
-      ManageCareRecipientService();
+  ManageCareRecipientService();
   bool _isUpdateMode = false;
 
   final _formKey = GlobalKey<FormState>();
@@ -197,28 +198,22 @@ class _AddCareRecipientFormState extends State<AddCareRecipientForm> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: const CustomAppBar(
-          title: 'Add New Care Recipient',
-        ),
-        body: Container(
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage('assets/images/background.jpg'),
-              // Replace with your image path
-              fit: BoxFit.cover,
-            ),
-          ),
-          child: Column(children: [
-            LayoutBuilder(
-                builder: (BuildContext context, BoxConstraints constraints) {
-              return SingleChildScrollView(
-                child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minWidth: constraints.maxWidth,
-                      minHeight:
-                          constraints.minHeight, // Or another desired minimum
-                    ),
-                    child: Column(children: [
-                      Form(
+        title: 'Care Recipient',
+    ),
+    body: Container (
+      child : Column (
+        children : [
+          Expanded ( // Wrap Column with Expanded
+            child : SingleChildScrollView (
+              child : ConstrainedBox (
+                constraints :
+                  BoxConstraints (
+                    minWidth : double.infinity, // Ensure width matches screen
+                    minHeight : 0, // Allow height to expand based on content
+                  ),
+                  child : Column (
+                    children : [
+                      Form (
                         key: _formKey,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -226,8 +221,9 @@ class _AddCareRecipientFormState extends State<AddCareRecipientForm> {
                             TextFormField(
                               controller: _firstNameController,
                               decoration: const InputDecoration(
-                                  labelText: 'First Name',
-                                  focusColor: Colors.blueGrey),
+                                labelText: 'First Name',
+                                focusColor: Colors.blueGrey,
+                              ),
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
                                   return 'Please enter a first name';
@@ -237,59 +233,55 @@ class _AddCareRecipientFormState extends State<AddCareRecipientForm> {
                             ),
                             TextFormField(
                               controller: _lastNameController,
-                              decoration:
-                                  const InputDecoration(labelText: 'Last Name'),
+                              decoration: const InputDecoration(
+                              labelText: 'Last Name',
+                              ),
+                              validator: (value) {
+                              if (value == null || value.isEmpty) {
+                              return 'Please enter a last name';
+                              }
+                              return null;
+                              },
+                            ),
+                            TextFormField(
+                              controller: _ageController,
+                              decoration: const InputDecoration(labelText: 'Age'),
+                            ),
+                            TextFormField(
+                              controller: _addressController,
+                              decoration: const InputDecoration(labelText: 'Address Line'),
+                            ),
+                            TextFormField(
+                              controller: _cityController,
+                              decoration: const InputDecoration(labelText: 'City'),
+                              validator: (value) {
+                              if (value == null || value.isEmpty) {
+                              return 'Please enter a city';
+                              }
+                              return null;
+                              },
+                            ),
+                            TextFormField(
+                              controller: _stateController,
+                              decoration: const InputDecoration(labelText: 'State'),
                               validator: (value) {
                                 if (value == null || value.isEmpty) {
-                                  return 'Please enter a last name';
+                                  return 'Please enter a state';
                                 }
                                 return null;
                               },
                             ),
                             TextFormField(
-                              controller: _ageController,
-                              decoration:
-                                  const InputDecoration(labelText: 'Age'),
-                            ),
-                            TextFormField(
-                              controller: _addressController,
-                              decoration: const InputDecoration(
-                                  labelText: 'Address Line'),
-                            ),
-                            TextFormField(
-                                controller: _cityController,
-                                decoration:
-                                    const InputDecoration(labelText: 'City'),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter a city';
-                                  }
-                                  return null;
-                                }),
-                            TextFormField(
-                                controller: _stateController,
-                                decoration:
-                                    const InputDecoration(labelText: 'State'),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter a state';
-                                  }
-                                  return null;
-                                }),
-                            TextFormField(
                               controller: _countyController,
-                              decoration:
-                                  const InputDecoration(labelText: 'County'),
+                              decoration: const InputDecoration(labelText: 'County'),
                             ),
                             TextFormField(
                               controller: _emailController,
-                              decoration:
-                                  const InputDecoration(labelText: 'Email'),
+                              decoration: const InputDecoration(labelText: 'Email'),
                             ),
                             TextFormField(
                               controller: _phoneController,
-                              decoration:
-                                  const InputDecoration(labelText: 'Phone'),
+                              decoration: const InputDecoration(labelText: 'Phone'),
                             ),
                             const SizedBox(height: 16),
                             ElevatedButton(
@@ -298,8 +290,7 @@ class _AddCareRecipientFormState extends State<AddCareRecipientForm> {
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.grey,
                                 foregroundColor: Colors.black,
-                                padding: EdgeInsets.fromLTRB(
-                                    16.0, 2, 16.0, 2), // Apply padding here
+                                padding: EdgeInsets.fromLTRB(16.0, 2, 16.0, 2),
                               ),
                             ),
                             const SizedBox(height: 8),
@@ -315,18 +306,18 @@ class _AddCareRecipientFormState extends State<AddCareRecipientForm> {
                             ElevatedButton(
                               onPressed: _submitForm,
                               child: Text(_isUpdateMode
-                                  ? 'Update Care Recipient'
+                              ? 'Update Care Recipient'
                                   : 'Add Care Recipient'),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.green,
                                 foregroundColor: Colors.black,
-                                padding: EdgeInsets.fromLTRB(
-                                    16.0, 2, 16.0, 2),
+                                padding: EdgeInsets.fromLTRB(16.0, 2, 16.0, 2),
                               ),
                             ),
                           ],
                         ),
                       ),
+
                       const Divider(
                         color: Colors.black,
                         thickness: 2,
@@ -334,10 +325,10 @@ class _AddCareRecipientFormState extends State<AddCareRecipientForm> {
                         indent: 20,
                         endIndent: 20,
                       ),
+
                       GridView.count(
-                        // Add shrinkWrap
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
+                        shrinkWrap: true, // GridView should take only the space it needs
+                        physics: const NeverScrollableScrollPhysics(), // Disable GridView scrolling
                         crossAxisCount: 1,
                         crossAxisSpacing: 12.0,
                         mainAxisSpacing: 12.0,
@@ -347,19 +338,24 @@ class _AddCareRecipientFormState extends State<AddCareRecipientForm> {
                           _buildElevatedButton(
                             context: context,
                             icon: Icon(Icons.bookmark_outline,
-                                size: 32, color: Colors.black87),
+                            size: 32, color: Colors.black87),
                             text: 'Dementia Resources',
                             screen: DementiaResourcesScreen(),
                             keyName: "DementiaResourcesButtonKey",
                           ),
                         ],
                       ),
-                    ])),
-              );
-            })
-          ]),
-        ));
+                 ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+    bottomNavigationBar: UiUtils.createBottomNavigationBar(context));
   }
+
 }
 
 // Helper function to create each button for the GridView
@@ -371,13 +367,13 @@ Widget _buildElevatedButton({
   required String keyName,
 }) {
   return SizedBox(
-      width: 200,
-      height: 200,
+      width: 150,
+      height: 150,
       child: ElevatedButton(
         key: Key(keyName),
         style: ElevatedButton.styleFrom(
           foregroundColor: Colors.black,
-          backgroundColor: const Color(0xFFFFFFDD).withOpacity(0.30),
+          backgroundColor: Colors.lightBlue[100],
           // Button text color
           padding: const EdgeInsets.all(2.0),
           elevation: 0.0,
