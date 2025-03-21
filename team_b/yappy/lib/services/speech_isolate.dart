@@ -26,6 +26,7 @@ class ProcessSegmentResult {
   final Float32List? embedding;
   final bool success;
   final String? error;
+  final int? newSpeakerCount;
 
   ProcessSegmentResult({
     required this.segmentIndex,
@@ -34,6 +35,7 @@ class ProcessSegmentResult {
     this.embedding,
     required this.success,
     this.error,
+    this.newSpeakerCount,
   });
 }
 
@@ -46,6 +48,9 @@ class SpeechProcessingIsolate {
   // Stream controller for receiving results
   final _resultController = StreamController<ProcessSegmentResult>.broadcast();
   Stream<ProcessSegmentResult> get results => _resultController.stream;
+  
+  // Keep track of speaker count locally in the isolate handler
+  int _currentSpeakerCount = 0;
   
   // Initialize the isolate and recognizers
   Future<void> initialize(Map<String, dynamic> configs) async {
@@ -66,6 +71,16 @@ class SpeechProcessingIsolate {
         _responseCompleter.complete(message);
       } else if (message is ProcessSegmentResult) {
         // Subsequent messages are results from the isolate
+        
+        // Debug the speaker ID
+        debugPrint("Received result from isolate - Speaker ID: ${message.speakerId}, Count: ${message.newSpeakerCount}");
+        
+        // Update local speaker count if needed
+        if (message.newSpeakerCount != null && message.newSpeakerCount! > _currentSpeakerCount) {
+          _currentSpeakerCount = message.newSpeakerCount!;
+          debugPrint("Updated local speaker count to: $_currentSpeakerCount");
+        }
+        
         _resultController.add(message);
       }
     });
@@ -80,8 +95,35 @@ class SpeechProcessingIsolate {
       throw Exception('Isolate not initialized');
     }
     
-    // Send the message to isolate
-    _sendPort!.send(message);
+    // Update our local copy of speaker count if the incoming count is higher
+    if (message.recognizerConfigs['currentSpeakerCount'] != null) {
+      int incomingSpeakerCount = message.recognizerConfigs['currentSpeakerCount'];
+      if (incomingSpeakerCount > _currentSpeakerCount) {
+        _currentSpeakerCount = incomingSpeakerCount;
+        debugPrint("Updated isolate speaker count to: $_currentSpeakerCount");
+      }
+    }
+    
+    // Send the message to isolate with updated speaker count
+    final updatedMessage = ProcessSegmentMessage(
+      samples: message.samples,
+      sampleRate: message.sampleRate,
+      segmentIndex: message.segmentIndex,
+      recognizerConfigs: {
+        ...message.recognizerConfigs,
+        'currentSpeakerCount': _currentSpeakerCount,
+      },
+    );
+    
+    _sendPort!.send(updatedMessage);
+  }
+  
+  // Update the speaker count (call this when a new speaker is detected in the main thread)
+  void updateSpeakerCount(int count) {
+    if (count > _currentSpeakerCount) {
+      _currentSpeakerCount = count;
+      debugPrint("Manually updated isolate speaker count to: $_currentSpeakerCount");
+    }
   }
 
   // Dispose resources
@@ -107,6 +149,9 @@ class SpeechProcessingIsolate {
     sherpa_onnx.SpeakerEmbeddingExtractor? speakerExtractor;
     sherpa_onnx.SpeakerEmbeddingManager? speakerManager;
     
+    // Track speaker count inside the isolate
+    int isolateSpeakerCount = 0;
+    
     _initializeRecognizers(configs).then((initialized) {
       if (initialized != null) {
         offlineRecognizer = initialized['offlineRecognizer'];
@@ -115,12 +160,26 @@ class SpeechProcessingIsolate {
         
         receivePort.listen((message) {
           if (message is ProcessSegmentMessage) {
+            // Update speaker count from message if available
+            if (message.recognizerConfigs['currentSpeakerCount'] != null) {
+              int msgCount = message.recognizerConfigs['currentSpeakerCount'];
+              if (msgCount > isolateSpeakerCount) {
+                isolateSpeakerCount = msgCount;
+                debugPrint("Isolate updated count to: $isolateSpeakerCount");
+              }
+            }
+            
             _processSegment(
               message, 
               offlineRecognizer!, 
               speakerExtractor!, 
               speakerManager!,
-              sendPort
+              sendPort,
+              isolateSpeakerCount,
+              (newCount) {
+                isolateSpeakerCount = newCount;
+                debugPrint("Callback updated isolate count to: $isolateSpeakerCount");
+              }
             );
           }
         });
@@ -166,7 +225,9 @@ class SpeechProcessingIsolate {
     sherpa_onnx.OfflineRecognizer offlineRecognizer,
     sherpa_onnx.SpeakerEmbeddingExtractor speakerExtractor,
     sherpa_onnx.SpeakerEmbeddingManager speakerManager,
-    SendPort sendPort
+    SendPort sendPort,
+    int currentSpeakerCount,
+    Function(int) updateSpeakerCount
   ) async {
     try {
       debugPrint('Isolate: Processing segment ${message.segmentIndex} (${message.samples.length} samples)');
@@ -175,7 +236,7 @@ class SpeechProcessingIsolate {
         sendPort.send(ProcessSegmentResult(
           segmentIndex: message.segmentIndex,
           text: '',
-          speakerId: '',
+          speakerId: 'Unknown',
           success: false,
           error: 'Empty samples',
         ));
@@ -194,6 +255,19 @@ class SpeechProcessingIsolate {
       
       debugPrint('Isolate: Recognition result: "${result.text}"');
       
+      // Skip speaker identification if result is empty
+      if (result.text.trim().isEmpty) {
+        sendPort.send(ProcessSegmentResult(
+          segmentIndex: message.segmentIndex,
+          text: result.text,
+          speakerId: 'Unknown',
+          success: true,
+        ));
+        
+        offlineStream.free();
+        return;
+      }
+      
       // Speaker identification
       final speakerStream = speakerExtractor.createStream();
       speakerStream.acceptWaveform(
@@ -205,25 +279,34 @@ class SpeechProcessingIsolate {
       final embedding = speakerExtractor.compute(speakerStream);
       
       // Search for matching speaker
-      final threshold = 0.6;
+      final threshold = 0.5;
       var speakerId = speakerManager.search(embedding: embedding, threshold: threshold);
+      
+      int newSpeakerCount = currentSpeakerCount;
       
       // If no match, register a new speaker
       if (speakerId.isEmpty) {
-        speakerId = 'Speaker ${message.recognizerConfigs['nextSpeakerId']}';
-        debugPrint('Isolate: New speaker detected: $speakerId');
+        // Increment speaker count for the new speaker
+        newSpeakerCount = currentSpeakerCount + 1;
+        
+        speakerId = 'Speaker $newSpeakerCount';
+        debugPrint('Isolate: New speaker detected: $speakerId (count: $newSpeakerCount)');
         speakerManager.add(name: speakerId, embedding: embedding);
+        
+        // Update the callback
+        updateSpeakerCount(newSpeakerCount);
       } else {
         debugPrint('Isolate: Matched existing speaker: $speakerId');
       }
       
-      // Send the result back
+      // Send the result back with updated speaker count
       sendPort.send(ProcessSegmentResult(
         segmentIndex: message.segmentIndex,
         text: result.text,
         speakerId: speakerId,
         embedding: embedding,
         success: true,
+        newSpeakerCount: newSpeakerCount,
       ));
       
       // Clean up
@@ -234,7 +317,7 @@ class SpeechProcessingIsolate {
       sendPort.send(ProcessSegmentResult(
         segmentIndex: message.segmentIndex,
         text: '',
-        speakerId: '',
+        speakerId: 'Unknown',
         success: false,
         error: e.toString(),
       ));
