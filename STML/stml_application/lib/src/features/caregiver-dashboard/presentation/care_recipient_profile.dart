@@ -35,16 +35,11 @@ class CareRecipientProfileScreenState extends State<CareRecipientProfileScreen> 
         extendBody: true,
         // Setting up the app bar at the top of the screen
         appBar: const CustomAppBar(
-          title: 'Caregiver Dashboard',
+          title: 'Recipient Profile',
         ),
         // Main content of the screen
         body: Container(
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage("assets/images/background.jpg"),
-              fit: BoxFit.cover,
-            ),
-          ),
+
           child: Column(
             children: [
               Padding(
@@ -54,7 +49,7 @@ class CareRecipientProfileScreenState extends State<CareRecipientProfileScreen> 
                   style: TextStyle(
                     fontSize: 20.0,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black54,
+                    color: Colors.black,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -74,7 +69,7 @@ class CareRecipientProfileScreenState extends State<CareRecipientProfileScreen> 
                     _buildElevatedButton(
                       context: context,
                       icon: Icon(Icons.health_and_safety_rounded,
-                          size: iconSize, color: Colors.black54),
+                          size: iconSize, color: Color.fromARGB(255, 2, 63, 129)),
                       text: 'Health Metrics',
                       screen: CaregiverDashboardScreen(),
                       keyName: "HealthMetricsButtonKey",
@@ -82,7 +77,7 @@ class CareRecipientProfileScreenState extends State<CareRecipientProfileScreen> 
                     _buildElevatedButton(
                       context: context,
                       icon: Icon(Icons.task,
-                          size: iconSize, color: Colors.black54),
+                          size: iconSize, color: Color.fromARGB(255, 2, 63, 129)),
                       text: 'Tasks',
                       screen: CaregiverDashboardScreen(),
                       keyName: "TaskButtonKey",
@@ -90,7 +85,7 @@ class CareRecipientProfileScreenState extends State<CareRecipientProfileScreen> 
                     _buildElevatedButton(
                       context: context,
                       icon: Icon(Icons.maps_home_work,
-                          size: iconSize, color: Colors.black54),
+                          size: iconSize, color: Color.fromARGB(255, 2, 63, 129)),
                       text: 'Location',
                       screen: ResponseScreen(),
                       keyName: "LocationButtonKey",
@@ -98,7 +93,7 @@ class CareRecipientProfileScreenState extends State<CareRecipientProfileScreen> 
                     _buildElevatedButton(
                       context: context,
                       icon: Icon(Icons.person,
-                          size: iconSize, color: Colors.black54),
+                          size: iconSize, color: Color.fromARGB(255, 2, 63, 129)),
                       text: 'Update Profile',
                       screen: AddCareRecipientForm(itemId: widget.careRecipientId, initialData: widget.careRecipientData),
                       keyName: "UpdateProfileButtonKey",
@@ -126,12 +121,13 @@ class CareRecipientProfileScreenState extends State<CareRecipientProfileScreen> 
       key: Key(keyName),
       style: ElevatedButton.styleFrom(
         foregroundColor: Colors.black,
-        backgroundColor:
-        const Color(0xFFFFFFFF).withOpacity(0.30), // Button text color
+        backgroundColor: Colors.lightBlue[100],
+
         padding: const EdgeInsets.all(16.0),
         elevation: 0.0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10.0),
+
         ),
       ),
       onPressed: () {
@@ -150,7 +146,7 @@ class CareRecipientProfileScreenState extends State<CareRecipientProfileScreen> 
             style: const TextStyle(
               fontSize: 13.0,
               fontWeight: FontWeight.bold,
-              color: Color(0XFF000000),
+              color: Colors.black,
             ),
             textAlign: TextAlign.center,
           ),
