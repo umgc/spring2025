@@ -62,13 +62,13 @@ class UiUtils {
               );
             }
           }
-          /*else if (index == 3) {
+          else if (index == 3) {
             // Navigate to Gallery screen
             Navigator.push(
                 context,
                 MaterialPageRoute(
                     builder: (context) => SignificantObjectScreen()));
-          }*/
+          }
         });
   }
 }

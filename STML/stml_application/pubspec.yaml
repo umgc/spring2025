@@ -58,7 +58,7 @@ dependencies:
     aws_transcribe_api: ^2.0.0
     avatar_glow: ^3.0.1
     external_path: ^2.0.1
-#    gallery_saver: ^2.3.2
+    gallery_saver: ^2.3.2
     url_launcher: ^6.0.12
     firebase_core: ^3.8.0
     firebase_auth: ^5.3.3

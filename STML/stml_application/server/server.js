@@ -8,7 +8,7 @@ const app = express();
 app.use(cors());
 
 // Replace with your actual Google Directions API key
-const API_KEY = 'GOOGLE MAPS API KEY WITH DIRECTIONS API ENABLED (LEGACY)';
+const API_KEY = 'GOOGLE API KEY WITH DIRECTIONS API ENABLED (LEGACY)';
 
 // Endpoint to proxy requests to the Google Directions API
 app.get('/directions', (req, res) => {

@@ -1,0 +1,2 @@
+C:/Users/dpoll/Capstone/spring2025/STML/stml_application/android/app/.cxx/Debug/b5b1a1a1/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/Users/dpoll/Capstone/spring2025/STML/stml_application/android/app/.cxx/Debug/b5b1a1a1/armeabi-v7a/CMakeFiles/rebuild_cache.dir
