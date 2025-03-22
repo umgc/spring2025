@@ -326,7 +326,25 @@ class _AddCareRecipientFormState extends State<AddCareRecipientForm> {
                         endIndent: 20,
                       ),
 
-
+                      GridView.count(
+                        shrinkWrap: true, // GridView should take only the space it needs
+                        physics: const NeverScrollableScrollPhysics(), // Disable GridView scrolling
+                        crossAxisCount: 1,
+                        crossAxisSpacing: 12.0,
+                        mainAxisSpacing: 12.0,
+                        childAspectRatio: 1,
+                        padding: const EdgeInsets.fromLTRB(130.0, 2, 130.0, 2),
+                        children: [
+                          _buildElevatedButton(
+                            context: context,
+                            icon: Icon(Icons.bookmark_outline,
+                            size: 32, color: Colors.black87),
+                            text: 'Dementia Resources',
+                            screen: DementiaResourcesScreen(),
+                            keyName: "DementiaResourcesButtonKey",
+                          ),
+                        ],
+                      ),
                  ],
                 ),
               ),
