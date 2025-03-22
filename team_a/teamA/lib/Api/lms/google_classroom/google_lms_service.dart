@@ -48,7 +48,8 @@ class GoogleLmsService extends LmsInterface {
   String? _userToken;
 
   @override
-  String apiURL = 'https://classroom.googleapis.com/v1'; // Base URL for your Google Classroom
+  String apiURL =
+      'https://classroom.googleapis.com/v1'; // Base URL for your Google Classroom
   @override
   String? userName;
   @override
@@ -96,9 +97,6 @@ class GoogleLmsService extends LmsInterface {
         'https://www.googleapis.com/auth/classroom.courseworkmaterials',
         'https://www.googleapis.com/auth/forms.body.readonly',
         'https://www.googleapis.com/auth/drive.file',
-       
-       
-        
       ],
     );
 
@@ -111,7 +109,7 @@ class GoogleLmsService extends LmsInterface {
       // Get the user's name
       userName = googleUser.email.split("@").first;
       fullName = googleUser.displayName ?? "Unknown User";
-      
+
       List<String> nameParts = fullName!.split(" ");
 
       firstName = nameParts.isNotEmpty ? nameParts.first : "";
@@ -197,7 +195,7 @@ class GoogleLmsService extends LmsInterface {
       headers: {'Authorization': 'Bearer $_userToken'},
     );
 
-    // TODO: remove after testing. 
+    // TODO: remove after testing.
     // print('Google: ${response.body}');
 
     if (response.statusCode != 200) {
@@ -209,10 +207,12 @@ class GoogleLmsService extends LmsInterface {
 
     // The response can be either a List or a Map with a 'courses' key
     if (decodedJson is List) {
-      courses = decodedJson.map((i) => Course.empty().fromGoogleJson(i)).toList();
+      courses =
+          decodedJson.map((i) => Course.empty().fromGoogleJson(i)).toList();
     } else if (decodedJson is Map<String, dynamic>) {
       final courseList = decodedJson['courses'] as List<dynamic>;
-      courses = courseList.map((i) => Course.empty().fromGoogleJson(i)).toList();
+      courses =
+          courseList.map((i) => Course.empty().fromGoogleJson(i)).toList();
     } else {
       throw StateError('Unexpected response format from Moodle');
     }
@@ -221,10 +221,11 @@ class GoogleLmsService extends LmsInterface {
     for (Course course in courses) {
       // set topic ids
       final responseTopics = await ApiService().httpGet(
-        Uri.parse('https://classroom.googleapis.com/v1/courses/${course.id}/topics/'),
+        Uri.parse(
+            'https://classroom.googleapis.com/v1/courses/${course.id}/topics/'),
         headers: {'Authorization': 'Bearer $_userToken'},
       );
-      
+
       var decodedResponseTopics = jsonDecode(responseTopics.body);
 
       if (decodedResponseTopics.containsKey('topic')) {
@@ -243,7 +244,7 @@ class GoogleLmsService extends LmsInterface {
           }
         }
       }
-      
+
       course.quizzes = await getQuizzes(course.id, topicId: course.quizTopicId);
       // print('Quizzes for course ${course.id}: ${course.quizzes}');
       course.essays = await getEssays(course.id, topicId: course.essayTopicId);
@@ -272,7 +273,8 @@ class GoogleLmsService extends LmsInterface {
       if (studentsJson.containsKey('students')) {
         for (var student in studentsJson['students']) {
           participants.add(Participant(
-            id: student['userId'].hashCode, // Google Classroom does not provide numeric IDs
+            id: student['userId']
+                .hashCode, // Google Classroom does not provide numeric IDs
             fullname: student['profile']['name']['fullName'],
             firstname: student['profile']['name']['givenName'],
             lastname: student['profile']['name']['familyName'],
@@ -310,7 +312,6 @@ class GoogleLmsService extends LmsInterface {
     return participants;
   }
 
-
   // ****************************************************************************************
   // Quiz methods
   // ****************************************************************************************
@@ -318,17 +319,18 @@ class GoogleLmsService extends LmsInterface {
   @override
   Future<void> importQuiz(String courseid, String quizXml) async {
     // TODO: implement google api code
-    throw UnimplementedError('This feature is not supported by Google Classroom. Please contact the developer.');
+    throw UnimplementedError(
+        'This feature is not supported by Google Classroom. Please contact the developer.');
   }
 
   @override
   Future<List<Quiz>> getQuizzes(int? courseID, {int? topicId}) async {
-    if (_userToken == null) throw StateError('User not logged in to Google Classroom');
+    if (_userToken == null)
+      throw StateError('User not logged in to Google Classroom');
 
-
-    
     final response = await ApiService().httpGet(
-      Uri.parse('https://classroom.googleapis.com/v1/courses/$courseID/courseWork'),
+      Uri.parse(
+          'https://classroom.googleapis.com/v1/courses/$courseID/courseWork'),
       headers: {'Authorization': 'Bearer $_userToken'},
     );
 
@@ -347,17 +349,16 @@ class GoogleLmsService extends LmsInterface {
     if (decodedJson == null) {
       return [];
     }
-    
+
     List<Quiz> quizList = [];
     for (var item in decodedJson) {
       // print('Item: $item');
       // If courseID is null, return all quizzes; otherwise filter by course
       if (courseID == null || int.parse(item['courseId']) == courseID) {
         if (topicId != null && item.containsKey('topicId')) {
-          
           if (int.parse(item['topicId']) == topicId) {
             quizList.add(Quiz.fromGoogleJson(item));
-           }
+          }
         }
       }
     }
@@ -367,14 +368,9 @@ class GoogleLmsService extends LmsInterface {
     return quizList;
   }
 
-@override
-  Future<int?> createQuiz(
-      String courseid,
-      String quizname,
-      String quizintro,
-      String sectionid,
-      String timeopen,
-      String timeclose) async {
+  @override
+  Future<int?> createQuiz(String courseid, String quizname, String quizintro,
+      String sectionid, String timeopen, String timeclose) async {
     print('Creating quiz in Google Classroom...');
     print('Course ID: $courseid');
     print('Quiz Name: $quizname');
@@ -386,10 +382,10 @@ class GoogleLmsService extends LmsInterface {
     try {
       // Convert timeopen to ISO 8601 format
       String formattedTimeOpen = DateTime.parse(timeopen).toIso8601String();
-      
+
       String? assignmentId = await createAssignmentHelper(
           courseid, quizname, quizintro, sectionid, formattedTimeOpen);
-      
+
       if (assignmentId != null) {
         return int.parse(assignmentId);
       } else {
@@ -479,10 +475,11 @@ class GoogleLmsService extends LmsInterface {
   @override
   Future<String> addRandomQuestions(
       String categoryid, String quizid, String numquestions) async {
-        print('Adding random questions to quiz...');
+    print('Adding random questions to quiz...');
     print('Category ID: $categoryid');
     // TODO: implement google api code
-    throw UnimplementedError('This feature is not supported by Google Classroom. Please contact the developer.');
+    throw UnimplementedError(
+        'This feature is not supported by Google Classroom. Please contact the developer.');
   }
 
   @override
@@ -491,168 +488,96 @@ class GoogleLmsService extends LmsInterface {
     print('Course ID: $courseid');
     print('Quiz XML: $quizXml');
     // TODO: implement google api code
-    throw UnimplementedError('This feature is not supported by Google Classroom. Please contact the developer.');
+    throw UnimplementedError(
+        'This feature is not supported by Google Classroom. Please contact the developer.');
   }
 
   @override
   Future<List<QuestionType>> getQuestionsFromQuiz(int quizId) async {
     // TODO: implement google api code
-    throw UnimplementedError('This feature is not supported by Google Classroom. Please contact the developer.');
+    throw UnimplementedError(
+        'This feature is not supported by Google Classroom. Please contact the developer.');
   }
 
- Future<FormData> getAssignmentFormQuestions(String coursedId, String courseWorkId) async {
-  print('Fetching form questions for course $coursedId, coursework $courseWorkId...');
-  try {
-    final accessToken = await _getToken();
-    if (accessToken == null) {
-      throw Exception('No access token found. Please log in again.');
-    }
-
-    final courseworkUrl =
-        'https://classroom.googleapis.com/v1/courses/$coursedId/courseWork/$courseWorkId';
-    final courseworkResponse = await http.get(
-      Uri.parse(courseworkUrl),
-      headers: {
-        'Authorization': 'Bearer $accessToken',
-        'Content-Type': 'application/json',
-      },
-    );
-
-    if (courseworkResponse.statusCode != 200) {
-      throw Exception(
-          'Failed to fetch coursework: ${courseworkResponse.statusCode} - ${courseworkResponse.body}');
-    }
-
-    final courseworkData = jsonDecode(courseworkResponse.body);
-    print('Coursework data: $courseworkData');
-
-    String? formUrl;
-    if (courseworkData['materials'] != null && courseworkData['materials'].isNotEmpty) {
-      for (var material in courseworkData['materials']) {
-        if (material['link'] != null && material['link']['url'] != null) {
-          final url = material['link']['url'];
-          if (url.contains('docs.google.com/forms')) {
-            formUrl = url;
-            break;
-          }
-        }
-        if (material['form'] != null && material['form']['formUrl'] != null) {
-          final url = material['form']['formUrl'];
-          if (url.contains('docs.google.com/forms')) {
-            formUrl = url;
-            break;
-          }
-        }
+  Future<FormData> getAssignmentFormQuestions(
+      String coursedId, String courseWorkId) async {
+    print(
+        'Fetching form questions for course $coursedId, coursework $courseWorkId...');
+    try {
+      final accessToken = await _getToken();
+      if (accessToken == null) {
+        throw Exception('No access token found. Please log in again.');
       }
-    }
 
-    if (formUrl == null) {
-      throw Exception('No Google Form found in assignment materials.');
-    }
-    print('Extracted Form URL: $formUrl');
+      final courseworkUrl =
+          'https://classroom.googleapis.com/v1/courses/$coursedId/courseWork/$courseWorkId';
+      final courseworkResponse = await http.get(
+        Uri.parse(courseworkUrl),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+        },
+      );
 
-    // Extract and format dates to YYYY-MM-DD
-    String? startDate;
-    if (courseworkData['creationTime'] != null) {
-      final dateTime = DateTime.parse(courseworkData['creationTime']);
-      startDate = '${dateTime.year}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.day.toString().padLeft(2, '0')}';
-    }
-    
-    String? endDate;
-    if (courseworkData['dueDate'] != null) {
-      final dueDate = courseworkData['dueDate'];
-      endDate = '${dueDate['year']}-${dueDate['month'].toString().padLeft(2, '0')}-${dueDate['day'].toString().padLeft(2, '0')}';
-    }
+      if (courseworkResponse.statusCode != 200) {
+        throw Exception(
+            'Failed to fetch coursework: ${courseworkResponse.statusCode} - ${courseworkResponse.body}');
+      }
 
-    String? status = courseworkData['state'];
+      final courseworkData = jsonDecode(courseworkResponse.body);
+      print('Coursework data: $courseworkData');
 
-    final formId = await getFormIdFromViewformUrl(formUrl, accessToken);
-    if (formId == null) {
-      throw Exception('Failed to retrieve Form ID from viewform URL');
-    }
-    print('Form ID: $formId');
-
-    final formsUrl = 'https://forms.googleapis.com/v1/forms/$formId';
-    final formsResponse = await http.get(
-      Uri.parse(formsUrl),
-      headers: {
-        'Authorization': 'Bearer $accessToken',
-        'Content-Type': 'application/json',
-      },
-    );
-
-    if (formsResponse.statusCode != 200) {
-      throw Exception(
-          'Failed to fetch form: ${formsResponse.statusCode} - ${formsResponse.body}');
-    }
-
-    final formData = jsonDecode(formsResponse.body);
-    print('Form data: $formData');
-
-    String title = formData['info']?['title'] ?? 'Untitled Form';
-    List<QuestionData> questions = [];
-    if (formData['items'] != null) {
-      for (var item in formData['items']) {
-        if (item['questionItem'] != null && item['questionItem']['question'] != null) {
-          String questionText = item['title'] ?? 'Unnamed Question';
-          List<String> options = [];
-          if (item['questionItem']['question']['choiceQuestion'] != null) {
-            var choiceQuestion = item['questionItem']['question']['choiceQuestion'];
-            if (choiceQuestion['options'] != null) {
-              for (var option in choiceQuestion['options']) {
-                options.add(option['value'] ?? 'No Option');
-              }
+      String? formUrl;
+      if (courseworkData['materials'] != null &&
+          courseworkData['materials'].isNotEmpty) {
+        for (var material in courseworkData['materials']) {
+          if (material['link'] != null && material['link']['url'] != null) {
+            final url = material['link']['url'];
+            if (url.contains('docs.google.com/forms')) {
+              formUrl = url;
+              break;
             }
           }
-          questions.add(QuestionData(question: questionText, options: options));
+          if (material['form'] != null && material['form']['formUrl'] != null) {
+            final url = material['form']['formUrl'];
+            if (url.contains('docs.google.com/forms')) {
+              formUrl = url;
+              break;
+            }
+          }
         }
       }
-    }
 
-    return FormData(
-      title: title,
-      questions: questions,
-      startDate: startDate,
-      endDate: endDate,
-      formUrl: formUrl,
-      status: status,
-    );
-  } catch (e) {
-    print('Error retrieving form questions: $e');
-    return FormData(title: 'Error', questions: []);
-  }
-}
+      if (formUrl == null) {
+        throw Exception('No Google Form found in assignment materials.');
+      }
+      print('Extracted Form URL: $formUrl');
 
-Future<String?> getFormIdFromViewformUrl(String viewformUrl, String accessToken) async {
-  try {
-    final publicKey = viewformUrl.split('/d/e/')[1].split('/')[0];
-    print('Public key: $publicKey');
+      // Extract and format dates to YYYY-MM-DD
+      String? startDate;
+      if (courseworkData['creationTime'] != null) {
+        final dateTime = DateTime.parse(courseworkData['creationTime']);
+        startDate =
+            '${dateTime.year}-${dateTime.month.toString().padLeft(2, '0')}-${dateTime.day.toString().padLeft(2, '0')}';
+      }
 
-    final driveUrl = 'https://www.googleapis.com/drive/v3/files'
-        '?q=mimeType="application/vnd.google-apps.form"'
-        '&fields=files(id,name)'
-        '&spaces=drive';
-    final driveResponse = await http.get(
-      Uri.parse(driveUrl),
-      headers: {
-        'Authorization': 'Bearer $accessToken',
-        'Content-Type': 'application/json',
-      },
-    );
+      String? endDate;
+      if (courseworkData['dueDate'] != null) {
+        final dueDate = courseworkData['dueDate'];
+        endDate =
+            '${dueDate['year']}-${dueDate['month'].toString().padLeft(2, '0')}-${dueDate['day'].toString().padLeft(2, '0')}';
+      }
 
-    if (driveResponse.statusCode != 200) {
-      throw Exception('Failed to fetch Drive files: ${driveResponse.body}');
-    }
+      String? status = courseworkData['state'];
 
-    final driveData = jsonDecode(driveResponse.body);
-    print('Drive data: $driveData');
+      final formId = await getFormIdFromViewformUrl(formUrl, accessToken);
+      if (formId == null) {
+        throw Exception('Failed to retrieve Form ID from viewform URL');
+      }
+      print('Form ID: $formId');
 
-    for (var file in driveData['files']) {
-      final fileId = file['id'];
-      print('Checking file ID: $fileId');
-
-      final formsUrl = 'https://forms.googleapis.com/v1/forms/$fileId';
-      final formResponse = await http.get(
+      final formsUrl = 'https://forms.googleapis.com/v1/forms/$formId';
+      final formsResponse = await http.get(
         Uri.parse(formsUrl),
         headers: {
           'Authorization': 'Bearer $accessToken',
@@ -660,35 +585,119 @@ Future<String?> getFormIdFromViewformUrl(String viewformUrl, String accessToken)
         },
       );
 
-      if (formResponse.statusCode == 200) {
-        final formData = jsonDecode(formResponse.body);
-        final responderUri = formData['responderUri'];
-        print('Responder URI for $fileId: $responderUri');
-
-        if (responderUri != null && responderUri.contains(publicKey)) {
-          print('Matched form ID: $fileId');
-          return fileId;
-        }
-      } else {
-        print('Failed to fetch form $fileId: ${formResponse.statusCode}');
+      if (formsResponse.statusCode != 200) {
+        throw Exception(
+            'Failed to fetch form: ${formsResponse.statusCode} - ${formsResponse.body}');
       }
+
+      final formData = jsonDecode(formsResponse.body);
+      print('Form data: $formData');
+
+      String title = formData['info']?['title'] ?? 'Untitled Form';
+      List<QuestionData> questions = [];
+      if (formData['items'] != null) {
+        for (var item in formData['items']) {
+          if (item['questionItem'] != null &&
+              item['questionItem']['question'] != null) {
+            String questionText = item['title'] ?? 'Unnamed Question';
+            List<String> options = [];
+            if (item['questionItem']['question']['choiceQuestion'] != null) {
+              var choiceQuestion =
+                  item['questionItem']['question']['choiceQuestion'];
+              if (choiceQuestion['options'] != null) {
+                for (var option in choiceQuestion['options']) {
+                  options.add(option['value'] ?? 'No Option');
+                }
+              }
+            }
+            questions
+                .add(QuestionData(question: questionText, options: options));
+          }
+        }
+      }
+
+      return FormData(
+        title: title,
+        questions: questions,
+        startDate: startDate,
+        endDate: endDate,
+        formUrl: formUrl,
+        status: status,
+      );
+    } catch (e) {
+      print('Error retrieving form questions: $e');
+      return FormData(title: 'Error', questions: []);
     }
-
-    throw Exception('No matching form found in Drive for the provided viewform URL');
-  } catch (e) {
-    print('Error fetching Form ID from Drive: $e');
-    return null;
   }
-}
 
-Future<String?> _getToken() async {
-  final token = LocalStorageService.getGoogleAccessToken();
-  if (token == null) {
-    print('Error: No valid OAuth token. Ensure the required scopes are enabled. Token null');
+  Future<String?> getFormIdFromViewformUrl(
+      String viewformUrl, String accessToken) async {
+    try {
+      final publicKey = viewformUrl.split('/d/e/')[1].split('/')[0];
+      print('Public key: $publicKey');
+
+      final driveUrl = 'https://www.googleapis.com/drive/v3/files'
+          '?q=mimeType="application/vnd.google-apps.form"'
+          '&fields=files(id,name)'
+          '&spaces=drive';
+      final driveResponse = await http.get(
+        Uri.parse(driveUrl),
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Content-Type': 'application/json',
+        },
+      );
+
+      if (driveResponse.statusCode != 200) {
+        throw Exception('Failed to fetch Drive files: ${driveResponse.body}');
+      }
+
+      final driveData = jsonDecode(driveResponse.body);
+      print('Drive data: $driveData');
+
+      for (var file in driveData['files']) {
+        final fileId = file['id'];
+        print('Checking file ID: $fileId');
+
+        final formsUrl = 'https://forms.googleapis.com/v1/forms/$fileId';
+        final formResponse = await http.get(
+          Uri.parse(formsUrl),
+          headers: {
+            'Authorization': 'Bearer $accessToken',
+            'Content-Type': 'application/json',
+          },
+        );
+
+        if (formResponse.statusCode == 200) {
+          final formData = jsonDecode(formResponse.body);
+          final responderUri = formData['responderUri'];
+          print('Responder URI for $fileId: $responderUri');
+
+          if (responderUri != null && responderUri.contains(publicKey)) {
+            print('Matched form ID: $fileId');
+            return fileId;
+          }
+        } else {
+          print('Failed to fetch form $fileId: ${formResponse.statusCode}');
+        }
+      }
+
+      throw Exception(
+          'No matching form found in Drive for the provided viewform URL');
+    } catch (e) {
+      print('Error fetching Form ID from Drive: $e');
+      return null;
+    }
   }
-  return token;
-}
 
+  Future<String?> _getToken() async {
+    final token = LocalStorageService.getGoogleAccessToken();
+    if (token == null) {
+      print(
+          'Error: No valid OAuth token. Ensure the required scopes are enabled. Token null');
+    }
+    return token;
+  }
 
   // ****************************************************************************************
   // Assignment methods
@@ -696,11 +705,12 @@ Future<String?> _getToken() async {
 
   @override
   Future<List<Assignment>> getEssays(int? courseID, {int? topicId}) async {
-    if (_userToken == null) throw StateError('User not logged in to Google Classroom');
+    if (_userToken == null)
+      throw StateError('User not logged in to Google Classroom');
 
-    
     final response = await ApiService().httpGet(
-      Uri.parse('https://classroom.googleapis.com/v1/courses/$courseID/courseWork'),
+      Uri.parse(
+          'https://classroom.googleapis.com/v1/courses/$courseID/courseWork'),
       headers: {'Authorization': 'Bearer $_userToken'},
     );
 
@@ -714,15 +724,15 @@ Future<String?> _getToken() async {
     if (decodedJson == null) {
       return [];
     }
-    
+
     List<Assignment> essayList = [];
     for (var item in decodedJson) {
       // If courseID is null, return all quizzes; otherwise filter by course
       if (courseID == null || int.parse(item['courseId']) == courseID) {
-       if (topicId != null && item.containsKey('topicId')) {
-           if (int.parse(item['topicId']) == topicId) {
-             essayList.add(Assignment.empty().fromGoogleJson(item));
-           }
+        if (topicId != null && item.containsKey('topicId')) {
+          if (int.parse(item['topicId']) == topicId) {
+            essayList.add(Assignment.empty().fromGoogleJson(item));
+          }
         }
       }
     }
@@ -756,7 +766,8 @@ Future<String?> _getToken() async {
     print('Assignment ID: $assignmentId');
     print('Course ID: $courseId');
     // TODO: implement google api code
-    throw UnimplementedError('This feature is not supported by Google Classroom. Please contact the developer.');
+    throw UnimplementedError(
+        'This feature is not supported by Google Classroom. Please contact the developer.');
   }
 
   // ****************************************************************************************
@@ -768,7 +779,8 @@ Future<String?> _getToken() async {
     print('Getting assignment submissions...');
     print('Assignment ID: $assignmentId');
     // TODO: implement google api code
-    throw UnimplementedError('This feature is not supported by Google Classroom. Please contact the developer.');
+    throw UnimplementedError(
+        'This feature is not supported by Google Classroom. Please contact the developer.');
   }
 
   @override
@@ -778,7 +790,8 @@ Future<String?> _getToken() async {
     print('Assignment ID: $assignmentId');
 
     // TODO: implement google api code
-    throw UnimplementedError('This feature is not supported by Google Classroom. Please contact the developer.');
+    throw UnimplementedError(
+        'This feature is not supported by Google Classroom. Please contact the developer.');
   }
 
   @override
@@ -788,7 +801,8 @@ Future<String?> _getToken() async {
     print('Assignment ID: $assignmentId');
     print('User ID: $userId');
     // TODO: implement google api code
-    throw UnimplementedError('This feature is not supported by Google Classroom. Please contact the developer.');
+    throw UnimplementedError(
+        'This feature is not supported by Google Classroom. Please contact the developer.');
   }
 
   @override
@@ -796,16 +810,19 @@ Future<String?> _getToken() async {
     print('Getting assignment grades...');
     print('Assignment ID: $assignmentId');
     // TODO: implement google api code
-    throw UnimplementedError('This feature is not supported by Google Classroom. Please contact the developer.');
+    throw UnimplementedError(
+        'This feature is not supported by Google Classroom. Please contact the developer.');
   }
 
   @override
-  Future<bool> setRubricGrades(int assignmentId, int userId, String jsonGrades) async {
+  Future<bool> setRubricGrades(
+      int assignmentId, int userId, String jsonGrades) async {
     print('Setting rubric grades...');
     print('Assignment ID: $assignmentId');
     print('User ID: $userId');
     // TODO: implement google api code
-    throw UnimplementedError('This feature is not supported by Google Classroom. Please contact the developer.');
+    throw UnimplementedError(
+        'This feature is not supported by Google Classroom. Please contact the developer.');
   }
 
   @override
@@ -814,7 +831,8 @@ Future<String?> _getToken() async {
     print('Assignment ID: $assignmentId');
     print('User ID: $userid');
     // TODO: implement google api code
-    throw UnimplementedError('This feature is not supported by Google Classroom. Please contact the developer.');
+    throw UnimplementedError(
+        'This feature is not supported by Google Classroom. Please contact the developer.');
   }
 
   @override
@@ -823,7 +841,8 @@ Future<String?> _getToken() async {
     print('User ID: $userId');
 
     // TODO: implement google api code
-    throw UnimplementedError('This feature is not supported by Google Classroom. Please contact the developer.');
+    throw UnimplementedError(
+        'This feature is not supported by Google Classroom. Please contact the developer.');
   }
 
   // ****************************************************************************************
@@ -835,27 +854,30 @@ Future<String?> _getToken() async {
     // TODO: implement google api code
     print('Getting rubric...');
     print('Assignment ID: $assignmentid');
-    throw UnimplementedError('This feature is not supported by Google Classroom. Please contact the developer.');
+    throw UnimplementedError(
+        'This feature is not supported by Google Classroom. Please contact the developer.');
   }
+  // ****************************************************************************************
+  // Quiz creation and assignment with Answer Key
+  //Short answer question 10 Points
+  //Multiple choice question 10 Points
+  //True/False question 5 Points
 
-// -----------------------------------------------------------------------
-// Parses XML quiz data and creates/assigns the quiz
-// -----------------------------------------------------------------------
+  // ****************************************************************************************
+
   Future<bool> createAndAssignQuizFromXml(
     String courseId,
     String quizName,
     String quizDescription,
-    String quizAsXml, // The XML string
-    String dueDate, // Format: YYYY-MM-DD-HH-MM
+    String quizAsXml,
+    String dueDate,
   ) async {
     try {
-      // 0. Check if the quizAsXml is empty
       if (quizAsXml.isEmpty) {
         print('Error: quizAsXml is empty.');
         return false;
       }
-      // print('quizAsXml: $quizAsXml');
-      // 1. Parse the XML
+
       final document = xml.XmlDocument.parse(quizAsXml);
       final questions = document.findAllElements('question').toList();
       String? teacherFolderId;
@@ -866,7 +888,6 @@ Future<String?> _getToken() async {
         }
       }
 
-      // 2. Create the Google Form
       Map<String, dynamic>? formResponse =
           await _classroomApi.createForm(teacherFolderId, quizName);
       if (formResponse == null) {
@@ -877,10 +898,7 @@ Future<String?> _getToken() async {
       final String formId = formResponse['formId'];
       final String responderUri = formResponse['responderUri'];
 
-      // 3. Prepare the batch request for settings updates and question addition
       List<Map<String, dynamic>> requests = [];
-
-      // Add request to update the form settings
       requests.add({
         'updateSettings': {
           'settings': {
@@ -891,7 +909,7 @@ Future<String?> _getToken() async {
         }
       });
 
-      // 4. Add requests for adding questions to the form
+      // Parse and add questions with answer keys and points
       for (var questionElement in questions) {
         String questionType = questionElement.getAttribute('type') ?? 'unknown';
         String questionText = questionElement
@@ -900,36 +918,56 @@ Future<String?> _getToken() async {
                 ?.text ??
             '';
 
-        // skip category questions
         if (questionType == 'category') {
           print(
               'Warning: Unsupported question type: $questionType. Skipping question.');
-          continue; // Skip to the next question
+          continue;
         }
-
         switch (questionType) {
           case 'multichoice':
+            int points = 10; // Set multichoice to 10 points
             List<String> options = [];
+            List<int> correctAnswerIndices = [];
             var answerElements =
                 questionElement.findAllElements('answer').toList();
-            for (var answerElement in answerElements) {
-              options.add(answerElement.getElement('text')?.text ?? '');
+            for (int i = 0; i < answerElements.length; i++) {
+              var answerElement = answerElements[i];
+              String optionText = answerElement.getElement('text')?.text ?? '';
+              options.add(optionText);
+              if (answerElement.getAttribute('fraction') == '100') {
+                correctAnswerIndices.add(i);
+              }
             }
-            requests.add(
-                _createMultipleChoiceQuestionRequest(questionText, options));
+            requests.add(_createMultipleChoiceQuestionRequest(
+                questionText, options, correctAnswerIndices, points));
             break;
           case 'truefalse':
-            requests.add(_createTrueFalseQuestionRequest(questionText));
+            int points = 5; // Set truefalse to 5 points
+            String correctAnswer = questionElement
+                    .findAllElements('answer')
+                    .firstWhere((e) => e.getAttribute('fraction') == '100')
+                    .getElement('text')
+                    ?.text ??
+                'True';
+            requests.add(_createTrueFalseQuestionRequest(
+                questionText, correctAnswer, points));
             break;
           case 'shortanswer':
-            requests.add(_createShortAnswerQuestionRequest(questionText));
+            int points = 10; // Set shortanswer to 10 point
+            String correctAnswer = questionElement
+                    .findAllElements('answer')
+                    .first
+                    .getElement('text')
+                    ?.text ??
+                '';
+            requests.add(_createShortAnswerQuestionRequest(
+                questionText, correctAnswer, points));
             break;
           default:
             print('Warning: Unsupported question type: $questionType');
         }
       }
 
-      // 5. Send the batch update request
       Map<String, dynamic>? batchResponse =
           await _classroomApi.batchUpdateForm(formId, requests);
       if (batchResponse == null) {
@@ -937,12 +975,11 @@ Future<String?> _getToken() async {
         return false;
       }
 
-      // 6. Create the Classroom assignment and link the form
       String? assignmentId = await _classroomApi.createAssignment(
         courseId,
         quizName,
         quizDescription,
-        responderUri, // Pass the responderUri
+        responderUri,
         dueDate,
       );
 
@@ -960,14 +997,11 @@ Future<String?> _getToken() async {
     }
   }
 
-  // Helper function to create a multiple choice question request
-  Map<String, dynamic> _createMultipleChoiceQuestionRequest(
-      String questionText, List<String> options) {
+  Map<String, dynamic> _createMultipleChoiceQuestionRequest(String questionText,
+      List<String> options, List<int> correctAnswerIndices, int points) {
     List<Map<String, dynamic>> choices = [];
     for (String option in options) {
-      choices.add({
-        'value': option,
-      });
+      choices.add({'value': option});
     }
 
     return {
@@ -980,23 +1014,58 @@ Future<String?> _getToken() async {
               'choiceQuestion': {
                 'type': 'RADIO',
                 'options': choices,
-              }
-            }
-          }
+              },
+              'grading': {
+                'pointValue': points,
+                'correctAnswers': {
+                  'answers': correctAnswerIndices
+                      .map((index) => {'value': options[index]})
+                      .toList(),
+                },
+              },
+            },
+          },
         },
-        'location': {'index': 0}
-      }
+        'location': {'index': 0},
+      },
     };
   }
 
-  // Helper function to create a true/false question request
-  Map<String, dynamic> _createTrueFalseQuestionRequest(String questionText) {
-    return _createMultipleChoiceQuestionRequest(
-        questionText, ["True", "False"]);
+  Map<String, dynamic> _createTrueFalseQuestionRequest(
+      String questionText, String correctAnswer, int points) {
+    List<String> options = ["True", "False"];
+    return {
+      'createItem': {
+        'item': {
+          'title': questionText,
+          'questionItem': {
+            'question': {
+              'required': true,
+              'choiceQuestion': {
+                'type': 'RADIO',
+                'options': [
+                  {'value': 'True'},
+                  {'value': 'False'},
+                ],
+              },
+              'grading': {
+                'pointValue': points,
+                'correctAnswers': {
+                  'answers': [
+                    {'value': correctAnswer},
+                  ],
+                },
+              },
+            },
+          },
+        },
+        'location': {'index': 0},
+      },
+    };
   }
 
-  // Helper function to create a short answer question request
-  Map<String, dynamic> _createShortAnswerQuestionRequest(String questionText) {
+  Map<String, dynamic> _createShortAnswerQuestionRequest(
+      String questionText, String correctAnswer, int points) {
     return {
       'createItem': {
         'item': {
@@ -1005,16 +1074,25 @@ Future<String?> _getToken() async {
             'question': {
               'required': true,
               'textQuestion': {},
-            }
-          }
+              'grading': {
+                'pointValue': points,
+                'correctAnswers': {
+                  'answers': [
+                    {'value': correctAnswer},
+                  ],
+                },
+              },
+            },
+          },
         },
-        'location': {'index': 0}
-      }
+        'location': {'index': 0},
+      },
     };
   }
-  
+
   @override
-  Future<List<Participant>> getQuizGradesForParticipants(String courseId, int quizId) {
+  Future<List<Participant>> getQuizGradesForParticipants(
+      String courseId, int quizId) {
     // TODO: implement getQuizGradesForParticipants
     throw UnimplementedError();
   }
