@@ -7,10 +7,10 @@ import 'package:learninglens_app/beans/quiz.dart';
 import 'package:learninglens_app/beans/course.dart';
 import "package:learninglens_app/Controller/custom_appbar.dart";
 import "package:learninglens_app/beans/quiz_type.dart";
-// For HTTP requests
 import 'package:learninglens_app/content_carousel.dart';
-
-import 'package:learninglens_app/services/local_storage_service.dart'; // For JSON decoding
+import 'package:learninglens_app/services/local_storage_service.dart';
+import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class AssessmentsView extends StatefulWidget {
   AssessmentsView({super.key});
@@ -29,13 +29,11 @@ class _AssessmentsState extends State<AssessmentsView> {
   @override
   void initState() {
     super.initState();
-    //quizzes = getAllQuizzes();
     _refreshQuizzes();
   }
 
   // Check if Moodle is selected
   bool isMoodle() {
-    // Replace with your actual implementation
     return LocalStorageService.getSelectedClassroom() == LmsType.MOODLE;
   }
 
@@ -79,7 +77,6 @@ class _AssessmentsState extends State<AssessmentsView> {
                       return Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          // Left-side quiz list
                           Expanded(
                             flex: 1,
                             child: Container(
@@ -128,8 +125,6 @@ class _AssessmentsState extends State<AssessmentsView> {
                               ),
                             ),
                           ),
-
-                          // Right-side content
                           Expanded(
                             flex: 2,
                             child: selectedQuiz == null
@@ -153,7 +148,6 @@ class _AssessmentsState extends State<AssessmentsView> {
     );
   }
 
-  // Moodle content (existing table)
   Widget _buildMoodleContent() {
     return Column(
       children: [
@@ -238,7 +232,6 @@ class _AssessmentsState extends State<AssessmentsView> {
     );
   }
 
-  // Google content (DynamicForm)
   Widget _buildGoogleContent() {
     return FutureBuilder<FormData>(
       future: _formDataFuture,
@@ -257,7 +250,6 @@ class _AssessmentsState extends State<AssessmentsView> {
   }
 }
 
-// Helper functions remain unchanged
 Future<List<Quiz>> getAllQuizzes() async {
   print("Getting all quizzes");
   List<Quiz> result = [];
@@ -276,7 +268,6 @@ Course getCourse(int? courseID) {
   throw "No course found.";
 }
 
-// Include DynamicForm widget as provided
 class DynamicForm extends StatelessWidget {
   final FormData formData;
 
@@ -306,10 +297,10 @@ class DynamicForm extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 16.0),
                 child: Text(
                   formData.title,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blueAccent,
-                      ),
+                  style: Theme.of(context)
+                      .textTheme
+                      .headlineSmall
+                      ?.copyWith(fontWeight: FontWeight.bold),
                 ),
               ),
               Card(
@@ -346,7 +337,17 @@ class DynamicForm extends StatelessWidget {
                               style: TextStyle(fontWeight: FontWeight.bold)),
                           GestureDetector(
                             onTap: () async {
-                              // URL launching logic here
+                              if (formData.formUrl != null) {
+                                final Uri url = Uri.parse(formData.formUrl!);
+                                if (await canLaunchUrl(url)) {
+                                  await launchUrl(url);
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text('Cannot launch URL')),
+                                  );
+                                }
+                              }
                             },
                             child: Text(
                               formData.formUrl ?? 'N/A',
@@ -356,6 +357,19 @@ class DynamicForm extends StatelessWidget {
                               ),
                             ),
                           ),
+                          if (formData.formUrl != null) ...[
+                            IconButton(
+                              icon: const Icon(Icons.copy),
+                              onPressed: () {
+                                Clipboard.setData(
+                                    ClipboardData(text: formData.formUrl!));
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text('URL copied to clipboard')),
+                                );
+                              },
+                            ),
+                          ],
                         ],
                       ),
                       Row(
@@ -427,17 +441,6 @@ class DynamicForm extends StatelessWidget {
                               DataCell(
                                 Text(
                                   _getQuestionType(questionData.options),
-                                  style: TextStyle(
-                                    color: _getQuestionType(
-                                                questionData.options) ==
-                                            'Short Answer'
-                                        ? Colors.green
-                                        : _getQuestionType(
-                                                    questionData.options) ==
-                                                'True/False'
-                                            ? Colors.orange
-                                            : Colors.purple,
-                                  ),
                                 ),
                               ),
                               DataCell(
