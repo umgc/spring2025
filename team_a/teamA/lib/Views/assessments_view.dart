@@ -9,11 +9,15 @@ import "package:learninglens_app/Controller/custom_appbar.dart";
 import "package:learninglens_app/beans/quiz_type.dart";
 // For HTTP requests
 import 'package:learninglens_app/content_carousel.dart';
+import "package:learninglens_app/Views/view_quiz.dart";
 
 import 'package:learninglens_app/services/local_storage_service.dart'; // For JSON decoding
 
 class AssessmentsView extends StatefulWidget {
-  AssessmentsView({super.key});
+  AssessmentsView({super.key, this.quizID = 0, this.courseID = 0});
+
+  final int quizID;
+  final int? courseID;
 
   @override
   _AssessmentsState createState() => _AssessmentsState();
@@ -94,6 +98,9 @@ class _AssessmentsState extends State<AssessmentsView> {
                                   final quiz = quizList[index];
                                   final activeCourse =
                                       getCourse(quiz.coursedId);
+                                  if (quiz.id == widget.quizID) {
+                                    selectedQuiz = quiz;
+                                  }
 
                                   return ListTile(
                                     title: Text(
@@ -155,86 +162,11 @@ class _AssessmentsState extends State<AssessmentsView> {
 
   // Moodle content (existing table)
   Widget _buildMoodleContent() {
-    return Column(
-      children: [
-        Text('Questions',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-        FutureBuilder<List<QuestionType>?>(
-          future: LmsFactory.getLmsService()
-              .getQuestionsFromQuiz(selectedQuiz?.id ?? 0),
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(child: Text('Error loading questions'));
-            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-              return Center(child: Text('No questions found'));
-            } else {
-              final questionList = snapshot.data!;
-              questionsData = questionList.map((question) {
-                return {
-                  'questionNumber': question.name,
-                  'questionType': question.questionType,
-                  'questionText': question.questionText,
-                };
-              }).toList();
-
-              return Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(8.0),
-                ),
-                margin: EdgeInsets.all(8.0),
-                child: DataTable(
-                  headingRowColor: MaterialStateProperty.all(
-                      Theme.of(context).colorScheme.primary.withOpacity(0.1)),
-                  columns: const [
-                    DataColumn(label: Text('Question No.')),
-                    DataColumn(label: Text('Type')),
-                    DataColumn(label: Text('Question Text')),
-                  ],
-                  rows: questionsData.map((row) {
-                    return DataRow(cells: [
-                      DataCell(
-                        SizedBox(
-                          width: 90,
-                          child: Text(
-                            row['questionNumber'].toString(),
-                            softWrap: true,
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
-                        ),
-                      ),
-                      DataCell(
-                        SizedBox(
-                          width: 90,
-                          child: Text(
-                            row['questionType'].toString(),
-                            softWrap: true,
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                          ),
-                        ),
-                      ),
-                      DataCell(
-                        SizedBox(
-                          child: Text(
-                            row['questionText'].toString(),
-                            softWrap: true,
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 4,
-                          ),
-                        ),
-                      ),
-                    ]);
-                  }).toList(),
-                ),
-              );
-            }
-          },
-        ),
-      ],
+    return Expanded(
+      flex: 2,
+      child: selectedQuiz == null && widget.quizID == 0
+          ? Center(child: Text('Select a quiz to view details'))
+          : ViewQuiz(quizId: selectedQuiz?.id ?? widget.quizID),
     );
   }
 
