@@ -1,6 +1,6 @@
 import 'package:memoryminder/src/database/app_seed_data.dart';
 import 'package:memoryminder/src/database/model/media.dart';
-import 'package:memoryminder/src/features/sensitive_information_detection/data/audio_repository.dart';
+import 'package:memoryminder/src/database/repository/audio_repository.dart';
 import 'package:memoryminder/src/database/repository/photo_repository.dart';
 import 'package:memoryminder/src/database/repository/significant_object_repository.dart';
 import 'package:memoryminder/src/database/repository/video_repository.dart';
@@ -54,8 +54,7 @@ class AppDatabase {
         ${mediaColumns.join(',\n')},
         ${AudioFields.audioFileName} $textType,
         ${AudioFields.transcriptFileName} $textNullableType,
-        ${AudioFields.summary} $textNullableType,
-        ${AudioFields.s3Url} $textNullableType
+        ${AudioFields.summary} $textNullableType
       )
     ''');
 

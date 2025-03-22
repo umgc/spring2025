@@ -145,7 +145,7 @@ class VideoController {
           '${DirectoryManager.instance.videosDirectory.path}/${existingVideo.videoFileName}';
       await FileManager.removeFileFromFilesystem(videoFilePath);
       String? thumbnailFileName = existingVideo.thumbnailFileName;
-      if (thumbnailFileName != null && thumbnailFileName.isNotEmpty) {
+      if (thumbnailFileName!.isNotEmpty) {
         final thumbnailFilePath =
             '${DirectoryManager.instance.videoThumbnailsDirectory.path}/${existingVideo.thumbnailFileName}';
         await FileManager.removeFileFromFilesystem(thumbnailFilePath);

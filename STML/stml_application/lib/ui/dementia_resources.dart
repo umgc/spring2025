@@ -31,6 +31,8 @@ class ResourceEntry {
 }
 
 class DementiaResourcesScreen extends StatefulWidget {
+  const DementiaResourcesScreen({super.key});
+
   @override
    _DementiaResourcesScreenState createState() => _DementiaResourcesScreenState();
 }

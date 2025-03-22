@@ -190,14 +190,12 @@ class FileManager {
         timeMs: timesStamp,
       );
 
-      if (thumbPath != null) {
-        // You can now load the image from the thumbnailPath and display it in your Flutter app.
-        // For example, using the Image widget:
-        File renamed = await File(thumbPath).rename(newFile);
-        vidPath = newFile;
-        return Image.file(renamed);
-      }
-    } catch (e) {
+      // You can now load the image from the thumbnailPath and display it in your Flutter app.
+      // For example, using the Image widget:
+      File renamed = await File(thumbPath!).rename(newFile);
+      vidPath = newFile;
+      return Image.file(renamed);
+        } catch (e) {
       appLogger.severe('Error generating thumbnail: $e');
     }
     // Return this to signfiy an error

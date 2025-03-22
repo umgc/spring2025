@@ -1,8 +1,9 @@
 // ignore_for_file: avoid_print, prefer_const_constructors
-// Importing required packages and screens.
-import 'package:firebase_messaging/firebase_messaging.dart';
+/// Importing required packages and screens.
+library;
+
 import 'package:memoryminder/src/data_service.dart';
-import 'package:memoryminder/src/features/sensitive_information_detection/domain/audio.dart';
+import 'package:memoryminder/src/database/model/audio.dart';
 import 'package:memoryminder/src/s3_connection.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
@@ -11,7 +12,7 @@ import 'package:memoryminder/src/utils/ui_utils.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 
-// Permission handler is used for handling permissions like microphone and storage access.
+/// Permission handler is used for handling permissions like microphone and storage access.
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:async';
 import 'dart:io';
@@ -19,7 +20,7 @@ import 'dart:io';
 /// Path provider helps in getting system directory paths to store the recorded audio.
 import 'package:path_provider/path_provider.dart';
 
-// Importing AWS Transcribe API and s3 bucket
+/// Importing AWS Transcribe API and s3 bucket
 import 'package:aws_transcribe_api/transcribe-2017-10-26.dart' as trans;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
@@ -27,40 +28,41 @@ import 'package:http/http.dart' as http;
 // Record button glow effect
 import 'package:avatar_glow/avatar_glow.dart';
 
-const API_URL = 'https://api.openai.com/v1/chat/completions';
+const API_URL = 'https://api.openai.com/v1/completions';
 final API_KEY = dotenv.env['OPEN_AI_API_KEY']; // Replace with your API key
 
 /// AudioScreen widget provides the main interface for audio recording.
 class AudioScreen extends StatefulWidget {
+  const AudioScreen({super.key});
+
   @override
   _AudioScreenState createState() => _AudioScreenState();
 }
 
 class _AudioScreenState extends State<AudioScreen> {
-  // FlutterSoundRecorder is responsible for recording audio.
+  /// FlutterSoundRecorder is responsible for recording audio.
   FlutterSoundRecorder? _recorder;
 
-  // FlutterSoundPlayer is responsible for playing back the recorded audio.
+  /// FlutterSoundPlayer is responsible for playing back the recorded audio.
   FlutterSoundPlayer? _player;
 
-  // Flags to track if recording or playback is currently in progress.
+  /// Flags to track if recording or playback is currently in progress.
   bool _isRecording = false;
   bool _isPlaying = false;
   bool _isPaused = false;
-
   // Flag to track if transcription is loading
   bool _isTranscribing = false;
 
-  // Variable to track the duration of the current recording.
+  /// Variable to track the duration of the current recording.
   Duration _duration = const Duration(seconds: 0);
 
-  // This variable will store the path where the recorded audio will be saved.
+  /// This variable will store the path where the recorded audio will be saved.
   String? _pathToSaveRecording;
 
-  // Timer is used to update the duration of the recording in real-time.
+  /// Timer is used to update the duration of the recording in real-time.
   Timer? _timer;
 
-  // Variables from env for s3
+  // variables from env for s3
   final _bucketName = dotenv.env['videoS3Bucket'];
   final service = trans.TranscribeService(
     region: dotenv.env['region']!,
@@ -83,7 +85,7 @@ class _AudioScreenState extends State<AudioScreen> {
   void initState() {
     super.initState();
 
-    // Initializing recorder and player instances.
+    /// Initializing recorder and player instances.
     _recorder = FlutterSoundRecorder();
     _player = FlutterSoundPlayer();
 
@@ -96,25 +98,25 @@ class _AudioScreenState extends State<AudioScreen> {
     showDialog(
         context: context,
         builder: (context) => AlertDialog(
-              title: const Text("Permission Required"),
-              content: const Text(
-                  "MemoryMinder audio recording features require access to your device's microphone. Please allow Microphone access in your device settings."),
-              actions: <Widget>[
-                TextButton(
-                  child: const Text('Cancel'),
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
-                ),
-                TextButton(
-                  child: const Text('Settings'),
-                  onPressed: () {
-                    Navigator.pop(context);
-                    openAppSettings();
-                  },
-                ),
-              ],
-            ));
+          title: const Text("Permission Required"),
+          content: const Text(
+              "The CogniOpen Audio recording features require access to your device's microphone. Please allow Microphone access in your device settings."),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Cancel'),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+            ),
+            TextButton(
+              child: const Text('Settings'),
+              onPressed: () {
+                Navigator.pop(context);
+                openAppSettings();
+              },
+            ),
+          ],
+        ));
   }
 
   /// This function initializes the recorder by checking necessary permissions.
@@ -130,24 +132,24 @@ class _AudioScreenState extends State<AudioScreen> {
 
   /// This function requests necessary permissions for audio recording and storage.
   Future<bool> _requestPermissions() async {
-    final micStatus = await Permission.microphone.request();
-    final storageStatus = Platform.isAndroid
-        ? await Permission.manageExternalStorage.request()
-        : PermissionStatus.granted;
-
-    return micStatus.isGranted && storageStatus.isGranted;
+    Map<Permission, PermissionStatus> statuses = await [
+      Permission.microphone,
+      Permission.storage,
+    ].request();
+    return statuses[Permission.microphone]!.isGranted &&
+        statuses[Permission.storage]!.isGranted;
   }
 
   @override
   void dispose() {
-    // Cleanup operations: It's important to release resources to prevent memory leaks.
+    /// Cleanup operations: It's important to release resources to prevent memory leaks.
     _recorder!.closeRecorder();
     _player?.closePlayer();
     _timer?.cancel();
     super.dispose();
   }
 
-  // Function to handle the starting of audio recording.
+  /// Function to handle the starting of audio recording.
   Future<void> _startRecording() async {
     bool permissionsGranted = await _requestPermissions();
     if (!permissionsGranted) {
@@ -157,15 +159,11 @@ class _AudioScreenState extends State<AudioScreen> {
     Directory appDocDirectory = await getApplicationDocumentsDirectory();
     key2 = DateTime.now().millisecondsSinceEpoch.toString();
     _pathToSaveRecording =
-        '${appDocDirectory.path}/files/audios/$key2.wav'; // creates unique name
+    '${appDocDirectory.path}/files/audios/$key2.wav'; // creates unique name
     debugPrint('initial app directory $appDocDirectory');
 
-    await _recorder!.startRecorder(
-        toFile: _pathToSaveRecording,
-        codec: Codec.pcm16WAV,
-        sampleRate: 16000,
-        numChannels: 1,
-        bitRate: 140000);
+    await _recorder!
+        .startRecorder(toFile: _pathToSaveRecording, codec: Codec.pcm16WAV);
     setState(() {
       _isRecording = true;
     });
@@ -190,71 +188,48 @@ class _AudioScreenState extends State<AudioScreen> {
     _timer?.cancel();
     // Call Transcription after stopping the recording
     final s3UploadUrl =
-        await s3Connection.addAudioToS3(key2, _pathToSaveRecording!);
-
-    if (s3UploadUrl != null && s3UploadUrl.isNotEmpty) {
-      _transcribeAudio(s3UploadUrl);
-    } else {
-      print("Error: s3UploadUrl is null or empty.");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Upload failed: No S3 URL returned')),
-      );
-    }
+    await s3Connection.addAudioToS3(key2, _pathToSaveRecording!);
+    _transcribeAudio(s3UploadUrl);
   }
 
-  // Function to handle starting the playback of the recorded audio.
+  /// Function to handle starting the playback of the recorded audio.
   Future<void> _startPlayback() async {
-    if (_pathToSaveRecording == null || _pathToSaveRecording!.isEmpty) {
-      print("🚨 Error: No file path found for playback.");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Playback failed: No recording found')),
-      );
-      return;
-    }
-
-    File recordedFile = File(_pathToSaveRecording!);
-
-    if (!recordedFile.existsSync() || recordedFile.lengthSync() == 0) {
-      print("🚨 Error: The file does not exist or is empty.");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-            content: Text('Playback failed: File is missing or corrupted')),
-      );
-      return;
-    }
-
-    try {
-      // Ensure the player is open
-      if (!_player!.isOpen()) {
-        await _player!.openPlayer();
-      }
-
-      // Start Playback
+    if (_player!.isPlaying) {
+      // If the player is currently playing, pause it
+      await _player!.pausePlayer();
+      setState(() {
+        _isPlaying = false;
+        _isPaused = true;
+      });
+    } else if (_isPaused) {
+      // If the player is paused, resume playback
+      await _player!.resumePlayer();
+      setState(() {
+        _isPlaying = true;
+        _isPaused = false;
+      });
+    } else {
+      // If the player is stopped, start playing
+      await _player!.openPlayer();
       await _player!.startPlayer(
         fromURI: _pathToSaveRecording,
-        codec: Codec.pcm16WAV, // Make sure this matches the recording codec
         whenFinished: () {
           setState(() {
             _isPlaying = false;
+            _isPaused = false;
           });
-          _player!.closePlayer(); // Close player when finished
+          _player!.closePlayer();
         },
       );
 
       setState(() {
         _isPlaying = true;
+        _isPaused = false;
       });
-
-      print("🎵 Playback started: $_pathToSaveRecording");
-    } catch (e) {
-      print("🚨 Error during playback: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Playback failed: $e')),
-      );
     }
   }
 
-  // Function to handle stopping the playback of the recorded audio.
+  /// Function to handle stopping the playback of the recorded audio.
   Future<void> _stopPlayback() async {
     await _player!.stopPlayer();
     setState(() {
@@ -266,7 +241,7 @@ class _AudioScreenState extends State<AudioScreen> {
   Future<void> _transcribeAudio(String s3Url) async {
     // Ensure AWS credentials are properly configured
     try {
-      String s3Uri = "s3://$_bucketName/audio/${s3Url.split('/').last}";
+      String s3Uri = "s3://$_bucketName/$s3Url";
       print(s3Uri);
 
       // Starting the transcription job
@@ -278,7 +253,7 @@ class _AudioScreenState extends State<AudioScreen> {
         settings: trans.Settings(
           showSpeakerLabels: true,
           maxSpeakerLabels:
-              2, // specify the number of speakers you expect, adjust as needed
+          2, // specify the number of speakers you expect, adjust as needed
         ),
       );
       setState(() {
@@ -302,7 +277,7 @@ class _AudioScreenState extends State<AudioScreen> {
               var jsonResponse = jsonDecode(transcriptResponse.body);
               var items = jsonResponse['results']['items'];
 
-              // Construct transcription text with speaker labels
+              // construct transcription text with speaker labels
               // Construct transcription text with speaker labels and start on a new line for each speaker
               var fullTranscription = '';
               String? currentSpeaker;
@@ -312,7 +287,7 @@ class _AudioScreenState extends State<AudioScreen> {
                 if (item['type'] == 'pronunciation' &&
                     item.containsKey('speaker_label')) {
                   String speakerLabel =
-                      _getCustomSpeakerLabel(item['speaker_label']);
+                  _getCustomSpeakerLabel(item['speaker_label']);
                   if (currentSpeaker != speakerLabel) {
                     fullTranscription += '\n$speakerLabel: ';
                     currentSpeaker = speakerLabel;
@@ -336,7 +311,7 @@ class _AudioScreenState extends State<AudioScreen> {
             break;
           }
         } else if (jobResponse.transcriptionJob?.transcriptionJobStatus
-                .toString() ==
+            .toString() ==
             'TranscriptionJobStatus.failed') {
           print('Transcription job failed');
           _isTranscribing = false;
@@ -390,7 +365,7 @@ class _AudioScreenState extends State<AudioScreen> {
     }
   }
 
-  // Save transcription summary
+// save transcription summary
   Future<void> _saveTranscriptionSummaryToFile(
       String transcriptionSummaryName) async {
     if (transcriptionSummary.isEmpty) {
@@ -418,10 +393,9 @@ class _AudioScreenState extends State<AudioScreen> {
       // Read file content
       final directory = await getApplicationDocumentsDirectory();
       final file =
-          File('${directory.path}/files/audios/transcripts/$fileName.txt');
+      File('${directory.path}/files/audios/transcripts/$fileName.txt');
       String content = await file.readAsString();
 
-      print("Sending to OpenAI for summarization");
       // Send to OpenAI for Summarization
       final response = await http.post(
         Uri.parse(API_URL),
@@ -430,86 +404,27 @@ class _AudioScreenState extends State<AudioScreen> {
           'Content-Type': 'application/json',
         },
         body: jsonEncode({
-          'messages': [
-            {
-              'role': 'user',
-              'content':
-                  'Does this content contain sensitive personal information?: $content'
-            } // Your actual request
-          ],
-          'max_tokens': 500, // Adjust this as we need to
-          'model': 'gpt-4',
+          'prompt': 'Summarize: $content',
+          'max_tokens': 150, // Adjust this as we need to
+          'model': 'text-davinci-003',
         }),
       );
       if (response.statusCode == 200) {
         var jsonResponse = jsonDecode(response.body);
-
-        if (jsonResponse['choices'] == null ||
-            jsonResponse['choices'].isEmpty) {
-          throw Exception("No choices return from OpenAI.");
-        }
-
-        var summary =
-            jsonResponse['choices'][0]['message']['content']?.trim() ?? "";
-
-        if (summary.toLowerCase().contains("yes")) {
-          print("Sensitive Information Detected!");
-          sendFirebaseNotification("Sensitive Data Alert",
-              "Sensitive information detected in your transcript.");
-        }
-
-        if (summary.isEmpty) {
-          throw Exception("OpenAI response was empty");
-        }
-
-        return summary;
+        print(jsonResponse['choices'][0]['text'].trim());
+        return jsonResponse['choices'][0]['text'].trim();
       } else {
-        print(
-            'Failed to detect sensitive information. Response code: ${response.statusCode}');
+        print('Failed to summarize. Response code: ${response.statusCode}');
         return '';
       }
     } catch (e) {
-      print('Error detecting sensitive information: $e');
+      print('Error during summarization: $e');
       return '';
     }
   }
 
-  // Function to send Firebase notification
-  Future<void> sendFirebaseNotification(String title, String body) async {
-    FirebaseMessaging messaging = FirebaseMessaging.instance;
-
-    try {
-      String? token = await messaging.getToken();
-
-      if (token == null) {
-        print("Firebase token is null. Cannot send notfication.");
-        return;
-      }
-
-      final response = await http.post(
-        Uri.parse("https://fcm.googleapis.com/fcm/send"),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'key=${dotenv.env['GOOGLE_CLOUD_API']}'
-        },
-        body: jsonEncode({
-          "to": token,
-          "notification": {"title": title, "body": body}
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        print("Firebase Notification Sent!");
-      } else {
-        print("Failed to send notification: ${response.body}");
-      }
-    } catch (e) {
-      print("Error sending Firebase notification: $e");
-    }
-  }
-
   Future<void> _sendToDatabase() async {
-    // Call add method to db
+    // call add method to db
     Directory appDocDirectory = await getApplicationDocumentsDirectory();
     String audioFilePath = '${appDocDirectory.path}/files/audios/$key2.wav';
     String transcriptFilePath =
@@ -533,7 +448,7 @@ class _AudioScreenState extends State<AudioScreen> {
         extendBodyBehindAppBar: true,
         extendBody: true,
         appBar: AppBar(
-          backgroundColor: const Color(0x440000),
+          backgroundColor: const Color(0x00440000),
           elevation: 0,
           centerTitle: true,
           leading: const BackButton(color: Colors.black54),
@@ -541,7 +456,12 @@ class _AudioScreenState extends State<AudioScreen> {
               style: TextStyle(color: Colors.black54)),
         ),
         body: Container(
-          decoration: const BoxDecoration(),
+          decoration: const BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage("assets/images/background.jpg"),
+              fit: BoxFit.cover,
+            ),
+          ),
           child: Column(
             children: [
               Expanded(
@@ -570,24 +490,24 @@ class _AudioScreenState extends State<AudioScreen> {
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     crossAxisAlignment:
-                                        CrossAxisAlignment.center,
+                                    CrossAxisAlignment.center,
                                     children: [
                                       TextButton(
                                         style: ButtonStyle(
-                                            shape: MaterialStateProperty.all<
-                                                    RoundedRectangleBorder>(
+                                            shape: WidgetStateProperty.all<
+                                                RoundedRectangleBorder>(
                                                 RoundedRectangleBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(75.0),
-                                        ))),
+                                                  borderRadius:
+                                                  BorderRadius.circular(75.0),
+                                                ))),
                                         onPressed: () async {
                                           await _stopRecording();
                                         },
                                         child: const Column(
                                           mainAxisAlignment:
-                                              MainAxisAlignment.center,
+                                          MainAxisAlignment.center,
                                           crossAxisAlignment:
-                                              CrossAxisAlignment.center,
+                                          CrossAxisAlignment.center,
                                           children: [
                                             Icon(Icons.stop,
                                                 size: 65, color: Colors.red),
@@ -628,22 +548,16 @@ class _AudioScreenState extends State<AudioScreen> {
                                       IconButton(
                                         icon: _isPlaying
                                             ? Icon(Icons.pause,
-                                                size: 40,
-                                                color: Color.fromARGB(
-                                                    255, 2, 63, 129))
+                                            size: 40, color: Colors.blue)
                                             : Icon(Icons.play_arrow,
-                                                size: 40,
-                                                color: Color.fromARGB(
-                                                    255, 2, 63, 129)),
+                                            size: 40, color: Colors.blue),
                                         onPressed: _isPlaying
                                             ? _startPlayback
                                             : _startPlayback,
                                       ),
                                       IconButton(
                                         icon: Icon(Icons.stop,
-                                            size: 40,
-                                            color: Color.fromARGB(
-                                                255, 2, 63, 129)),
+                                            size: 40, color: Colors.blue),
                                         onPressed: _isPlaying || _isPaused
                                             ? _stopPlayback
                                             : null,
@@ -658,16 +572,10 @@ class _AudioScreenState extends State<AudioScreen> {
                                           setState(() {
                                             _pathToSaveRecording = null;
                                             _duration =
-                                                const Duration(seconds: 0);
+                                            const Duration(seconds: 0);
                                             transcription = '';
                                           });
                                         },
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Color.fromARGB(255,
-                                              2, 63, 129), // Background color
-                                          foregroundColor:
-                                              Colors.white, // Text color
-                                        ),
                                         child: const Text('New Recording'),
                                       ),
                                       SizedBox(width: 32),
@@ -681,21 +589,15 @@ class _AudioScreenState extends State<AudioScreen> {
                                           setState(() {
                                             _pathToSaveRecording = null;
                                             _duration =
-                                                const Duration(seconds: 0);
+                                            const Duration(seconds: 0);
                                             transcription = '';
                                           });
                                           // Notify user that the recording has been deleted
                                           ScaffoldMessenger.of(context)
                                               .showSnackBar(
-                                            SnackBar(
-                                              content: const Text(
-                                                'Recording Deleted!',
-                                                textAlign: TextAlign
-                                                    .center, // Centers the text in the SnackBar
-                                              ),
-                                              backgroundColor: Colors
-                                                  .red, // Optional: Makes SnackBar red
-                                            ),
+                                            const SnackBar(
+                                                content:
+                                                Text('Recording Deleted!')),
                                           );
                                         },
                                         style: ElevatedButton.styleFrom(
@@ -740,18 +642,17 @@ class _AudioScreenState extends State<AudioScreen> {
                               child: TextButton(
                                 onPressed: _startRecording,
                                 style: ButtonStyle(
-                                    shape: MaterialStateProperty.all<
-                                            RoundedRectangleBorder>(
+                                    shape: WidgetStateProperty.all<
+                                        RoundedRectangleBorder>(
                                         RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(75.0),
-                                ))),
+                                          borderRadius: BorderRadius.circular(75.0),
+                                        ))),
                                 child: const Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   crossAxisAlignment: CrossAxisAlignment.center,
                                   children: [
                                     Icon(Icons.mic,
-                                        size: 60,
-                                        color: Color.fromARGB(255, 2, 63, 129)),
+                                        size: 60, color: Colors.green),
                                     Text(
                                       "Start Audio Recording",
                                       textAlign: TextAlign.center,

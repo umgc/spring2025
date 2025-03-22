@@ -13,27 +13,20 @@ class Video extends Media {
   late Image? thumbnail;
 
   Video({
-    int? id,
+    super.id,
     String? title,
-    String? description,
-    List<String>? tags,
-    required DateTime timestamp,
-    String? physicalAddress,
-    required int storageSize,
-    required bool isFavorited,
+    super.description,
+    super.tags,
+    required super.timestamp,
+    super.physicalAddress,
+    required super.storageSize,
+    required super.isFavorited,
     required this.videoFileName,
     this.thumbnailFileName,
     required this.duration,
   }) : super(
-          id: id,
           mediaType: MediaType.video,
           title: title ?? videoFileName,
-          description: description,
-          tags: tags,
-          timestamp: timestamp,
-          physicalAddress: physicalAddress,
-          storageSize: storageSize,
-          isFavorited: isFavorited,
         ) {
     _loadThumbnail();
   }

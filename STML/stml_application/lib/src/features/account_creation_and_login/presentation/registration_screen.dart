@@ -6,6 +6,8 @@ import 'dart:io';
 import 'onboarding_screen.dart';
 
 class RegistrationScreen extends StatefulWidget {
+  const RegistrationScreen({super.key});
+
   @override
   _RegistrationScreenState createState() => _RegistrationScreenState();
 }
@@ -89,7 +91,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       extendBodyBehindAppBar: true,
       extendBody: true,
       appBar: AppBar(
-        backgroundColor: const Color(0x440000),
+        backgroundColor: const Color(0x00440000),
         elevation: 0.0,
         centerTitle: true,
         leading: const BackButton(color: Colors.black54),

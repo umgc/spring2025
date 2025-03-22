@@ -14,7 +14,13 @@ import 'package:memoryminder/src/utils/directory_manager.dart';
 import 'package:memoryminder/src/utils/permission_manager.dart';
 import 'package:memoryminder/src/features/account_creation_and_login/presentation/registration_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:memoryminder/features/caregiver_task_management/caregiver_task_screen.dart';
+// import 'package:memoryminder/features/caregiver_task_management/caregiver_task_screen.dart';
+import 'package:fitbitter/fitbitter.dart';
+import 'package:memoryminder/src/features/wearable_integration/fitbit_login.dart';
+import 'package:memoryminder/src/features/wearable_integration/health_dashboard.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
+final storage = FlutterSecureStorage();
 
 void main() async {
   initializeLogging();
@@ -23,7 +29,8 @@ void main() async {
   await dotenv.load(fileName: ".env");
   await DirectoryManager.instance.initializeDirectories();
   await DataService.instance.initializeData();
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  // Not sure if below line is supposed to be here or not, accepting change and commenting out for now
+  // FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   initializeData();
   runApp(const MyApp());
 }
@@ -47,8 +54,19 @@ class MyApp extends StatelessWidget {
         '/registrationScreen': (context) => RegistrationScreen(),
         '/eulaScreen': (context) => EulaScreen(),
         '/homeScreen': (context) => HomeScreen(),
-        '/caregiverTaskScreen': (context) =>
-            CaregiverTaskScreen(), // Added route
+        '/healthMetrics': (context) => FutureBuilder<FitbitCredentials?>(
+        future: _loadFitbitCredentials(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return CircularProgressIndicator(); // Show a loader while checking token
+          }
+          if (snapshot.hasData && snapshot.data != null) {
+            return HealthDashboard(fitbitCredentials: snapshot.data!);
+          }
+          return FitbitLoginPage();
+        },
+      ),
+      // You can add other routes as needed
       },
     );
   }
@@ -68,4 +86,19 @@ void initializeData() async {
 // Handle notifications when the app is in the background
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("⚠️ Background message: ${message.notification?.title}");
+}
+
+Future<FitbitCredentials?> _loadFitbitCredentials() async {
+  String? storedAccessToken = await storage.read(key: 'fitbitAccessToken');
+  String? storedRefreshToken = await storage.read(key: 'fitbitRefreshToken');
+  String? storedUserId = await storage.read(key: 'fitbitUserId');
+
+  if (storedRefreshToken != null) {
+    return FitbitCredentials(
+      fitbitAccessToken: storedAccessToken ?? '',
+      fitbitRefreshToken: storedRefreshToken,
+      userID: storedUserId ?? '',
+    );
+  }
+  return null;
 }
