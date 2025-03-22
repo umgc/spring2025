@@ -175,7 +175,7 @@ class _LocationHistoryScreenState extends State<LocationHistoryScreen> {
                           return Card(
                             color: const Color.fromRGBO(255, 255, 255, 0.75),
                             child: ListTile(
-                              leading: SizedBox(
+                              leading: Container(
                                 height: double.infinity,
                                 child: const Icon(Icons.location_on),
                               ),
