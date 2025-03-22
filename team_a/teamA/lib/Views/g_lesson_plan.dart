@@ -1,3 +1,6 @@
+// This file contains the code for the Google Lesson Plans page.
+// This page allows users to create, edit, and delete lesson plans for Google Classroom courses.
+// Users can select a course, grade level, and enter lesson plan details manually or generate them with AI.
 import "dart:convert";
 import "package:flutter/material.dart";
 import "package:http/http.dart" as http;
@@ -30,14 +33,22 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
 
   // Loading flags
   bool isLoadingCourses = false;
+  bool isLoadingLessonPlans = false; // New loading flag for lesson plans
   bool isGeneratingAI = false;
   bool isSaving = false;
   bool isDeleting = false;
   bool isUpdating = false;
 
-  final TextEditingController lessonPlanNameController = TextEditingController();
+  // API key availability flags
+  bool hasOpenAIKey = false;
+  bool hasGrokKey = false;
+  bool hasPerplexityKey = false;
+
+  final TextEditingController lessonPlanNameController =
+      TextEditingController();
   final TextEditingController manualEntryController = TextEditingController();
-  final TextEditingController aiPromptDetailsController = TextEditingController();
+  final TextEditingController aiPromptDetailsController =
+      TextEditingController();
   final log = Logger('GoogleLessonPlans');
   final GoogleClassroomApi googleClassroomApi = GoogleClassroomApi();
 
@@ -53,6 +64,24 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
   void initState() {
     super.initState();
     _loadCourses();
+    _checkApiKeys();
+  }
+
+  Future<void> _checkApiKeys() async {
+    setState(() {
+      String openAIKey = LocalStorageService.getOpenAIKey() ?? '';
+      String grokKey = LocalStorageService.getGrokKey() ?? '';
+      String perplexityKey = LocalStorageService.getPerplexityKey() ?? '';
+
+      hasOpenAIKey = openAIKey.isNotEmpty;
+      hasGrokKey = grokKey.isNotEmpty;
+      hasPerplexityKey = perplexityKey.isNotEmpty;
+      // print('OpenAI key: $hasOpenAIKey');
+      // hasGrokKey = LocalStorageService.getGrokKey() as bool;
+      // print('Grok key: $hasGrokKey');
+      // hasPerplexityKey = LocalStorageService.getPerplexityKey() as bool;
+      // print('Perplexity key: $hasPerplexityKey');
+    });
   }
 
   Future<String?> _getToken() async {
@@ -68,7 +97,8 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
       isLoadingCourses = true;
     });
     try {
-      List<Course> fetchedCourses = await LmsFactory.getLmsService().getUserCourses();
+      List<Course> fetchedCourses =
+          await LmsFactory.getLmsService().getUserCourses();
       setState(() {
         courses = fetchedCourses;
         selectedCourse = null;
@@ -83,11 +113,15 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
   }
 
   Future<void> _loadLessonPlan(String courseId) async {
+    setState(() {
+      isLoadingLessonPlans = true; // Start loading indicator
+    });
     try {
       final accessToken = await _getToken();
       if (accessToken == null) return;
 
-      final url = Uri.parse('https://classroom.googleapis.com/v1/courses/$courseId/courseWorkMaterials');
+      final url = Uri.parse(
+          'https://classroom.googleapis.com/v1/courses/$courseId/courseWorkMaterials');
       final headers = {
         'Authorization': 'Bearer $accessToken',
         'Content-Type': 'application/json'
@@ -112,6 +146,10 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
       setState(() {
         courseworkMaterials = [];
       });
+    } finally {
+      setState(() {
+        isLoadingLessonPlans = false; // Stop loading indicator
+      });
     }
   }
 
@@ -131,7 +169,7 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
           aiModel = OpenAiLLM(openApiKey);
           break;
         case 'Grok':
-          aiModel = GrokLLM(grokApiKey); 
+          aiModel = GrokLLM(grokApiKey);
           break;
         case 'Perplexity':
           aiModel = PerplexityLLM(perplexityApiKey);
@@ -140,13 +178,8 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
           throw Exception('Unsupported AI model: $selectedLLM');
       }
 
-      // String prompt =
-      //     "Generate a lesson plan for ${selectedGradeLevel == 'K' ? 'Kindergarten' : '${selectedGradeLevel}th grade'} ${lessonPlanNameController.text} "
-      //     "covering key topics like ${manualEntryController.text}. Additional details: ${aiPromptDetailsController.text}. "
-      //     "Keep it within 500 words.";
-
-  String prompt = "Create a concise, all-text lesson plan for ${lessonPlanNameController.text} for grade ${selectedGradeLevel == 'K' ? 'Kindergarten' : selectedGradeLevel} covering ${manualEntryController.text}. ${aiPromptDetailsController.text}. Write it as student-facing content for studying, essays, and quizzes. Use plain text, no Markdown, in 500 words.";
-      //String prompt = "Generate an all text lesson plan for ${lessonPlanNameController.text} for grade ${selectedGradeLevel == 'K' ? 'Kindergarten' : selectedGradeLevel} covering key topics like ${manualEntryController.text}. ${aiPromptDetailsController.text}. This lesson is WHAT THE STUDENT WILL SEE! It will be viewed by students to study from for essays and quizzes. Do not use Markdown syntax. Keep to 500 words.";
+      String prompt =
+          "Create a concise, all-text lesson plan for ${lessonPlanNameController.text} for grade ${selectedGradeLevel == 'K' ? 'Kindergarten' : selectedGradeLevel} covering ${manualEntryController.text}. ${aiPromptDetailsController.text}. Write it as student-facing content for studying, essays, and quizzes. Use plain text, no Markdown, in 500 words.";
 
       var result = await aiModel.generate(prompt);
       setState(() {
@@ -173,7 +206,8 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
           content: SingleChildScrollView(
             child: Container(
               width: MediaQuery.of(context).size.width * 0.4,
-              child: Text(lessonPlan['description'] ?? '', textAlign: TextAlign.left),
+              child: Text(lessonPlan['description'] ?? '',
+                  textAlign: TextAlign.left),
             ),
           ),
           actions: [
@@ -229,7 +263,8 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text('Add New Lesson Plan',
-                              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                              style: TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.bold)),
                           SizedBox(height: 20),
                           DropdownButtonFormField<String>(
                             value: selectedCourse,
@@ -238,7 +273,8 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
                                 value: null,
                                 child: Text('Select Course'),
                               ),
-                              ...(courses?.map<DropdownMenuItem<String>>((course) {
+                              ...(courses
+                                      ?.map<DropdownMenuItem<String>>((course) {
                                     return DropdownMenuItem<String>(
                                       value: course.id.toString(),
                                       child: Text(course.fullName),
@@ -254,7 +290,9 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
                                 await _loadLessonPlan(value);
                               }
                             },
-                            decoration: InputDecoration(labelText: 'Course', border: OutlineInputBorder()),
+                            decoration: InputDecoration(
+                                labelText: 'Course',
+                                border: OutlineInputBorder()),
                           ),
                           SizedBox(height: 20),
                           DropdownButtonFormField<String>(
@@ -262,9 +300,7 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
                             items: LearningLensConstants.gradeLevels
                                 .map<DropdownMenuItem<String>>((grade) {
                               return DropdownMenuItem<String>(
-                                value: grade,
-                                child: Text(grade)
-                              );
+                                  value: grade, child: Text(grade));
                             }).toList(),
                             onChanged: (value) {
                               setState(() {
@@ -274,9 +310,12 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
                             decoration: InputDecoration(
                               labelText: 'Grade Level',
                               border: OutlineInputBorder(),
-                              errorText: selectedGradeLevel == null && isSaving ? 'Grade Level is required' : null,
+                              errorText: selectedGradeLevel == null && isSaving
+                                  ? 'Grade Level is required'
+                                  : null,
                             ),
-                            validator: (value) => value == null ? 'Required' : null,
+                            validator: (value) =>
+                                value == null ? 'Required' : null,
                           ),
                           SizedBox(height: 20),
                           TextField(
@@ -284,9 +323,11 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
                             decoration: InputDecoration(
                               labelText: 'Lesson Plan Name',
                               border: OutlineInputBorder(),
-                              errorText: lessonPlanNameController.text.isEmpty && (isSaving || isGeneratingAI)
-                                  ? 'Lesson Plan Name is required'
-                                  : null,
+                              errorText:
+                                  lessonPlanNameController.text.isEmpty &&
+                                          (isSaving || isGeneratingAI)
+                                      ? 'Lesson Plan Name is required'
+                                      : null,
                             ),
                             onChanged: (value) => setState(() {}),
                           ),
@@ -308,28 +349,102 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
                           if (useAiGeneration)
                             Column(
                               children: [
-                                DropdownButtonFormField<String>(
-                                  value: selectedLLM,
-                                  decoration: const InputDecoration(labelText: "Select AI Model"),
-                                  onChanged: (String? newValue) => setState(() => selectedLLM = newValue),
-                                  items: ['ChatGPT', 'Grok', 'Perplexity'].map((String value) {
-                                    return DropdownMenuItem<String>(value: value, child: Text(value));
-                                  }).toList(),
+                                IgnorePointer(
+                                  ignoring: !(hasOpenAIKey ||
+                                      hasGrokKey ||
+                                      hasPerplexityKey),
+                                  child: DropdownButtonFormField<String>(
+                                    value: selectedLLM,
+                                    decoration: InputDecoration(
+                                      labelText: "Select AI Model",
+                                      border: OutlineInputBorder(),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderSide: BorderSide(
+                                          color: (hasOpenAIKey ||
+                                                  hasGrokKey ||
+                                                  hasPerplexityKey)
+                                              ? Colors.grey
+                                              : Colors.grey.withOpacity(0.3),
+                                        ),
+                                      ),
+                                    ),
+                                    onChanged: (String? newValue) {
+                                      if (newValue != null) {
+                                        setState(() => selectedLLM = newValue);
+                                      }
+                                    },
+                                    items: [
+                                      DropdownMenuItem<String>(
+                                        value: 'ChatGPT',
+                                        enabled: hasOpenAIKey,
+                                        child: Text(
+                                          'ChatGPT${!hasOpenAIKey ? " (API Key Required)" : ""}',
+                                          style: TextStyle(
+                                            color: hasOpenAIKey
+                                                ? null
+                                                : Colors.grey,
+                                          ),
+                                        ),
+                                      ),
+                                      DropdownMenuItem<String>(
+                                        value: 'Grok',
+                                        enabled: hasGrokKey,
+                                        child: Text(
+                                          'Grok${!hasGrokKey ? " (API Key Required)" : ""}',
+                                          style: TextStyle(
+                                            color:
+                                                hasGrokKey ? null : Colors.grey,
+                                          ),
+                                        ),
+                                      ),
+                                      DropdownMenuItem<String>(
+                                        value: 'Perplexity',
+                                        enabled: hasPerplexityKey,
+                                        child: Text(
+                                          'Perplexity${!hasPerplexityKey ? " (API Key Required)" : ""}',
+                                          style: TextStyle(
+                                            color: hasPerplexityKey
+                                                ? null
+                                                : Colors.grey,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
+                                if (!hasOpenAIKey &&
+                                    !hasGrokKey &&
+                                    !hasPerplexityKey)
+                                  Padding(
+                                    padding: EdgeInsets.only(top: 8.0),
+                                    child: Text(
+                                      'Please add an API key in settings to use AI generation',
+                                      style: TextStyle(
+                                          color: Colors.red, fontSize: 12),
+                                    ),
+                                  ),
                                 SizedBox(height: 20),
                                 TextField(
                                   controller: aiPromptDetailsController,
                                   maxLines: 3,
                                   decoration: InputDecoration(
-                                    labelText: 'Additional Details for AI Prompt',
+                                    labelText:
+                                        'Additional Details for AI Prompt',
                                     border: OutlineInputBorder(),
                                   ),
                                 ),
                                 SizedBox(height: 20),
                                 ElevatedButton(
                                   onPressed: selectedLLM != null &&
+                                          (selectedLLM == 'ChatGPT' &&
+                                                  hasOpenAIKey ||
+                                              selectedLLM == 'Grok' &&
+                                                  hasGrokKey ||
+                                              selectedLLM == 'Perplexity' &&
+                                                  hasPerplexityKey) &&
                                           selectedGradeLevel != null &&
-                                          lessonPlanNameController.text.isNotEmpty
+                                          lessonPlanNameController
+                                              .text.isNotEmpty
                                       ? () async {
                                           await generateLessonPlanWithAI();
                                         }
@@ -338,7 +453,8 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
                                       ? SizedBox(
                                           width: 20,
                                           height: 20,
-                                          child: CircularProgressIndicator(strokeWidth: 2),
+                                          child: CircularProgressIndicator(
+                                              strokeWidth: 2),
                                         )
                                       : Text('Generate Lesson Plan'),
                                 ),
@@ -351,9 +467,10 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
                             decoration: InputDecoration(
                               labelText: 'Enter/Edit Lesson Plan',
                               border: OutlineInputBorder(),
-                              errorText: manualEntryController.text.isEmpty && isSaving
-                                  ? 'Lesson Plan details are required'
-                                  : null,
+                              errorText:
+                                  manualEntryController.text.isEmpty && isSaving
+                                      ? 'Lesson Plan details are required'
+                                      : null,
                             ),
                             onChanged: (value) => setState(() {}),
                           ),
@@ -364,7 +481,9 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
                                     setState(() {
                                       isSaving = true;
                                     });
-                                    String? materialId = await googleClassroomApi.createCourseWorkMaterial(
+                                    String? materialId =
+                                        await googleClassroomApi
+                                            .createCourseWorkMaterial(
                                       selectedCourse!,
                                       lessonPlanNameController.text,
                                       manualEntryController.text,
@@ -383,7 +502,8 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
                                 ? SizedBox(
                                     width: 20,
                                     height: 20,
-                                    child: CircularProgressIndicator(strokeWidth: 2),
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2),
                                   )
                                 : Text('Submit'),
                           ),
@@ -399,75 +519,114 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text('Existing Lesson Plans',
-                              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                              style: TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.bold)),
                           SizedBox(height: 20),
-                          Container(
-                            decoration: BoxDecoration(
-                                border: Border.all(color: Colors.grey), borderRadius: BorderRadius.circular(8.0)),
-                            child: SingleChildScrollView(
-                              scrollDirection: Axis.horizontal,
-                              child: DataTable(
-                                columnSpacing: 20,
-                                columns: [
-                                  DataColumn(
-                                      label: SizedBox(
-                                          width: 150,
-                                          child: Text('Name', style: TextStyle(fontWeight: FontWeight.bold)))),
-                                  DataColumn(
-                                      label: SizedBox(
-                                          width: 300,
-                                          child:
-                                              Text('Lesson Plan', style: TextStyle(fontWeight: FontWeight.bold)))),
-                                  DataColumn(
-                                      label: Text('Select', style: TextStyle(fontWeight: FontWeight.bold))),
-                                  DataColumn(label: Text('View', style: TextStyle(fontWeight: FontWeight.bold))),
-                                ],
-                                rows: courseworkMaterials.map((material) {
-                                  bool isSelected = selectedMaterial == material;
-                                  return DataRow(
-                                    cells: [
-                                      DataCell(
-                                        ConstrainedBox(
-                                          constraints: BoxConstraints(maxWidth: 150),
-                                          child: Text(material['title'] ?? 'Untitled',
-                                              overflow: TextOverflow.ellipsis),
-                                        ),
-                                      ),
-                                      DataCell(
-                                        ConstrainedBox(
-                                          constraints: BoxConstraints(maxWidth: 300),
-                                          child: SingleChildScrollView(
-                                            scrollDirection: Axis.vertical,
-                                            child: Text(material['description'] ?? '',
-                                                maxLines: 3, overflow: TextOverflow.ellipsis),
-                                          ),
-                                        ),
-                                      ),
-                                      DataCell(Checkbox(
-                                        value: isSelected,
-                                        onChanged: (bool? selected) {
-                                          setState(() {
-                                            selectedMaterial = selected! ? material : null;
-                                            if (selectedMaterial != null) {
-                                              lessonPlanNameController.text = selectedMaterial['title'] ?? '';
-                                              manualEntryController.text = selectedMaterial['description'] ?? '';
-                                              isEditing = false;
-                                            } else {
-                                              _clearFormFields();
-                                            }
-                                          });
-                                        },
-                                      )),
-                                      DataCell(ElevatedButton(
-                                        onPressed: () => _showLessonPlanDialog(material),
-                                        child: Text("View"),
-                                      )),
-                                    ],
-                                  );
-                                }).toList(),
-                              ),
-                            ),
-                          ),
+                          isLoadingLessonPlans
+                              ? Center(child: CircularProgressIndicator())
+                              : Container(
+                                  decoration: BoxDecoration(
+                                      border: Border.all(color: Colors.grey),
+                                      borderRadius: BorderRadius.circular(8.0)),
+                                  child: SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: DataTable(
+                                      columnSpacing: 20,
+                                      columns: [
+                                        DataColumn(
+                                            label: SizedBox(
+                                                width: 150,
+                                                child: Text('Name',
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold)))),
+                                        DataColumn(
+                                            label: SizedBox(
+                                                width: 300,
+                                                child: Text('Lesson Plan',
+                                                    style: TextStyle(
+                                                        fontWeight:
+                                                            FontWeight.bold)))),
+                                        DataColumn(
+                                            label: Text('Select',
+                                                style: TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.bold))),
+                                        DataColumn(
+                                            label: Text('View',
+                                                style: TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.bold))),
+                                      ],
+                                      rows: courseworkMaterials.map((material) {
+                                        bool isSelected =
+                                            selectedMaterial == material;
+                                        return DataRow(
+                                          cells: [
+                                            DataCell(
+                                              ConstrainedBox(
+                                                constraints: BoxConstraints(
+                                                    maxWidth: 150),
+                                                child: Text(
+                                                    material['title'] ??
+                                                        'Untitled',
+                                                    overflow:
+                                                        TextOverflow.ellipsis),
+                                              ),
+                                            ),
+                                            DataCell(
+                                              ConstrainedBox(
+                                                constraints: BoxConstraints(
+                                                    maxWidth: 300),
+                                                child: SingleChildScrollView(
+                                                  scrollDirection:
+                                                      Axis.vertical,
+                                                  child: Text(
+                                                      material['description'] ??
+                                                          '',
+                                                      maxLines: 3,
+                                                      overflow: TextOverflow
+                                                          .ellipsis),
+                                                ),
+                                              ),
+                                            ),
+                                            DataCell(Checkbox(
+                                              value: isSelected,
+                                              onChanged: (bool? selected) {
+                                                setState(() {
+                                                  selectedMaterial = selected!
+                                                      ? material
+                                                      : null;
+                                                  if (selectedMaterial !=
+                                                      null) {
+                                                    lessonPlanNameController
+                                                            .text =
+                                                        selectedMaterial[
+                                                                'title'] ??
+                                                            '';
+                                                    manualEntryController.text =
+                                                        selectedMaterial[
+                                                                'description'] ??
+                                                            '';
+                                                    isEditing = false;
+                                                  } else {
+                                                    _clearFormFields();
+                                                  }
+                                                });
+                                              },
+                                            )),
+                                            DataCell(ElevatedButton(
+                                              onPressed: () =>
+                                                  _showLessonPlanDialog(
+                                                      material),
+                                              child: Text("View"),
+                                            )),
+                                          ],
+                                        );
+                                      }).toList(),
+                                    ),
+                                  ),
+                                ),
                           SizedBox(height: 20),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -478,8 +637,10 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
                                         setState(() {
                                           isDeleting = true;
                                         });
-                                        await googleClassroomApi.deleteCourseWorkMaterial(
-                                            selectedCourse!, selectedMaterial['id']);
+                                        await googleClassroomApi
+                                            .deleteCourseWorkMaterial(
+                                                selectedCourse!,
+                                                selectedMaterial['id']);
                                         await _loadLessonPlan(selectedCourse!);
                                         _clearFormFields();
                                         setState(() {
@@ -491,17 +652,21 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
                                     ? SizedBox(
                                         width: 20,
                                         height: 20,
-                                        child: CircularProgressIndicator(strokeWidth: 2),
+                                        child: CircularProgressIndicator(
+                                            strokeWidth: 2),
                                       )
                                     : Text('Delete Selected'),
                               ),
                               ElevatedButton(
                                 onPressed: selectedMaterial != null
                                     ? () => setState(() {
-                                        isEditing = true;
-                                        lessonPlanNameController.text = selectedMaterial['title'] ?? '';
-                                        manualEntryController.text = selectedMaterial['description'] ?? '';
-                                      })
+                                          isEditing = true;
+                                          lessonPlanNameController.text =
+                                              selectedMaterial['title'] ?? '';
+                                          manualEntryController.text =
+                                              selectedMaterial['description'] ??
+                                                  '';
+                                        })
                                     : null,
                                 child: Text('Edit Selected'),
                               ),
@@ -512,18 +677,23 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
                                           isUpdating = true;
                                         });
                                         try {
-                                          await googleClassroomApi.updateCourseWorkMaterial(
+                                          await googleClassroomApi
+                                              .updateCourseWorkMaterial(
                                             selectedCourse!,
                                             selectedMaterial['id'],
                                             lessonPlanNameController.text,
                                             manualEntryController.text,
                                           );
-                                          await _loadLessonPlan(selectedCourse!);
+                                          await _loadLessonPlan(
+                                              selectedCourse!);
                                           _clearFormFields();
                                         } catch (e) {
                                           print('Error during update: $e');
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            SnackBar(content: Text('Failed to update lesson plan: $e')),
+                                          ScaffoldMessenger.of(context)
+                                              .showSnackBar(
+                                            SnackBar(
+                                                content: Text(
+                                                    'Failed to update lesson plan: $e')),
                                           );
                                         } finally {
                                           setState(() {
@@ -536,7 +706,8 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
                                     ? SizedBox(
                                         width: 20,
                                         height: 20,
-                                        child: CircularProgressIndicator(strokeWidth: 2),
+                                        child: CircularProgressIndicator(
+                                            strokeWidth: 2),
                                       )
                                     : Text('Save Update'),
                               ),

@@ -7,8 +7,7 @@ import 'package:learninglens_app/beans/g_question_form_data.dart';
 import 'dart:convert';
 import 'package:learninglens_app/services/local_storage_service.dart';
 import 'package:url_launcher/url_launcher.dart';
-
-
+import 'package:flutter/services.dart'; // Added for clipboard functionality
 
 // Dynamic form widget with table inside a card
 class DynamicForm extends StatelessWidget {
@@ -42,10 +41,10 @@ class DynamicForm extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 16.0),
                 child: Text(
                   formData.title,
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blueAccent,
-                      ),
+                  style: Theme.of(context)
+                      .textTheme
+                      .headlineSmall
+                      ?.copyWith(fontWeight: FontWeight.bold),
                 ),
               ),
               // Card containing assignment details and table
@@ -96,7 +95,8 @@ class DynamicForm extends StatelessWidget {
                                   await launchUrl(url);
                                 } else {
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Cannot launch URL')),
+                                    const SnackBar(
+                                        content: Text('Cannot launch URL')),
                                   );
                                 }
                               }
@@ -109,6 +109,19 @@ class DynamicForm extends StatelessWidget {
                               ),
                             ),
                           ),
+                          if (formData.formUrl != null) ...[
+                            IconButton(
+                              icon: const Icon(Icons.copy),
+                              onPressed: () {
+                                Clipboard.setData(
+                                    ClipboardData(text: formData.formUrl!));
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text('URL copied to clipboard')),
+                                );
+                              },
+                            ),
+                          ],
                         ],
                       ),
                       Row(
@@ -128,7 +141,8 @@ class DynamicForm extends StatelessWidget {
                         child: DataTable(
                           columnSpacing: 20,
                           dataRowHeight: 60,
-                          headingRowColor: MaterialStateProperty.all(Colors.blueAccent.withOpacity(0.1)),
+                          headingRowColor: MaterialStateProperty.all(
+                              Colors.blueAccent.withOpacity(0.1)),
                           border: TableBorder.all(
                             color: Colors.grey,
                             width: 1.0,
@@ -186,13 +200,6 @@ class DynamicForm extends StatelessWidget {
                               DataCell(
                                 Text(
                                   _getQuestionType(questionData.options),
-                                  style: TextStyle(
-                                    color: _getQuestionType(questionData.options) == 'Short Answer'
-                                        ? Colors.green
-                                        : _getQuestionType(questionData.options) == 'True/False'
-                                            ? Colors.orange
-                                            : Colors.purple,
-                                  ),
                                 ),
                               ),
                               DataCell(
@@ -229,7 +236,8 @@ class QuizQuestionPage extends StatefulWidget {
   final String coursedId;
   final String assessmentId;
 
-  const QuizQuestionPage({super.key, required this.coursedId, required this.assessmentId});
+  const QuizQuestionPage(
+      {super.key, required this.coursedId, required this.assessmentId});
 
   @override
   State<QuizQuestionPage> createState() => _QuizQuestionPageState();
@@ -241,16 +249,18 @@ class _QuizQuestionPageState extends State<QuizQuestionPage> {
   @override
   void initState() {
     super.initState();
-    print('Course ID from QuizQuestion Page: ${widget.coursedId}, Assessment ID from QuizQuestion Page: ${widget.assessmentId}');
+    print(
+        'Course ID from QuizQuestion Page: ${widget.coursedId}, Assessment ID from QuizQuestion Page: ${widget.assessmentId}');
     GoogleLmsService googleLmsService = GoogleLmsService();
-    _formDataFuture = googleLmsService.getAssignmentFormQuestions(widget.coursedId, widget.assessmentId);
+    _formDataFuture = googleLmsService.getAssignmentFormQuestions(
+        widget.coursedId, widget.assessmentId);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
-        title: 'Quiz Questions',
+        title: 'Quiz Questions Here ....',
         userprofileurl: LmsFactory.getLmsService().profileImage ?? '',
       ),
       body: FutureBuilder<FormData>(
