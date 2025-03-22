@@ -6,13 +6,14 @@ Author: Eyerusalme (Jerry)
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:memoryminder/src/features/caregiver-dashboard/presentation/caregiver-dashboard.dart';
 import 'package:memoryminder/src/utils/permission_manager.dart';
 import 'registration_screen.dart';
 import '../../stml_user_dashboard/presentation/stml_user_dashboard.dart';
 // import 'forgot_password_screen.dart';
 
 class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
@@ -50,7 +51,6 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _loginWithEmail() async {
-
     setState(() {
       _isAuthenticating = true;
     });
@@ -62,7 +62,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => CaregiverDashboardScreen()),
+        MaterialPageRoute(builder: (context) => HomeScreen()),
       );
     } on FirebaseAuthException catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -80,13 +80,30 @@ class _LoginScreenState extends State<LoginScreen> {
     PermissionManager.checkIfLocationServiceIsActive(context);
     return Scaffold(
       body: Container(
-
+        decoration: const BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage("assets/images/background.jpg"),
+            fit: BoxFit.cover,
+          ),
+        ),
         child: Center(
           child: Padding(
             padding:
                 const EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
             child: Container(
               padding: const EdgeInsets.all(20.0),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.5),
+                    spreadRadius: 5,
+                    blurRadius: 7,
+                    offset: Offset(0, 3),
+                  ),
+                ],
+              ),
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -98,7 +115,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             height: 80, width: 80),
                         const SizedBox(width: 10),
                         Text(
-                          "Memoryminder",
+                          "CogniOpen",
                           style: TextStyle(
                             color: Colors.blueGrey[900],
                             fontSize: 32.0,
@@ -108,17 +125,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       ],
                     ),
                     SizedBox(height: 20),
-                    Image.asset('assets/welcome_image.png',
-                        height: 300), // Add a nice image
                     TextFormField(
                       controller: _emailController,
                       decoration: InputDecoration(labelText: 'Email'),
                       keyboardType: TextInputType.emailAddress,
-                      validator: (value) {
-                        if(value ==null || value.isEmpty) {
-                          return 'Please enter email';
-                        }
-                      }
                     ),
                     SizedBox(height: 10),
                     TextFormField(
@@ -145,29 +155,20 @@ class _LoginScreenState extends State<LoginScreen> {
                         ? CircularProgressIndicator()
                         : ElevatedButton(
                             onPressed: _loginWithEmail,
-                            child: Text("Login", style: TextStyle(fontSize: 18, color: Colors.white),),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color.fromARGB(255, 2, 63, 129),
-                              padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(40),
-                              ),
+                              backgroundColor: Colors.blueGrey[600],
                             ),
+                            child: Text("Login"),
                           ),
                     SizedBox(height: 20),
                     Text("Or"),
                     SizedBox(height: 10),
-
                     ElevatedButton.icon(
                       onPressed: _authenticateWithBiometrics,
-                      icon: Icon(Icons.fingerprint, color: Colors.white,),
-                      label: Text("Login with Biometrics", style: TextStyle(fontSize: 18, color: Colors.white), ),
+                      icon: Icon(Icons.fingerprint),
+                      label: Text("Login with Biometrics"),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color.fromARGB(255, 2, 63, 129),
-                        padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(40),
-                        ),
+                        backgroundColor: Colors.blueGrey[800],
                       ),
                     ),
                     SizedBox(height: 30),

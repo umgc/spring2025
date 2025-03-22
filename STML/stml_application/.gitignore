@@ -58,7 +58,11 @@ lib/firebase_options.dart
 
 # XCode & Cocoapods generated files
 ios/Pods/
+ios/Podfile.lock
+ios/Podfile
 ios/.symlinks/
+ios/project.pbxproj
+ios/Runner.xscheme
 ios/Flutter/Flutter.podspec
 ios/Flutter/ephemeral/
 ios/.dart_tool/

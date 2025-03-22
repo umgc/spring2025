@@ -4,7 +4,6 @@
 import 'package:memoryminder/src/features/caregiver-dashboard/presentation/add_care_recipient.dart';
 import 'package:memoryminder/src/features/caregiver-dashboard/presentation/app_bar.dart';
 import 'package:memoryminder/src/features/caregiver-dashboard/presentation/caregiver-dashboard.dart';
-import 'package:memoryminder/ui/dementia_resources.dart';
 import 'package:memoryminder/ui/response_screen.dart';
 import 'package:memoryminder/src/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
@@ -29,24 +28,9 @@ class CareRecipientProfileScreenState extends State<CareRecipientProfileScreen> 
     super.initState();
   }
 
-  String getCareRecipientLocation() {
-    List<String> nonNullStrings = [];
-
-    if(widget.careRecipientData!['city'] != null &&  widget.careRecipientData!['city'].isNotEmpty) {
-      nonNullStrings.add(widget.careRecipientData!['city']);
-    }
-    if(widget.careRecipientData!['county'] != null &&  widget.careRecipientData!['county'].isNotEmpty) {
-      nonNullStrings.add(widget.careRecipientData!['county']);
-    }
-    if(widget.careRecipientData!['state'] != null &&  widget.careRecipientData!['state'].isNotEmpty) {
-      nonNullStrings.add(widget.careRecipientData!['state']);
-    }
-    return nonNullStrings.join(', ');
-  }
   @override
   Widget build(BuildContext context) {
     final String careRecipientName = '${widget.careRecipientData!['firstName']} ${widget.careRecipientData!['lastName']}';
-    final String careRecipientLocation = getCareRecipientLocation();
     return Scaffold(
         extendBody: true,
         // Setting up the app bar at the top of the screen
@@ -113,14 +97,6 @@ class CareRecipientProfileScreenState extends State<CareRecipientProfileScreen> 
                       text: 'Update Profile',
                       screen: AddCareRecipientForm(itemId: widget.careRecipientId, initialData: widget.careRecipientData),
                       keyName: "UpdateProfileButtonKey",
-                    ),
-                    _buildElevatedButton(
-                      context: context,
-                      icon: Icon(Icons.bookmark_outline,
-                          size: iconSize, color: Color.fromARGB(255, 2, 63, 129)),
-                      text: 'Dementia Resources',
-                      screen: DementiaResourcesScreen(loc: careRecipientLocation),
-                      keyName: "DementiaResourcesButtonKey",
                     ),
                   ],
                 ),

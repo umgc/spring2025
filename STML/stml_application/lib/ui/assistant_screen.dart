@@ -2,7 +2,7 @@
 
 import 'dart:async';
 
-import 'package:memoryminder/src/features/sensitive_information_detection/domain/audio.dart';
+import 'package:memoryminder/src/database/model/audio.dart';
 import 'package:memoryminder/src/typingIndicator.dart';
 import 'package:dart_openai/dart_openai.dart';
 import 'dart:io';
@@ -26,9 +26,9 @@ class _AssistantScreenState extends State<AssistantScreen> {
   late FlutterTts tts;
   bool isPlaying = false;
 
-  TextEditingController _messageController = TextEditingController();
-  ScrollController _scrollController = new ScrollController();
-  List<ChatMessage> _chatMessages = [];
+  final TextEditingController _messageController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  final List<ChatMessage> _chatMessages = [];
   String prompt = "You are an assistant for someone with memory loss.";
   late Future<bool> goodAPIKey;
   bool _isTyping = false;
@@ -194,7 +194,7 @@ class _AssistantScreenState extends State<AssistantScreen> {
             extendBodyBehindAppBar: true,
             appBar: AppBar(
               backgroundColor:
-                  const Color(0x440000), // Set appbar background color
+                  const Color(0x00440000), // Set appbar background color
               centerTitle: true,
               title: const Text('Virtual Assistant',
                   style: TextStyle(color: Colors.black54)),
@@ -270,30 +270,30 @@ class _AssistantScreenState extends State<AssistantScreen> {
       return false;
     } else {
       // Find the user's name to welcome them personally
-      String _userName;
+      String userName;
       try {
         final directory = await getApplicationDocumentsDirectory();
         String path = directory.path;
         final file = File('$path/user_data.txt');
         String contents = await file.readAsString();
         List<String> details = contents.split(', ');
-        _userName = details[0];
+        userName = details[0];
       } on Exception catch (e) {
         // default if user file is not found (should not be possible outside of testing)
-        _userName = "Unidentified User";
+        userName = "Unidentified User";
 
         print(e.toString());
       }
 
       OpenAI.apiKey = apiKeyEnv;
       String prompt =
-          "You are an assistant for $_userName, who has memory loss.";
+          "You are an assistant for $userName, who has memory loss.";
       if (widget.conversation != null) {
         print("path");
         String transcript = await getTranscript();
         if (transcript.isNotEmpty) {
           prompt +=
-              "\n$_userName wants to talk about the following conversation: \n{$transcript}";
+              "\n$userName wants to talk about the following conversation: \n{$transcript}";
         }
       }
       setState(() {
@@ -324,17 +324,15 @@ class _AssistantScreenState extends State<AssistantScreen> {
 
   Future<String> getTranscript() async {
     File? file = await widget.conversation!.loadTranscriptFile();
-    if (file != null) {
-      print(file.path);
-      try {
-        return await file.readAsString();
-      } on Exception catch (e) {
-        _showAlert("Missing Transcript", "Transcript file could not be read.");
-        print(e.toString());
-        return "";
-      }
+    print(file!.path);
+    try {
+      return await file.readAsString();
+    } on Exception catch (e) {
+      _showAlert("Missing Transcript", "Transcript file could not be read.");
+      print(e.toString());
+      return "";
     }
-    _showAlert("Missing Transcript", "Transcript file not found.");
+      _showAlert("Missing Transcript", "Transcript file not found.");
 
     return widget.conversation!.description ?? "";
   }
@@ -345,7 +343,7 @@ class ChatMessage extends StatelessWidget {
   final String messageText;
   final bool isUserMessage;
 
-  ChatMessage({
+  const ChatMessage({super.key, 
     required this.messageText,
     required this.isUserMessage,
     required this.toggleTTS,

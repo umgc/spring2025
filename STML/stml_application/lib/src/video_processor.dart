@@ -105,7 +105,7 @@ class VideoProcessor {
 
     GetLabelDetectionResponse labelResponses = await grabResults(jobId);
 
-    List<AWSVideoResponse> responses = await createResponseList(labelResponses);
+    List<AWSVideoResponse> responses = createResponseList(labelResponses);
 
     await DataService.instance.addVideoResponses(responses);
     FormatUtils.logBigMessage("Rekognition results saved locally.");
@@ -267,7 +267,7 @@ class VideoProcessor {
     appLogger.info("Video title to S3: $videoTitle");
     appLogger.info("Video file path uploading to S3: $videoPath");
 
-    String uploadedVideo = await s3.addVideoToS3(videoTitle, videoPath) ?? "";
+    String uploadedVideo = await s3.addVideoToS3(videoTitle, videoPath);
 
     await sendRequestToProcessVideo(uploadedVideo);
 

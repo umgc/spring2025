@@ -3,6 +3,8 @@ import 'package:memoryminder/src/features/account_creation_and_login/presentatio
 import 'package:memoryminder/src/features/account_creation_and_login/presentation/login_screen.dart';
 
 class WelcomeScreem extends StatelessWidget {
+  const WelcomeScreem({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:memoryminder/src/features/account_creation_and_login/presentation/registration_screen.dart';
 
 class EulaScreen extends StatefulWidget {
+  const EulaScreen({super.key});
+
   @override
   _EulaScreenState createState() => _EulaScreenState();
 }

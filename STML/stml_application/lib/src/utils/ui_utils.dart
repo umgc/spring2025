@@ -25,7 +25,7 @@ class UiUtils {
         elevation: 0.0,
         items: const [
           BottomNavigationBarItem(
-            backgroundColor: Color.fromARGB(255, 2, 63, 129),
+            backgroundColor: Color(0x00ffffff),
             icon: Icon(Icons.home),
             label: 'Home',
           ),

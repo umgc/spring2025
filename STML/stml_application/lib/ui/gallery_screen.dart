@@ -7,7 +7,7 @@
 
 import 'dart:io';
 import 'package:memoryminder/src/data_service.dart';
-import 'package:memoryminder/src/features/sensitive_information_detection/domain/audio.dart';
+import 'package:memoryminder/src/database/model/audio.dart';
 import 'package:memoryminder/src/database/model/media.dart';
 import 'package:memoryminder/src/database/model/media_type.dart';
 import 'package:memoryminder/src/database/model/photo.dart';
@@ -33,6 +33,8 @@ final double _defaultFontSize = 20.0;
 
 // Define a StatefulWidget for the GalleryScreen
 class GalleryScreen extends StatefulWidget {
+  const GalleryScreen({super.key});
+
   Widget build(BuildContext context) {
     // Scaffold widget for the Gallery screen
     return Scaffold(
@@ -274,7 +276,7 @@ class _GalleryScreenState extends State<GalleryScreen> {
 
   AppBar _buildAppBar() {
     return AppBar(
-      backgroundColor: const Color(0x440000),
+      backgroundColor: const Color(0x00440000),
       elevation: 0.0,
       iconTheme: const IconThemeData(
         color: Colors.black54, //change your color here
@@ -685,10 +687,10 @@ class _FullObjectViewState extends State<FullObjectView> {
                             80), // Used to provide an invisible barrier for the objects
                     addSpacingSizedBox(),
                     if (widget.activeMedia.title.isNotEmpty)
-                      returnTextBox("Title", '${widget.activeMedia.title}'),
+                      returnTextBox("Title", widget.activeMedia.title),
                     addSpacingSizedBox(),
                     returnTextBox("Timestamp",
-                        '${FormatUtils.getDateString(widget.activeMedia.timestamp)}'),
+                        FormatUtils.getDateString(widget.activeMedia.timestamp)),
                     addSpacingSizedBox(),
                     if (widget.activeMedia is Audio)
                       createAudioControlButtons(),
@@ -972,7 +974,7 @@ class _FullObjectViewState extends State<FullObjectView> {
     String path =
         "${DirectoryManager.instance.audiosDirectory.path}/${activeAudio.audioFileName}";
     debugPrint(path);
-    /* await _player!.openPlayer();
+   /* await _player!.openPlayer();
     await _player!.startPlayer(
         fromURI: path,
         whenFinished: () {
@@ -988,7 +990,7 @@ class _FullObjectViewState extends State<FullObjectView> {
 
   /// Function to handle stopping the playback of the recorded audio.
   Future<void> _stopPlayback() async {
-    /* await _player!.stopPlayer();
+   /* await _player!.stopPlayer();
     setState(() {
       _isPlaying = false;
     });
