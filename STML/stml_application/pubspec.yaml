@@ -94,6 +94,7 @@ flutter:
     - assets/icons/
     - assets/icons/app_icon.png
     - assets/seed_data_files/
+    - assets/fonts/Montserrat-VariableFont_wght.ttf
     - .env
 
   #   - images/a_dot_ham.jpeg
