@@ -85,6 +85,12 @@ class EditQuestionsState extends State<EditQuestions> {
   ),
       body: Column(
         children: [
+          Text(
+            'Swipe right to have the AI rebuild the question.',
+            style: TextStyle(fontSize: 14),),
+          Text(
+            'Swipe left to remove the question',
+            style: TextStyle(fontSize: 14),),
           Expanded(
             child: ListView.builder(
               itemCount: myQuiz.questionList.length,
