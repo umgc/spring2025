@@ -44,7 +44,7 @@ class SubmissionListState extends State<SubmissionList> {
 
   LlmType? selectedLLM;
 
-  String filterOption = 'All';
+  String filterOption = 'All Students';
   String fullNameFilter = '';
 
   String getApiKey(LlmType selectedLLM) {
@@ -139,10 +139,11 @@ class SubmissionListState extends State<SubmissionList> {
             child: Row(
               children: [
                 Expanded(
-                  child: DropdownButton<String>(
+                  child: DropdownButtonFormField<String>(
                     value: filterOption,
+                    decoration: InputDecoration(labelText: 'Submission Status'),
                     onChanged: _handleFilterChanged,
-                    items: <String>['All', 'With Submission', 'Without Submission']
+                    items: <String>['All Students', 'With Submission', 'Without Submission']
                         .map<DropdownMenuItem<String>>((String value) {
                       return DropdownMenuItem<String>(
                         value: value,
