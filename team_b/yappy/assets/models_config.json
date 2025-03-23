@@ -17,7 +17,7 @@
     {
       "id": "silero_vad",
       "name": "Voice Activity Detection Model",
-      "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/silero_vad.onnx",
+      "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/silero_vad_v5.onnx",
       "isCompressed": false,
       "type": "vad",
       "outputFiles": [
@@ -26,7 +26,7 @@
           "destination": "vad_model.onnx"
         }
       ],
-      "size": 1.72
+      "size": 2.2
     },
     {
       "id": "whisper_tiny",

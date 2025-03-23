@@ -41,7 +41,7 @@ Future<sherpa_onnx.SpeakerEmbeddingExtractor> createSpeakerExtractor() async {
   final model = await getSpeakerModel(type: type);
   final config = sherpa_onnx.SpeakerEmbeddingExtractorConfig(
     model: model,
-    numThreads: 1,
+    numThreads: 2,
     debug: false,
     provider: 'cpu',
   );
@@ -56,15 +56,15 @@ Future<sherpa_onnx.VoiceActivityDetector> createVoiceActivityDetector() async {
   final sileroConfig = sherpa_onnx.SileroVadModelConfig(
     model: model,
     threshold: 0.5,
-    minSilenceDuration: 0.2,
-    minSpeechDuration: 0.2,
+    minSilenceDuration: 0.25,
+    minSpeechDuration: 0.15,
     windowSize: 512,
-    maxSpeechDuration: 5.0, 
+    maxSpeechDuration: 10.0, 
   );
     
   final vadConfig = sherpa_onnx.VadModelConfig(
     sileroVad: sileroConfig,
-    numThreads: 1,
+    numThreads: 2,
     provider: 'cpu',
     debug: false,
   );
@@ -482,13 +482,6 @@ Future<void> processSegmentOffline(AudioSegment segment) async {
               final windowBuffer = Float32List.sublistView(samplesFloat32, offset, offset + windowSize);
               vad!.acceptWaveform(windowBuffer);
               offset += windowSize;
-
-              // Process any complete segments from VAD
-              while (!vad!.isEmpty()) {
-                final segment = vad!.front();
-                debugPrint('💬 VAD segment at: ${segment.start / sampleRate}s - ${currentTimestamp}s');
-                vad!.pop();
-              }
             }
             
             // Check current VAD state
@@ -523,20 +516,19 @@ Future<void> processSegmentOffline(AudioSegment segment) async {
               final text = onlineRecognizer!.getResult(onlineStream!).text;
               
               // Update display with current recognition
-              if (text.isNotEmpty) {
-                final existingSegmentIndex = recognizedSegments.indexWhere((s) => s.index == currentIndex);
+              final existingSegmentIndex = recognizedSegments.indexWhere((s) => s.index == currentIndex);
 
-                if (existingSegmentIndex != -1) {
-                  // Update existing segment
-                  recognizedSegments[existingSegmentIndex].text = text;
-                } else {
-                  // Add new segment
-                  debugPrint('Adding new segment $currentIndex with text: "$text"');
-                  _addRecognizedSegment(text, speechStartTime);
-                }
-                
-                _updateDisplayText();
+              if (existingSegmentIndex != -1) {
+                // Update existing segment
+                debugPrint('Updated segment #$currentIndex of ${recognizedSegments.length}');
+                recognizedSegments[existingSegmentIndex].text = text.isEmpty ? recognizedSegments[existingSegmentIndex].text : text;
+              } else {
+                // Add new segment
+                debugPrint('Adding new segment $currentIndex with text: "$text"');
+                _addRecognizedSegment(text, speechStartTime);
               }
+              
+              _updateDisplayText();
             }
             
             // TRANSITION: Speech → Silence (SAVE SEGMENT & STOP COLLECTING)
@@ -544,21 +536,21 @@ Future<void> processSegmentOffline(AudioSegment segment) async {
               debugPrint('🔇 Speech ended at: $currentTimestamp, duration: ${currentTimestamp - speechStartTime}');
               isCurrentlySpeaking = false;
               
-              // Only process if we collected enough speech data
-              if (currentSegmentSamples.isNotEmpty && recognizedSegments.lastOrNull != null) {
+              // // Only process if we collected enough speech data
+              // if (currentSegmentSamples.isNotEmpty && recognizedSegments.lastOrNull != null) {
                 // Combine all samples into a single Float32List
-                final combinedSamples = Float32List(currentSegmentSamples.fold<int>(
-                  0, (sum, list) => sum + list.length));
+                // final combinedSamples = Float32List(currentSegmentSamples.fold<int>(
+                //   0, (sum, list) => sum + list.length));
                 
-                var sampleOffset = 0;
-                for (var samples in currentSegmentSamples) {
-                  combinedSamples.setRange(sampleOffset, sampleOffset + samples.length, samples);
-                  sampleOffset += samples.length;
-                }
+                // var sampleOffset = 0;
+                // for (var samples in currentSegmentSamples) {
+                //   combinedSamples.setRange(sampleOffset, sampleOffset + samples.length, samples);
+                //   sampleOffset += samples.length;
+                // }
 
                 // Create and add a new audio segment for background processing
                 pendingSegments.add(AudioSegment(
-                  samples: combinedSamples,
+                  samples: vad!.front().samples,
                   sampleRate: sampleRate,
                   index: currentIndex,
                   start: speechStartTime,
@@ -570,20 +562,27 @@ Future<void> processSegmentOffline(AudioSegment segment) async {
                 
                 // Increment for next segment
                 currentIndex += 1;
-              }
-              
+              // }
+              vad!.pop();
               // Clear VAD buffer - flush any pending segments
               vad?.flush();
               
               // During silence we don't collect samples - they're effectively discarded
               // until the next speech segment begins
             }
+
+            // Process any complete segments from VAD
+            while (!vad!.isEmpty()) {
+              final segment = vad!.front();
+              debugPrint('💬 VAD segment at: ${segment.start / sampleRate}s - ${currentTimestamp}s');
+              vad!.pop();
+            }
           },
           onError: (error) {
             debugPrint('Error from audio stream: $error');
           },
           onDone: () {
-            debugPrint('Audio stream done');
+            debugPrint('Audio stream done; ${recognizedSegments.length} segments with $currentSpeakerCount speakers');
           },
         );
       }
