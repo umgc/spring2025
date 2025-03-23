@@ -62,4 +62,5 @@ abstract class LmsInterface {
 
   // Rubric methods
   Future<MoodleRubric?> getRubric(String assignmentid);
+  Future<List<Participant>> getQuizGradesForParticipants(String courseId, int quizId);
 }

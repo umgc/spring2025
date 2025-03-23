@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:learninglens_app/Api/lms/constants/learning_lens.constants.dart';
 import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
-import 'package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/Views/essay_edit_page.dart';
-import 'package:learninglens_app/Api/llm/claudeai_api.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
 import 'dart:convert';
-import '../Api/llm/llm_api.dart';
+import '../Api/llm/perplexity_api.dart';
 import 'package:learninglens_app/Api/llm/openai_api.dart';
+import 'package:learninglens_app/Api/llm/grok_api.dart';
+import 'package:learninglens_app/Api/llm/enum/llm_enum.dart';
 
 
 // Required Components:
@@ -30,10 +31,10 @@ class _EssayGenerationState extends State<EssayGeneration>
 {
     //Holds values for user input fields
   int _selectedPointScale = 3; // Default value
-  String _selectedGradeLevel =
-      '12th grade'; // Default value for GradeLevelDropdown
+  String _selectedGradeLevel = LearningLensConstants.gradeLevels.last; // Default value for GradeLevelDropdown
   bool _isLoading = false;
-  String? selectedLLM = 'Perplexity'; // default
+  // String? selectedLLM = 'Perplexity'; // default
+  LlmType? selectedLLM;
 
   // llm options
   final List<String> llmOptions = ['ChatGPT', 'CLAUDE', 'Perplexity'];
@@ -50,9 +51,9 @@ class _EssayGenerationState extends State<EssayGeneration>
   dynamic rubricasjson;
 
   // api keys
-  final perplexityApiKey = LocalStorageService.getPerplexityKey();
-  final openApiKey = LocalStorageService.getOpenAIKey();
-  final claudeApiKey =  LocalStorageService.getClaudeKey();
+  // final perplexityApiKey = LocalStorageService.getPerplexityKey();
+  // final openApiKey = LocalStorageService.getOpenAIKey();
+  // final claudeApiKey =  LocalStorageService.getClaudeKey();
 
   // event handlers
   void _handlePointScaleChanged(int? newValue) {
@@ -73,7 +74,7 @@ class _EssayGenerationState extends State<EssayGeneration>
   }
 
   // Handle LLM Selection
-  void _handleLLMChanged(String? newValue) {
+  void _handleLLMChanged(LlmType? newValue) {
     setState(() {
       if (newValue != null) {
         selectedLLM = newValue;
@@ -84,12 +85,14 @@ class _EssayGenerationState extends State<EssayGeneration>
   // Get api key for selected LLM
   String getApiKey() {
     switch (selectedLLM) {
-      case 'OpenAI':
-        return openApiKey;
-      case 'Claude':
-        return claudeApiKey;
+      case LlmType.CHATGPT:
+        return LocalStorageService.getOpenAIKey();
+      case LlmType.GROK:
+        return LocalStorageService.getGrokKey();
+      case LlmType.PERPLEXITY:
+        return LocalStorageService.getPerplexityKey();
       default:
-        return perplexityApiKey;
+        return LocalStorageService.getOpenAIKey();
     }
   }
 
@@ -107,12 +110,12 @@ class _EssayGenerationState extends State<EssayGeneration>
 
       // Dynamically instantiate the appropriate LLM class based on the selectedLLM
       dynamic llmInstance;
-      if (selectedLLM == 'OpenAI') {
-        llmInstance = OpenAiLLM(openApiKey);
-      } else if (selectedLLM == 'Claude') {
-        llmInstance = ClaudeAiAPI(claudeApiKey);
-      } else if (selectedLLM == 'Perplexity') {
-        llmInstance = LlmApi(perplexityApiKey); // Perplexity API class
+      if (selectedLLM == LlmType.CHATGPT) {
+        llmInstance = OpenAiLLM(getApiKey());
+      } else if (selectedLLM == LlmType.GROK) {
+        llmInstance = GrokLLM(getApiKey());
+      } else if (selectedLLM == LlmType.PERPLEXITY) {
+        llmInstance = PerplexityLLM(getApiKey()); // Perplexity API class
       } else {
         throw Exception('Invalid LLM selected.');
       }
@@ -214,16 +217,26 @@ class _EssayGenerationState extends State<EssayGeneration>
                   const SizedBox(height: 16),
 
                   // LLM Selection Dropdown
-                  DropdownButton<String>(
+                  DropdownButton<LlmType>(
                     value: selectedLLM,
                     onChanged: _handleLLMChanged,
-                    items: <String>['Perplexity', 'OpenAI', 'Claude']
-                        .map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
+                    // items: <String>['Perplexity', 'OpenAI', 'Claude']
+                    //     .map<DropdownMenuItem<String>>((String value) {
+                    //   return DropdownMenuItem<String>(
+                    //     value: value,
+                    //     child: Text(value),
+                    //   );
+                    // }).toList(),
+                    items: LlmType.values.map((LlmType llm) {
+                      return DropdownMenuItem<LlmType>(
+                        value: llm,
+                        enabled: LocalStorageService.userHasLlmKey(llm),
+                        child: Text(llm.displayName, style: TextStyle(
+                          color: LocalStorageService.userHasLlmKey(llm) ? Colors.black87 : Colors.grey,
+                          ),
+                        ),
                       );
-                    }).toList(),
+                    }).toList()
                   ),
 
                   const SizedBox(height: 16),
@@ -578,7 +591,7 @@ class GradeLevelDropdown extends StatelessWidget {
     return DropdownButtonFormField<String>(
       decoration: const InputDecoration(labelText: "Grade Level"),
       value: selectedGradeLevel.isNotEmpty ? selectedGradeLevel : null,
-      items: <String>['9th grade', '10th grade', '11th grade', '12th grade']
+      items: LearningLensConstants.gradeLevels
           .map((String value) {
         return DropdownMenuItem<String>(
           value: value,

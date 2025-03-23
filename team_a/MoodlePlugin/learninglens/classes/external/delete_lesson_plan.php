@@ -38,6 +38,9 @@ class delete_lesson_plan extends external_api {
 
         // Delete the lesson plan
         $DB->delete_records('lesson', ['id' => $lessonid]);
+        
+        // Clear cache for the lesson plan
+        purge_all_caches();
 
         return ['status' => 'success', 'message' => 'Lesson plan deleted successfully'];
     }

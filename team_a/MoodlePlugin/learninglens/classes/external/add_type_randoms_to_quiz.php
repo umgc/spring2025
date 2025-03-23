@@ -50,6 +50,10 @@ class add_type_randoms_to_quiz extends external_api {
 
             quiz_add_random_questions($quiz, $addonpage = 0, $categoryid, $numquestions, false);
 
+            // Recalculate the sumgrades automatically using Moodle's built-in function
+            quiz_update_sumgrades($quiz);
+            quiz_grade_item_update($quiz);
+
             return true; // Return true on successful addition.
 
         } catch (Exception $e) {
