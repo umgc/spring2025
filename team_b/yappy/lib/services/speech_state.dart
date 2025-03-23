@@ -41,7 +41,7 @@ Future<sherpa_onnx.SpeakerEmbeddingExtractor> createSpeakerExtractor() async {
   final model = await getSpeakerModel(type: type);
   final config = sherpa_onnx.SpeakerEmbeddingExtractorConfig(
     model: model,
-    numThreads: 2,
+    numThreads: 1,
     debug: false,
     provider: 'cpu',
   );
@@ -56,15 +56,15 @@ Future<sherpa_onnx.VoiceActivityDetector> createVoiceActivityDetector() async {
   final sileroConfig = sherpa_onnx.SileroVadModelConfig(
     model: model,
     threshold: 0.5,
-    minSilenceDuration: 0.4,
-    minSpeechDuration: 0.5,
+    minSilenceDuration: 0.2,
+    minSpeechDuration: 0.2,
     windowSize: 512,
-    maxSpeechDuration: 10.0, 
+    maxSpeechDuration: 5.0, 
   );
     
   final vadConfig = sherpa_onnx.VadModelConfig(
     sileroVad: sileroConfig,
-    numThreads: 2,
+    numThreads: 1,
     provider: 'cpu',
     debug: false,
   );
@@ -437,11 +437,9 @@ Future<void> processSegmentOffline(AudioSegment segment) async {
 
     try {
       if (await audioRecorder.hasPermission()) {
-        // Reset speakers for new recording
+        // Reset for new recording
         currentSpeakerCount = 0;
         recognizedSegments.clear();
-
-        // Create a path for saving the recording
         recordingFilePath = await _createRecordingFilePath();
 
         const config = RecordConfig(
@@ -451,128 +449,134 @@ Future<void> processSegmentOffline(AudioSegment segment) async {
         );
 
         final recordStream = await audioRecorder.startStream(config);
-        currentSegmentSamples.clear();
         allAudioSamples.clear();
-        bool isCurrentlySpeaking = false;
-        double speechStartTime = 0.0;
         currentTimestamp = 0.0;
         currentIndex = 0;
+        
+        // State tracking variables
+        bool isCurrentlySpeaking = false;
+        double speechStartTime = 0.0;
+        currentSegmentSamples.clear();
 
         recordState = RecordState.record;
-        controller.value = TextEditingValue(
-          text: "Listening..."
-        );
+        controller.value = TextEditingValue(text: "Listening...");
         notifyListeners();
 
         recordStream.listen(
           (data) {
             final samplesFloat32 = convertBytesToFloat32(Uint8List.fromList(data));
-
-            // Add samples to current segment buffer
-            currentSegmentSamples.add(samplesFloat32);
+            
+            // Always add to complete recording and update timestamp
             allAudioSamples.add(samplesFloat32);
-
-            // Update current timestamp based on number of samples
             currentTimestamp += samplesFloat32.length / sampleRate;
-
-            // ALYS CODE TO HELP UPDATE THE AUDIOWAVE SAMPLES
+            
+            // Update audio visualization
             audioSamplesNotifier.value = samplesFloat32
                 .map((e) => (e * 100000).toInt())
                 .toList();
 
-            onlineStream!.acceptWaveform(
-              samples: samplesFloat32, 
-              sampleRate: sampleRate
-            );
-            
-            while (onlineRecognizer!.isReady(onlineStream!)) {
-              onlineRecognizer!.decode(onlineStream!);
-            }
-            
-            final text = onlineRecognizer!.getResult(onlineStream!).text;
-
-            if (text.isNotEmpty) {
-              // Update or add the current segment
-              final existingSegmentIndex = recognizedSegments.indexWhere((s) => s.index == currentIndex);
-
-              if (existingSegmentIndex != -1) {
-                // Update existing segment
-                recognizedSegments[existingSegmentIndex].text = text;
-                // debugPrint('Updated segment $currentIndex with text: "$text"');
-              } else {
-                // Add new segment
-                debugPrint('Adding new segment $currentIndex with text: "$text"');
-                _addRecognizedSegment(text, currentTimestamp);
-              }
-              
-              // Always update display when we have new text
-              _updateDisplayText();
-            }
-
-            // Check for endpointing with VAD
-            // Process through VAD in window-sized chunks
+            // Process audio through VAD
             final windowSize = vad!.config.sileroVad.windowSize;
-            
-            // Process as many complete windows as we can
             int offset = 0;
             while (offset + windowSize <= samplesFloat32.length) {
               final windowBuffer = Float32List.sublistView(samplesFloat32, offset, offset + windowSize);
-              
               vad!.acceptWaveform(windowBuffer);
               offset += windowSize;
-              
-              // Check if speech is detected
+
+              // Process any complete segments from VAD
               while (!vad!.isEmpty()) {
                 final segment = vad!.front();
-                                
-                // Here you could also:
-                // 1. Send to a speech recognizer (like Whisper) for transcription
-                // 2. Save to a file
-                // 3. Process in some other way
-                
-                // Log the timestamp for debugging
-                debugPrint('💬 Speech detected: ${segment.start} to $currentTimestamp');
-                
-                // Remove the processed segment from the VAD queue
+                debugPrint('💬 VAD segment at: ${segment.start / sampleRate}s - ${currentTimestamp}s');
                 vad!.pop();
               }
             }
             
-            // if (onlineRecognizer!.isEndpoint(onlineStream!)) {
-            if (!vad!.isDetected()) {
-              // Store the current segment for offline processing
+            // Check current VAD state
+            bool speechDetected = vad!.isDetected();
+            
+            // TRANSITION: Silence → Speech (START COLLECTING)
+            if (!isCurrentlySpeaking && speechDetected) {
+              debugPrint('🎤 Speech started at: $currentTimestamp');
+              isCurrentlySpeaking = true;
+              speechStartTime = currentTimestamp;
+              currentSegmentSamples.clear(); // Start fresh collection
+              
+              // Reset the recognizer for a new segment
+              onlineRecognizer!.reset(onlineStream!);
+            }
+            
+            // DURING SPEECH: Collect and process audio
+            if (isCurrentlySpeaking) {
+              // Add samples to the current segment
+              currentSegmentSamples.add(samplesFloat32);
+              
+              // Process with online recognizer for real-time feedback
+              onlineStream!.acceptWaveform(
+                samples: samplesFloat32, 
+                sampleRate: sampleRate
+              );
+              
+              while (onlineRecognizer!.isReady(onlineStream!)) {
+                onlineRecognizer!.decode(onlineStream!);
+              }
+              
+              final text = onlineRecognizer!.getResult(onlineStream!).text;
+              
+              // Update display with current recognition
+              if (text.isNotEmpty) {
+                final existingSegmentIndex = recognizedSegments.indexWhere((s) => s.index == currentIndex);
 
-              //ISSUE IS HERE, need to use recognizedSegments.LastOrNull like before, or integrate VAD
-              if (currentSegmentSamples.isNotEmpty && recognizedSegments.lastOrNull != null
-                ) {
-                // Combine all Float32Lists into a single one
+                if (existingSegmentIndex != -1) {
+                  // Update existing segment
+                  recognizedSegments[existingSegmentIndex].text = text;
+                } else {
+                  // Add new segment
+                  debugPrint('Adding new segment $currentIndex with text: "$text"');
+                  _addRecognizedSegment(text, speechStartTime);
+                }
+                
+                _updateDisplayText();
+              }
+            }
+            
+            // TRANSITION: Speech → Silence (SAVE SEGMENT & STOP COLLECTING)
+            if (isCurrentlySpeaking && !speechDetected) {
+              debugPrint('🔇 Speech ended at: $currentTimestamp, duration: ${currentTimestamp - speechStartTime}');
+              isCurrentlySpeaking = false;
+              
+              // Only process if we collected enough speech data
+              if (currentSegmentSamples.isNotEmpty && recognizedSegments.lastOrNull != null) {
+                // Combine all samples into a single Float32List
                 final combinedSamples = Float32List(currentSegmentSamples.fold<int>(
                   0, (sum, list) => sum + list.length));
-                var offset = 0;
+                
+                var sampleOffset = 0;
                 for (var samples in currentSegmentSamples) {
-                  combinedSamples.setRange(offset, offset + samples.length, samples);
-                  offset += samples.length;
+                  combinedSamples.setRange(sampleOffset, sampleOffset + samples.length, samples);
+                  sampleOffset += samples.length;
                 }
 
-                final segmentStart = recognizedSegments.lastOrNull?.start ?? 0.0;
-
+                // Create and add a new audio segment for background processing
                 pendingSegments.add(AudioSegment(
                   samples: combinedSamples,
                   sampleRate: sampleRate,
                   index: currentIndex,
-                  start: segmentStart,
+                  start: speechStartTime,
                   end: currentTimestamp,
                 ));
                 
-                // Process with online recognizer in the background
+                // Process with offline recognizer in the background
                 processPendingSegments();
+                
+                // Increment for next segment
+                currentIndex += 1;
               }
               
-              // Reset for next segment
-              onlineRecognizer!.reset(onlineStream!);
-              currentSegmentSamples.clear();
-              currentIndex += 1;
+              // Clear VAD buffer - flush any pending segments
               vad?.flush();
+              
+              // During silence we don't collect samples - they're effectively discarded
+              // until the next speech segment begins
             }
           },
           onError: (error) {
