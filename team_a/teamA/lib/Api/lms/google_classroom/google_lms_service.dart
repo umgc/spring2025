@@ -133,10 +133,9 @@ class GoogleLmsService extends LmsInterface {
 
     courses = await getUserCourses();
 
-    for (Course course in courses!) {
-      print(course.courseId);
-      print('teacherFolderId: ${course.teacherFolderId}');
-    }
+    // for (Course course in courses!) {
+    //   print('teacherFolderId: ${course.teacherFolderId}');
+    // }
   }
 
   @override
