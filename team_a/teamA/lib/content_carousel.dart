@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:learninglens_app/Api/lms/enum/lms_enum.dart';
 import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
-import 'package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart';
+
 import 'package:learninglens_app/Views/essay_generation.dart';
+import 'package:learninglens_app/Views/g_assignment_create.dart';
+import 'package:learninglens_app/Views/g_quiz_question_page.dart';
+
+import 'package:learninglens_app/Views/m_assessment_view.dart';
 import 'package:learninglens_app/Views/quiz_generator.dart';
-import 'package:learninglens_app/Views/view_quiz.dart';
-import 'package:learninglens_app/Views/view_submissions.dart';
+import 'package:learninglens_app/Views/essays_view.dart';
 import 'package:learninglens_app/beans/quiz.dart';
 import 'package:learninglens_app/beans/assignment.dart';
 import 'package:learninglens_app/beans/course.dart';
+import 'package:learninglens_app/services/local_storage_service.dart';
 
 //Provides a carousel of either assessments, essays, or submission
 class ContentCarousel extends StatefulWidget {
@@ -68,6 +73,11 @@ class _ContentState extends State<ContentCarousel> {
   }
   //todo filtering features
 
+  bool isMoodle() {
+    print(LocalStorageService.getSelectedClassroom());
+    return LocalStorageService.getSelectedClassroom() == LmsType.MOODLE;
+  }
+
   @override
   Widget build(BuildContext context) {
     //For empty contents, we don't build a carousel
@@ -78,34 +88,94 @@ class _ContentState extends State<ContentCarousel> {
               constraints: BoxConstraints(maxHeight: 400),
               child: Center(child: _children[0])));
     } else {
+      // return Padding(
+      //     padding: EdgeInsets.symmetric(vertical: 10),
+      //     child: ConstrainedBox(
+      //         constraints: BoxConstraints(maxHeight: 250), //testing width
+      //         child: CarouselView(
+      //           backgroundColor: Theme.of(context).primaryColor,
+      //           itemExtent: 400,
+      //           shrinkExtent: 250,
+      //           onTap: (value) {
+      //             if (type == 'assessment') {
+
+      //               Navigator.push(
+      //                 context,
+      //                 MaterialPageRoute(
+      //                     builder: (context) => AssessmentsView(
+      //                         quizID: (children[value] as CarouselCard).id,
+      //                         courseID:
+      //                             (children[value] as CarouselCard).courseId)),
+      //               );
+      //             } else if (type == 'essay') {
+      //               print(
+      //                   (children[value] as CarouselCard).courseId?.toString());
+      //               Navigator.push(
+      //                   context,
+      //                   MaterialPageRoute(
+      //                       builder: (context) => EssaysView(
+      //                           essayID: (children[value] as CarouselCard).id,
+      //                           courseID: (children[value] as CarouselCard)
+      //                               .courseId)));
+      //             }
+      //           },
+      //           children: children,
+      //         )));
+
       return Padding(
           padding: EdgeInsets.symmetric(vertical: 10),
           child: ConstrainedBox(
-              constraints: BoxConstraints(maxHeight: 250), //testing width
+              constraints: BoxConstraints(maxHeight: 250),
               child: CarouselView(
                 backgroundColor: Theme.of(context).primaryColor,
                 itemExtent: 400,
                 shrinkExtent: 250,
                 onTap: (value) {
                   if (type == 'assessment') {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ViewQuiz(
-                            quizId: (children[value] as CarouselCard).id),
-                      ),
-                    );
+                    bool isMoodleSelected = isMoodle();
+                    String courseIdStr = (children[value] as CarouselCard)
+                            .courseId
+                            ?.toString() ??
+                        '';
+                    String assessmentIdStr =
+                        (children[value] as CarouselCard).id.toString();
+
+                    print('Course ID I am sending: $courseIdStr');
+                    print('Assessment ID I am sending: $assessmentIdStr');
+
+                    if (!isMoodleSelected) {
+                      // Assuming "google" is !isMoodle()
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => QuizQuestionPage(
+                            coursedId: courseIdStr,
+                            assessmentId: assessmentIdStr,
+                          ),
+                        ),
+                      );
+                    } else {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => MAssessmentsView(
+                            quizID: (children[value] as CarouselCard).id,
+                            courseID:
+                                (children[value] as CarouselCard).courseId ?? 0,
+                          ),
+                        ),
+                      );
+                    }
                   } else if (type == 'essay') {
-                    print ((children[value] as CarouselCard).courseId?.toString());
+                    print(
+                        (children[value] as CarouselCard).courseId?.toString());
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => SubmissionList(
-                              assignmentId:
-                                  (children[value] as CarouselCard).id,
-                              courseId: (children[value] as CarouselCard).courseId?.toString() ?? '',
-                              // courseId.toString()),
-                        )));
+                            builder: (context) => EssaysView(
+                                essayID: (children[value] as CarouselCard).id,
+                                courseID: (children[value] as CarouselCard)
+                                    .courseId)));
                   }
                 },
                 children: children,
@@ -175,7 +245,8 @@ class CarouselCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     List<Course>? theCourses = LmsFactory.getLmsService().courses;
-    Course matchedCourse = theCourses!.firstWhere((element) => element.id == courseId);
+    Course matchedCourse =
+        theCourses!.firstWhere((element) => element.id == courseId);
     return Card(
       color: Theme.of(context).colorScheme.secondaryContainer,
       elevation: 2,
@@ -183,26 +254,26 @@ class CarouselCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(25.0), // Rounded corners
       ),
       child: SizedBox(
-        height: 200, // Adjust this value based on the desired height
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(title, style: Theme.of(context).textTheme.titleLarge),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text(information),
-            ), 
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text('Course: ${matchedCourse.fullName}'),
-            ),
-            Spacer(), // Pushes the buttons to the bottom
-          ],
-        )
-      ),
+          height: 200, // Adjust this value based on the desired height
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child:
+                    Text(title, style: Theme.of(context).textTheme.titleLarge),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(information),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text('Course: ${matchedCourse.fullName}'),
+              ),
+              Spacer(), // Pushes the buttons to the bottom
+            ],
+          )),
     );
   }
 }
@@ -227,6 +298,11 @@ class CreateButton extends StatelessWidget {
     }
   }
 
+  bool isMoodle() {
+    print(LocalStorageService.getSelectedClassroom());
+    return LocalStorageService.getSelectedClassroom() == LmsType.MOODLE;
+  }
+
   @override
   Widget build(BuildContext context) {
     return OutlinedButton(
@@ -235,8 +311,16 @@ class CreateButton extends StatelessWidget {
           if (type == 'assessment') {
             route = MaterialPageRoute(builder: (context) => CreateAssessment());
           } else if (type == 'essay') {
-            route = MaterialPageRoute(
-                builder: (context) => EssayGeneration(title: 'New Essay'));
+            bool isMoodleSelected = isMoodle();
+            if (!isMoodleSelected) {
+              // Assuming "google" is !isMoodle()
+
+              route = MaterialPageRoute(
+                  builder: (context) => CreateAssignmentPage());
+            } else {
+              route = MaterialPageRoute(
+                  builder: (context) => EssayGeneration(title: 'New Essay'));
+            }
           }
           if (route != null) {
             Navigator.push(context, route);

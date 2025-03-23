@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:learninglens_app/Api/experimental/assistant/textbased_function_caller_view.dart';
 import 'package:learninglens_app/Api/lms/enum/lms_enum.dart';
 import 'package:learninglens_app/Views/dashboard.dart';
-import 'package:learninglens_app/Views/g_dashboard.dart';
 import 'package:learninglens_app/Views/user_settings.dart';
+import 'package:learninglens_app/Views/chat_screen.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
 
 class ClassroomSelection {
@@ -35,8 +36,10 @@ class _CustomAppBarState extends State<CustomAppBar> {
         textAlign: TextAlign.center,
       ),
       centerTitle: true,
+      leadingWidth: 120,
       leading: Row(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: MainAxisSize.max,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           Flexible(
             child: IconButton(
@@ -58,9 +61,34 @@ class _CustomAppBarState extends State<CustomAppBar> {
                     },
             ),
           ),
+          Flexible(
+            child: IconButton(
+              icon: Icon(Icons.chat_rounded),
+              onPressed: () {
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => ChatScreen()
+                  )
+                );
+              },
+            ),
+          ),
         ],
       ),
       actions: <Widget>[
+
+        Flexible(
+            child: IconButton(
+              icon: Icon(Icons.science), // Science Icon
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => TextBasedFunctionCallerView()),
+                );
+              },
+            ),
+          ),
         // Refresh button: Instead of relying on an external callback,
         // try to obtain the current route's name and then replace the route,
         // effectively refreshing the current view.
@@ -127,6 +155,11 @@ class _CustomAppBarState extends State<CustomAppBar> {
                     height: 50,
                     width: 50,
                     fit: BoxFit.cover,
+                    errorBuilder: (BuildContext context, Object error, StackTrace? stackTrace) {
+                      // print('Image load error: $error');
+                      // Just display the account_circle icon be default
+                      return Icon(Icons.account_circle, size: 50);
+                    },
                   ),
                 ),
               ),
@@ -151,10 +184,11 @@ class _CustomAppBarState extends State<CustomAppBar> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => ClassroomSelection.selectedClassroom == LmsType.GOOGLE
-            // ? GoogleTeacherDashboard()
-            ? TeacherDashboard()
-            : TeacherDashboard(),
+        builder: (context) => TeacherDashboard(),
+        // builder: (context) => ClassroomSelection.selectedClassroom == LmsType.GOOGLE
+        //     // ? GoogleTeacherDashboard()
+        //     ? TeacherDashboard()
+        //     : TeacherDashboard(),
       ),
     );
   }

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:memoryminder/src/features/caregiver-dashboard/presentation/app_bar.dart';
+import 'package:memoryminder/src/utils/ui_utils.dart';
 import 'caregiver_task_service.dart';
 import 'caregiver_task_model.dart';
 
@@ -235,8 +237,8 @@ class _CaregiverTaskScreenState extends State<CaregiverTaskScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Caregiver Task Management'),
+      appBar: const CustomAppBar(
+        title: 'Tasks',
       ),
       body: ListView.builder(
         itemCount: _taskService.tasks.length,
@@ -270,6 +272,7 @@ class _CaregiverTaskScreenState extends State<CaregiverTaskScreen> {
         child: Icon(Icons.add),
         tooltip: 'Add Task',
       ),
-    );
+        bottomNavigationBar: UiUtils.createBottomNavigationBar(context));
+
   }
 }

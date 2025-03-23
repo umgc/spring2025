@@ -4,6 +4,7 @@
 import 'package:memoryminder/src/features/caregiver-dashboard/presentation/add_care_recipient.dart';
 import 'package:memoryminder/src/features/caregiver-dashboard/presentation/app_bar.dart';
 import 'package:memoryminder/src/features/caregiver-dashboard/presentation/caregiver-dashboard.dart';
+import 'package:memoryminder/ui/dementia_resources.dart';
 import 'package:memoryminder/ui/response_screen.dart';
 import 'package:memoryminder/src/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
@@ -28,23 +29,33 @@ class CareRecipientProfileScreenState extends State<CareRecipientProfileScreen> 
     super.initState();
   }
 
+  String getCareRecipientLocation() {
+    List<String> nonNullStrings = [];
+
+    if(widget.careRecipientData!['city'] != null &&  widget.careRecipientData!['city'].isNotEmpty) {
+      nonNullStrings.add(widget.careRecipientData!['city']);
+    }
+    if(widget.careRecipientData!['county'] != null &&  widget.careRecipientData!['county'].isNotEmpty) {
+      nonNullStrings.add(widget.careRecipientData!['county']);
+    }
+    if(widget.careRecipientData!['state'] != null &&  widget.careRecipientData!['state'].isNotEmpty) {
+      nonNullStrings.add(widget.careRecipientData!['state']);
+    }
+    return nonNullStrings.join(', ');
+  }
   @override
   Widget build(BuildContext context) {
     final String careRecipientName = '${widget.careRecipientData!['firstName']} ${widget.careRecipientData!['lastName']}';
+    final String careRecipientLocation = getCareRecipientLocation();
     return Scaffold(
         extendBody: true,
         // Setting up the app bar at the top of the screen
         appBar: const CustomAppBar(
-          title: 'Caregiver Dashboard',
+          title: 'Recipient Profile',
         ),
         // Main content of the screen
         body: Container(
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage("assets/images/background.jpg"),
-              fit: BoxFit.cover,
-            ),
-          ),
+
           child: Column(
             children: [
               Padding(
@@ -54,7 +65,7 @@ class CareRecipientProfileScreenState extends State<CareRecipientProfileScreen> 
                   style: TextStyle(
                     fontSize: 20.0,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black54,
+                    color: Colors.black,
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -74,15 +85,15 @@ class CareRecipientProfileScreenState extends State<CareRecipientProfileScreen> 
                     _buildElevatedButton(
                       context: context,
                       icon: Icon(Icons.health_and_safety_rounded,
-                          size: iconSize, color: Colors.black54),
+                          size: iconSize, color: Color.fromARGB(255, 2, 63, 129)),
                       text: 'Health Metrics',
-                      screen: CaregiverDashboardScreen(),
+                      routeName: '/healthMetrics',
                       keyName: "HealthMetricsButtonKey",
                     ),
                     _buildElevatedButton(
                       context: context,
                       icon: Icon(Icons.task,
-                          size: iconSize, color: Colors.black54),
+                          size: iconSize, color: Color.fromARGB(255, 2, 63, 129)),
                       text: 'Tasks',
                       screen: CaregiverDashboardScreen(),
                       keyName: "TaskButtonKey",
@@ -90,7 +101,7 @@ class CareRecipientProfileScreenState extends State<CareRecipientProfileScreen> 
                     _buildElevatedButton(
                       context: context,
                       icon: Icon(Icons.maps_home_work,
-                          size: iconSize, color: Colors.black54),
+                          size: iconSize, color: Color.fromARGB(255, 2, 63, 129)),
                       text: 'Location',
                       screen: ResponseScreen(),
                       keyName: "LocationButtonKey",
@@ -98,10 +109,18 @@ class CareRecipientProfileScreenState extends State<CareRecipientProfileScreen> 
                     _buildElevatedButton(
                       context: context,
                       icon: Icon(Icons.person,
-                          size: iconSize, color: Colors.black54),
+                          size: iconSize, color: Color.fromARGB(255, 2, 63, 129)),
                       text: 'Update Profile',
                       screen: AddCareRecipientForm(itemId: widget.careRecipientId, initialData: widget.careRecipientData),
                       keyName: "UpdateProfileButtonKey",
+                    ),
+                    _buildElevatedButton(
+                      context: context,
+                      icon: Icon(Icons.bookmark_outline,
+                          size: iconSize, color: Color.fromARGB(255, 2, 63, 129)),
+                      text: 'Dementia Resources',
+                      screen: DementiaResourcesScreen(loc: careRecipientLocation),
+                      keyName: "DementiaResourcesButtonKey",
                     ),
                   ],
                 ),
@@ -119,26 +138,32 @@ class CareRecipientProfileScreenState extends State<CareRecipientProfileScreen> 
     required BuildContext context,
     required Icon icon,
     required String text,
-    required Widget screen,
+    Widget? screen,
+    String? routeName,
     required String keyName,
   }) {
     return ElevatedButton(
       key: Key(keyName),
       style: ElevatedButton.styleFrom(
         foregroundColor: Colors.black,
-        backgroundColor:
-        const Color(0xFFFFFFFF).withOpacity(0.30), // Button text color
+        backgroundColor: Colors.lightBlue[100],
+
         padding: const EdgeInsets.all(16.0),
         elevation: 0.0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10.0),
+
         ),
       ),
       onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => screen),
-        );
+        if (routeName != null) {
+          Navigator.pushNamed(context, routeName); // Use named route if provided
+        } else if (screen != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => screen), // Default behavior
+          );
+        }
       },
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -150,7 +175,7 @@ class CareRecipientProfileScreenState extends State<CareRecipientProfileScreen> 
             style: const TextStyle(
               fontSize: 13.0,
               fontWeight: FontWeight.bold,
-              color: Color(0XFF000000),
+              color: Colors.black,
             ),
             textAlign: TextAlign.center,
           ),

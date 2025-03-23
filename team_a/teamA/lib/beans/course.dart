@@ -9,6 +9,7 @@ class Course implements LearningLensInterface {
   DateTime startdate;
   DateTime enddate;
   String courseId;
+  String? teacherFolderId;
   String? subject;
 
   List<Quiz>? quizzes;
@@ -17,7 +18,7 @@ class Course implements LearningLensInterface {
   int? essayTopicId;
 
   Course(this.id, this.shortName, this.courseId, this.fullName, this.startdate,
-      this.enddate, {this.subject, this.quizzes, this.essays});
+      this.enddate, {this.teacherFolderId, this.subject, this.quizzes, this.essays});
 
   Course.empty()
       : id = 0,
@@ -26,6 +27,7 @@ class Course implements LearningLensInterface {
         fullName = '',
         startdate = DateTime.now(),
         enddate = DateTime.now(),
+        teacherFolderId = '',
         subject = null,
         quizzes = null,
         essays = null;
@@ -57,6 +59,7 @@ class Course implements LearningLensInterface {
       json['name'],
       DateTime.parse(json['creationTime']),
       DateTime.parse(json['updateTime']).add(Duration(days: 180)),
+      teacherFolderId: json['teacherFolder']['id'],
     );
   }
 

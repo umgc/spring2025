@@ -1,12 +1,18 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:http/http.dart' as http;
+import 'package:learninglens_app/Api/llm/llm_api_modules_base.dart';
 import 'package:learninglens_app/services/api_service.dart';
 
-class LlmApi 
+class PerplexityLLM implements LLM
 {
+  @override
   final String apiKey;
-  LlmApi(this.apiKey);
+  @override
+  final String url = 'https://api.perplexity.ai/chat/completions';
+  @override
+  final String model = 'llama-3.1-sonar-large-128k-online';
+
+  PerplexityLLM(this.apiKey);
 
   Map<String, dynamic> convertHttpRespToJson(String httpResponseString) 
   {
@@ -18,7 +24,8 @@ class LlmApi
   {
     return jsonEncode({
       // 'model': 'llama-3-sonar-large-32k-online',
-      'model': 'llama-3.1-sonar-large-128k-chat',
+      //'model': 'llama-3.1-sonar-large-128k-chat',
+      'model': model,
       'messages': [
         {'role': 'system', 'content': 'Be precise and concise'},
         {'content': queryMessage, 'role': 'user'}
@@ -37,7 +44,7 @@ class LlmApi
   }
 
   //
-  Uri getPostUrl() => Uri.https('api.perplexity.ai', '/chat/completions');
+  Uri getPostUrl() => Uri.https(this.url);
 
   //
   Future<String> postMessage(
@@ -117,4 +124,45 @@ class LlmApi
     // print("In queryAI - content :  $retResponse");
     return retResponse;
   }
+
+  Future<String> getChatResponse(String prompt) async {
+
+    final postHeaders = getPostHeaders();
+    final postBody = getPostBody(prompt);
+    final httpPackageUrl = getPostUrl();
+
+    try {
+      // Make the POST request to the chat completions endpoint
+      var response = await ApiService().httpPost(httpPackageUrl, headers: postHeaders, body: postBody);
+
+      // Check for successful response
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        return data['choices'][0]['message']['content']
+            .trim(); // Return the chat response
+      } else {
+        // Log the error response and handle failure cases
+        print('Failed to fetch response. Status code: ${response.statusCode}');
+        print('Response body: ${response.body}');
+        return 'Sorry, I couldn’t fetch a response. Please try again.';
+      }
+    } catch (error) {
+      // Log and handle connection or parsing errors
+      print('Error occurred: $error');
+      return 'An error occurred. Please check your internet connection and try again.';
+    }
+  }
+  
+  @override
+  Future<String> generate(String prompt) async {
+    print('Generating response for prompt Perplexity: $prompt');
+
+  final postHeaders = getPostHeaders();
+    final postBody = getPostBody(prompt);
+    final url = getPostUrl();
+    final responseString = await postMessage(url, postHeaders, postBody);
+    final responseJson = jsonDecode(responseString);
+    return responseJson['choices'][0]['message']['content'].trim();
+  }
+  
 }

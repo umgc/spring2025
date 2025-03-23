@@ -1,10 +1,17 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:learninglens_app/Api/llm/llm_api_modules_base.dart';
 import 'package:learninglens_app/services/api_service.dart';
 
-class OpenAiLLM {
-  final String openAiKey;
-  OpenAiLLM(this.openAiKey);
+class OpenAiLLM implements LLM {
+  @override
+  final String apiKey;
+  @override
+  final String url = 'https://api.openai.com/v1/chat/completions';
+  @override
+  final String model = 'gpt-4o-mini';
+  OpenAiLLM(this.apiKey);
 
   Map<String, dynamic> convertHttpRespToJson(String httpResponseString) {
     return (json.decode(httpResponseString) as Map<String, dynamic>);
@@ -15,7 +22,7 @@ class OpenAiLLM {
   ///
   String getPostBody(String queryMessage) {
     return jsonEncode({
-      'model': 'gpt-4o-mini',
+      'model': model,
       'messages': [
         {'role': 'system', 'content': 'Be precise and concise'},
         {'role': 'user', 'content': queryMessage}
@@ -30,7 +37,7 @@ class OpenAiLLM {
     return ({
       'accept': 'application/json',
       'content-type': 'application/json',
-      'authorization': 'Bearer $openAiKey',
+      'authorization': 'Bearer $apiKey',
     });
   }
 
@@ -124,4 +131,61 @@ class OpenAiLLM {
     print("In queryAI - content :  $retResponse");
     return retResponse;
   }
+
+  Future<String> getChatResponse(String prompt) async {
+
+    final postHeaders = getPostHeaders();
+    final postBody = getPostBody(prompt);
+    final httpPackageUrl = getPostUrl();
+
+    try {
+      // Make the POST request to the chat completions endpoint
+      var response = await ApiService().httpPost(httpPackageUrl, headers: postHeaders, body: postBody);
+
+      // Check for successful response
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+        return data['choices'][0]['message']['content']
+            .trim(); // Return the chat response
+      } else {
+        // Log the error response and handle failure cases
+        print('Failed to fetch response. Status code: ${response.statusCode}');
+        print('Response body: ${response.body}');
+        return 'Sorry, I couldn’t fetch a response. Please try again.';
+      }
+    } catch (error) {
+      // Log and handle connection or parsing errors
+      print('Error occurred: $error');
+      return 'An error occurred. Please check your internet connection and try again.';
+    }
+  }
+  
+  @override
+  Future<String> generate(String prompt) async {
+    print("In generate - prompt : $prompt");
+  
+final url = Uri.parse(this.url);
+    final headers = {
+      'Authorization': 'Bearer $apiKey',
+      'Content-Type': 'application/json',
+    };
+    final body = jsonEncode({
+      'model': model, 
+      'messages': [
+        {'role': 'system', 'content': 'You are a helpful assistant.'},
+        {'role': 'user', 'content': prompt},
+      ],
+      'max_tokens': 500, // Limit response length
+    });
+
+    final response = await http.post(url, headers: headers, body: body);
+    if (response.statusCode != 200) {
+      throw Exception('OpenAI API error: ${response.statusCode} - ${response.body}');
+    }
+
+    final data = jsonDecode(response.body);
+    return data['choices'][0]['message']['content'].trim();
+
+  }
+
 }

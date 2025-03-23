@@ -24,7 +24,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return AppBar(
-      backgroundColor: backgroundColor ?? Colors.blue,
+      backgroundColor: Color.fromARGB(255, 2, 63, 129),
       elevation: 0.0,
       centerTitle: true,
       title: Column(
@@ -35,28 +35,32 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             // This ensures the Row takes the least amount of space
             children: [
               Image.asset(
-                'assets/icons/app_icon.png',
+                'assets/icons/app_bar_icon_brain.png',
                 // Replace this with your icon's path
                 fit: BoxFit.contain,
-                height: 32, // Adjust the size as needed
+                height: 36, // Adjust the size as needed
               ),
               // Spacing between the icon and title
+              SizedBox(width: 6.0),
               Text(title!,
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                      fontSize: 20.0,
+                      fontSize: 24.0,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black87)),
+                      color: Colors.white,
+                      fontFamily: 'Montserrat')),
             ],
           ),
           Text(
             _currentDate(),
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontSize: 14,
-              color: Colors.black87,
+              fontSize: 16,
+              color: Colors.white70,
             ),
           ),
+          SizedBox(height:5.0),
+
         ],
       ),
 
@@ -66,7 +70,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         IconButton(
           icon: const Icon(
             Icons.settings,
-            color: Colors.black87,
+            color: Colors.white70,
           ),
           onPressed: () {
             Navigator.push(
@@ -77,7 +81,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         ),
 
 // First page icon to navigate back
-       /* IconButton(
+        /* IconButton(
           icon: const Icon(
             Icons.first_page,
             color: Colors.black87,

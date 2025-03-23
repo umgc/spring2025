@@ -638,16 +638,18 @@ Future<Map<String, String>?> getTranscriptDetails(String entry) async {
     );
   }
 
-  Future<void> updateTranscriptDocument(int transcriptId, List<int> documentBytes) async {
+  Future<bool> updateTranscriptDocument(int transcriptId, List<int> documentBytes) async {
     final db = await database;
-    await db.update(
+    int count = await db.update(
       'Transcript',
       {'transcript_document': documentBytes},
       where: 'transcript_id = ?',
       whereArgs: [transcriptId],
     );
+    return count > 0;
   }
 }
+
   // Commented out this method for future use
   /* getTranscriptCountForDate(String date) {
     // Get the number of transcripts for a given date

@@ -6,9 +6,10 @@ import 'package:memoryminder/src/features/caregiver-dashboard/presentation/careg
 import 'package:memoryminder/ui/dementia_resources.dart';
 import 'package:memoryminder/ui/response_screen.dart';
 import 'package:memoryminder/ui/assistant_screen.dart';
-import 'package:memoryminder/ui/audio_screen.dart';
+import 'package:memoryminder/src/features/sensitive_information_detection/presentation/audio_screen.dart';
 import 'package:memoryminder/ui/gallery_screen.dart';
 import 'package:memoryminder/ui/profile_screen.dart';
+import 'package:memoryminder/ui/scam_detection_screen.dart';
 import 'package:memoryminder/ui/tour_screen.dart';
 import 'package:memoryminder/ui/location_history_screen.dart';
 import 'package:geocoding/geocoding.dart';
@@ -17,7 +18,7 @@ import 'package:memoryminder/src/camera_manager.dart';
 import 'package:memoryminder/src/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:memoryminder/features/caregiver_task_management/caregiver_task_screen.dart';
-
+import 'package:memoryminder/src/features/wearable-integration/fitbit_login.dart';
 
 
 // Main HomeScreen widget which is a stateless widget.
@@ -69,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
             }
 
             final newEntry =
-            LocationEntry(address: address, startTime: DateTime.now());
+                LocationEntry(address: address, startTime: DateTime.now());
             final id = await LocationDatabase.instance.create(newEntry);
             newEntry.id = id;
             currentLocationEntry = newEntry;
@@ -84,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // Set the background color for the entire screen
+        // Set the background color for the entire screen
         extendBodyBehindAppBar: true,
         extendBody: true,
         // Setting up the app bar at the top of the screen
@@ -93,12 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         // Main content of the screen
         body: Container(
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage("assets/images/background.jpg"),
-              fit: BoxFit.cover,
-            ),
-          ),
+
           child: Column(
             children: [
               const Padding(
@@ -125,67 +121,77 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     // Using the helper function to build each button in the grid
                     _buildElevatedButton(
-                      context: context,
-                      icon: Icon(Icons.home_filled,
-                          size: iconSize, color: Colors.black54),
-                      text: 'Take Me Home',
-                      screen: ProfileScreen(),
-                      keyName: "TakeMeHomeButtonKey",
-                      backgroundColor: const Color(0xFF000000).withOpacity(0.30)
-                    ),
+                        context: context,
+                        icon: Icon(Icons.home_filled,
+                            size: iconSize, color: Colors.black54),
+                        text: 'Take Me Home',
+                        screen: ProfileScreen(),
+                        keyName: "TakeMeHomeButtonKey",
+                        backgroundColor:
+                            const Color(0xFF000000).withOpacity(0.30)),
                     _buildElevatedButton(
-                      context: context,
-                      icon: Icon(Icons.location_history,
-                          size: iconSize, color: Colors.black54),
-                      text: 'HELP',
-                      screen: LocationHistoryScreen(),
-                      keyName: "HelpButtonKey",
-                      backgroundColor: const Color(0xFFFFFFFF).withOpacity(0.30)
-                    ),
+                        context: context,
+                        icon: Icon(Icons.location_history,
+                            size: iconSize, color: Colors.black54),
+                        text: 'HELP',
+                        screen: LocationHistoryScreen(),
+                        keyName: "HelpButtonKey",
+                        backgroundColor:
+                            const Color(0xFFFFFFFF).withOpacity(0.30)),
                     _buildElevatedButton(
-                      context: context,
-                      icon: Icon(Icons.photo,
-                          size: iconSize, color: Colors.black54),
-                      text: 'Gallery',
-                      screen: GalleryScreen(),
-                      keyName: "GalleryButtonKey",
-                      backgroundColor: const Color(0xFFFFFFFF).withOpacity(0.30)
-
-                    ),
+                        context: context,
+                        icon: Icon(Icons.photo,
+                            size: iconSize, color: Colors.black54),
+                        text: 'Gallery',
+                        screen: GalleryScreen(),
+                        keyName: "GalleryButtonKey",
+                        backgroundColor:
+                            const Color(0xFFFFFFFF).withOpacity(0.30)),
                     _buildElevatedButton(
-                      context: context,
-                      icon: Icon(Icons.search,
-                          size: iconSize, color: Colors.black54),
-                      text: 'My Tasks',
-                      screen: ResponseScreen(),
-                      keyName: "MyTasksButtonKey",
-                      backgroundColor: const Color(0xFFFFFFFF).withOpacity(0.30)
-                    ),
+                        context: context,
+                        icon: Icon(Icons.search,
+                            size: iconSize, color: Colors.black54),
+                        text: 'My Tasks',
+                        screen: ResponseScreen(),
+                        keyName: "MyTasksButtonKey",
+                        backgroundColor:
+                            const Color(0xFFFFFFFF).withOpacity(0.30)),
                     _buildElevatedButton(
-                      context: context,
-                      icon: Icon(Icons.mic_rounded,
-                          size: iconSize, color: Colors.black54),
-                      text: 'Record Notes / Audio',
-                      screen: AudioScreen(),
-                      keyName: "AudioRecordingButtonKey",
-                      backgroundColor: const Color(0xFFFFFFFF).withOpacity(0.30)
-                    ),
+                        context: context,
+                        icon: Icon(Icons.mic_rounded,
+                            size: iconSize, color: Colors.black54),
+                        text: 'Record Notes / Audio',
+                        screen: AudioScreen(),
+                        keyName: "AudioRecordingButtonKey",
+                        backgroundColor:
+                            const Color(0xFFFFFFFF).withOpacity(0.30)),
                     _buildElevatedButton(
-                      context: context,
-                      icon: Icon(Icons.health_and_safety_outlined,
-                          size: iconSize, color: Colors.black54),
-                      text: 'My Health',
-                      screen: TourScreen(),
-                      keyName: "TourGuideButtonKey",
-                      backgroundColor: const Color(0xFFFFFFFF).withOpacity(0.30)
-                    ),
+                        context: context,
+                        icon: Icon(Icons.warning_amber_rounded,
+                            size: iconSize, color: Colors.black54),
+                        text: 'Scam Detection',
+                        screen: ScamDetectionScreen(),
+                        keyName: "potentialScamScanner",
+                        backgroundColor:
+                            const Color(0xFFFFFFFF).withOpacity(0.30)),
                     _buildElevatedButton(
-                      context: context,
-                      icon: Icon(Icons.task_alt, size: iconSize, color: Colors.black54),
-                      text: 'Caregiver Tasks',
-                      screen: CaregiverTaskScreen(),
-                      keyName: "CaregiverTaskButtonKey",
-                    ),
+                        context: context,
+                        icon: Icon(Icons.health_and_safety_outlined,
+                            size: iconSize, color: Colors.black54),
+                        text: 'My Health',
+                        routeName: '/healthMetrics',
+                        keyName: "healthMetrics",
+                        backgroundColor:
+                            const Color(0xFFFFFFFF).withOpacity(0.30)),
+                    _buildElevatedButton(
+                        context: context,
+                        icon: Icon(Icons.task_alt,
+                            size: iconSize, color: Colors.black54),
+                        text: 'Caregiver Tasks',
+                        screen: CaregiverTaskScreen(),
+                        keyName: "CaregiverTaskButtonKey",
+                        backgroundColor:
+                            const Color(0xFFFFFFFF).withOpacity(0.30)),
                   ],
                 ),
               ),
@@ -202,7 +208,8 @@ class _HomeScreenState extends State<HomeScreen> {
     required BuildContext context,
     required Icon icon,
     required String text,
-    required Widget screen,
+    Widget? screen,
+    String? routeName,
     required String keyName,
     required Color backgroundColor,
   }) {
@@ -210,7 +217,7 @@ class _HomeScreenState extends State<HomeScreen> {
       key: Key(keyName),
       style: ElevatedButton.styleFrom(
         foregroundColor: Colors.black,
-        backgroundColor: backgroundColor ?? const Color(0xFFFFFFFF).withOpacity(0.30), // Button text color
+        backgroundColor: Colors.lightBlue[100],
         padding: const EdgeInsets.all(16.0),
         elevation: 0.0,
         shape: RoundedRectangleBorder(
@@ -218,10 +225,14 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
       onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => screen),
-        );
+        if (routeName != null) {
+          Navigator.pushNamed(context, routeName); // Use named route if provided
+        } else if (screen != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => screen), // Default behavior
+          );
+        }
       },
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -233,7 +244,7 @@ class _HomeScreenState extends State<HomeScreen> {
             style: const TextStyle(
               fontSize: 13.0,
               fontWeight: FontWeight.bold,
-              color: Color(0XFF000000),
+              color: Colors.black,
             ),
             textAlign: TextAlign.center,
           ),

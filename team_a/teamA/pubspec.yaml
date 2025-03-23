@@ -28,7 +28,7 @@ dependencies:
   logger: ^1.4.0
   google_sign_in: ^6.2.2
   flutter_secure_storage: ^9.2.4
-  file_picker: ^5.2.2
+  file_picker: ^9.0.2
   pdf: ^3.10.1
   excel: ^2.0.0
   printing: ^5.10.1

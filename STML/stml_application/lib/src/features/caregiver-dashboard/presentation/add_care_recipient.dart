@@ -4,6 +4,7 @@ import 'package:memoryminder/src/features/caregiver-dashboard/model/CareRecipien
 import 'package:memoryminder/src/features/caregiver-dashboard/model/emergency_contact.dart';
 import 'package:memoryminder/src/features/caregiver-dashboard/presentation/app_bar.dart';
 import 'package:memoryminder/src/features/caregiver-dashboard/service/manage_care_recipient_service.dart';
+import 'package:memoryminder/src/utils/ui_utils.dart';
 import 'package:memoryminder/ui/dementia_resources.dart';
 
 class AddCareRecipientForm extends StatefulWidget {
@@ -18,7 +19,7 @@ class AddCareRecipientForm extends StatefulWidget {
 
 class _AddCareRecipientFormState extends State<AddCareRecipientForm> {
   final ManageCareRecipientService manageCareRecipientService =
-      ManageCareRecipientService();
+  ManageCareRecipientService();
   bool _isUpdateMode = false;
 
   final _formKey = GlobalKey<FormState>();
@@ -197,169 +198,146 @@ class _AddCareRecipientFormState extends State<AddCareRecipientForm> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: const CustomAppBar(
-          title: 'Add New Care Recipient',
+          title: 'Care Recipient',
         ),
-        body: Container(
-          decoration: BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage('assets/images/background.jpg'),
-              // Replace with your image path
-              fit: BoxFit.cover,
-            ),
-          ),
-          child: Column(children: [
-            LayoutBuilder(
-                builder: (BuildContext context, BoxConstraints constraints) {
-              return SingleChildScrollView(
-                child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minWidth: constraints.maxWidth,
-                      minHeight:
-                          constraints.minHeight, // Or another desired minimum
+        body: Container (
+          child : Column (
+            children : [
+              Expanded ( // Wrap Column with Expanded
+                child : SingleChildScrollView (
+                  child : ConstrainedBox (
+                    constraints :
+                    BoxConstraints (
+                      minWidth : double.infinity, // Ensure width matches screen
+                      minHeight : 0, // Allow height to expand based on content
                     ),
-                    child: Column(children: [
-                      Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: <Widget>[
-                            TextFormField(
-                              controller: _firstNameController,
-                              decoration: const InputDecoration(
+                    child : Column (
+                      children : [
+                        Form (
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: <Widget>[
+                              TextFormField(
+                                controller: _firstNameController,
+                                decoration: const InputDecoration(
                                   labelText: 'First Name',
-                                  focusColor: Colors.blueGrey),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter a first name';
-                                }
-                                return null;
-                              },
-                            ),
-                            TextFormField(
-                              controller: _lastNameController,
-                              decoration:
-                                  const InputDecoration(labelText: 'Last Name'),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter a last name';
-                                }
-                                return null;
-                              },
-                            ),
-                            TextFormField(
-                              controller: _ageController,
-                              decoration:
-                                  const InputDecoration(labelText: 'Age'),
-                            ),
-                            TextFormField(
-                              controller: _addressController,
-                              decoration: const InputDecoration(
-                                  labelText: 'Address Line'),
-                            ),
-                            TextFormField(
+                                  focusColor: Colors.blueGrey,
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter a first name';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              TextFormField(
+                                controller: _lastNameController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Last Name',
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter a last name';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              TextFormField(
+                                controller: _ageController,
+                                decoration: const InputDecoration(labelText: 'Age'),
+                              ),
+                              TextFormField(
+                                controller: _addressController,
+                                decoration: const InputDecoration(labelText: 'Address Line'),
+                              ),
+                              TextFormField(
                                 controller: _cityController,
-                                decoration:
-                                    const InputDecoration(labelText: 'City'),
+                                decoration: const InputDecoration(labelText: 'City'),
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
                                     return 'Please enter a city';
                                   }
                                   return null;
-                                }),
-                            TextFormField(
+                                },
+                              ),
+                              TextFormField(
                                 controller: _stateController,
-                                decoration:
-                                    const InputDecoration(labelText: 'State'),
+                                decoration: const InputDecoration(labelText: 'State'),
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
                                     return 'Please enter a state';
                                   }
                                   return null;
-                                }),
-                            TextFormField(
-                              controller: _countyController,
-                              decoration:
-                                  const InputDecoration(labelText: 'County'),
-                            ),
-                            TextFormField(
-                              controller: _emailController,
-                              decoration:
-                                  const InputDecoration(labelText: 'Email'),
-                            ),
-                            TextFormField(
-                              controller: _phoneController,
-                              decoration:
-                                  const InputDecoration(labelText: 'Phone'),
-                            ),
-                            const SizedBox(height: 16),
-                            ElevatedButton(
-                              onPressed: _addEmergencyContact,
-                              child: const Text('Add Emergency Contact'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.grey,
-                                foregroundColor: Colors.black,
-                                padding: EdgeInsets.fromLTRB(
-                                    16.0, 2, 16.0, 2), // Apply padding here
+                                },
                               ),
-                            ),
-                            const SizedBox(height: 8),
-                            Column(
-                              children: _emergencyContacts.map((contact) {
-                                return ListTile(
-                                  title: Text(contact.name),
-                                  subtitle: Text(contact.phone),
-                                );
-                              }).toList(),
-                            ),
-                            const SizedBox(height: 16),
-                            ElevatedButton(
-                              onPressed: _submitForm,
-                              child: Text(_isUpdateMode
-                                  ? 'Update Care Recipient'
-                                  : 'Add Care Recipient'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green,
-                                foregroundColor: Colors.black,
-                                padding: EdgeInsets.fromLTRB(
-                                    16.0, 2, 16.0, 2),
+                              TextFormField(
+                                controller: _countyController,
+                                decoration: const InputDecoration(labelText: 'County'),
                               ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const Divider(
-                        color: Colors.black,
-                        thickness: 2,
-                        height: 10,
-                        indent: 20,
-                        endIndent: 20,
-                      ),
-                      GridView.count(
-                        // Add shrinkWrap
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        crossAxisCount: 1,
-                        crossAxisSpacing: 12.0,
-                        mainAxisSpacing: 12.0,
-                        childAspectRatio: 1,
-                        padding: const EdgeInsets.fromLTRB(130.0, 2, 130.0, 2),
-                        children: [
-                          _buildElevatedButton(
-                            context: context,
-                            icon: Icon(Icons.bookmark_outline,
-                                size: 32, color: Colors.black87),
-                            text: 'Dementia Resources',
-                            screen: DementiaResourcesScreen(),
-                            keyName: "DementiaResourcesButtonKey",
+                              TextFormField(
+                                controller: _emailController,
+                                decoration: const InputDecoration(labelText: 'Email'),
+                              ),
+                              TextFormField(
+                                controller: _phoneController,
+                                decoration: const InputDecoration(labelText: 'Phone'),
+                              ),
+                              const SizedBox(height: 16),
+                              ElevatedButton(
+                                onPressed: _addEmergencyContact,
+                                child: const Text('Add Emergency Contact'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.grey,
+                                  foregroundColor: Colors.black,
+                                  padding: EdgeInsets.fromLTRB(16.0, 2, 16.0, 2),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Column(
+                                children: _emergencyContacts.map((contact) {
+                                  return ListTile(
+                                    title: Text(contact.name),
+                                    subtitle: Text(contact.phone),
+                                  );
+                                }).toList(),
+                              ),
+                              const SizedBox(height: 16),
+                              ElevatedButton(
+                                onPressed: _submitForm,
+                                child: Text(_isUpdateMode
+                                    ? 'Update Care Recipient'
+                                    : 'Add Care Recipient'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green,
+                                  foregroundColor: Colors.black,
+                                  padding: EdgeInsets.fromLTRB(16.0, 2, 16.0, 2),
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                    ])),
-              );
-            })
-          ]),
-        ));
+                        ),
+
+                        const Divider(
+                          color: Colors.black,
+                          thickness: 2,
+                          height: 10,
+                          indent: 20,
+                          endIndent: 20,
+                        ),
+
+
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        bottomNavigationBar: UiUtils.createBottomNavigationBar(context));
   }
+
 }
 
 // Helper function to create each button for the GridView
@@ -371,13 +349,13 @@ Widget _buildElevatedButton({
   required String keyName,
 }) {
   return SizedBox(
-      width: 200,
-      height: 200,
+      width: 150,
+      height: 150,
       child: ElevatedButton(
         key: Key(keyName),
         style: ElevatedButton.styleFrom(
           foregroundColor: Colors.black,
-          backgroundColor: const Color(0xFFFFFFDD).withOpacity(0.30),
+          backgroundColor: Colors.lightBlue[100],
           // Button text color
           padding: const EdgeInsets.all(2.0),
           elevation: 0.0,
