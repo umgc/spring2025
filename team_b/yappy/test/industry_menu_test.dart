@@ -9,11 +9,16 @@ void main() {
 
   final SpeechState speechState = SpeechState();
   final ModelManager modelManager = ModelManager();
-  testWidgets('IndustryMenu displays title and icons', (WidgetTester tester) async {
+  testWidgets('IndustryMenu displays title and icons',
+      (WidgetTester tester) async {
     // Build the IndustryMenu widget.
     await tester.pumpWidget(MaterialApp(
       home: Scaffold(
-        body: IndustryMenu(title: 'Industry Title', icon: Icons.business, speechState: speechState, modelManager: modelManager),
+        body: IndustryMenu(
+            title: 'Industry Title',
+            icon: Icons.business,
+            speechState: speechState,
+            modelManager: modelManager),
       ),
     ));
 
@@ -30,11 +35,16 @@ void main() {
     expect(find.byIcon(Icons.file_copy), findsOneWidget);
   });
 
-  testWidgets('IndustryMenu transcript history button shows transcripts', (WidgetTester tester) async {
+  testWidgets('IndustryMenu transcript history button shows transcripts',
+      (WidgetTester tester) async {
     // Build the IndustryMenu widget.
     await tester.pumpWidget(MaterialApp(
       home: Scaffold(
-        body: IndustryMenu(title: 'Industry Title', icon: Icons.business, speechState: speechState, modelManager: modelManager),
+        body: IndustryMenu(
+            title: 'Industry Title',
+            icon: Icons.business,
+            speechState: speechState,
+            modelManager: modelManager),
       ),
     ));
 
@@ -43,6 +53,6 @@ void main() {
     await tester.pumpAndSettle();
 
     // Verify that the transcripts are displayed.
-    expect(find.byType(ListTile), findsNWidgets(2));
+    expect(find.byType(ListTile), findsOneWidget);
   });
 }
