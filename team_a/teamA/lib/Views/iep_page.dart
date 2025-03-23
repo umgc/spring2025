@@ -134,11 +134,12 @@ class _IepPageState extends State<IepPage> {
                       style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
                     ),
                     Text(
-                      'Enroll Student in New IEP',
+                      'Enroll Student in New IEP', 
                       style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     ),
                     DropdownMenu(
-                      helperText: 'Course',
+                      label: Text('Course'),
+                      // helperText: 'Course',
                       hintText: 'Select Course',
                       width: 350,
                       dropdownMenuEntries: (getAllCourses() ?? []).map((Course course) {
@@ -164,6 +165,7 @@ class _IepPageState extends State<IepPage> {
                         }
                       },
                     ),
+                    SizedBox(height: 10),
                     Visibility(
                       visible: selectedCourse != null,
                       child: FutureBuilder<List<Participant>>(
@@ -181,7 +183,8 @@ class _IepPageState extends State<IepPage> {
                               );
                             }).toList();
                             return DropdownMenu(
-                              helperText: 'Participants',
+                              label: Text('Participants'),
+                              // helperText: 'Participants',
                               hintText: 'Select Participants',
                               width: 350,
                               dropdownMenuEntries: dropdownEntries,
@@ -197,8 +200,9 @@ class _IepPageState extends State<IepPage> {
                             );
                           } else {
                             return DropdownMenu(
+                              label: Text('Participants'),
                               hintText: 'Select A Course To View Participants',
-                              helperText: 'Participants',
+                              // helperText: 'Participants',
                               width: 350,
                               dropdownMenuEntries: [],
                             );
@@ -206,11 +210,13 @@ class _IepPageState extends State<IepPage> {
                         },
                       ),
                     ),
+                    SizedBox(height: 10),
                     Visibility(
                       visible: userId != null,
                       child: DropdownMenu(
                         width: 350,
-                        helperText: 'Assignment',
+                        label: Text('Assignment'),
+                        // helperText: 'Assignment',
                         hintText: 'Select Quiz or Essay',
                         dropdownMenuEntries: type.map<DropdownMenuEntry<String>>((String value) {
                           return DropdownMenuEntry<String>(
@@ -238,6 +244,7 @@ class _IepPageState extends State<IepPage> {
                         },
                       ),
                     ),
+                    SizedBox(height: 10),
                     Visibility(
                       visible: selectedAssignment == 'Essay',
                       child: FutureBuilder<List<Assignment>>(
@@ -255,7 +262,8 @@ class _IepPageState extends State<IepPage> {
                               );
                             }).toList();
                             return DropdownMenu(
-                              helperText: 'Essays',
+                              label: Text('Essays'),
+                              // helperText: 'Essays',
                               hintText: 'Select Essay',
                               width: 350,
                               dropdownMenuEntries: dropdownEntries,
@@ -272,7 +280,8 @@ class _IepPageState extends State<IepPage> {
                           } else {
                             return DropdownMenu(
                               hintText: 'Select A Course To View Essays',
-                              helperText: 'Essays',
+                              label: Text('Essays'),
+                              // helperText: 'Essays',
                               width: 350,
                               dropdownMenuEntries: [],
                             );
@@ -280,6 +289,7 @@ class _IepPageState extends State<IepPage> {
                         },
                       ),
                     ),
+                    SizedBox(height: 10),
                     Visibility(
                       visible: selectedAssignment == 'Quiz',
                       child: FutureBuilder<List<Quiz>>(
@@ -297,7 +307,8 @@ class _IepPageState extends State<IepPage> {
                               );
                             }).toList();
                             return DropdownMenu(
-                              helperText: 'Quiz',
+                              label: Text('Quiz'),
+                              // helperText: 'Quiz',
                               hintText: 'Select Quiz',
                               width: 350,
                               dropdownMenuEntries: dropdownEntries,
@@ -314,7 +325,8 @@ class _IepPageState extends State<IepPage> {
                           } else {
                             return DropdownMenu(
                               hintText: 'Select A Course To View Quizzes',
-                              helperText: 'Quizzes',
+                              label: Text('Quizzes'),
+                              // helperText: 'Quizzes',
                               width: 350,
                               dropdownMenuEntries: [],
                             );
@@ -322,11 +334,13 @@ class _IepPageState extends State<IepPage> {
                         },
                       ),
                     ),
+                    SizedBox(height: 10),
                     Visibility(
                       visible: quizId != null,
                       child: DropdownMenu(
                         width: 350,
-                        helperText: 'Attempts',
+                        label: Text('Attempts'),
+                        // helperText: 'Attempts',
                         hintText: 'Select Number of Attempts',
                         dropdownMenuEntries: attempts.map<DropdownMenuEntry<String>>((String attempts) {
                           return DropdownMenuEntry<String>(
@@ -345,6 +359,7 @@ class _IepPageState extends State<IepPage> {
                         },
                       ),
                     ),
+                    SizedBox(height: 10),
                     Visibility(
                       visible: selectedAttempt != null && selectedAssignment == 'Quiz',
                       child: Row(
@@ -378,6 +393,7 @@ class _IepPageState extends State<IepPage> {
                         ],
                       ),
                     ),
+                    // SizedBox(height: 10),
                     Visibility(
                       visible: essayId != null && selectedAssignment == 'Essay',
                       child: Column(
@@ -400,7 +416,7 @@ class _IepPageState extends State<IepPage> {
                               GestureDetector(
                                 onTap: () => _selectDate(context), // Correct usage of named parameter `onTap`
                                 child: Container(
-                                  padding: EdgeInsets.symmetric(vertical: 15, horizontal: 10),
+                                  padding: EdgeInsets.symmetric(vertical: 15, horizontal: 18),
                                   decoration: BoxDecoration(
                                     border: Border.all(color: Colors.black),
                                     borderRadius: BorderRadius.circular(8),
@@ -451,6 +467,7 @@ class _IepPageState extends State<IepPage> {
                         ],
                       ),
                     ),
+                    SizedBox(height: 10),
                     Visibility(
                       visible: epochTime != null,
                       child: Container(
