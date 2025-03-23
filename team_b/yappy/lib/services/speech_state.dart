@@ -9,6 +9,7 @@ import 'utils.dart';
 import 'online_model.dart';
 import 'offline_model.dart';
 import 'speaker_model.dart';
+import 'speech_isolate.dart';
 
 Future<sherpa_onnx.OnlineRecognizer> createOnlineRecognizer() async {
   final type = 0;
@@ -83,7 +84,7 @@ class Conversation {
             lastSegment.speakerId != segment.speakerId) {
           buffer.write('\n\n');
         } else {
-          buffer.write(' ');
+          buffer.write('\n');
         }
       }
       
@@ -177,12 +178,8 @@ class SpeechState extends ChangeNotifier {
   sherpa_onnx.OnlineRecognizer? onlineRecognizer;
   sherpa_onnx.OnlineStream? onlineStream;
 
-  // Second pass - offline recognition
-  sherpa_onnx.OfflineRecognizer? offlineRecognizer;
-
-  // Speaker identification
-  sherpa_onnx.SpeakerEmbeddingExtractor? speakerExtractor;
-  sherpa_onnx.SpeakerEmbeddingManager? speakerManager;
+  // Second pass - offline processing
+  SpeechProcessingIsolate? speechIsolate;
 
   List<Float32List> allAudioSamples = [];
   // Buffer for collecting samples between endpoints
@@ -207,12 +204,43 @@ class SpeechState extends ChangeNotifier {
         onlineRecognizer = await createOnlineRecognizer();
         onlineStream = onlineRecognizer?.createStream();
 
-        // init offline recognizer
-        offlineRecognizer = await createOfflineRecognizer();
+        // Initialize the isolate with configuration
+        speechIsolate = SpeechProcessingIsolate();
+        final offlineModelConfig = await getOfflineModelConfig(type: 0);
+        final speakerModel = await getSpeakerModel(type: 0);
+        
+        await speechIsolate?.initialize({
+          'offlineModelConfig': offlineModelConfig,
+          'speakerModel': speakerModel,
+        });
 
-        // init speaker identification components
-        speakerExtractor = await createSpeakerExtractor();
-        speakerManager = sherpa_onnx.SpeakerEmbeddingManager(speakerExtractor!.dim);
+        // Set up listener for results from the isolate
+        speechIsolate?.results.listen((result) {
+          debugPrint("Received result from isolate: ${result.segmentIndex}, Speaker: ${result.speakerId}");
+          
+          // Update speaker count if a new speaker was detected
+          if (result.newSpeakerCount != null && result.newSpeakerCount! > currentSpeakerCount) {
+            currentSpeakerCount = result.newSpeakerCount!;
+            debugPrint('Updated main thread speaker count to: $currentSpeakerCount');
+          }
+          
+          // Ignore empty results
+          if (result.success && result.text.trim().isNotEmpty) {
+            // Make sure speakerId is not null or empty
+            String speakerId = result.speakerId;
+            if (speakerId.isEmpty) {
+              speakerId = 'Speaker Unknown';
+            }
+            
+            _updateRecognizedSegment(
+              result.segmentIndex,
+              result.text,
+              speakerId: speakerId,
+              embedding: result.embedding,
+            );
+            _updateDisplayText();
+          }
+        });
 
         isInitialized = true;
         notifyListeners();
@@ -237,7 +265,10 @@ class SpeechState extends ChangeNotifier {
         if (buffer.isNotEmpty) {
           buffer.write('\n');
         }
-        final prefix = segment.speakerId ?? 'Speaker Unknown';
+        // Make sure we have a speaker ID display string
+        final prefix = (segment.speakerId != null && segment.speakerId!.isNotEmpty) 
+            ? segment.speakerId! 
+            : 'Speaker Unknown';
         buffer.write('$prefix: ${segment.text}');
       }
     }
@@ -274,8 +305,10 @@ class SpeechState extends ChangeNotifier {
       }
       recognizedSegments[segmentIndex].isProcessed = true;
 
-      if (speakerId != null) {
+      // Make sure speakerId is not null or empty
+      if (speakerId != null && speakerId.isNotEmpty) {
         recognizedSegments[segmentIndex].speakerId = speakerId;
+        debugPrint('Updated segment $index with speaker: $speakerId');
       }
       
       if (embedding != null) {
@@ -286,73 +319,40 @@ class SpeechState extends ChangeNotifier {
     }
   }
 
-  Future<void> processSegmentOffline(AudioSegment segment) async {
-    debugPrint('Processing segment ${segment.index} offline (${segment.samples.length} samples)');
-    
-    if (segment.samples.isEmpty) {
-      debugPrint('Empty samples for segment ${segment.index}, skipping');
+  // Replace the processSegmentOffline method with this version
+Future<void> processSegmentOffline(AudioSegment segment) async {
+  debugPrint('Processing segment ${segment.index} offline (${segment.samples.length} samples)');
+  
+  if (segment.samples.isEmpty) {
+    debugPrint('Empty samples for segment ${segment.index}, skipping');
+    return;
+  }
+
+  try {
+    if (speechIsolate == null) {
+      debugPrint('Speech isolate not initialized, failing silently');
       return;
     }
-
-    try {
-      // Perform offline speech recognition
-      final offlineStream = offlineRecognizer!.createStream();
-      
-      debugPrint('Running offline recognition for segment ${segment.index}');
-      offlineStream.acceptWaveform(
-        samples: segment.samples,
-        sampleRate: segment.sampleRate
-      );
-      
-      offlineRecognizer!.decode(offlineStream);
-      final result = offlineRecognizer!.getResult(offlineStream);
-      
-      debugPrint('Offline recognition result for segment ${segment.index}: "${result.text}"');
-      
-      // Perform speaker identification
-      final speakerStream = speakerExtractor!.createStream();
-      
-      speakerStream.acceptWaveform(
-        samples: segment.samples,
-        sampleRate: segment.sampleRate,
-      );
-      
-      speakerStream.inputFinished();
-      
-      final embedding = speakerExtractor!.compute(speakerStream);
-      
-      // Search for matching speaker
-      final threshold = 0.6; // Adjust threshold as needed
-      var speakerId = speakerManager!.search(embedding: embedding, threshold: threshold);
-      
-      // If no match, register a new speaker
-      if (speakerId.isEmpty) {
-        currentSpeakerCount++;
-        speakerId = 'Speaker $currentSpeakerCount';
-        debugPrint('New speaker detected: $speakerId for segment ${segment.index}');
-        speakerManager!.add(name: speakerId, embedding: embedding);
-      } else {
-        debugPrint('Matched existing speaker: $speakerId for segment ${segment.index}');
-      }
-
-      // Ignore empty results
-      if (result.text.trim().isNotEmpty) {
-        // Update the recognized segment with both improved text and speaker ID
-        _updateRecognizedSegment(
-          segment.index, 
-          result.text,
-          speakerId: speakerId,
-          embedding: embedding,
-        );
-      } 
-      
-      // Free resources
-      offlineStream.free();
-      speakerStream.free();
-    } catch (e) {
-      debugPrint('Error processing segment ${segment.index} offline: $e');
-    }
+    
+    // Debug current speaker count
+    debugPrint('Sending segment with current speaker count: $currentSpeakerCount');
+    
+    // Use the isolate to process this segment
+    await speechIsolate!.processSegment(ProcessSegmentMessage(
+      samples: segment.samples,
+      sampleRate: sampleRate,
+      segmentIndex: segment.index,
+      recognizerConfigs: {
+        'currentSpeakerCount': currentSpeakerCount,
+      },
+    ));
+    
+    // Processing will continue asynchronously, and results will be handled by the listener
+    
+  } catch (e) {
+    debugPrint('Error processing segment ${segment.index} offline: $e');
   }
+}
 
   Future<void> processPendingSegments() async {
     if (pendingSegments.isEmpty || isProcessingOffline) {
@@ -704,9 +704,7 @@ class SpeechState extends ChangeNotifier {
     audioRecorder.dispose();
     onlineStream?.free();
     onlineRecognizer?.free();
-    offlineRecognizer?.free();
-    speakerExtractor?.free();
-    speakerManager?.free();
+    speechIsolate?.dispose();
     super.dispose();
   }
 

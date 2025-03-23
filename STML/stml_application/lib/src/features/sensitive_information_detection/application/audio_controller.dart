@@ -1,9 +1,9 @@
 import 'dart:io';
 
 import 'package:memoryminder/src/address.dart';
-import 'package:memoryminder/src/database/model/audio.dart';
+import 'package:memoryminder/src/features/sensitive_information_detection/domain/audio.dart';
 import 'package:memoryminder/src/database/model/media_type.dart';
-import 'package:memoryminder/src/database/repository/audio_repository.dart';
+import 'package:memoryminder/src/features/sensitive_information_detection/data/audio_repository.dart';
 import 'package:memoryminder/src/utils/constants.dart';
 import 'package:memoryminder/src/utils/directory_manager.dart';
 import 'package:memoryminder/src/utils/file_manager.dart';

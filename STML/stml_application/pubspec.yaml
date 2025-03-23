@@ -60,6 +60,16 @@ dependencies:
     external_path: ^2.0.1
     gallery_saver: ^2.3.2
     url_launcher: ^6.0.12
+    firebase_core: ^3.8.0
+    firebase_auth: ^5.3.3
+    firebase_messaging: ^15.2.4
+    cloud_firestore: ^5.6.5
+    flutter_local_notifications: ^18.0.1
+    fitbitter: ^2.0.4
+    flutter_secure_storage: ^8.0.0
+    http: ^0.13.6
+    fl_chart: ^0.64.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

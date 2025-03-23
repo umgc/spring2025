@@ -3,7 +3,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
-// import 'package:yappy/services/database_helper.dart';
+import 'package:yappy/services/database_helper.dart';
 import 'package:flutter/foundation.dart';
 
 class FileHandler {
@@ -32,8 +32,8 @@ class FileHandler {
     }
   }
 
-  // Commented out this method as it was used for testing purposes
-  /*Future<void> moveFileToDatabase(DatabaseHelper dbHelper, String fileName, int transcriptId) async {
+  // Used to move a file the user uploads from local storage to the database
+  Future<void> moveFileToDatabase(DatabaseHelper dbHelper, String fileName, int transcriptId) async {
     try {
       final path = await localStoragePath;
       final file = File(join(path, fileName));
@@ -55,7 +55,67 @@ class FileHandler {
         print('Error moving file to database: $e');
       }
     }
-  }*/
+  }
+
+  // Method to save transcript text data to local storage as a text file
+  Future<String> saveTranscriptTextToLocal(DatabaseHelper dbHelper, int transcriptId) async {
+    try {
+      final transcriptData = await dbHelper.getTranscriptTextDataAndIndustryById(transcriptId);
+      if (transcriptData != null) {
+        final textData = transcriptData['transcript_text_data']!;
+        final industry = transcriptData['industry']!;
+        final fileName = 'transcript_text_${transcriptId}_$industry.txt';
+        final path = await localStoragePath;
+        final file = File(join(path, fileName));
+        await file.writeAsString(textData);
+        if (kDebugMode) {
+          print('Transcript text data saved to local storage: $fileName');
+        }
+        return fileName;
+      } else {
+        if (kDebugMode) {
+          print('No transcript data found for ID: $transcriptId');
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error saving transcript text data to local storage: $e');
+      }
+    }
+    return '';
+  }
+
+  // Method to save document (BLOB) to local storage as a text file
+  Future<void> saveDocumentToLocal(DatabaseHelper dbHelper, int transcriptId) async {
+    try {
+      final documentData = await dbHelper.getDocumentAndIndustryById(transcriptId);
+      if (documentData != null) {
+        final documentBytes = documentData['transcript_document'] as List<int>?;
+        final industry = documentData['industry']!;
+        if (documentBytes != null) {
+          final fileName = 'transcript_document_${transcriptId}_$industry.txt';
+          final path = await localStoragePath;
+          final file = File(join(path, fileName));
+          await file.writeAsBytes(documentBytes);
+          if (kDebugMode) {
+            print('Document saved to local storage: $fileName');
+          }
+        } else {
+          if (kDebugMode) {
+            print('No document found for ID: $transcriptId');
+          }
+        }
+      } else {
+        if (kDebugMode) {
+          print('No document data found for ID: $transcriptId');
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error saving document to local storage: $e');
+      }
+    }
+  }
 
   Future<void> deleteFile(String fileName) async {
     try {
