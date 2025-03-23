@@ -313,9 +313,13 @@ class SubmissionListState extends State<SubmissionList> {
                                                         'Submitted on: ${DateFormat('MMM d, yyyy h:mm a').format(submissionWithGrade.submission.submissionTime.toLocal())}'),
                                                     Text(
                                                         'Grade: ${submissionWithGrade.grade != null ? submissionWithGrade.grade!.grade.toString() : "Not graded yet"}'),
-                                                    SizedBox(height: 4),
-                                                    DropdownButton<LlmType>(
+                                                    SizedBox(height: 6),
+                                                    // DropdownButton<LlmType>(
+                                                    DropdownButtonFormField<LlmType>(
                                                       value: selectedLLM,
+                                                      decoration: InputDecoration(
+                                                        labelText: 'AI',
+                                                      ),
                                                       onChanged: (newValue) =>
                                                           _handleLLMChanged(
                                                               participant.id,
