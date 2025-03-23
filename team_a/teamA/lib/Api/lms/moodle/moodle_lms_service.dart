@@ -282,13 +282,31 @@ class MoodleLmsService implements LmsInterface {
     }
 
     final decodedJson = jsonDecode(response.body);
+    List<Participant> participants = [];
     if (decodedJson is List) {
-      return decodedJson
-          .map((i) => Participant.empty().fromMoodleJson(i))
-          .toList();
+      for (var participant in decodedJson) {
+        if (isStudent(participant)) {
+          participants.add(Participant.empty().fromMoodleJson(participant));
+        }
+      }
+      return participants;
+      // return decodedJson
+      //     .map((i) => Participant.empty().fromMoodleJson(i))
+      //     .toList();
     } else {
       throw StateError('Unexpected response format (expected a List)');
     }
+  }
+
+  bool isStudent(Map<String, dynamic> json) {
+    // Moodle student role id equals 5
+    bool isStudent = false;
+    for (Map<String, dynamic> role in json['roles']) {
+      if (role['roleid'] == 5) {
+        isStudent = true;
+      }
+    }
+    return isStudent;
   }
 
   // ****************************************************************************************

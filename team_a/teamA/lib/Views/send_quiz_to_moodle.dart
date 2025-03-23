@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:learninglens_app/Api/lms/enum/lms_enum.dart';
 import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
 import 'package:learninglens_app/Api/lms/google_classroom/google_lms_service.dart';
@@ -211,6 +212,10 @@ class QuizMoodleState extends State<QuizMoodle> {
                 labelText: 'Course Section Number',
                 border: OutlineInputBorder(),
               ),
+              keyboardType: TextInputType.number, // Set keyboard type to number
+              inputFormatters: <TextInputFormatter>[
+                FilteringTextInputFormatter.digitsOnly // Allow only digits
+              ],
             ),
             SizedBox(height: 15),
             sectionTitle(title: 'Number of Questions'),

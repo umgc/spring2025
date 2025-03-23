@@ -155,7 +155,8 @@ class LoginNotifier with ChangeNotifier {
     try {
       await LmsFactory.getLmsServiceGoogle().loginOath(_clientID!);
 
-      if (_api.isLoggedIn()) {
+      // if (_api.isLoggedIn()) {
+      if (LmsFactory.getLmsServiceGoogle().isLoggedIn()) {
         _googleState.isLoggedIn = true;
         _googleState.errorMessage = null;
 

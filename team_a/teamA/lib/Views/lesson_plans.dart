@@ -359,6 +359,10 @@ class _LessonPlanState extends State<LessonPlans> {
                                         _fetchLessonPlans(int.parse(selectedCourse!));
                                         lessonPlanNameController.clear();
                                         manualEntryController.clear();
+                                        additionalPromptController.clear();
+                                        selectedLLM = null;
+                                        useAiGeneration = false;
+                                        
                                       }
 
                                       setState(() {
@@ -518,6 +522,9 @@ class _LessonPlanState extends State<LessonPlans> {
                                           _fetchLessonPlans(int.parse(selectedCourse!));
                                           lessonPlanNameController.clear();
                                           manualEntryController.clear();
+                                          additionalPromptController.clear();
+                                          selectedLLM = null;
+                                          useAiGeneration = false;
 
                                           setState(() {
                                             selectedLessonPlan = null;
@@ -559,6 +566,7 @@ class _LessonPlanState extends State<LessonPlans> {
                             lessonPlanNameController.clear();
                             manualEntryController.clear();
                             additionalPromptController.clear(); 
+                            additionalPromptController.clear();
                             selectedLLM = null; 
                             isEditing = false;
                             isSubmitDisabled = false;
