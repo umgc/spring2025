@@ -94,15 +94,6 @@ class _TextBasedFunctionCallerViewState
       ),
       body: Column(
         children: [
-          Container(
-            color: Colors.yellow[200],
-            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-            child: Text(
-              "This feature is in beta and currently only works with ChatGPT.",
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-              textAlign: TextAlign.center,
-            ),
-          ),
           Expanded(
             child: ListView.builder(
               itemCount: _messages.length,
