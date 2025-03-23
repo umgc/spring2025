@@ -9,6 +9,7 @@ import 'utils.dart';
 import 'online_model.dart';
 import 'offline_model.dart';
 import 'speaker_model.dart';
+import 'vad_model.dart';
 import 'speech_isolate.dart';
 
 Future<sherpa_onnx.OnlineRecognizer> createOnlineRecognizer() async {
@@ -46,6 +47,29 @@ Future<sherpa_onnx.SpeakerEmbeddingExtractor> createSpeakerExtractor() async {
   );
 
   return sherpa_onnx.SpeakerEmbeddingExtractor(config: config);
+}
+
+Future<sherpa_onnx.VoiceActivityDetector> createVoiceActivityDetector() async {
+  final type = 0;
+
+  final model = await getVadModel(type: type);
+  final sileroConfig = sherpa_onnx.SileroVadModelConfig(
+    model: model,
+    threshold: 0.5,
+    minSilenceDuration: 0.4,
+    minSpeechDuration: 0.5,
+    windowSize: 512,
+    maxSpeechDuration: 10.0, 
+  );
+    
+  final vadConfig = sherpa_onnx.VadModelConfig(
+    sileroVad: sileroConfig,
+    numThreads: 2,
+    provider: 'cpu',
+    debug: false,
+  );
+
+  return sherpa_onnx.VoiceActivityDetector(config: vadConfig, bufferSizeInSeconds: 10);
 }
 
 class Conversation {
@@ -181,6 +205,9 @@ class SpeechState extends ChangeNotifier {
   // Second pass - offline processing
   SpeechProcessingIsolate? speechIsolate;
 
+  // Voice Activity Detector
+  sherpa_onnx.VoiceActivityDetector? vad;
+
   List<Float32List> allAudioSamples = [];
   // Buffer for collecting samples between endpoints
   List<Float32List> currentSegmentSamples = [];
@@ -203,6 +230,9 @@ class SpeechState extends ChangeNotifier {
         sherpa_onnx.initBindings();
         onlineRecognizer = await createOnlineRecognizer();
         onlineStream = onlineRecognizer?.createStream();
+
+        // init vad
+        vad = await createVoiceActivityDetector();
 
         // Initialize the isolate with configuration
         speechIsolate = SpeechProcessingIsolate();
@@ -423,6 +453,8 @@ Future<void> processSegmentOffline(AudioSegment segment) async {
         final recordStream = await audioRecorder.startStream(config);
         currentSegmentSamples.clear();
         allAudioSamples.clear();
+        bool isCurrentlySpeaking = false;
+        double speechStartTime = 0.0;
         currentTimestamp = 0.0;
         currentIndex = 0;
 
@@ -477,7 +509,37 @@ Future<void> processSegmentOffline(AudioSegment segment) async {
               _updateDisplayText();
             }
 
-            if (onlineRecognizer!.isEndpoint(onlineStream!)) {
+            // Check for endpointing with VAD
+            // Process through VAD in window-sized chunks
+            final windowSize = vad!.config.sileroVad.windowSize;
+            
+            // Process as many complete windows as we can
+            int offset = 0;
+            while (offset + windowSize <= samplesFloat32.length) {
+              final windowBuffer = Float32List.sublistView(samplesFloat32, offset, offset + windowSize);
+              
+              vad!.acceptWaveform(windowBuffer);
+              offset += windowSize;
+              
+              // Check if speech is detected
+              while (!vad!.isEmpty()) {
+                final segment = vad!.front();
+                                
+                // Here you could also:
+                // 1. Send to a speech recognizer (like Whisper) for transcription
+                // 2. Save to a file
+                // 3. Process in some other way
+                
+                // Log the timestamp for debugging
+                debugPrint('💬 Speech detected: ${segment.start} to $currentTimestamp');
+                
+                // Remove the processed segment from the VAD queue
+                vad!.pop();
+              }
+            }
+            
+            // if (onlineRecognizer!.isEndpoint(onlineStream!)) {
+            if (!vad!.isDetected()) {
               // Store the current segment for offline processing
 
               //ISSUE IS HERE, need to use recognizedSegments.LastOrNull like before, or integrate VAD
@@ -510,6 +572,7 @@ Future<void> processSegmentOffline(AudioSegment segment) async {
               onlineRecognizer!.reset(onlineStream!);
               currentSegmentSamples.clear();
               currentIndex += 1;
+              vad?.flush();
             }
           },
           onError: (error) {
@@ -704,6 +767,7 @@ Future<void> processSegmentOffline(AudioSegment segment) async {
     audioRecorder.dispose();
     onlineStream?.free();
     onlineRecognizer?.free();
+    vad?.free();
     speechIsolate?.dispose();
     super.dispose();
   }
