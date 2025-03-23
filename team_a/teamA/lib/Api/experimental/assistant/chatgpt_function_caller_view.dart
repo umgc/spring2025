@@ -39,14 +39,14 @@ class _ChatGPTFunctionCallerViewState extends State<ChatGPTFunctionCallerView> {
     _controller.clear();
 
     // Add a "thinking" message
-    setState(() {
-      _messages.add({"sender": "bot", "text": "..."});
-    });
+    // setState(() {
+    //   _messages.add({"sender": "bot", "text": "..."});
+    // });
 
     String response = await _chatGPT.sendMessage(userMessage);
 
     setState(() {
-      _messages.removeLast(); // Remove "thinking" message
+      // _messages.removeLast(); // Remove "thinking" message
       _messages.add({"sender": "bot", "text": response});
       _isThinking = false; // Bot has finished responding
     });
@@ -121,6 +121,11 @@ class _ChatGPTFunctionCallerViewState extends State<ChatGPTFunctionCallerView> {
               },
             ),
           ),
+          if (_isThinking)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: CircularProgressIndicator(), // Loading indicator
+            ),
           Padding(
             padding: const EdgeInsets.all(10.0),
             child: Row(
