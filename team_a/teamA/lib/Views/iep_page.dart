@@ -1,4 +1,5 @@
 import "package:flutter/material.dart";
+import 'package:intl/intl.dart';
 import "package:learninglens_app/Api/lms/factory/lms_factory.dart";
 import "package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart";
 import "package:learninglens_app/Controller/custom_appbar.dart";
@@ -88,8 +89,8 @@ class _IepPageState extends State<IepPage> {
                 Text("Student Name: ${override.fullname}"),
                 Text("Course Name: ${override.courseName}"),
                 Text("Assignment: ${override.type}: ${override.assignmentName}"),
-                Text("Extended Due Date: ${override.endTime?.toString() ?? 'N/A'}"),
-                Text("Cut Off Date: ${override.cutoffTime?.toString() ?? 'N/A'}"),
+                Text("Extended Due Date: ${formatDate(override.endTime?.toString())}"),
+                Text("Cut Off Date: ${formatDate(override.cutoffTime?.toString())}"),
                 Text("Attempts: ${override.attempts?.toString() ?? 'N/A'}"),
               ],
             ),
@@ -636,6 +637,14 @@ List<Override>? getOverrides() {
   return overrides;
 }
 
+String formatDate(String? dateString) {
+  if (dateString == null) {
+    return 'N/A';
+  }
+  DateFormat dateFormat = DateFormat('MMM d yyyy hh:mm a');
+  return dateFormat.format(DateTime.parse(dateString));
+}
+
 DataRow buildDataRow(Override override, int index) {
   return DataRow(
     color: MaterialStateProperty.resolveWith<Color>((states) {
@@ -655,12 +664,12 @@ DataRow buildDataRow(Override override, int index) {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Extended: ${override.endTime?.toString() ?? 'N/A'}",
+              "Extended: ${formatDate(override.endTime?.toString())}",
               style: TextStyle(fontSize: 14),
             ),
             SizedBox(height: 4),
             Text(
-              "Cut off: ${override.cutoffTime?.toString() ?? 'N/A'}",
+              "Cut off: ${formatDate(override.cutoffTime?.toString())}",
               style: TextStyle(fontSize: 14),
             ),
           ],
