@@ -13,6 +13,9 @@ class OpenAIHelper {
 
   final String restaurantContextPrompt =
       '''You are a restaurant assistant.  Take the following audio transcript of a waiter taking patrons' orders and generate a summary of patrons' orders at a restaurant. You must separate out different speakers' orders and refer to them using using "Seat 1", "Seat 2", "Seat 3", etc.
+        
+        Respond in plain text (not using markdown nor extra formatting).
+        
         Example format:
 
         Seat 1: Hamburger, hold the lettuce, fries, Diet Dr. Pepper.
@@ -24,6 +27,9 @@ class OpenAIHelper {
 
   final String mechanicContextPrompt =
     '''You are a vehicle mechanic assistant.  Take the following audio transcript of a customer describing their vehicle's issues and generate a summary of vehicle's issues and include suggestions for resolution.
+      
+      Respond in plain text (not using markdown nor extra formatting).
+      
       Example format:
 
       Customer: My car is making a weird whirring noise at idle. It is also leaking oil.
@@ -33,6 +39,9 @@ class OpenAIHelper {
 
   final String medicalContextPrompt =
     '''You are a medical assistant.  Take the following audio transcript of a physician discussing a patient's concerns and generate a summary of patient's issues and include suggestions for resolution.
+      
+      Respond in plain text (not using markdown nor extra formatting).
+      
       Example format:
 
       Patient: I've been feeling really itchy recently. And I've been having trouble sleeping.
@@ -246,7 +255,7 @@ class OpenAIHelper {
       },
       body: jsonEncode({
         "name": "Yappy",
-        "instructions": "You can retrieve transcript information from a vector store. No need to cite sources, and please use complete sentences rather then bullet points.",
+        "instructions": "You can retrieve transcript information from a vector store. No need to cite sources, and please use complete sentences rather then bullet points. Respond in plain text (not using markdown nor extra formatting).",
         "model": currentOpenAIModel,
         "tools": [
           {"type": "file_search"},
