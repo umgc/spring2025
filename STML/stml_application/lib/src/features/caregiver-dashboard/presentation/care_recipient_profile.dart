@@ -87,7 +87,7 @@ class CareRecipientProfileScreenState extends State<CareRecipientProfileScreen> 
                       icon: Icon(Icons.health_and_safety_rounded,
                           size: iconSize, color: Color.fromARGB(255, 2, 63, 129)),
                       text: 'Health Metrics',
-                      screen: CaregiverDashboardScreen(),
+                      routeName: '/healthMetrics',
                       keyName: "HealthMetricsButtonKey",
                     ),
                     _buildElevatedButton(
@@ -138,7 +138,8 @@ class CareRecipientProfileScreenState extends State<CareRecipientProfileScreen> 
     required BuildContext context,
     required Icon icon,
     required String text,
-    required Widget screen,
+    Widget? screen,
+    String? routeName,
     required String keyName,
   }) {
     return ElevatedButton(
@@ -155,10 +156,14 @@ class CareRecipientProfileScreenState extends State<CareRecipientProfileScreen> 
         ),
       ),
       onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => screen),
-        );
+        if (routeName != null) {
+          Navigator.pushNamed(context, routeName); // Use named route if provided
+        } else if (screen != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => screen), // Default behavior
+          );
+        }
       },
       child: Column(
         mainAxisSize: MainAxisSize.min,

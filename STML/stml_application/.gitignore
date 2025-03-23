@@ -66,3 +66,9 @@ ios/Runner.xcworkspace/
 ios/Runner.xcodeproj/project.xcworkspace/
 ios/Runner.xcodeproj/xcuserdata/
 ios/Runner.xcodeproj/project.xcworkspace/xcuserdata/
+
+../.DS_Store
+.vscode/
+macos/DerivedData/
+*.patch
+ios/GoogleService-Info.plist

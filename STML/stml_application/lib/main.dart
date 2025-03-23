@@ -1,4 +1,5 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:fitbitter/fitbitter.dart';
 import 'package:flutter/material.dart';
 import 'package:memoryminder/src/features/account_creation_and_login/presentation/eula_screen.dart';
 import 'package:memoryminder/src/features/account_creation_and_login/presentation/welcome_screen.dart';
@@ -15,6 +16,11 @@ import 'package:memoryminder/src/utils/permission_manager.dart';
 import 'package:memoryminder/src/features/account_creation_and_login/presentation/registration_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:memoryminder/features/caregiver_task_management/caregiver_task_screen.dart';
+import 'package:memoryminder/src/features/wearable-integration/health_dashboard.dart';
+import 'package:memoryminder/src/features/wearable-integration/fitbit_login.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
+final storage = FlutterSecureStorage();
 
 void main() async {
   initializeLogging();
@@ -49,6 +55,18 @@ class MyApp extends StatelessWidget {
         '/homeScreen': (context) => HomeScreen(),
         '/caregiverTaskScreen': (context) =>
             CaregiverTaskScreen(), // Added route
+        '/healthMetrics': (context) => FutureBuilder<FitbitCredentials?>(
+          future: _loadFitbitCredentials(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return CircularProgressIndicator(); // Show a loader while checking token
+            }
+            if (snapshot.hasData && snapshot.data != null) {
+              return HealthDashboard(fitbitCredentials: snapshot.data!);
+            }
+            return FitbitLoginPage();
+          },
+        ),
       },
     );
   }
@@ -68,4 +86,21 @@ void initializeData() async {
 // Handle notifications when the app is in the background
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("⚠️ Background message: ${message.notification?.title}");
+}
+
+Future<FitbitCredentials?> _loadFitbitCredentials() async {
+  String? storedAccessToken = await storage.read(key: 'fitbitAccessToken');
+  String? storedRefreshToken = await storage.read(key: 'fitbitRefreshToken');
+  String? storedUserId = await storage.read(key: 'fitbitUserId');
+
+  if (storedAccessToken != null &&
+      storedRefreshToken != null &&
+      storedUserId != null) {
+    return FitbitCredentials(
+      fitbitAccessToken: storedAccessToken,
+      fitbitRefreshToken: storedRefreshToken,
+      userID: storedUserId,
+    );
+  }
+  return null;
 }
