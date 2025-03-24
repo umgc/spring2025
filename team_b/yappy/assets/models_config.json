@@ -17,12 +17,12 @@
     {
       "id": "silero_vad",
       "name": "Voice Activity Detection Model",
-      "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/silero_vad_v5.onnx",
+      "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/silero_vad.onnx",
       "isCompressed": false,
       "type": "vad",
       "outputFiles": [
         {
-          "source": "silero_vad_v5.onnx",
+          "source": "silero_vad.onnx",
           "destination": "vad_model.onnx"
         }
       ],
