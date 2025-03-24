@@ -3,16 +3,16 @@
     {
       "id": "speaker_recognition",
       "name": "Speaker Recognition Model",
-      "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/3dspeaker_speech_eres2net_sv_en_voxceleb_16k.onnx",
+      "url": "https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/nemo_en_speakerverification_speakernet.onnx",
       "isCompressed": false,
       "type": "speaker",
       "outputFiles": [
         {
-          "source": "3dspeaker_speech_eres2net_sv_en_voxceleb_16k.onnx",
+          "source": "nemo_en_speakerverification_speakernet.onnx",
           "destination": "speaker_model.onnx"
         }
       ],
-      "size": 25.3
+      "size": 22.3
     },
     {
       "id": "silero_vad",
@@ -22,7 +22,7 @@
       "type": "vad",
       "outputFiles": [
         {
-          "source": "silero_vad.onnx",
+          "source": "silero_vad_v5.onnx",
           "destination": "vad_model.onnx"
         }
       ],

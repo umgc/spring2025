@@ -280,7 +280,7 @@ class SpeechProcessingIsolate {
       
       // Search for matching speaker
       // Adjust threshold lower for better accuracy
-      final threshold = 0.2;
+      final threshold = 0.3;
       var speakerId = speakerManager.search(embedding: embedding, threshold: threshold);
       
       int newSpeakerCount = currentSpeakerCount;
