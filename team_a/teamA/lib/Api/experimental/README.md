@@ -1,0 +1,1 @@
+This folder is for experimental ideas only—not for production. It’s a proof of concept showing how an AI assistant can fetch info like students, courses, and quizzes from our app (Moodle-based). Think of it as a sandbox.

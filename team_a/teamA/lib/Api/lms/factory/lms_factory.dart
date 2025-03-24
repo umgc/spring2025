@@ -13,12 +13,13 @@ class LmsFactory {
     LmsType lmsType = LocalStorageService.getSelectedClassroom();
 
     switch (lmsType) {
-      case LmsType.MOODLE:
-        return getLmsServiceMoodle();
+      // TODO: Do we need this or can we just return Moodle as a default with the default: case?
+      // case LmsType.MOODLE:
+      //   return getLmsServiceMoodle();
       case LmsType.GOOGLE:
         return getLmsServiceGoogle();
       default:
-        print('LMS type not found, defaulting to Moodle');
+        // print('LMS type not found, defaulting to Moodle');
         return getLmsServiceMoodle();
     }
   }

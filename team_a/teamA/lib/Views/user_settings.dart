@@ -2,10 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:learninglens_app/Api/lms/moodle/moodle_lms_service.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
-import 'package:learninglens_app/Controller/main_controller.dart';
-import 'package:learninglens_app/Views/dashboard.dart';
-import 'package:learninglens_app/Views/g_courses.dart';
-import 'package:learninglens_app/Views/g_dashboard.dart';
 import 'package:learninglens_app/notifiers/login_notifier.dart';
 import 'package:learninglens_app/notifiers/theme_notifier.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
@@ -21,17 +17,13 @@ class UserSettingsState extends State<UserSettings> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _moodleUrlController = TextEditingController();
+
   final TextEditingController _apiKeyController = TextEditingController();
-  final TextEditingController _claudeKeyController = TextEditingController();
   final TextEditingController _grokKeyController = TextEditingController();
-  final TextEditingController _preplexityKeyController =
-      TextEditingController();
-  // Add Google Classroom Client ID controller
+  final TextEditingController _preplexityKeyController = TextEditingController();
+
   final TextEditingController _googleClientIdController =
       TextEditingController();
-  //
-  bool _isLoading = false;
-  final MainController _controller = MainController();
 
   @override
   void initState() {
@@ -44,18 +36,15 @@ class UserSettingsState extends State<UserSettings> {
     final password = LocalStorageService.getPassword();
     final moodleUrl = LocalStorageService.getMoodleUrl();
     final apiKey = LocalStorageService.getOpenAIKey();
-    final claudeKey = LocalStorageService.getClaudeKey();
     final preplexityKey = LocalStorageService.getPerplexityKey();
     final grokKey = LocalStorageService.getGrokKey();
-    // Load Google Client ID from .env file
-    final googleClientId = dotenv.env['GOOGLE_CLIENT_ID'] ?? '';
+    final googleClientId = LocalStorageService.getGoogleClientId();
 
     setState(() {
       _usernameController.text = username;
       _passwordController.text = password;
       _moodleUrlController.text = moodleUrl;
       _apiKeyController.text = apiKey;
-      _claudeKeyController.text = claudeKey;
       _preplexityKeyController.text = preplexityKey;
       _grokKeyController.text = grokKey;
       _googleClientIdController.text = googleClientId;
@@ -65,22 +54,16 @@ class UserSettingsState extends State<UserSettings> {
   @override
   Widget build(BuildContext context) {
     final loginNotifier = Provider.of<LoginNotifier>(context);
-    Color themeColor = Provider.of<ThemeNotifier>(context).primaryColor;
+    final themeColor = Provider.of<ThemeNotifier>(context).primaryColor;
 
     return Scaffold(
-      // appBar: AppBar(
-      //   title: Text(
-      //     'User Settings',
-      //     style: TextStyle(color: Theme.of(context).colorScheme.onPrimary),
-      //   ),
-      //   backgroundColor: themeColor,
-      // ),
       appBar: CustomAppBar(
-          title: 'User Settings',
-          onRefresh: () {
-            // Add refresh logic here
-          },
-          userprofileurl: MoodleLmsService().profileImage ?? ''),
+        title: 'User Settings',
+        onRefresh: () {
+          // Add refresh logic here
+        },
+        userprofileurl: MoodleLmsService().profileImage ?? '',
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
@@ -89,20 +72,20 @@ class UserSettingsState extends State<UserSettings> {
               // Moodle Login Block
               _buildMoodleLoginBlock(loginNotifier),
 
-              SizedBox(height: 20),
-              Divider(),
+              const SizedBox(height: 20),
+              const Divider(),
 
               // Google Classroom Login Block
               _buildGoogleClassroomLoginBlock(loginNotifier),
 
-              SizedBox(height: 20),
-              Divider(),
+              const SizedBox(height: 20),
+              const Divider(),
 
               // API Key Block
               _buildApiKeyBlock(loginNotifier),
 
-              SizedBox(height: 20),
-              Divider(),
+              const SizedBox(height: 20),
+              const Divider(),
 
               // Theme Color Picker
               Text(
@@ -124,8 +107,11 @@ class UserSettingsState extends State<UserSettings> {
     );
   }
 
+  // -------------------------------------------
   // Moodle Login Block
+  // -------------------------------------------
   Widget _buildMoodleLoginBlock(LoginNotifier loginNotifier) {
+    final moodleState = loginNotifier.moodleState;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -136,50 +122,62 @@ class UserSettingsState extends State<UserSettings> {
         TextField(
           controller: _usernameController,
           decoration: InputDecoration(labelText: 'Username'),
-          enabled: !loginNotifier.isLoggedIn,
+          enabled: !moodleState.isLoggedIn,
         ),
         TextField(
           controller: _passwordController,
           decoration: InputDecoration(labelText: 'Password'),
           obscureText: true,
-          enabled: !loginNotifier.isLoggedIn,
+          enabled: !moodleState.isLoggedIn,
         ),
         TextField(
           controller: _moodleUrlController,
           decoration: InputDecoration(labelText: 'Moodle URL'),
-          enabled: !loginNotifier.isLoggedIn,
+          enabled: !moodleState.isLoggedIn,
         ),
-        SizedBox(height: 10),
-        if (!loginNotifier.isLoggedIn)
+        const SizedBox(height: 10),
+        if (!moodleState.isLoggedIn)
           ElevatedButton(
             onPressed: () {
-              loginNotifier.login(
+              loginNotifier.signInWithMoodle(
                 _usernameController.text,
                 _passwordController.text,
                 _moodleUrlController.text,
               );
             },
-            child: Text('Login to Moodle'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.green,
               foregroundColor: Colors.white,
             ),
+            child: Text('Login to Moodle'),
           ),
-        if (loginNotifier.isLoggedIn)
+        if (moodleState.isLoggedIn)
           ElevatedButton(
-            onPressed: loginNotifier.logout,
-            child: Text('Logout from Moodle'),
+            onPressed: loginNotifier.signOutFromMoodle,
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
+            ),
+            child: Text('Logout from Moodle'),
+          ),
+        if (moodleState.errorMessage?.isNotEmpty ?? false)
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Text(
+              moodleState.errorMessage!,
+              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
             ),
           ),
       ],
     );
   }
 
+  // -------------------------------------------
   // Google Classroom Login Block
+  // -------------------------------------------
   Widget _buildGoogleClassroomLoginBlock(LoginNotifier loginNotifier) {
+    final googleState = loginNotifier.googleState; // convenience variable
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -192,64 +190,40 @@ class UserSettingsState extends State<UserSettings> {
           decoration: InputDecoration(labelText: 'Client ID'),
           enabled: false, // Make it non-editable
         ),
-        SizedBox(height: 10),
-        ElevatedButton(
-          onPressed: () {
-            // _handleSignIn(loginNotifier);
-            loginNotifier.signInWithGoogle();
-          },
-          child: Text('Login to Google Classroom'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.blue,
-            foregroundColor: Colors.white,
+        const SizedBox(height: 10),
+        if (!googleState.isLoggedIn)
+          ElevatedButton(
+            onPressed: loginNotifier.signInWithGoogle,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              foregroundColor: Colors.white,
+            ),
+            child: Text('Login to Google Classroom'),
           ),
-        ),
+        if (googleState.isLoggedIn)
+          ElevatedButton(
+            onPressed: loginNotifier.signOutFromGoogle,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+            ),
+            child: Text('Logout from Google Classroom'),
+          ),
+        if (googleState.errorMessage?.isNotEmpty ?? false)
+          Padding(
+            padding: const EdgeInsets.only(top: 8.0),
+            child: Text(
+              googleState.errorMessage!,
+              style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+            ),
+          ),
       ],
     );
   }
 
-  Future<void> _handleSignIn(LoginNotifier loginNotifier) async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      loginNotifier.signInWithGoogle();
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => GoogleTeacherDashboard()),
-      );
-    } catch (error) {
-      print("Google Sign-In Error: $error");
-      _showLoginFailedDialog("Google Sign-In failed: $error");
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
-    }
-  }
-
-  void _showLoginFailedDialog(String message) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("Login Failed"),
-          content: Text(message),
-          actions: <Widget>[
-            TextButton(
-              child: const Text("OK"),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
+  // -------------------------------------------
   // API Key Block
+  // -------------------------------------------
   Widget _buildApiKeyBlock(LoginNotifier loginNotifier) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -259,7 +233,7 @@ class UserSettingsState extends State<UserSettings> {
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
         _buildApiKeyField(
-          label: 'Open AI API Key',
+          label: 'OpenAI API Key',
           controller: _apiKeyController,
           loginNotifier: loginNotifier,
           keyType: LLMKey.openAI,
@@ -269,12 +243,6 @@ class UserSettingsState extends State<UserSettings> {
           controller: _preplexityKeyController,
           loginNotifier: loginNotifier,
           keyType: LLMKey.perplexity,
-        ),
-        _buildApiKeyField(
-          label: 'Claude AI API Key',
-          controller: _claudeKeyController,
-          loginNotifier: loginNotifier,
-          keyType: LLMKey.claude,
         ),
         _buildApiKeyField(
           label: 'Grok AI API Key',
@@ -296,26 +264,31 @@ class UserSettingsState extends State<UserSettings> {
       children: [
         TextField(
           controller: controller,
+          obscureText: true,
           decoration: InputDecoration(labelText: label),
-          enabled: controller
-              .text.isEmpty, // Make it non-editable if a key is present
+          enabled: controller.text.isEmpty, 
+          // If you want to disable the TextField once it has a value,
+          // keep this. Otherwise, feel free to remove "enabled: controller.text.isEmpty".
         ),
-        SizedBox(height: 10),
+        const SizedBox(height: 10),
         ElevatedButton(
           onPressed: () {
             loginNotifier.saveLLMKey(keyType, controller.text);
           },
-          child: Text('Save'),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.blue,
             foregroundColor: Colors.white,
           ),
+          child: Text('Save'),
         ),
-        Divider(),
+        const Divider(),
       ],
     );
   }
 
+  // -------------------------------------------
+  // Theme Color Picker
+  // -------------------------------------------
   void _pickColor() async {
     await showDialog(
       context: context,
@@ -329,8 +302,8 @@ class UserSettingsState extends State<UserSettings> {
             width: 300,
             height: 50,
             child: BlockPicker(
-              pickerColor: Provider.of<ThemeNotifier>(context, listen: false)
-                  .primaryColor,
+              pickerColor:
+                  Provider.of<ThemeNotifier>(context, listen: false).primaryColor,
               onColorChanged: (color) {
                 Provider.of<ThemeNotifier>(context, listen: false)
                     .updateTheme(color);

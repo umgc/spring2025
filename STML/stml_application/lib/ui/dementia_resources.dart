@@ -36,7 +36,7 @@ class DementiaResourcesScreen extends StatefulWidget {
   final String? loc;
   const DementiaResourcesScreen({super.key, this.loc});
   @override
-   _DementiaResourcesScreenState createState() => _DementiaResourcesScreenState();
+  _DementiaResourcesScreenState createState() => _DementiaResourcesScreenState();
 }
 
 class _DementiaResourcesScreenState extends State<DementiaResourcesScreen> {
@@ -97,34 +97,34 @@ class _DementiaResourcesScreenState extends State<DementiaResourcesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CustomAppBar(
-        title: 'Dementia Resources',
-      ),
-      body: Container(
+        appBar: const CustomAppBar(
+          title: 'Dementia Resources',
+        ),
+        body: Container(
 
-        child: FutureBuilder<List<ResourceEntry>>(
-                  future: _fetchSearchResults(), // The Future you want to await
-                  builder: (context, snapshot) {
-          // Handle different states of the Future
+          child: FutureBuilder<List<ResourceEntry>>(
+            future: _fetchSearchResults(), // The Future you want to await
+            builder: (context, snapshot) {
+              // Handle different states of the Future
 
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              // While data is being fetched
-              return Center(child: CircularProgressIndicator());
-            }
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                // While data is being fetched
+                return Center(child: CircularProgressIndicator());
+              }
 
-            if (snapshot.hasError) {
-              // If there was an error
-              return Center(child: Text('Error: ${snapshot.error}'));
-            }
+              if (snapshot.hasError) {
+                // If there was an error
+                return Center(child: Text('Error: ${snapshot.error}'));
+              }
 
-            if (snapshot.hasData) {
-              // If data is available
-              final resources = snapshot.data!;
+              if (snapshot.hasData) {
+                // If data is available
+                final resources = snapshot.data!;
 
-              return ListView.builder(
-                itemCount: resources.length,
-                itemBuilder: (context, index) {
-                  Color backgroundColor = index % 2 == 0 ? Colors.white : Colors.grey[300]!;
+                return ListView.builder(
+                  itemCount: resources.length,
+                  itemBuilder: (context, index) {
+                    Color backgroundColor = index % 2 == 0 ? Colors.white : Colors.grey[300]!;
                     final resource = resources[index];
                     return Card(
                       color: backgroundColor,
@@ -142,12 +142,12 @@ class _DementiaResourcesScreenState extends State<DementiaResourcesScreen> {
                 );
               }
 
-            return Center(child: Text("No data available"));
-          },
+              return Center(child: Text("No data available"));
+            },
 
 
+          ),
         ),
-      ),
         bottomNavigationBar: UiUtils.createBottomNavigationBar(context));
 
   }

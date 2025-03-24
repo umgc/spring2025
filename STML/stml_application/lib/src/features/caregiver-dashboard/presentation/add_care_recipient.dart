@@ -198,144 +198,144 @@ class _AddCareRecipientFormState extends State<AddCareRecipientForm> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: const CustomAppBar(
-        title: 'Care Recipient',
-    ),
-    body: Container (
-      child : Column (
-        children : [
-          Expanded ( // Wrap Column with Expanded
-            child : SingleChildScrollView (
-              child : ConstrainedBox (
-                constraints :
-                  BoxConstraints (
-                    minWidth : double.infinity, // Ensure width matches screen
-                    minHeight : 0, // Allow height to expand based on content
-                  ),
-                  child : Column (
-                    children : [
-                      Form (
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: <Widget>[
-                            TextFormField(
-                              controller: _firstNameController,
-                              decoration: const InputDecoration(
-                                labelText: 'First Name',
-                                focusColor: Colors.blueGrey,
+          title: 'Care Recipient',
+        ),
+        body: Container (
+          child : Column (
+            children : [
+              Expanded ( // Wrap Column with Expanded
+                child : SingleChildScrollView (
+                  child : ConstrainedBox (
+                    constraints :
+                    BoxConstraints (
+                      minWidth : double.infinity, // Ensure width matches screen
+                      minHeight : 0, // Allow height to expand based on content
+                    ),
+                    child : Column (
+                      children : [
+                        Form (
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: <Widget>[
+                              TextFormField(
+                                controller: _firstNameController,
+                                decoration: const InputDecoration(
+                                  labelText: 'First Name',
+                                  focusColor: Colors.blueGrey,
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter a first name';
+                                  }
+                                  return null;
+                                },
                               ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter a first name';
-                                }
-                                return null;
-                              },
-                            ),
-                            TextFormField(
-                              controller: _lastNameController,
-                              decoration: const InputDecoration(
-                              labelText: 'Last Name',
+                              TextFormField(
+                                controller: _lastNameController,
+                                decoration: const InputDecoration(
+                                  labelText: 'Last Name',
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter a last name';
+                                  }
+                                  return null;
+                                },
                               ),
-                              validator: (value) {
-                              if (value == null || value.isEmpty) {
-                              return 'Please enter a last name';
-                              }
-                              return null;
-                              },
-                            ),
-                            TextFormField(
-                              controller: _ageController,
-                              decoration: const InputDecoration(labelText: 'Age'),
-                            ),
-                            TextFormField(
-                              controller: _addressController,
-                              decoration: const InputDecoration(labelText: 'Address Line'),
-                            ),
-                            TextFormField(
-                              controller: _cityController,
-                              decoration: const InputDecoration(labelText: 'City'),
-                              validator: (value) {
-                              if (value == null || value.isEmpty) {
-                              return 'Please enter a city';
-                              }
-                              return null;
-                              },
-                            ),
-                            TextFormField(
-                              controller: _stateController,
-                              decoration: const InputDecoration(labelText: 'State'),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter a state';
-                                }
-                                return null;
-                              },
-                            ),
-                            TextFormField(
-                              controller: _countyController,
-                              decoration: const InputDecoration(labelText: 'County'),
-                            ),
-                            TextFormField(
-                              controller: _emailController,
-                              decoration: const InputDecoration(labelText: 'Email'),
-                            ),
-                            TextFormField(
-                              controller: _phoneController,
-                              decoration: const InputDecoration(labelText: 'Phone'),
-                            ),
-                            const SizedBox(height: 16),
-                            ElevatedButton(
-                              onPressed: _addEmergencyContact,
-                              child: const Text('Add Emergency Contact'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.grey,
-                                foregroundColor: Colors.black,
-                                padding: EdgeInsets.fromLTRB(16.0, 2, 16.0, 2),
+                              TextFormField(
+                                controller: _ageController,
+                                decoration: const InputDecoration(labelText: 'Age'),
                               ),
-                            ),
-                            const SizedBox(height: 8),
-                            Column(
-                              children: _emergencyContacts.map((contact) {
-                                return ListTile(
-                                  title: Text(contact.name),
-                                  subtitle: Text(contact.phone),
-                                );
-                              }).toList(),
-                            ),
-                            const SizedBox(height: 16),
-                            ElevatedButton(
-                              onPressed: _submitForm,
-                              child: Text(_isUpdateMode
-                              ? 'Update Care Recipient'
-                                  : 'Add Care Recipient'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.green,
-                                foregroundColor: Colors.black,
-                                padding: EdgeInsets.fromLTRB(16.0, 2, 16.0, 2),
+                              TextFormField(
+                                controller: _addressController,
+                                decoration: const InputDecoration(labelText: 'Address Line'),
                               ),
-                            ),
-                          ],
+                              TextFormField(
+                                controller: _cityController,
+                                decoration: const InputDecoration(labelText: 'City'),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter a city';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              TextFormField(
+                                controller: _stateController,
+                                decoration: const InputDecoration(labelText: 'State'),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter a state';
+                                  }
+                                  return null;
+                                },
+                              ),
+                              TextFormField(
+                                controller: _countyController,
+                                decoration: const InputDecoration(labelText: 'County'),
+                              ),
+                              TextFormField(
+                                controller: _emailController,
+                                decoration: const InputDecoration(labelText: 'Email'),
+                              ),
+                              TextFormField(
+                                controller: _phoneController,
+                                decoration: const InputDecoration(labelText: 'Phone'),
+                              ),
+                              const SizedBox(height: 16),
+                              ElevatedButton(
+                                onPressed: _addEmergencyContact,
+                                child: const Text('Add Emergency Contact'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.grey,
+                                  foregroundColor: Colors.black,
+                                  padding: EdgeInsets.fromLTRB(16.0, 2, 16.0, 2),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Column(
+                                children: _emergencyContacts.map((contact) {
+                                  return ListTile(
+                                    title: Text(contact.name),
+                                    subtitle: Text(contact.phone),
+                                  );
+                                }).toList(),
+                              ),
+                              const SizedBox(height: 16),
+                              ElevatedButton(
+                                onPressed: _submitForm,
+                                child: Text(_isUpdateMode
+                                    ? 'Update Care Recipient'
+                                    : 'Add Care Recipient'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.green,
+                                  foregroundColor: Colors.black,
+                                  padding: EdgeInsets.fromLTRB(16.0, 2, 16.0, 2),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
 
-                      const Divider(
-                        color: Colors.black,
-                        thickness: 2,
-                        height: 10,
-                        indent: 20,
-                        endIndent: 20,
-                      ),
+                        const Divider(
+                          color: Colors.black,
+                          thickness: 2,
+                          height: 10,
+                          indent: 20,
+                          endIndent: 20,
+                        ),
 
 
-                 ],
+                      ],
+                    ),
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
-    ),
-    bottomNavigationBar: UiUtils.createBottomNavigationBar(context));
+        ),
+        bottomNavigationBar: UiUtils.createBottomNavigationBar(context));
   }
 
 }

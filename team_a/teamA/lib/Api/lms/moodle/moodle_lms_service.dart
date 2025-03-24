@@ -3,7 +3,9 @@ import 'dart:io';
 import 'package:learninglens_app/Api/lms/lms_interface.dart';
 import 'package:learninglens_app/beans/course.dart';
 import 'package:learninglens_app/beans/lesson_plan.dart';
+import 'package:learninglens_app/beans/question_stat_type.dart';
 import 'package:learninglens_app/beans/quiz.dart';
+import 'package:learninglens_app/beans/override.dart';
 import 'package:learninglens_app/beans/assignment.dart';
 import 'package:learninglens_app/beans/participant.dart';
 import 'package:learninglens_app/beans/quiz_override';
@@ -57,6 +59,8 @@ class MoodleLmsService implements LmsInterface {
   @override
   List<Course>? courses;
 
+  List<Override>? overrides;
+
   // ****************************************************************************************
   // Auth / Login
   // ****************************************************************************************
@@ -105,6 +109,7 @@ class MoodleLmsService implements LmsInterface {
 
     // 4) Optionally load user courses right away
     courses = await getUserCourses();
+    overrides = await getAssignmentOverrides();
   }
 
   @override
@@ -228,6 +233,38 @@ class MoodleLmsService implements LmsInterface {
     return userCourses;
   }
 
+  Future<List<Override>> getAssignmentOverrides() async {
+    // Returns courses the user is enrolled in
+    if (_userToken == null) throw StateError('User not logged in to Moodle');
+
+    final response =
+        await ApiService().httpPost(Uri.parse(apiURL + serverUrl), body: {
+      'wstoken': _userToken,
+      'wsfunction': 'local_learninglens_get_all_overrides',
+      'moodlewsrestformat': 'json',
+    });
+
+    if (response.statusCode != 200) {
+      throw HttpException(response.body);
+    }
+
+    final decodedJson = jsonDecode(response.body);
+    List<Override> assignmentOverrides;
+
+    if (decodedJson is List) {
+      assignmentOverrides =
+          decodedJson.map((i) => Override.empty().fromMoodleJson(i)).toList();
+    } else if (decodedJson is Map<String, dynamic>) {
+      final courseList = decodedJson['courses'] as List<dynamic>;
+      assignmentOverrides =
+          courseList.map((i) => Override.empty().fromMoodleJson(i)).toList();
+    } else {
+      throw StateError('Unexpected response format from Moodle');
+    }
+
+    return assignmentOverrides;
+  }
+
   @override
   Future<List<Participant>> getCourseParticipants(String courseId) async {
     if (_userToken == null) throw StateError('User not logged in to Moodle');
@@ -245,13 +282,31 @@ class MoodleLmsService implements LmsInterface {
     }
 
     final decodedJson = jsonDecode(response.body);
+    List<Participant> participants = [];
     if (decodedJson is List) {
-      return decodedJson
-          .map((i) => Participant.empty().fromMoodleJson(i))
-          .toList();
+      for (var participant in decodedJson) {
+        if (isStudent(participant)) {
+          participants.add(Participant.empty().fromMoodleJson(participant));
+        }
+      }
+      return participants;
+      // return decodedJson
+      //     .map((i) => Participant.empty().fromMoodleJson(i))
+      //     .toList();
     } else {
       throw StateError('Unexpected response format (expected a List)');
     }
+  }
+
+  bool isStudent(Map<String, dynamic> json) {
+    // Moodle student role id equals 5
+    bool isStudent = false;
+    for (Map<String, dynamic> role in json['roles']) {
+      if (role['roleid'] == 5) {
+        isStudent = true;
+      }
+    }
+    return isStudent;
   }
 
   // ****************************************************************************************
@@ -827,9 +882,8 @@ class MoodleLmsService implements LmsInterface {
     return MoodleRubric.empty().fromMoodleJson(responseData.first);
   }
 
-
   // ****************************************************************************************
-  // TODO: add the method below to the lms_interface. 
+  // TODO: add the method below to the lms_interface.
   // ****************************************************************************************
   /**
    * Fetches all the questions from a quiz.
@@ -849,7 +903,6 @@ class MoodleLmsService implements LmsInterface {
       },
     );
 
-    print("all Questions " + response.body);
     if (response.statusCode == 200) {
       final List<dynamic> jsonList = json.decode(response.body);
 
@@ -898,6 +951,49 @@ class MoodleLmsService implements LmsInterface {
 
     if (response.statusCode == 200 && responseData is Map<String, dynamic>) {
       return QuizOverride.empty().fromMoodleJson(responseData);
+    } else {
+      throw Exception("Failed to create quiz override: ${response.body}");
+    }
+  }
+
+  Future<String> addEssayOverride({
+    required int assignid,
+    int? userId,
+    int? groupId,
+    int? allowsubmissionsfromdate,
+    int? dueDate,
+    int? cutoffDate,
+    int? timelimit,
+    int? sortorder,
+  }) async {
+    if (_userToken == null) throw StateError('User not logged in to Moodle');
+
+    final url = Uri.parse('$apiURL$serverUrl');
+
+    // Dynamically build request body, removing null values
+    final Map<String, String> body = {
+      'wstoken': _userToken!,
+      'wsfunction': 'local_learninglens_add_essay_override',
+      'moodlewsrestformat': 'json',
+      'assignid': assignid.toString(),
+    };
+
+    // Add only non-null fields
+    if (userId != null) body['userid'] = userId.toString();
+    if (groupId != null) body['groupid'] = groupId.toString();
+    if (allowsubmissionsfromdate != null)
+      body['allowsubmissionsfromdate'] = allowsubmissionsfromdate.toString();
+    if (dueDate != null) body['duedate'] = dueDate.toString();
+    if (cutoffDate != null) body['cutoffdate'] = cutoffDate.toString();
+    if (timelimit != null) body['timelimit'] = timelimit.toString();
+    if (sortorder != null) body['sortorder'] = sortorder.toString();
+
+    final response = await ApiService().httpPost(url, body: body);
+
+    final responseData = json.decode(response.body);
+
+    if (response.statusCode == 200 && responseData is Map<String, dynamic>) {
+      return 'Override: ${responseData['override_id']}';
     } else {
       throw Exception("Failed to create quiz override: ${response.body}");
     }
@@ -1076,5 +1172,127 @@ class MoodleLmsService implements LmsInterface {
     } else {
       throw Exception("Failed to update lesson plan: ${response.body}");
     }
+  }
+
+  Future<List<Participant>> getQuizGradesForParticipants(
+      String courseId, int quizId) async {
+    if (_userToken == null) throw StateError('User not logged in to Moodle');
+
+    // Get all course participants (filtered to only students)
+    List<Participant> students = (await getCourseParticipants(courseId))
+        .where((participant) => participant.roles.contains('student'))
+        .toList();
+
+    for (var student in students) {
+      final response = await ApiService().httpPost(
+        Uri.parse(apiURL + serverUrl),
+        body: {
+          'wstoken': _userToken!,
+          'wsfunction': 'mod_quiz_get_user_best_grade',
+          'moodlewsrestformat': 'json',
+          'quizid': quizId.toString(),
+          'userid': student.id.toString(),
+        },
+      );
+
+      if (response.statusCode != 200) {
+        print(
+            'Failed to get grade for user ${student.id}. Status: ${response.statusCode}');
+        continue;
+      }
+
+      final jsonResponse = jsonDecode(response.body);
+      if (jsonResponse is Map<String, dynamic> &&
+          jsonResponse.containsKey('grade')) {
+        student.avgGrade = double.tryParse(jsonResponse['grade'].toString());
+      } else {
+        student.avgGrade = null; // No grade found
+      }
+    }
+    return students;
+  }
+
+  Future<List<Participant>> getEssayGradesForParticipants(
+      String courseId, int assignmentId) async {
+    if (_userToken == null) throw StateError('User not logged in to Moodle');
+
+    // Get all course participants (filtered to only students)
+    List<Participant> students = (await getCourseParticipants(courseId))
+        .where((participant) => participant.roles.contains('student'))
+        .toList();
+
+    for (var student in students) {
+      final response = await ApiService().httpPost(
+        Uri.parse(apiURL + serverUrl),
+        body: {
+          'wstoken': _userToken!,
+          'wsfunction': 'mod_assign_get_grades',
+          'moodlewsrestformat': 'json',
+          'assignmentids[0]': assignmentId.toString(),
+        },
+      );
+
+      if (response.statusCode != 200) {
+        print(
+            'Failed to get grade for user ${student.id}. Status: ${response.statusCode}');
+        continue;
+      }
+
+      final jsonResponse = jsonDecode(response.body);
+      if (jsonResponse is Map<String, dynamic> &&
+          jsonResponse.containsKey('assignments')) {
+        final assignments = jsonResponse['assignments'] as List<dynamic>;
+        for (var assignment in assignments) {
+          final grades = assignment['grades'] as List<dynamic>;
+          for (var grade in grades) {
+            if (grade['userid'] == student.id) {
+              student.avgGrade = double.tryParse(grade['grade'].toString());
+              break;
+            }
+          }
+        }
+      } else {
+        student.avgGrade = null; // No grade found
+      }
+    }
+    return students;
+  }
+
+
+  /// Fetches extended question stats (correct/incorrect/partial attempts) 
+  /// from the local_learninglens_get_question_stats_from_quiz service.
+  Future<List<QuestionStatsType>> getQuestionStatsFromQuiz(int quizId) async {
+    if (_userToken == null) {
+      throw StateError('User not logged in to Moodle');
+    }
+
+    final url = Uri.parse('$apiURL$serverUrl');
+
+    final response = await ApiService().httpPost(
+      url,
+      body: {
+        'wstoken': _userToken!,
+        'wsfunction': 'local_learninglens_get_question_stats_from_quiz',
+        'moodlewsrestformat': 'json',
+        'quizid': quizId.toString(),
+      },
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to fetch question stats: ${response.body}');
+    }
+    print(quizId);
+    print(response.body);
+    final decoded = json.decode(response.body);
+    if (decoded is! List) {
+      throw Exception(
+        'Expected a list of question stats but got: ${response.body}',
+      );
+    }
+
+    // Convert each item into a QuestionStatsType instance
+    return decoded.map<QuestionStatsType>((item) {
+      return QuestionStatsType.fromJson(item);
+    }).toList();
   }
 }

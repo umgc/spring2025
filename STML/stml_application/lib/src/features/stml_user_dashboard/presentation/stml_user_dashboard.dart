@@ -18,6 +18,8 @@ import 'package:memoryminder/src/camera_manager.dart';
 import 'package:memoryminder/src/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:memoryminder/features/caregiver_task_management/caregiver_task_screen.dart';
+import 'package:memoryminder/src/features/wearable-integration/fitbit_login.dart';
+
 
 // Main HomeScreen widget which is a stateless widget.
 class HomeScreen extends StatefulWidget {
@@ -177,8 +179,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         icon: Icon(Icons.health_and_safety_outlined,
                             size: iconSize, color: Colors.black54),
                         text: 'My Health',
-                        screen: TourScreen(),
-                        keyName: "TourGuideButtonKey",
+                        routeName: '/healthMetrics',
+                        keyName: "healthMetrics",
                         backgroundColor:
                             const Color(0xFFFFFFFF).withOpacity(0.30)),
                     _buildElevatedButton(
@@ -206,7 +208,8 @@ class _HomeScreenState extends State<HomeScreen> {
     required BuildContext context,
     required Icon icon,
     required String text,
-    required Widget screen,
+    Widget? screen,
+    String? routeName,
     required String keyName,
     required Color backgroundColor,
   }) {
@@ -222,10 +225,14 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
       onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => screen),
-        );
+        if (routeName != null) {
+          Navigator.pushNamed(context, routeName); // Use named route if provided
+        } else if (screen != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => screen), // Default behavior
+          );
+        }
       },
       child: Column(
         mainAxisSize: MainAxisSize.min,

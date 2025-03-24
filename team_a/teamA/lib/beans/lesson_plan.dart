@@ -30,9 +30,17 @@ class LessonPlan implements LearningLensInterface {
     );
   }
 
-  @override
+ @override
   LessonPlan fromGoogleJson(Map<String, dynamic> json) {
-    // TODO: Map Google Classroom JSON to LessonPlan.
-    throw UnimplementedError();
+    print('LessonPlan.fromGoogleJson: $json');
+    
+    return LessonPlan(
+    id: json['id'] != null ? int.tryParse(json['id'].toString()) ?? 0 : 0, // Ens
+    name: json['title'] ?? '',
+    intro: json['description'] ?? '',
+     timemodified: json['updateTime'] != null 
+        ? DateTime.parse(json['updateTime']).millisecondsSinceEpoch // Convert to int
+        : 0,
+    );
   }
 }

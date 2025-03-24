@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:learninglens_app/Api/lms/enum/lms_enum.dart';
 import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
 import 'package:learninglens_app/Api/lms/google_classroom/google_lms_service.dart';
@@ -8,9 +9,6 @@ import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/Views/dashboard.dart';
 import 'package:learninglens_app/services/local_storage_service.dart';
 import '../Api/lms/moodle/moodle_lms_service.dart'; // Make sure this path is correct
-
-
-
 
 class QuizMoodle extends StatefulWidget {
   final Quiz quiz;
@@ -33,6 +31,7 @@ class QuizMoodleState extends State<QuizMoodle> {
   String selectedCourse = 'Select a course';
 
   LmsType? lmsType;
+  bool isLoading = false; // Added to track loading state
 
   @override
   void initState() {
@@ -52,13 +51,12 @@ class QuizMoodleState extends State<QuizMoodle> {
     });
   }
 
-// Fetch courses from the controller
+  // Fetch courses from the controller
   Future<void> fetchCourses() async {
     try {
       List<Course>? courseList = LmsFactory.getLmsService().courses;
       setState(() {
         courses = courseList ?? [];
-        // Don't auto-select any course here, leave it to the user to select.
         selectedCourse = 'Select a course';
       });
     } catch (e) {
@@ -69,12 +67,10 @@ class QuizMoodleState extends State<QuizMoodle> {
     }
   }
 
-// Dropdown to display courses with "Select a course" as the default option
+  // Dropdown to display courses with "Select a course" as the default option
   DropdownButtonFormField<String> _buildCourseDropdown() {
     return DropdownButtonFormField<String>(
-      value: selectedCourse == 'Select a course'
-          ? null
-          : selectedCourse, // Set initial value to null if 'Select a course'
+      value: selectedCourse == 'Select a course' ? null : selectedCourse,
       decoration: InputDecoration(
         labelText: 'Course name',
         border: OutlineInputBorder(),
@@ -194,13 +190,9 @@ class QuizMoodleState extends State<QuizMoodle> {
               ),
             ),
             SizedBox(height: 30),
-
-// Assuming 'courses' is now a regular list of Course objects, not a Future.
             sectionTitle(title: 'Course Name'),
             _buildCourseDropdown(),
-
             SizedBox(height: 15),
-
             sectionTitle(title: 'Quiz Name'),
             SizedBox(height: 15),
             TextField(
@@ -212,7 +204,6 @@ class QuizMoodleState extends State<QuizMoodle> {
               enabled: false,
             ),
             SizedBox(height: 15),
-
             sectionTitle(title: 'Section Number'),
             SizedBox(height: 15),
             TextField(
@@ -221,9 +212,12 @@ class QuizMoodleState extends State<QuizMoodle> {
                 labelText: 'Course Section Number',
                 border: OutlineInputBorder(),
               ),
+              keyboardType: TextInputType.number, // Set keyboard type to number
+              inputFormatters: <TextInputFormatter>[
+                FilteringTextInputFormatter.digitsOnly // Allow only digits
+              ],
             ),
             SizedBox(height: 15),
-
             sectionTitle(title: 'Number of Questions'),
             SizedBox(height: 15),
             TextField(
@@ -234,7 +228,6 @@ class QuizMoodleState extends State<QuizMoodle> {
               ),
             ),
             SizedBox(height: 15),
-
             sectionTitle(title: 'Availability'),
             SizedBox(height: 15),
             // Submission Date
@@ -283,7 +276,6 @@ class QuizMoodleState extends State<QuizMoodle> {
               ),
             ),
             SizedBox(height: 16),
-
             // Due Date
             Directionality(
               textDirection: TextDirection.ltr,
@@ -338,176 +330,204 @@ class QuizMoodleState extends State<QuizMoodle> {
                 children: [
                   if (lmsType == LmsType.MOODLE)
                     ElevatedButton(
-                      onPressed: () async {
-                        // Validate selected course
-                        if (selectedCourse == 'Select a course') {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                                content: Text(
-                                    'Please select a course to proceed.')),
-                          );
-                          return;
-                        }
-                        try {
-                          // 1. Construct submission and due dates as DateTime objects
-                          DateTime submissionDate = DateTime(
-                            int.parse(selectedYearSubmission),
-                            months.indexOf(selectedMonthSubmission) + 1,
-                            int.parse(selectedDaySubmission),
-                            int.parse(selectedHourSubmission),
-                            int.parse(selectedMinuteSubmission),
-                          );
+                      onPressed: isLoading
+                          ? null
+                          : () async {
+                              setState(() {
+                                isLoading = true;
+                              });
 
-                          DateTime dueDate = DateTime(
-                            int.parse(selectedYearDue),
-                            months.indexOf(selectedMonthDue) + 1,
-                            int.parse(selectedDayDue),
-                            int.parse(selectedHourDue),
-                            int.parse(selectedMinuteDue),
-                          );
+                              if (selectedCourse == 'Select a course') {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                      content: Text(
+                                          'Please select a course to proceed.')),
+                                );
+                                setState(() {
+                                  isLoading = false;
+                                });
+                                return;
+                              }
 
-                          // 2. Format the due date as YYYY-MM-DD-HH-MM
-                          String formattedDueDate =
-                              "${dueDate.year}-${dueDate.month.toString().padLeft(2, '0')}-${dueDate.day.toString().padLeft(2, '0')}-${dueDate.hour.toString().padLeft(2, '0')}-${dueDate.minute.toString().padLeft(2, '0')}";
+                              try {
+                                DateTime submissionDate = DateTime(
+                                  int.parse(selectedYearSubmission),
+                                  months.indexOf(selectedMonthSubmission) + 1,
+                                  int.parse(selectedDaySubmission),
+                                  int.parse(selectedHourSubmission),
+                                  int.parse(selectedMinuteSubmission),
+                                );
 
-                          // Call Moodle-specific methods
-                          var quizid = await LmsFactory.getLmsService()
-                              .createQuiz(
-                            selectedCourse,
-                            widget.quiz.name ?? 'Quiz Name',
-                            widget.quiz.description ?? 'Quiz Description',
-                            quizSectionController.text,
-                            '$selectedDaySubmission $selectedMonthSubmission $selectedYearSubmission $selectedHourSubmission:$selectedMinuteSubmission',
-                            '$selectedDayDue $selectedMonthDue $selectedYearDue $selectedHourDue:$selectedMinuteDue',
-                          );
-                          print('Quiz ID: $quizid');
+                                DateTime dueDate = DateTime(
+                                  int.parse(selectedYearDue),
+                                  months.indexOf(selectedMonthDue) + 1,
+                                  int.parse(selectedDayDue),
+                                  int.parse(selectedHourDue),
+                                  int.parse(selectedMinuteDue),
+                                );
 
-                          var categoryid = await LmsFactory.getLmsService()
-                              .importQuizQuestions(
-                                  selectedCourse, quizasxml);
-                          print('Category ID: $categoryid');
+                                String formattedDueDate =
+                                    "${dueDate.year}-${dueDate.month.toString().padLeft(2, '0')}-${dueDate.day.toString().padLeft(2, '0')}-${dueDate.hour.toString().padLeft(2, '0')}-${dueDate.minute.toString().padLeft(2, '0')}";
 
-                          var randomresult = await LmsFactory.getLmsService()
-                              .addRandomQuestions(
-                                  categoryid.toString(),
-                                  quizid.toString(),
-                                  quizQuestionsController.text);
-                          print('Random Result: $randomresult');
+                                var quizid = await LmsFactory.getLmsService()
+                                    .createQuiz(
+                                  selectedCourse,
+                                  widget.quiz.name ?? 'Quiz Name',
+                                  widget.quiz.description ?? 'Quiz Description',
+                                  quizSectionController.text,
+                                  '$selectedDaySubmission $selectedMonthSubmission $selectedYearSubmission $selectedHourSubmission:$selectedMinuteSubmission',
+                                  '$selectedDayDue $selectedMonthDue $selectedYearDue $selectedHourDue:$selectedMinuteDue',
+                                );
+                                print('Quiz ID: $quizid');
 
-                          if (randomresult == 'true') {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                  content: Text(
-                                      'Quiz submitted successfully to Moodle!')),
-                            );
-                            await Future.delayed(Duration(seconds: 2));
-                            if (mounted) {
-                              Navigator.pop(context);
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => TeacherDashboard(),
-                                ),
-                              );
-                            }
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                  content: Text(
-                                      'Failed to update grades in Moodle.')),
-                            );
-                          }
-                        } catch (e) {
-                          print('Error during quiz creation: $e');
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                                content: Text('An error occurred: ${e}')),
-                          );
-                        }
-                      },
-                      child: Text(
-                        'Send to Moodle',
-                        textDirection: TextDirection.ltr,
-                      ),
+                                var categoryid = await LmsFactory.getLmsService()
+                                    .importQuizQuestions(
+                                        selectedCourse, quizasxml);
+                                print('Category ID: $categoryid');
+
+                                var randomresult = await LmsFactory.getLmsService()
+                                    .addRandomQuestions(
+                                        categoryid.toString(),
+                                        quizid.toString(),
+                                        quizQuestionsController.text);
+                                print('Random Result: $randomresult');
+
+                                if (randomresult == 'true') {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                        content: Text(
+                                            'Quiz submitted successfully to Moodle!')),
+                                  );
+                                  await Future.delayed(Duration(seconds: 2));
+                                  if (mounted) {
+                                    Navigator.pop(context);
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => TeacherDashboard(),
+                                      ),
+                                    );
+                                  }
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                        content: Text(
+                                            'Failed to update grades in Moodle.')),
+                                  );
+                                }
+                              } catch (e) {
+                                print('Error during quiz creation: $e');
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                      content: Text('An error occurred: ${e}')),
+                                );
+                              } finally {
+                                setState(() {
+                                  isLoading = false;
+                                });
+                              }
+                            },
+                      child: isLoading
+                          ? CircularProgressIndicator(
+                              color: Colors.white,
+                            )
+                          : Text(
+                              'Send to Moodle',
+                              textDirection: TextDirection.ltr,
+                            ),
                     ),
                   if (lmsType == LmsType.GOOGLE)
                     ElevatedButton(
-                      onPressed: () async {
-                        // Validate selected course
-                        if (selectedCourse == 'Select a course') {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                                content: Text(
-                                    'Please select a course to proceed.')),
-                          );
-                          return;
-                        }
-                        try {
-                          // 1. Construct submission and due dates as DateTime objects
-                          DateTime submissionDate = DateTime(
-                            int.parse(selectedYearSubmission),
-                            months.indexOf(selectedMonthSubmission) + 1,
-                            int.parse(selectedDaySubmission),
-                            int.parse(selectedHourSubmission),
-                            int.parse(selectedMinuteSubmission),
-                          );
+                      onPressed: isLoading
+                          ? null
+                          : () async {
+                              setState(() {
+                                isLoading = true;
+                              });
 
-                          DateTime dueDate = DateTime(
-                            int.parse(selectedYearDue),
-                            months.indexOf(selectedMonthDue) + 1,
-                            int.parse(selectedDayDue),
-                            int.parse(selectedHourDue),
-                            int.parse(selectedMinuteDue),
-                          );
+                              if (selectedCourse == 'Select a course') {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                      content: Text(
+                                          'Please select a course to proceed.')),
+                                );
+                                setState(() {
+                                  isLoading = false;
+                                });
+                                return;
+                              }
 
-                          // 2. Format the due date as YYYY-MM-DD-HH-MM
-                          String formattedDueDate =
-                              "${dueDate.year}-${dueDate.month.toString().padLeft(2, '0')}-${dueDate.day.toString().padLeft(2, '0')}-${dueDate.hour.toString().padLeft(2, '0')}-${dueDate.minute.toString().padLeft(2, '0')}";
+                              try {
+                                DateTime submissionDate = DateTime(
+                                  int.parse(selectedYearSubmission),
+                                  months.indexOf(selectedMonthSubmission) + 1,
+                                  int.parse(selectedDaySubmission),
+                                  int.parse(selectedHourSubmission),
+                                  int.parse(selectedMinuteSubmission),
+                                );
 
-                          // Call Google Classroom-specific methods
-                          bool success = await GoogleLmsService()
-                              .createAndAssignQuizFromXml(
-                            selectedCourse,
-                            quizNameController.text,
-                            widget.quiz.description ?? 'Quiz Description',
-                            quizasxml,
-                            formattedDueDate,
-                          );
-                          if (success) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                  content: Text(
-                                      'Quiz submitted successfully to Google Classroom!')),
-                            );
-                            await Future.delayed(Duration(seconds: 2));
-                            if (mounted) {
-                              Navigator.pop(context);
-                              Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => TeacherDashboard(),
-                                ),
-                              );
-                            }
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                  content: Text(
-                                      'Failed to create quiz in Google Classroom.')),
-                            );
-                          }
-                        } catch (e) {
-                          print('Error during quiz creation: $e');
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                                content: Text('An error occurred: ${e}')),
-                          );
-                        }
-                      },
-                      child: Text(
-                        'Send to Google Classroom',
-                        textDirection: TextDirection.ltr,
-                      ),
+                                DateTime dueDate = DateTime(
+                                  int.parse(selectedYearDue),
+                                  months.indexOf(selectedMonthDue) + 1,
+                                  int.parse(selectedDayDue),
+                                  int.parse(selectedHourDue),
+                                  int.parse(selectedMinuteDue),
+                                );
+
+                                String formattedDueDate =
+                                    "${dueDate.year}-${dueDate.month.toString().padLeft(2, '0')}-${dueDate.day.toString().padLeft(2, '0')}-${dueDate.hour.toString().padLeft(2, '0')}-${dueDate.minute.toString().padLeft(2, '0')}";
+
+                                bool success = await GoogleLmsService()
+                                    .createAndAssignQuizFromXml(
+                                  selectedCourse,
+                                  quizNameController.text,
+                                  widget.quiz.description ?? 'Quiz Description',
+                                  quizasxml,
+                                  formattedDueDate,
+                                );
+                                if (success) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                        content: Text(
+                                            'Quiz submitted successfully to Google Classroom!')),
+                                  );
+                                  await Future.delayed(Duration(seconds: 2));
+                                  if (mounted) {
+                                    Navigator.pop(context);
+                                    Navigator.pushReplacement(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => TeacherDashboard(),
+                                      ),
+                                    );
+                                  }
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                        content: Text(
+                                            'Failed to create quiz in Google Classroom.')),
+                                  );
+                                }
+                              } catch (e) {
+                                print('Error during quiz creation: $e');
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                      content: Text('An error occurred: ${e}')),
+                                );
+                              } finally {
+                                setState(() {
+                                  isLoading = false;
+                                });
+                              }
+                            },
+                      child: isLoading
+                          ? CircularProgressIndicator(
+                              color: Colors.white,
+                            )
+                          : Text(
+                              'Send to Google Classroom',
+                              textDirection: TextDirection.ltr,
+                            ),
                     ),
                 ],
               ),
