@@ -57,9 +57,9 @@ Future<sherpa_onnx.VoiceActivityDetector> createVoiceActivityDetector() async {
     model: model,
     threshold: 0.5,
     minSilenceDuration: 0.25,
-    minSpeechDuration: 0.15,
+    minSpeechDuration: 0.1,
     windowSize: 512,
-    maxSpeechDuration: 10.0, 
+    maxSpeechDuration: 10.0,
   );
     
   final vadConfig = sherpa_onnx.VadModelConfig(
@@ -489,7 +489,7 @@ Future<void> processSegmentOffline(AudioSegment segment) async {
             
             // TRANSITION: Silence → Speech (START COLLECTING)
             if (!isCurrentlySpeaking && speechDetected) {
-              debugPrint('🎤 Speech started at: $currentTimestamp');
+              debugPrint('🎙️ Speech started at: $currentTimestamp');
               isCurrentlySpeaking = true;
               speechStartTime = currentTimestamp;
               currentSegmentSamples.clear(); // Start fresh collection
@@ -536,36 +536,23 @@ Future<void> processSegmentOffline(AudioSegment segment) async {
               debugPrint('🔇 Speech ended at: $currentTimestamp, duration: ${currentTimestamp - speechStartTime}');
               isCurrentlySpeaking = false;
               
-              // // Only process if we collected enough speech data
-              // if (currentSegmentSamples.isNotEmpty && recognizedSegments.lastOrNull != null) {
-                // Combine all samples into a single Float32List
-                // final combinedSamples = Float32List(currentSegmentSamples.fold<int>(
-                //   0, (sum, list) => sum + list.length));
-                
-                // var sampleOffset = 0;
-                // for (var samples in currentSegmentSamples) {
-                //   combinedSamples.setRange(sampleOffset, sampleOffset + samples.length, samples);
-                //   sampleOffset += samples.length;
-                // }
+              // Create and add a new audio segment for background processing
+              pendingSegments.add(AudioSegment(
+                samples: vad!.front().samples,
+                sampleRate: sampleRate,
+                index: currentIndex,
+                start: speechStartTime,
+                end: currentTimestamp,
+              ));
+              
+              // Process with offline recognizer in the background
+              processPendingSegments();
+              
+              // Increment for next segment
+              currentIndex += 1;
 
-                // Create and add a new audio segment for background processing
-                pendingSegments.add(AudioSegment(
-                  samples: vad!.front().samples,
-                  sampleRate: sampleRate,
-                  index: currentIndex,
-                  start: speechStartTime,
-                  end: currentTimestamp,
-                ));
-                
-                // Process with offline recognizer in the background
-                processPendingSegments();
-                
-                // Increment for next segment
-                currentIndex += 1;
-              // }
+              // Clear current segment samples
               vad!.pop();
-              // Clear VAD buffer - flush any pending segments
-              vad?.flush();
               
               // During silence we don't collect samples - they're effectively discarded
               // until the next speech segment begins
@@ -582,7 +569,9 @@ Future<void> processSegmentOffline(AudioSegment segment) async {
             debugPrint('Error from audio stream: $error');
           },
           onDone: () {
-            debugPrint('Audio stream done; ${recognizedSegments.length} segments with $currentSpeakerCount speakers');
+            debugPrint('🫳🎤 Audio stream done; ${recognizedSegments.length} segments with $currentSpeakerCount speakers');
+            // Clear VAD buffer - flush any pending segments
+            vad?.flush();
           },
         );
       }
@@ -690,6 +679,7 @@ Future<void> processSegmentOffline(AudioSegment segment) async {
 
   Future<Conversation> createConversation() async {
     // Ensure WAV file is saved
+    debugPrint('Saving WAV file');
     await saveWavFile();
     
     // Create conversation object
@@ -742,12 +732,8 @@ Future<void> processSegmentOffline(AudioSegment segment) async {
       // Process final segments
       debugPrint('Processing final segments with offline recognizer');
       await processPendingSegments();
-
-      // Save the recording as a WAV file
-      debugPrint('Saving WAV file');
-      await saveWavFile();
-    
-      // Create conversation object
+   
+      // Create conversation object (also saves the WAV file)
       debugPrint('Creating conversation object');
       lastConversation = await createConversation();
 
