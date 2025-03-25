@@ -82,14 +82,14 @@ class CareRecipientProfileScreenState extends State<CareRecipientProfileScreen> 
                   padding: const EdgeInsets.all(26.0),
                   children: [
                     // Using the helper function to build each button in the grid
-                    _buildElevatedButton(
-                      context: context,
-                      icon: Icon(Icons.health_and_safety_rounded,
-                          size: iconSize, color: Color.fromARGB(255, 2, 63, 129)),
-                      text: 'Health Metrics',
-                      routeName: '/healthMetrics',
-                      keyName: "HealthMetricsButtonKey",
-                    ),
+                  _buildElevatedButton(
+                  context: context,
+                  icon: Icon(Icons.health_and_safety_rounded,
+                  size: iconSize, color: Colors.black54),
+                  text: 'Health Metrics',
+                  screen: HealthMetricsScreen(),
+                  keyName: "HealthMetricsButtonKey",
+                  ),
                     _buildElevatedButton(
                       context: context,
                       icon: Icon(Icons.task,
