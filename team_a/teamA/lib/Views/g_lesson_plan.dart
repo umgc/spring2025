@@ -179,11 +179,16 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
       }
 
       String prompt =
-          "Create a concise, all-text lesson plan for ${lessonPlanNameController.text} for grade ${selectedGradeLevel == 'K' ? 'Kindergarten' : selectedGradeLevel} covering ${manualEntryController.text}. ${aiPromptDetailsController.text}. Write it as student-facing content for studying, essays, and quizzes. Use plain text, no Markdown, in 500 words.";
-
+          """Generate an all text (no diagrams) lesson of less than 500 words for ${lessonPlanNameController.text} for grade $selectedGradeLevel covering key topics like ${manualEntryController.text}. ${aiPromptDetailsController.text}. This lesson is WHAT THE STUDENT WILL SEE! This lesson will be viewed by students and students will use it to study from (which will help them write essays and take quizzes). IMPORTANT: Do not use any Markdown syntax (e.g., #, *, **, etc.). Use plain text only.""";
       var result = await aiModel.generate(prompt);
+      print('Generated lesson plan before cleaning: $result');
+
+      // Strip any Markdown from the result
+      String cleanedResult = stripMarkdown(result);
+      print('Generated lesson plan after cleaning: $cleanedResult');
+
       setState(() {
-        manualEntryController.text = result;
+        manualEntryController.text = cleanedResult;
       });
     } catch (e) {
       log.severe("Error generating lesson plan: $e");
@@ -195,6 +200,20 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
         isGeneratingAI = false;
       });
     }
+  }
+
+  String stripMarkdown(String text) {
+    // Remove common Markdown syntax
+    String cleanedText = text
+        .replaceAll(RegExp(r'#+\s'), '') // Remove headers (e.g., #, ##)
+        .replaceAll(RegExp(r'\*\*'), '') // Remove bold (**)
+        .replaceAll(RegExp(r'\*'), '') // Remove italics or list markers (*)
+        .replaceAll(RegExp(r'_'), '') // Remove italics or emphasis (_)
+        .replaceAll(RegExp(r'```[\s\S]*?```'), '') // Remove code blocks
+        .replaceAll(RegExp(r'`'), '') // Remove inline code
+        .replaceAll(RegExp(r'-\s'), '') // Remove list markers (-)
+        .replaceAll(RegExp(r'>\s'), ''); // Remove blockquotes (>)
+    return cleanedText.trim();
   }
 
   void _showLessonPlanDialog(dynamic lessonPlan) {

@@ -3,10 +3,9 @@ import 'dart:convert';
 import 'package:learninglens_app/Api/llm/llm_api_modules_base.dart';
 import 'package:learninglens_app/services/api_service.dart';
 
-class PerplexityLLM implements LLM
-{
-  @override
+class PerplexityLLM implements LLM {
   final String apiKey;
+
   @override
   final String url = 'https://api.perplexity.ai/chat/completions';
   @override
@@ -14,14 +13,12 @@ class PerplexityLLM implements LLM
 
   PerplexityLLM(this.apiKey);
 
-  Map<String, dynamic> convertHttpRespToJson(String httpResponseString) 
-  {
+  Map<String, dynamic> convertHttpRespToJson(String httpResponseString) {
     return (json.decode(httpResponseString) as Map<String, dynamic>);
   }
 
   //
-  String getPostBody(String queryMessage) 
-  {
+  String getPostBody(String queryMessage) {
     return jsonEncode({
       // 'model': 'llama-3-sonar-large-32k-online',
       //'model': 'llama-3.1-sonar-large-128k-chat',
@@ -34,8 +31,7 @@ class PerplexityLLM implements LLM
   }
 
   //
-  Map<String, String> getPostHeaders() 
-  {
+  Map<String, String> getPostHeaders() {
     return ({
       'accept': 'application/json',
       'content-type': 'application/json',
@@ -44,12 +40,11 @@ class PerplexityLLM implements LLM
   }
 
   //
-  Uri getPostUrl() => Uri.https(this.url);
+  Uri getPostUrl() => Uri.https('api.perplexity.ai', '/chat/completions');
 
   //
   Future<String> postMessage(
-      Uri url, Map<String, String> postHeaders, Object postBody) async 
-  {
+      Uri url, Map<String, String> postHeaders, Object postBody) async {
     final httpPackageResponse =
         await ApiService().httpPost(url, headers: postHeaders, body: postBody);
 
@@ -64,8 +59,7 @@ class PerplexityLLM implements LLM
     return httpPackageResponse.body;
   }
 
-  List<String> parseQueryResponse(String resp) 
-  {
+  List<String> parseQueryResponse(String resp) {
     // ignore: prefer_adjacent_string_concatenation
     String quizRegExp =
         // r'(<\?xml.*?\?>\s*<quiz>(\s*.*?<question>\s*.*?<text>\s*(.*?)</text>\s*.*?<options>(\s*.*?<option>\s*(.*?)</option>)+\s*</options>\s*.*?<answer>\s*(.*?)</answer>\s*.*?</question>)+\s*</quiz>)';
@@ -92,8 +86,7 @@ class PerplexityLLM implements LLM
   }
 
   //
-  Future<String> postToLlm(String queryPrompt) async 
-  {
+  Future<String> postToLlm(String queryPrompt) async {
     var resp = "";
 
     // use the following test query so Perplexity doesn't charge
@@ -105,8 +98,7 @@ class PerplexityLLM implements LLM
   }
 
   //
-  Future<String> queryAI(String query) async 
-  {
+  Future<String> queryAI(String query) async {
     final postHeaders = getPostHeaders();
     final postBody = getPostBody(query);
     final httpPackageUrl = getPostUrl();
@@ -126,14 +118,14 @@ class PerplexityLLM implements LLM
   }
 
   Future<String> getChatResponse(String prompt) async {
-
     final postHeaders = getPostHeaders();
     final postBody = getPostBody(prompt);
     final httpPackageUrl = getPostUrl();
 
     try {
       // Make the POST request to the chat completions endpoint
-      var response = await ApiService().httpPost(httpPackageUrl, headers: postHeaders, body: postBody);
+      var response = await ApiService()
+          .httpPost(httpPackageUrl, headers: postHeaders, body: postBody);
 
       // Check for successful response
       if (response.statusCode == 200) {
@@ -152,17 +144,16 @@ class PerplexityLLM implements LLM
       return 'An error occurred. Please check your internet connection and try again.';
     }
   }
-  
+
   @override
   Future<String> generate(String prompt) async {
     print('Generating response for prompt Perplexity: $prompt');
 
-  final postHeaders = getPostHeaders();
+    final postHeaders = getPostHeaders();
     final postBody = getPostBody(prompt);
     final url = getPostUrl();
     final responseString = await postMessage(url, postHeaders, postBody);
     final responseJson = jsonDecode(responseString);
     return responseJson['choices'][0]['message']['content'].trim();
   }
-  
 }
