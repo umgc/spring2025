@@ -69,6 +69,7 @@ dependencies:
     flutter_secure_storage: ^8.0.0
     http: ^0.13.6
     fl_chart: ^0.64.0
+    syncfusion_flutter_calendar: ^28.1.37
 
 dev_dependencies:
   flutter_test:

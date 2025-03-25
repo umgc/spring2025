@@ -19,6 +19,11 @@ import 'package:memoryminder/src/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:memoryminder/features/caregiver_task_management/caregiver_task_screen.dart';
 import 'package:memoryminder/src/features/wearable-integration/fitbit_login.dart';
+import 'package:syncfusion_flutter_calendar/calendar.dart';
+
+import '../../../../ui/stml_calendar_screen.dart';
+
+
 
 
 // Main HomeScreen widget which is a stateless widget.
@@ -190,6 +195,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         text: 'Caregiver Tasks',
                         screen: CaregiverTaskScreen(),
                         keyName: "CaregiverTaskButtonKey",
+                        backgroundColor:
+                            const Color(0xFFFFFFFF).withOpacity(0.30)),
+                    _buildElevatedButton(
+                        context: context,
+                        icon: Icon(Icons.task_alt,
+                            size: iconSize, color: Colors.black54),
+                        text: 'STML Calendar',
+                        screen: stmlCalendarScreen(),
+                        keyName: "stmlCalendarScreen",
                         backgroundColor:
                             const Color(0xFFFFFFFF).withOpacity(0.30)),
                   ],
