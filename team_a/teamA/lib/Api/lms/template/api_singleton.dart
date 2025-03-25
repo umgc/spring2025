@@ -1,7 +1,5 @@
-import 'dart:convert';
-import 'dart:io';
-import 'package:http/http.dart' as http;
 import 'package:learninglens_app/beans/course.dart';
+import 'package:learninglens_app/beans/lesson_plan.dart';
 import 'package:learninglens_app/beans/quiz.dart';
 import 'package:learninglens_app/beans/quiz_type.dart';
 import 'package:learninglens_app/beans/assignment.dart';
@@ -11,7 +9,6 @@ import 'package:learninglens_app/beans/grade.dart';
 import 'package:learninglens_app/beans/submission.dart';
 import 'package:learninglens_app/beans/submission_with_grade.dart';
 import 'package:learninglens_app/beans/moodle_rubric.dart';
-import 'package:learninglens_app/services/api_service.dart';
 import 'package:learninglens_app/Api/lms/lms_interface.dart';
 
 
@@ -215,6 +212,24 @@ class ApiSingleton implements LmsInterface {
   @override
   Future<MoodleRubric?> getRubric(String assignmentid) {
     // TODO: implement getRubric
+    throw UnimplementedError();
+  }
+
+  //Get Lesson Plan
+  Future<LessonPlan>getLessonPlan(String courseId){
+    //\TODO: implement getLessonPlan
+    throw UnimplementedError();
+  }
+
+       @override
+  Future<List<QuestionType>> getQuestionsFromQuizGoogle(String courseId, String courseWorkId) async {
+    // TODO: implement google api code
+    throw UnimplementedError();
+  }
+  
+  @override
+  Future<List<Participant>> getQuizGradesForParticipants(String courseId, int quizId) {
+    // TODO: implement getQuizGradesForParticipants
     throw UnimplementedError();
   }
 

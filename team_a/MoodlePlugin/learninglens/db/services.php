@@ -109,6 +109,14 @@ $functions = [
         'capabilities'=> 'mod/quiz:manage',
         'services'    => [MOODLE_OFFICIAL_MOBILE_SERVICE],
     ],
+    'local_learninglens_add_essay_override' => [
+        'classname'   => 'local_learninglens\external\add_essay_override',
+        'description' => 'Adds an override to a essay for a user or group.',
+        'type'        => 'write',
+        'ajax'        => true,
+        'capabilities'=> 'mod/assign:manage',
+        'services'    => [MOODLE_OFFICIAL_MOBILE_SERVICE],
+    ],
     'local_learninglens_get_lesson_plans_by_course' => [
         'classname'   => 'local_learninglens\external\get_lesson_plans_by_course',
         'description' => 'Retrieves lesson plans associated with a given course ID.',
@@ -132,5 +140,21 @@ $functions = [
         'ajax'        => true,
         'capabilities' => 'mod/lesson:manage',
         'services'    => [MOODLE_OFFICIAL_MOBILE_SERVICE]
+    ],
+    'local_learninglens_get_all_overrides' => [
+        'classname'   => 'local_learninglens\external\get_all_overrides',
+        'description' => 'Gets overrides for both quiz and essay',
+        'type'        => 'read',
+        'ajax'        => true,
+        'capabilities' => 'mod/quiz:view, mod/assign:view',
+        'services'    => [MOODLE_OFFICIAL_MOBILE_SERVICE]
+    ],
+    'local_learninglens_get_question_stats_from_quiz' => [
+        'classname'   => 'local_learninglens\external\get_question_stats_from_quiz',
+        'description' => 'Fetches questions + stats (correct/incorrect counts) for a quiz',
+        'type'        => 'read',
+        'ajax'        => true,
+        'capabilities'=> 'mod/quiz:view',
+        'services'    => [MOODLE_OFFICIAL_MOBILE_SERVICE],
     ],
 ];

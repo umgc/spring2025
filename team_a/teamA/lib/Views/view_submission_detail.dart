@@ -2,11 +2,10 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
-import 'package:learninglens_app/Views/view_submissions.dart';
 import 'package:learninglens_app/beans/participant.dart';
 import 'package:learninglens_app/beans/submission.dart';
 import 'package:learninglens_app/beans/moodle_rubric.dart';
-import '../Api/lms/moodle/moodle_lms_service.dart';
+import 'package:learninglens_app/Views/essays_view.dart';
 import 'dart:math';
 
 class SubmissionDetail extends StatefulWidget {
@@ -40,13 +39,16 @@ class SubmissionDetailState extends State<SubmissionDetail> {
   }
 
   Future<void> fetchRubric() async {
+    print('Fetching Rubric for assignment ID: ${widget.submission.assignmentId}');
     int? contextId = await LmsFactory.getLmsService()
         .getContextId(widget.submission.assignmentId, widget.courseId);
     if (contextId != null) {
       var fetchedRubric = await LmsFactory.getLmsService()
           .getRubric(widget.submission.assignmentId.toString());
+    print('Fetched Rubric: $fetchedRubric');
       var submissionScores = await LmsFactory.getLmsService().getRubricGrades(
           widget.submission.assignmentId, widget.participant.id);
+      print('Submission Scores: $submissionScores');
 
       setState(() {
         rubric = fetchedRubric;
@@ -105,10 +107,7 @@ class SubmissionDetailState extends State<SubmissionDetail> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => SubmissionList(
-                assignmentId: widget.submission.assignmentId,
-                courseId: widget.courseId,
-              ),
+              builder: (context) => EssaysView(),
             ),
           );
         }
@@ -123,7 +122,7 @@ class SubmissionDetailState extends State<SubmissionDetail> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CustomAppBar(title: 'Submission Details', userprofileurl: LmsFactory.getLmsService().profileImage ?? ''),
+      appBar: CustomAppBar(title: 'Submission Details From here', userprofileurl: LmsFactory.getLmsService().profileImage ?? ''),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
           : Padding(
@@ -198,7 +197,7 @@ class SubmissionDetailState extends State<SubmissionDetail> {
                             ? Text(
                                 errorMessage,
                                 style: TextStyle(
-                                    fontSize: 16,
+                                    fontSize: 50,
                                     fontStyle: FontStyle.italic,
                                     color: Colors.red),
                               )

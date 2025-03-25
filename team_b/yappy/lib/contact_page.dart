@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:yappy/tool_bar.dart';
+
 //**************************************************************** */
 //**************************************************************** */
 //**************************************************************** */
-//Currently the data doenst go anywhere. You would need to add an Email address and a way to send the data to that email address
+//Currently the data doesnt go anywhere. You would need to add an Email address and a way to send the data to that email address
 //This is a simple form that takes in a name, email, and message and sends it to an email address
 //The user will be notified that the message has been sent
 //**************************************************************** */
@@ -31,7 +32,6 @@ class ContactPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 0, 0, 0),
-
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(140),
         child: ToolBar(),
