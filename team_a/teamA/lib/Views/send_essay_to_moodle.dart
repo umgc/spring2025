@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:learninglens_app/Api/lms/factory/lms_factory.dart';
 import 'package:learninglens_app/Controller/custom_appbar.dart';
 import 'package:learninglens_app/beans/course.dart';
@@ -267,7 +268,11 @@ class EssayAssignmentSettingsState extends State<EssayAssignmentSettings> {
                       labelText: 'Section Number',
                       border: OutlineInputBorder(),
                     ),
-                    // Adding validator to ensure assignment name is not empty
+                    keyboardType: TextInputType.number, // Set keyboard type to number
+                    inputFormatters: <TextInputFormatter>[
+                      FilteringTextInputFormatter.digitsOnly // Allow only digits
+                    ],
+                    // Adding validator to ensure section number is not empty
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Please enter a section number';
