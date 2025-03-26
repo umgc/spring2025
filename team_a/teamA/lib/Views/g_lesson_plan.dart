@@ -163,7 +163,7 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
     final perplexityApiKey = LocalStorageService.getPerplexityKey();
 
     try {
-      late final aiModel;
+      late final LLM aiModel;
       switch (selectedLLM) {
         case 'ChatGPT':
           aiModel = OpenAiLLM(openApiKey);
@@ -180,7 +180,7 @@ class _LessonPlanState extends State<GoogleLessonPlans> {
 
       String prompt =
           """Generate an all text (no diagrams) lesson of less than 500 words for ${lessonPlanNameController.text} for grade $selectedGradeLevel covering key topics like ${manualEntryController.text}. ${aiPromptDetailsController.text}. This lesson is WHAT THE STUDENT WILL SEE! This lesson will be viewed by students and students will use it to study from (which will help them write essays and take quizzes). IMPORTANT: Do not use any Markdown syntax (e.g., #, *, **, etc.). Use plain text only.""";
-      var result = await aiModel.postToLlm(prompt);
+      var result = await aiModel.generate(prompt);
       print('Generated lesson plan before cleaning: $result');
 
       // Strip any Markdown from the result

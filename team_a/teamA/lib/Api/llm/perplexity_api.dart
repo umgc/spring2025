@@ -3,7 +3,8 @@ import 'dart:convert';
 import 'package:learninglens_app/Api/llm/llm_api_modules_base.dart';
 import 'package:learninglens_app/services/api_service.dart';
 
-class PerplexityLLM extends LLM {
+class PerplexityLLM implements LLM {
+  @override
   final String apiKey;
 
   @override
@@ -11,7 +12,7 @@ class PerplexityLLM extends LLM {
   @override
   final String model = 'llama-3.1-sonar-large-128k-online';
 
-  PerplexityLLM(this.apiKey) : super(apiKey);
+  PerplexityLLM(this.apiKey);
 
   Map<String, dynamic> convertHttpRespToJson(String httpResponseString) {
     return (json.decode(httpResponseString) as Map<String, dynamic>);
@@ -146,7 +147,7 @@ class PerplexityLLM extends LLM {
   }
 
   @override
-  Future<String> _generate(String prompt) async {
+  Future<String> generate(String prompt) async {
     print('Generating response for prompt Perplexity: $prompt');
 
     final postHeaders = getPostHeaders();

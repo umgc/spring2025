@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:learninglens_app/Api/llm/llm_api_modules_base.dart';
 import 'package:learninglens_app/services/api_service.dart';
 
-class GrokLLM extends LLM {
+class GrokLLM implements LLM {
   @override
   final String apiKey;
   @override
@@ -12,7 +12,7 @@ class GrokLLM extends LLM {
   @override
   final String model = 'grok-2-latest';
 
-  GrokLLM(this.apiKey) : super(apiKey);
+  GrokLLM(this.apiKey);
 
   Map<String, dynamic> convertHttpRespToJson(String httpResponseString) {
     return (json.decode(httpResponseString) as Map<String, dynamic>);
@@ -165,7 +165,7 @@ class GrokLLM extends LLM {
  
   
   @override
-  Future<String> _generate(String prompt) async {
+  Future<String> generate(String prompt) async {
     final url = Uri.parse(this.url); // Hypothetical endpoint
     final headers = {
       'Authorization': 'Bearer $apiKey',
