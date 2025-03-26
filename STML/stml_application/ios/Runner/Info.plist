@@ -66,6 +66,6 @@
     <string>We need to use Face ID for authentication</string>
     <key>NSBiometricUsageDescription</key>
     <string>We need to use biometric authentication for secure login</string>
-	<key>CADisableMinimumFrameDurationOnPhone</key>
+	<key>CADisableMinimumFrameDurationOnPhone</key><true/>
 </dict>
 </plist>
