@@ -51,9 +51,14 @@ Fitbit Integration - iOS App Only For Now (03/23/2025)
     - Default Access Type: Read Only
 5. Agree to terms of service
 6. Click "Register"
-7. Save the app and copy the Client ID Client Secret, and redirectUri
-8. Open fitbit_login.dart file in lib/src/features/wearable-integration
-9. Replace the clientID, clientSecret, and redirectUri with your own in the fitbitCredentials object
+7. Save the app and copy the Client ID, Client Secret, and redirectUri
+8. Go to your .env file and dd this line to the file:
+#!!!!!!!!!!!!!!!!!!!!
+# Enter Fitbit API Key
+FITBIT_CLIENT_ID=
+FITBIT_CLIENT_SECRET=
+#!!!!!!!!!!!!!!!!!!!!
+9. Paste the Client ID and Client Secret that you copied over into this place in the .env
 10. Go to ios/Runner and open up Runner.xcodeproj
 11. Click on the project Runner and select Runner under Targets, go to Info and scroll down to URL Types
 - Add this to URL Identifier: com.stml and this to URL Schemes: stmlapp

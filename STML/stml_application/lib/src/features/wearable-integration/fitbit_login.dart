@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fitbitter/fitbitter.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 const storage = FlutterSecureStorage();
 
@@ -11,8 +12,8 @@ class FitbitLoginPage extends StatelessWidget {
   Future<void> connectToFitbit(BuildContext context) async {
     try {
       FitbitCredentials? fitbitCredentials = await FitbitConnector.authorize(
-        clientID: '23Q4PQ',
-        clientSecret: 'ab22db61074912d2e4090298f88c8c82',
+        clientID: dotenv.env['FITBIT_CLIENT_ID']!,
+        clientSecret: dotenv.env['FITBIT_CLIENT_SECRET']!,
         redirectUri: 'stmlapp://aadil',
         callbackUrlScheme: 'stmlapp',
       );
