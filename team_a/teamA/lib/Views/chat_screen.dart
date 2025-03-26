@@ -52,6 +52,7 @@ class _ChatScreenState extends State<ChatScreen> {
   // Function to handle user message sending and API response
   Future<void> _sendMessage() async {
     final input = _controller.text;
+    final aiPrompt = "$input IMPORTANT: Do not use any Markdown syntax (e.g., #, *, **, etc.). Use plain text only.";
 
     if (input.isEmpty) {
       return;
@@ -83,7 +84,7 @@ class _ChatScreenState extends State<ChatScreen> {
       // Get ChatGPT response
       // final chatGPTService = OpenAiLLM();
       final prompt =
-          _role == 'teacher' ? "You are assisting a teacher. $input" : input;
+          _role == 'teacher' ? "You are assisting a teacher. $aiPrompt" : aiPrompt;
       final response = await aiModel.getChatResponse(prompt);
 
       setState(() {
