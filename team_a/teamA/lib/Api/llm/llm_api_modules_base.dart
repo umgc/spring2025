@@ -13,5 +13,17 @@ abstract class LLM {
 
   LLM(this.apiKey);
 
-  Future<String> generate(String prompt);
+  // Define a constant instruction to append to all prompts
+  static const String _noMarkdownInstruction = 
+      " Respond in plain text, without Markdown formatting (like *, **, __, #, ##, ###, and other markdown formatting). Do not use Markdown syntax in your response. Also, do not include apostrophes (') in your response. ";
+
+  // Abstract method that subclasses must implement
+  Future<String> _generate(String prompt);
+
+  // Public method that wraps the prompt with the no-Markdown instruction
+  Future<String> generate(String prompt) async {
+    // Append the instruction to the original prompt
+    final modifiedPrompt = "$prompt$_noMarkdownInstruction";
+    return await _generate(modifiedPrompt);
+  }
 }

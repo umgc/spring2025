@@ -4,14 +4,14 @@ import 'package:http/http.dart' as http;
 import 'package:learninglens_app/Api/llm/llm_api_modules_base.dart';
 import 'package:learninglens_app/services/api_service.dart';
 
-class OpenAiLLM implements LLM {
+class OpenAiLLM extends LLM {
   @override
   final String apiKey;
   @override
   final String url = 'https://api.openai.com/v1/chat/completions';
   @override
   final String model = 'gpt-4o-mini';
-  OpenAiLLM(this.apiKey);
+  OpenAiLLM(this.apiKey) : super(apiKey);
 
   Map<String, dynamic> convertHttpRespToJson(String httpResponseString) {
     return (json.decode(httpResponseString) as Map<String, dynamic>);
@@ -161,7 +161,7 @@ class OpenAiLLM implements LLM {
   }
   
   @override
-  Future<String> generate(String prompt) async {
+  Future<String> _generate(String prompt) async {
     print("In generate - prompt : $prompt");
   
 final url = Uri.parse(this.url);
