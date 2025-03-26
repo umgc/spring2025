@@ -256,7 +256,7 @@ class SpeechProcessingIsolate {
       debugPrint('Isolate: Recognition result: "${result.text}"');
       
       // Skip speaker identification if result is empty
-      if (result.text.trim().isEmpty) {
+      if (result.text.trim().isEmpty || result.text.trim().startsWith(RegExp(r'[\[\(]'))) {
         sendPort.send(ProcessSegmentResult(
           segmentIndex: message.segmentIndex,
           text: result.text,
@@ -279,7 +279,8 @@ class SpeechProcessingIsolate {
       final embedding = speakerExtractor.compute(speakerStream);
       
       // Search for matching speaker
-      final threshold = 0.5;
+      // Adjust threshold lower for better accuracy
+      final threshold = 0.4;
       var speakerId = speakerManager.search(embedding: embedding, threshold: threshold);
       
       int newSpeakerCount = currentSpeakerCount;
