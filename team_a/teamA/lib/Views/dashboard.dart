@@ -76,18 +76,15 @@ class TeacherDashboard extends StatelessWidget {
   }
 
   bool canUserAccessApp(BuildContext context) {
-    bool isLoggedIntoGoogleClassroom = LocalStorageService.isLoggedIntoGoogle() && LocalStorageService.hasLLMKey();
-    bool isLoggedIntoMoodle = LocalStorageService.isLoggedIntoMoodle() && LocalStorageService.hasLLMKey();
-    return isMoodle() ? isLoggedIntoMoodle : isLoggedIntoGoogleClassroom;
+    return LocalStorageService.canUserAccessApp();
   }
 
   String getClassroom() {
-    return LocalStorageService.getSelectedClassroom() == LmsType.MOODLE ? 'Moodle' : 'Google';
+    return LocalStorageService.getClassroom();
   }
 
   bool isMoodle() {
-    print(LocalStorageService.getSelectedClassroom());
-    return LocalStorageService.getSelectedClassroom() == LmsType.MOODLE;
+    return LocalStorageService.isMoodle();
   }
 
   Widget _buildDesktopLayout(BuildContext context, BoxConstraints constraints) {

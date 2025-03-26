@@ -29,6 +29,8 @@ class CustomAppBar extends StatefulWidget implements PreferredSizeWidget {
 class _CustomAppBarState extends State<CustomAppBar> {
   @override
   Widget build(BuildContext context) {
+    final bool canAccessApp = canUserAccessApp(context);
+
     return AppBar(
       backgroundColor: Theme.of(context).colorScheme.primaryContainer,
       title: Text(
@@ -81,7 +83,9 @@ class _CustomAppBarState extends State<CustomAppBar> {
         Flexible(
             child: IconButton(
               icon: Icon(Icons.science), // Science Icon
-              onPressed: () {
+              onPressed: !canAccessApp
+            ? null
+            : () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => TextBasedFunctionCallerView()),
@@ -191,5 +195,18 @@ class _CustomAppBarState extends State<CustomAppBar> {
         //     : TeacherDashboard(),
       ),
     );
+  }
+
+
+  bool canUserAccessApp(BuildContext context) {
+    return LocalStorageService.canUserAccessApp();
+  }
+
+  String getClassroom() {
+    return LocalStorageService.getClassroom();
+  }
+
+  bool isMoodle() {
+    return LocalStorageService.isMoodle();
   }
 }
