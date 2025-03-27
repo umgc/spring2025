@@ -195,6 +195,8 @@ class _IndustryMenuState extends State<IndustryMenu> {
     // Gets the width and height of the current screen
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
@@ -203,12 +205,12 @@ class _IndustryMenuState extends State<IndustryMenu> {
       child: Column(
         children: [
           Center(
-              // Creates the text box above the icons
-              child: Container(
+            // Creates the text box above the icons
+            child: Container(
             width: screenWidth * .75,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
-              color: const Color.fromARGB(255, 67, 67, 67),
+              color: isDarkMode ? Color.fromARGB(255, 79, 79, 83): Colors.green,
             ),
             padding: EdgeInsets.all(12),
             child: Center(
@@ -232,7 +234,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
                     color: !modelsExist
                         ? Color.fromRGBO(128, 128, 128, 0.5)
                         : (widget.speechState.recordState == RecordState.stop
-                            ? Colors.grey
+                            ? isDarkMode ? Colors.grey : Colors.green
                             : Colors.red)),
                 padding: EdgeInsets.all(5),
                 child: Tooltip(
@@ -247,7 +249,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
                           ? Icons.mic
                           : Icons.stop,
                       color: !modelsExist
-                          ? Color.fromRGBO(255, 255, 255, 0.5)
+                          ? isDarkMode ? Colors.grey : Colors.green
                           : Colors.white,
                       size: screenHeight * .05,
                     ),
@@ -343,7 +345,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
               // Creates a industry specific icon based on user input
               Container(
                 decoration:
-                    BoxDecoration(shape: BoxShape.circle, color: Colors.grey),
+                BoxDecoration(shape: BoxShape.circle, color: isDarkMode ? Colors.grey : Colors.green),
                 padding: EdgeInsets.all(5),
                 child: IconButton(
                   icon: Icon(
@@ -361,7 +363,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
               // Creates a transcript history button
               Container(
                 decoration:
-                    BoxDecoration(shape: BoxShape.circle, color: Colors.grey),
+                BoxDecoration(shape: BoxShape.circle, color: isDarkMode ? Colors.grey : Colors.green),
                 padding: EdgeInsets.all(5),
                 child: IconButton(
                   icon: Icon(
@@ -379,7 +381,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
 
               // Creates a chatbot button
               Container(
-                decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.grey),
+                decoration: BoxDecoration(shape: BoxShape.circle, color: isDarkMode ? Colors.grey : Colors.green),
                 padding: EdgeInsets.all(5),
                 child: IconButton(
                   icon: Icon(
@@ -483,7 +485,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
   void _showTranscriptsBottomSheet(BuildContext context) async {
     // Fetch transcripts first
     List<Map<String, dynamic>> transcripts = await _fetchTranscripts();
-
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     // Check if the context is still valid
     if (!context.mounted) return;
 
@@ -494,7 +496,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
           padding: EdgeInsets.all(16.0),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
-            color: const Color.fromARGB(255, 67, 67, 67),
+            color: isDarkMode ? const Color.fromARGB(255, 67, 67, 67) : Colors.green,
           ),
           child: Center(
             child: Column(
@@ -595,6 +597,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
   void _showTranscriptsHistoryBottomSheet(BuildContext context) async {
     // Fetch transcripts first
     List<Map<String, dynamic>> transcripts = await _fetchTranscripts();
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     // Check if the context is still valid
     if (!context.mounted) return;
@@ -606,7 +609,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
           padding: EdgeInsets.all(16.0),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
-            color: const Color.fromARGB(255, 67, 67, 67),
+            color: isDarkMode ? const Color.fromARGB(255, 67, 67, 67) : Colors.green,
           ),
           child: Center(
             child: Column(

@@ -41,7 +41,6 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color.fromARGB(255, 0, 0, 0),
       child: Padding(
         padding: const EdgeInsets.only(left: 4.0, right: 4.0),
         child: SearchAnchor(

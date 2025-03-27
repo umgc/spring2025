@@ -90,7 +90,6 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 0, 0, 0),
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(140),
         child: ToolBar(showHamburger: false), // Using the ToolBar widget
@@ -123,7 +122,6 @@ class _HomePageState extends State<HomePage> {
             );
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.grey[900],
             padding: const EdgeInsets.symmetric(vertical: 15),
           ),
           child: Text(
