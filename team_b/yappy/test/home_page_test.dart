@@ -29,6 +29,7 @@ void main() {
       await tester.pumpWidget(MaterialApp(home: HomePage()));
 
       // Act
+      await tester.pump();
       await tester.tap(find.text('Yes'));
       await tester.pumpAndSettle();
 
