@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import './services/model_manager.dart';
-import 'package:yappy/main.dart';
+import './main.dart';
 import 'package:yappy/theme_provider.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -64,8 +64,8 @@ class _SettingsPageState extends State<SettingsPage> {
         children: <Widget>[
           // Original settings items
           ListTile(
-            leading: const Icon(Icons.account_circle),
-            title: const Text('Account'),
+            leading: const Icon(Icons.settings),
+            title: const Text('About Yappy'),
             onTap: () {
               showDialog(
                 context: context,
@@ -88,16 +88,28 @@ class _SettingsPageState extends State<SettingsPage> {
               );
             },
           ),
+
+          SwitchListTile(
+            title: const Text('Dark Mode'),
+            subtitle: const Text('Toggle Dark Mode on or off'),
+            value: themeProvider.isDarkMode,
+            onChanged: (value) {
+              themeProvider.toggleTheme(value);
+            },
+          ),
+
+          const Divider(),
+
           ListTile(
             leading: const Icon(Icons.key),
-            title: const Text('API Keys'),
+            title: const Text('OpenAI API Key'),
             onTap: () {
               showDialog(
                 context: context,
                 builder: (BuildContext context) {
                   TextEditingController apiKeyController = TextEditingController();
                   return AlertDialog(
-                    title: const Text('Enter API Key'),
+                    title: const Text('Enter OpenAI API Key'),
                     content: TextField(
                       controller: apiKeyController,
                       decoration: const InputDecoration(hintText: "API Key"),
@@ -126,19 +138,85 @@ class _SettingsPageState extends State<SettingsPage> {
               );
             },
           ),
-          SwitchListTile(
-            title: const Text('Dark Mode'),
-            subtitle: const Text('Toggle Dark Mode on or off'),
-            value: themeProvider.isDarkMode,
-            onChanged: (value) {
-              themeProvider.toggleTheme(value);
+          
+          ListTile(
+            leading: const Icon(Icons.cloud),
+            title: const Text('AWS Credentials'),
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  TextEditingController accessKeyController = TextEditingController();
+                  TextEditingController secretKeyController = TextEditingController();
+                  TextEditingController regionController = TextEditingController();
+                  
+                  return AlertDialog(
+                    title: const Text('Enter AWS Credentials'),
+                    content: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          TextField(
+                            controller: accessKeyController,
+                            decoration: const InputDecoration(
+                              hintText: "AWS Access Key",
+                              labelText: "Access Key",
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          TextField(
+                            controller: secretKeyController,
+                            decoration: const InputDecoration(
+                              hintText: "AWS Secret Key",
+                              labelText: "Secret Key",
+                            ),
+                            obscureText: true, // Hide sensitive information
+                          ),
+                          const SizedBox(height: 10),
+                          TextField(
+                            controller: regionController,
+                            decoration: const InputDecoration(
+                              hintText: "AWS Region (e.g., us-east-1)",
+                              labelText: "Region",
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    actions: <Widget>[
+                      TextButton(
+                        child: const Text('Cancel'),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                      TextButton(
+                        child: const Text('Save'),
+                        onPressed: () async {
+                          // Save all AWS credentials
+                          String accessKey = accessKeyController.text;
+                          String secretKey = secretKeyController.text;
+                          String region = regionController.text;
+                          
+                          await preferences.setString('aws_access_key', accessKey);
+                          await preferences.setString('aws_secret_key', secretKey);
+                          await preferences.setString('aws_region', region);
+                          await preferences.setBool('awsAvailable', true);
+                                                    
+                          if (!context.mounted) return;
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ],
+                  );
+                },
+              );
             },
           ),
 
-          // Divider to separate original and new settings
           const Divider(),
           
-          // New model management settings
+          // Model management settings
           const Padding(
             padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: Text(
