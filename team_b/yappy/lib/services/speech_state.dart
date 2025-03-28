@@ -402,6 +402,8 @@ class SpeechState extends ChangeNotifier {
     }
   }
 
+  String? previousSpeaker;
+
   // Helper method to process transcript events
   String _processTranscriptEvent(TranscriptEvent event) {
     if (event.transcript?.results == null || event.transcript!.results!.isEmpty) {
@@ -436,7 +438,13 @@ class SpeechState extends ChangeNotifier {
         
         // Add transcript with speaker label
         if (speaker != null && alternative.transcript != null) {
-          buffer.write('\n$speaker: ${alternative.transcript}');
+          // Add an extra newline if the speaker changed
+          if (previousSpeaker != null && previousSpeaker != speaker) {
+            buffer.write('\n\n$speaker: ${alternative.transcript}');
+          } else {
+            buffer.write('\n$speaker: ${alternative.transcript}');
+          }
+          previousSpeaker = speaker;
         } else if (alternative.transcript != null) {
           buffer.write('\n${alternative.transcript}');
         }
@@ -991,50 +999,3 @@ class SpeechState extends ChangeNotifier {
     }
   }
 }
-
-// /// Custom transcription strategy that builds a final transcript with speaker labels
-// class CustomTranscriptionStrategy implements TranscriptionBuildingStrategy {
-//   @override
-//   String buildTranscription(Iterable<Result> results) {
-//     final buffer = StringBuffer();
-    
-//     // Filter out partial results, we only want complete segments
-//     final completeResults = results.where((result) => result.isPartial == false).toList();
-    
-//     // Sort by start time to maintain chronological order
-//     completeResults.sort((a, b) => (a.startTime ?? 0).compareTo(b.startTime ?? 0));
-    
-//     // Process each complete result
-//     for (final result in completeResults) {
-//       if (result.alternatives == null || result.alternatives!.isEmpty) continue;
-      
-//       final alternative = result.alternatives!.first;
-//       if (alternative.transcript == null || alternative.transcript!.isEmpty) continue;
-      
-//       // Add speaker information if available
-//       if (result.channelId != null) {
-//         buffer.write('\nChannel ${result.channelId}: ${alternative.transcript}');
-//       } else {
-//         // Check for speaker labels in items
-//         String? speaker;
-//         if (alternative.items != null && alternative.items!.isNotEmpty) {
-//           for (final item in alternative.items!) {
-//             if (item.speaker != null && item.speaker!.isNotEmpty) {
-//               final speakerId = int.tryParse(item.speaker!) ?? 0;
-//               speaker = "Speaker ${speakerId + 1}";
-//               break;
-//             }
-//           }
-//         }
-        
-//         if (speaker != null) {
-//           buffer.write('\n$speaker: ${alternative.transcript}');
-//         } else {
-//           buffer.write('\n${alternative.transcript}');
-//         }
-//       }
-//     }
-    
-//     return buffer.toString().trim();
-//   }
-// }
