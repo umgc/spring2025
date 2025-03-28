@@ -2,15 +2,12 @@
 // Imported libraries and packages
 
 import 'package:memoryminder/src/features/caregiver-dashboard/presentation/app_bar.dart';
-import 'package:memoryminder/src/features/caregiver-dashboard/presentation/caregiver-dashboard.dart';
-import 'package:memoryminder/ui/dementia_resources.dart';
+import 'package:memoryminder/src/features/help/help_screen.dart';
 import 'package:memoryminder/ui/response_screen.dart';
-import 'package:memoryminder/ui/assistant_screen.dart';
 import 'package:memoryminder/src/features/sensitive_information_detection/presentation/audio_screen.dart';
 import 'package:memoryminder/ui/gallery_screen.dart';
 import 'package:memoryminder/ui/profile_screen.dart';
 import 'package:memoryminder/ui/scam_detection_screen.dart';
-import 'package:memoryminder/ui/tour_screen.dart';
 import 'package:memoryminder/ui/location_history_screen.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
@@ -22,12 +19,12 @@ import 'package:memoryminder/ui/safe_zone_settings_screen.dart';
 import 'package:memoryminder/src/managers/safe_zone_manager.dart';
 
 // Main HomeScreen widget which is a stateless widget.
-class HomeScreen extends StatefulWidget {
+class STMLUserDashboardScreen extends StatefulWidget {
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  _STMLUserDashboardScreenState createState() => _STMLUserDashboardScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _STMLUserDashboardScreenState extends State<STMLUserDashboardScreen> {
   bool hasBeenInitialized = false;
   double iconSize = 65;
 
@@ -212,13 +209,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     _buildElevatedButton(
                         context: context,
-                        icon: Icon(Icons.location_history,
+                        icon: Icon(Icons.sos_sharp,
                             size: iconSize, color: Colors.black54),
                         text: 'HELP',
-                        screen: LocationHistoryScreen(),
+                        screen: HelpScreen(),
                         keyName: "HelpButtonKey",
-                        backgroundColor:
-                            const Color(0xFFFFFFFF).withOpacity(0.30)),
+                        backgroundColor: const Color(0xFFFFFFFF).withOpacity(0.30),
+                    ),
                     _buildElevatedButton(
                         context: context,
                         icon: Icon(Icons.photo,
@@ -260,8 +257,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         icon: Icon(Icons.health_and_safety_outlined,
                             size: iconSize, color: Colors.black54),
                         text: 'My Health',
-                        screen: TourScreen(),
-                        keyName: "TourGuideButtonKey",
+                        routeName: '/healthMetrics',
+                        keyName: "healthMetrics",
                         backgroundColor:
                             const Color(0xFFFFFFFF).withOpacity(0.30)),
                     _buildElevatedButton(
@@ -284,6 +281,7 @@ class _HomeScreenState extends State<HomeScreen> {
         bottomNavigationBar: UiUtils.createBottomNavigationBar(context));
   }
 
+
   // Helper function to create each button for the GridView
   Widget _buildElevatedButton({
     required BuildContext context,
@@ -305,15 +303,18 @@ class _HomeScreenState extends State<HomeScreen> {
           borderRadius: BorderRadius.circular(10.0),
         ),
       ),
-      onPressed: onPressedOverride ??
-          () {
-            if (screen != null) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => screen),
-              );
-            }
-          },
+      onPressed: () {
+        if (routeName != null) {
+          Navigator.pushNamed(context, routeName); // Use named route if provided
+        }
+        else if (screen != null)
+        {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => screen), // Default behavior
+          );
+        }
+      },
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
