@@ -63,3 +63,17 @@ FITBIT_CLIENT_SECRET=
 11. Click on the project Runner and select Runner under Targets, go to Info and scroll down to URL Types
 - Add this to URL Identifier: com.stml and this to URL Schemes: stmlapp
 12. Close the Xcode project and you should be all setup!
+
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+RETURNMEHOME FUNCTIONALITY REQUIREMENTS Running the ReturnMeHome function requires the use of a proxy server to route API requests due to Cross Origin Resource Sharing headers
+If the user has node.js installed, they can run the following commands in the server directory from the CLI
+
+npm init -y
+npm install express request cors
+
+From there, ensure the server.js file contains the code that lives inside this repo
+
+From the terminal within the server directory use the following command to run the server:
+node server.js
+
+That server needs to be running to route requests properly to the google api endpoint
