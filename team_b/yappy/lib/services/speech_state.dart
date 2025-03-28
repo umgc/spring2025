@@ -361,11 +361,11 @@ class SpeechState extends ChangeNotifier {
         (transcriptText) {
           // This is now the full transcript text
           if (transcriptText.isNotEmpty) {
-            currentAwsTranscript = transcriptText;
+            currentAwsTranscript += transcriptText;
             
             // Update in the conversation object if available
             if (lastConversation != null) {
-              lastConversation!.awsTranscription = currentAwsTranscript;
+              lastConversation!.awsTranscription += currentAwsTranscript;
             }
             
             notifyListeners();
@@ -386,51 +386,6 @@ class SpeechState extends ChangeNotifier {
     }
   }
   
-  // // Process transcription events from AWS
-  // void _processAwsTranscriptEvent(TranscriptEvent event, StringBuffer fullTranscriptBuffer) {
-  //   if (event.transcript?.results == null || event.transcript!.results!.isEmpty) {
-  //     return;
-  //   }
-
-  //   // Clear the buffer and rebuild the full transcript each time
-  //   fullTranscriptBuffer.clear();
-    
-  //   // Process all results to build a complete transcript
-  //   for (final result in event.transcript!.results!) {
-  //     // Only add final results to the complete transcript
-  //     if (result.isPartial == false) {
-  //       // Get the transcript text from the first alternative
-  //       if (result.alternatives != null && 
-  //           result.alternatives!.isNotEmpty && 
-  //           result.alternatives!.first.transcript != null) {
-          
-  //         final transcript = result.alternatives!.first.transcript!;
-          
-  //         // Add speaker label if available
-  //         if (result.alternatives!.first.items != null && 
-  //             result.alternatives!.first.items!.isNotEmpty && 
-  //             result.alternatives!.first.items!.first.speaker != null) {
-            
-  //           final speaker = result.alternatives!.first.items!.first.speaker;
-  //           fullTranscriptBuffer.write('\n$speaker: $transcript');
-  //         } else {
-  //           fullTranscriptBuffer.write('\n$transcript');
-  //         }
-  //       }
-  //     }
-  //   }
-    
-  //   // Update current transcript
-  //   currentAwsTranscript = fullTranscriptBuffer.toString().trim();
-    
-  //   // Update in the conversation object if available
-  //   if (lastConversation != null) {
-  //     lastConversation!.awsTranscription = currentAwsTranscript;
-  //   }
-    
-  //   notifyListeners();
-  // }
-
   // Helper method to update the displayed text
   void _updateDisplayText() {
     final buffer = StringBuffer();
