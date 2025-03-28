@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:yappy/theme_provider.dart';
 import 'package:yappy/transcription_box.dart';
 
 void main() {
@@ -13,9 +15,11 @@ void main() {
     testWidgets('Should display the transcription box',
         (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: TranscriptionBox(controller: textEditingController),
+        ChangeNotifierProvider<ThemeProvider>(
+          create: (_) => ThemeProvider(),
+            child: MaterialApp(home: Scaffold(
+              body: TranscriptionBox(controller: textEditingController),
+            ),
           ),
         ),
       );
@@ -28,9 +32,11 @@ void main() {
     testWidgets('Should update text in transcription box',
         (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: TranscriptionBox(controller: textEditingController),
+        ChangeNotifierProvider<ThemeProvider>(
+          create: (_) => ThemeProvider(),
+            child: MaterialApp(home: Scaffold(
+              body: TranscriptionBox(controller: textEditingController),
+            ),
           ),
         ),
       );
@@ -46,9 +52,11 @@ void main() {
     testWidgets('Should display scroll bar when content overflows',
         (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: TranscriptionBox(controller: textEditingController),
+        ChangeNotifierProvider<ThemeProvider>(
+          create: (_) => ThemeProvider(),
+            child: MaterialApp(home: Scaffold(
+              body: TranscriptionBox(controller: textEditingController),
+            ),
           ),
         ),
       );

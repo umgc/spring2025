@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:yappy/theme_provider.dart';
 import 'package:yappy/tool_bar.dart';
 import 'package:yappy/industry_menu.dart';
 import 'package:yappy/transcription_box.dart';
@@ -11,8 +13,9 @@ void main() {
     testWidgets('Should display ToolBar and Drawer',
         (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: TutorialPage(),
+        ChangeNotifierProvider<ThemeProvider>(
+          create: (_) => ThemeProvider(),
+          child: MaterialApp(home: TutorialPage()),
         ),
       );
 
@@ -29,8 +32,9 @@ void main() {
     testWidgets('Should show first tutorial popup on load',
         (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: TutorialPage(),
+        ChangeNotifierProvider<ThemeProvider>(
+          create: (_) => ThemeProvider(),
+          child: MaterialApp(home: TutorialPage()),
         ),
       );
 
@@ -48,8 +52,9 @@ void main() {
     testWidgets('Should navigate through tutorial popups',
         (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: TutorialPage(),
+        ChangeNotifierProvider<ThemeProvider>(
+          create: (_) => ThemeProvider(),
+          child: MaterialApp(home: TutorialPage()),
         ),
       );
 
@@ -95,8 +100,9 @@ void main() {
     testWidgets('Should display IndustryMenu and TranscriptionBox',
         (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: TutorialPage(),
+        ChangeNotifierProvider<ThemeProvider>(
+          create: (_) => ThemeProvider(),
+          child: MaterialApp(home: TutorialPage()),
         ),
       );
 
