@@ -16,7 +16,6 @@ import 'speech_isolate.dart';
 import 'package:aws_common/aws_common.dart';
 import 'client.dart';
 import 'models.dart';
-import 'transcription.dart';
 
 Future<sherpa_onnx.OnlineRecognizer> createOnlineRecognizer() async {
   final type = 0;
