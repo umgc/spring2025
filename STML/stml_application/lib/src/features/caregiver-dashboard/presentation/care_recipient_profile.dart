@@ -4,7 +4,7 @@
 import 'package:memoryminder/src/features/caregiver-dashboard/presentation/add_care_recipient.dart';
 import 'package:memoryminder/src/features/caregiver-dashboard/presentation/app_bar.dart';
 import 'package:memoryminder/src/features/caregiver-dashboard/presentation/caregiver-dashboard.dart';
-import 'package:memoryminder/ui/dementia_resources.dart';
+import 'package:memoryminder/src/features/dementia-resources/dementia_resources.dart';
 import 'package:memoryminder/ui/response_screen.dart';
 import 'package:memoryminder/src/utils/ui_utils.dart';
 import 'package:flutter/material.dart';

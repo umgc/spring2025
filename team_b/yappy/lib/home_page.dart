@@ -91,19 +91,21 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(140),
+        preferredSize: Size.fromHeight(MediaQuery.of(context).size.height * 0.2),
         child: ToolBar(showHamburger: false), // Using the ToolBar widget
       ),
-      body: Column(
-        children: [
-          _buildButton('Restaurant', context, RestaurantPage()),
-          _buildButton('Vehicle Maintenance', context, MechanicalAidPage()),
-          _buildButton('Medical Doctor', context, MedicalDoctorPage()),
-          _buildButton('Medical Patient', context, MedicalPatientPage()),
-          _buildButton('Help', context, HelpPage()),
-          _buildButton('Contact', context, ContactPage()),
-          _buildButton('Settings', context, SettingsPage()),
-        ],
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            _buildButton('Restaurant', context, RestaurantPage()),
+            _buildButton('Vehicle Maintenance', context, MechanicalAidPage()),
+            _buildButton('Medical Doctor', context, MedicalDoctorPage()),
+            _buildButton('Medical Patient', context, MedicalPatientPage()),
+            _buildButton('Help', context, HelpPage()),
+            _buildButton('Contact', context, ContactPage()),
+            _buildButton('Settings', context, SettingsPage()),
+          ],
+        ),
       ),
     );
   }
