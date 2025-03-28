@@ -18,6 +18,8 @@ import 'package:memoryminder/src/camera_manager.dart';
 import 'package:memoryminder/src/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:memoryminder/features/caregiver_task_management/caregiver_task_screen.dart';
+import 'package:memoryminder/ui/safe_zone_settings_screen.dart';
+import 'package:memoryminder/src/managers/safe_zone_manager.dart';
 
 // Main HomeScreen widget which is a stateless widget.
 class HomeScreen extends StatefulWidget {
@@ -74,10 +76,45 @@ class _HomeScreenState extends State<HomeScreen> {
             currentLocationEntry = newEntry;
           }
         }
+        //Check if user is outside safe zone
+        final safeZoneManager = SafeZoneManager();
+        final isOutside = await safeZoneManager.isUserOutsideSafeZone();
+
+        if (isOutside) {
+          _showLeftSafeZoneNotification(
+              context); // 👇 You’ll create this function next
+        }
       } catch (e) {
         print(e);
       }
     });
+  }
+
+  void _showLeftSafeZoneNotification(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("You've Left Your Safe Zone"),
+          content: const Text(
+              "Your caregiver has been notified. Do you need help getting home?"),
+          actions: [
+            TextButton(
+              child: const Text("No"),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+            TextButton(
+              child: const Text("Yes"),
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.pushNamed(
+                    context, '/returnMeHome'); // Adjust route name if needed
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -92,7 +129,6 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         // Main content of the screen
         body: Container(
-
           child: Column(
             children: [
               const Padding(
@@ -119,14 +155,61 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     // Using the helper function to build each button in the grid
                     _buildElevatedButton(
-                        context: context,
-                        icon: Icon(Icons.home_filled,
-                            size: iconSize, color: Colors.black54),
-                        text: 'Take Me Home',
-                        screen: ProfileScreen(),
-                        keyName: "TakeMeHomeButtonKey",
-                        backgroundColor:
-                            const Color(0xFF000000).withOpacity(0.30)),
+                      context: context,
+                      icon: Icon(Icons.home_filled,
+                          size: iconSize, color: Colors.black54),
+                      text: 'Take Me Home',
+                      screen: ProfileScreen(),
+                      keyName: "TakeMeHomeButtonKey",
+                      backgroundColor:
+                          const Color(0xFF000000).withOpacity(0.30),
+                      onPressedOverride: () {
+                        showModalBottomSheet(
+                          context: context,
+                          shape: const RoundedRectangleBorder(
+                            borderRadius:
+                                BorderRadius.vertical(top: Radius.circular(20)),
+                          ),
+                          builder: (BuildContext context) {
+                            return SafeArea(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                children: <Widget>[
+                                  ListTile(
+                                    leading: const Icon(Icons.directions_walk),
+                                    title: const Text('Return Me Home'),
+                                    onTap: () {
+                                      Navigator.pop(context);
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              ProfileScreen(), // Replace with actual Return Me Home screen
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  ListTile(
+                                    leading: const Icon(Icons.shield),
+                                    title: const Text('Set Safe Zone'),
+                                    onTap: () {
+                                      Navigator.pop(context);
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) =>
+                                              const SafeZoneSettingsScreen(),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
                     _buildElevatedButton(
                         context: context,
                         icon: Icon(Icons.location_history,
@@ -206,7 +289,8 @@ class _HomeScreenState extends State<HomeScreen> {
     required BuildContext context,
     required Icon icon,
     required String text,
-    required Widget screen,
+    Widget? screen,
+    VoidCallback? onPressedOverride,
     required String keyName,
     required Color backgroundColor,
   }) {
@@ -221,12 +305,15 @@ class _HomeScreenState extends State<HomeScreen> {
           borderRadius: BorderRadius.circular(10.0),
         ),
       ),
-      onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => screen),
-        );
-      },
+      onPressed: onPressedOverride ??
+          () {
+            if (screen != null) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => screen),
+              );
+            }
+          },
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

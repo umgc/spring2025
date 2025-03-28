@@ -45,5 +45,11 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>MemoryMinder needs camera access to capture photos for memory assistance.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>MemoryMinder requires microphone access for voice recording features.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>MemoryMinder needs access to your photo library to save and retrieve photos.</string>
 </dict>
 </plist>

@@ -15,18 +15,31 @@ import 'package:memoryminder/src/utils/permission_manager.dart';
 import 'package:memoryminder/src/features/account_creation_and_login/presentation/registration_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:memoryminder/features/caregiver_task_management/caregiver_task_screen.dart';
+import 'package:memoryminder/firebase_options.dart';
+import 'package:memoryminder/ui/ReturnMeHome.dart';
+import 'package:memoryminder/ui/safe_zone_settings_screen.dart';
+
+
 
 void main() async {
-  initializeLogging();
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  await dotenv.load(fileName: ".env");
-  await DirectoryManager.instance.initializeDirectories();
-  await DataService.instance.initializeData();
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-  initializeData();
+  try {
+    initializeLogging();
+    WidgetsFlutterBinding.ensureInitialized();
+    print("Starting Firebase initialization");
+    await Firebase.initializeApp();
+    print("Firebase initialized successfully");
+    await dotenv.load(fileName: ".env");
+    await DirectoryManager.instance.initializeDirectories();
+    await DataService.instance.initializeData();
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    initializeData();
+  } catch (e, stackTrace) {
+    print("Initialization error: $e");
+    print("Stack trace: $stackTrace");
+  }
   runApp(const MyApp());
 }
+
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -42,13 +55,15 @@ class MyApp extends StatelessWidget {
       initialRoute:
           '/welcomeScreen', // The initial screen when the application starts
       routes: {
-        '/welcomeScreen': (context) => WelcomeScreem(),
+        '/welcomeScreen': (context) => WelcomeScreen(),
         '/loginScreen': (context) => LoginScreen(),
         '/registrationScreen': (context) => RegistrationScreen(),
         '/eulaScreen': (context) => EulaScreen(),
         '/homeScreen': (context) => HomeScreen(),
         '/caregiverTaskScreen': (context) =>
             CaregiverTaskScreen(), // Added route
+        '/returnMeHome': (context) => ReturnMeHomePage(),
+        '/safeZoneSettings': (context) => SafeZoneSettingsScreen(), 
       },
     );
   }
