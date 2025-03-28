@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
@@ -315,10 +316,10 @@ class SpeechState extends ChangeNotifier {
           credentialsProvider: credentialsProvider,
         );
         
-        await preferences.setBool('awsAvailable', true);
+        await preferences.setBool('is_aws_available', true);
         debugPrint('🚣 AWS Transcribe client initialized');
       } catch (e) {
-        await preferences.setBool('awsAvailable', false);
+        await preferences.setBool('is_aws_available', false);
         debugPrint('🚣 Error initializing AWS client: $e');
       }
     }
@@ -833,9 +834,6 @@ class SpeechState extends ChangeNotifier {
       recordState = RecordState.stop;
       notifyListeners();
 
-      // Stop AWS transcription properly
-      await stopAwsTranscription();
-
       // Process any remaining audio
       if (currentSegmentSamples.isNotEmpty) {
         debugPrint('Processing final segment $currentIndex');
@@ -868,6 +866,9 @@ class SpeechState extends ChangeNotifier {
       
       await audioRecorder.stop();
 
+      // Stop AWS transcription properly
+      await stopAwsTranscription();
+
       // Process final segments
       debugPrint('Processing final segments with offline recognizer');
       await processPendingSegments();
@@ -877,8 +878,7 @@ class SpeechState extends ChangeNotifier {
       lastConversation = await createConversation();
 
       currentSegmentSamples.clear();
-      // allAudioSamples.clear();
-      // Final update to display text
+
       _updateDisplayText();
       
       debugPrint('Recording stopped successfully');
