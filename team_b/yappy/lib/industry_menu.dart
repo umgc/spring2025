@@ -485,6 +485,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
   void _showTranscriptsBottomSheet(BuildContext context) async {
     // Fetch transcripts first
     List<Map<String, dynamic>> transcripts = await _fetchTranscripts();
+    if (!context.mounted) return;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     // Check if the context is still valid
     if (!context.mounted) return;
@@ -597,6 +598,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
   void _showTranscriptsHistoryBottomSheet(BuildContext context) async {
     // Fetch transcripts first
     List<Map<String, dynamic>> transcripts = await _fetchTranscripts();
+    if (!context.mounted) return;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     // Check if the context is still valid

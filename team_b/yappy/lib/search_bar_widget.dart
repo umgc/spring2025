@@ -40,30 +40,28 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      child: Padding(
-        padding: const EdgeInsets.only(left: 4.0, right: 4.0),
-        child: SearchAnchor(
-          searchController: _searchController,
-          suggestionsBuilder: (BuildContext context, SearchController controller) async {
-            return _fetchSuggestions(controller.text, widget.industry);
-          },
-          builder: (BuildContext context, SearchController controller) {
-            return SearchBar(
-              controller: _searchController,
-              padding: const WidgetStatePropertyAll<EdgeInsets>(
-                EdgeInsets.symmetric(horizontal: 2.0),
-              ),
-              onTap: () {
-                controller.openView();
-              },
-              onChanged: (_) {
-                controller.openView();
-              },
-              leading: const Icon(Icons.search),
-            );
-          },
-        ),
+    return Padding(
+      padding: const EdgeInsets.only(left: 4.0, right: 4.0),
+      child: SearchAnchor(
+        searchController: _searchController,
+        suggestionsBuilder: (BuildContext context, SearchController controller) async {
+          return _fetchSuggestions(controller.text, widget.industry);
+        },
+        builder: (BuildContext context, SearchController controller) {
+          return SearchBar(
+            controller: _searchController,
+            padding: const WidgetStatePropertyAll<EdgeInsets>(
+              EdgeInsets.symmetric(horizontal: 2.0),
+            ),
+            onTap: () {
+              controller.openView();
+            },
+            onChanged: (_) {
+              controller.openView();
+            },
+            leading: const Icon(Icons.search),
+          );
+        },
       ),
     );
   }
