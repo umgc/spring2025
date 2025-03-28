@@ -49,15 +49,57 @@ class Quiz {
     return quiz;
   }
 
+  // JSON factory constructor using JSON map
+
   static Quiz fromGoogleJson(Map<String, dynamic> json) {
     Quiz tmpQuiz = Quiz();
-      tmpQuiz.name = json['title'];
-      tmpQuiz.description = json['description'];
-      tmpQuiz.questionList = <Question>[];
-      tmpQuiz.promptUsed = '';
-      tmpQuiz.id = int.parse(json['id']);
-      tmpQuiz.coursedId = int.parse(json['courseId']);
-    
+
+    print('Debug: Parsing JSON: $json');
+
+    // Basic fields
+    tmpQuiz.name = json['title'] as String? ?? '';
+    print('Debug: Name set to: ${tmpQuiz.name}');
+
+    tmpQuiz.description = json['description'] as String? ?? '';
+    print('Debug: Description set to: ${tmpQuiz.description}');
+
+    tmpQuiz.questionList = <Question>[];
+    tmpQuiz.promptUsed = '';
+    print('Debug: Initialized questionList and promptUsed');
+
+    // Parse IDs
+    final idStr = json['id']?.toString() ?? '0';
+    tmpQuiz.id = int.tryParse(idStr) ?? 0;
+    print('Debug: ID parsed from "$idStr" to: ${tmpQuiz.id}');
+
+    final courseIdStr = json['courseId']?.toString() ?? '0';
+    tmpQuiz.coursedId = int.tryParse(courseIdStr) ?? 0;
+    print(
+        'Debug: CourseID parsed from "$courseIdStr" to: ${tmpQuiz.coursedId}');
+
+    // Parse creation time as open time
+    final creationTimeStr = json['creationTime']?.toString() ?? '';
+    tmpQuiz.timeOpen = DateTime.tryParse(creationTimeStr) ?? DateTime.now();
+    print(
+        'Debug: CreationTime parsed from "$creationTimeStr" to: ${tmpQuiz.timeOpen}');
+
+    // Parse due date (which is an object with year, month, day)
+    DateTime dueDateTime = DateTime.now();
+    try {
+      final dueDate = json['dueDate'] as Map<String, dynamic>?;
+      if (dueDate != null) {
+        final year = dueDate['year'] as int? ?? DateTime.now().year;
+        final month = dueDate['month'] as int? ?? DateTime.now().month;
+        final day = dueDate['day'] as int? ?? DateTime.now().day;
+        dueDateTime = DateTime(year, month, day);
+      }
+    } catch (e) {
+      print('Debug: Error parsing dueDate, using default: $e');
+    }
+    tmpQuiz.timeClose = dueDateTime;
+    print('Debug: DueDate parsed to: ${tmpQuiz.timeClose}');
+
+    print('Debug: Quiz object created successfully');
     return tmpQuiz;
   }
 
