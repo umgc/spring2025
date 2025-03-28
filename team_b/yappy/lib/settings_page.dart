@@ -126,6 +126,7 @@ class _SettingsPageState extends State<SettingsPage> {
               );
             },
           ),
+          
           SwitchListTile(
             title: const Text('Dark Mode'),
             subtitle: const Text('Toggle Dark Mode on or off'),
@@ -135,7 +136,83 @@ class _SettingsPageState extends State<SettingsPage> {
             },
           ),
 
-          // Divider to separate original and new settings
+          const Divider(),
+
+          ListTile(
+            leading: const Icon(Icons.cloud),
+            title: const Text('AWS Credentials'),
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  TextEditingController accessKeyController = TextEditingController();
+                  TextEditingController secretKeyController = TextEditingController();
+                  TextEditingController regionController = TextEditingController();
+                  
+                  return AlertDialog(
+                    title: const Text('Enter AWS Credentials'),
+                    content: SingleChildScrollView(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          TextField(
+                            controller: accessKeyController,
+                            decoration: const InputDecoration(
+                              hintText: "AWS Access Key",
+                              labelText: "Access Key",
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          TextField(
+                            controller: secretKeyController,
+                            decoration: const InputDecoration(
+                              hintText: "AWS Secret Key",
+                              labelText: "Secret Key",
+                            ),
+                            obscureText: true, // Hide sensitive information
+                          ),
+                          const SizedBox(height: 10),
+                          TextField(
+                            controller: regionController,
+                            decoration: const InputDecoration(
+                              hintText: "AWS Region (e.g., us-east-1)",
+                              labelText: "Region",
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    actions: <Widget>[
+                      TextButton(
+                        child: const Text('Cancel'),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                      TextButton(
+                        child: const Text('Save'),
+                        onPressed: () async {
+                          // Save all AWS credentials
+                          String accessKey = accessKeyController.text;
+                          String secretKey = secretKeyController.text;
+                          String region = regionController.text;
+                          
+                          await preferences.setString('aws_access_key', accessKey);
+                          await preferences.setString('aws_secret_key', secretKey);
+                          await preferences.setString('aws_region', region);
+                          await preferences.setBool('awsAvailable', true);
+                                                    
+                          if (!context.mounted) return;
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
+
           const Divider(),
           
           // Model management settings

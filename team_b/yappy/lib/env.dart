@@ -1,6 +1,6 @@
 import 'package:envied/envied.dart';
 
-part 'env.g.dart'; // Uncomment this line to generate the env.g.dart file
+// part 'env.g.dart'; // Uncomment this line to generate the env.g.dart file
 
 // Run `flutter pub run build_runner build` to generate the env.g.dart file
 @Envied(path: '.env')
