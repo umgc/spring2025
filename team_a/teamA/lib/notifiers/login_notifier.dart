@@ -97,17 +97,25 @@ class LoginNotifier with ChangeNotifier {
       await _api.login(username, password, moodleUrl);
 
       if (_api.isLoggedIn()) {
-        _moodleState.isLoggedIn = true;
-        _moodleState.errorMessage = null;   // Clear any old error
-        _username = username;
-        _password = password;
-        _moodleUrl = moodleUrl;
+        // Make sure moodle user is a teacher. 
+        if (await _api.isUserTeacher(_api.courses!)) {
+          // User is a teacher
+          _moodleState.isLoggedIn = true;
+          _moodleState.errorMessage = null;   // Clear any old error
+          _username = username;
+          _password = password;
+          _moodleUrl = moodleUrl;
 
-        // Save to local storage
-        LocalStorageService.saveMoodleLoginState(_moodleState.isLoggedIn);
-        LocalStorageService.saveCredentials(username, password);
-        LocalStorageService.saveMoodleUrl(moodleUrl);
-
+          // Save to local storage
+          LocalStorageService.saveMoodleLoginState(_moodleState.isLoggedIn);
+          LocalStorageService.saveCredentials(username, password);
+          LocalStorageService.saveMoodleUrl(moodleUrl);
+        } else {
+          // user is not a teacher
+          _api.logout();
+          _moodleState.isLoggedIn = false;
+          _moodleState.errorMessage = "User is not a teacher";
+        }
       } else {
         // Logged in is false; set a custom error
         _moodleState.isLoggedIn = false;
