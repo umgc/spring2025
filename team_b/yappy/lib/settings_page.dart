@@ -1,8 +1,10 @@
 import 'package:dart_openai/dart_openai.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import './services/model_manager.dart';
 import 'package:yappy/main.dart';
+import 'package:yappy/theme_provider.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -50,6 +52,8 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Settings'),
@@ -122,7 +126,15 @@ class _SettingsPageState extends State<SettingsPage> {
               );
             },
           ),
-          
+          SwitchListTile(
+            title: const Text('Dark Mode'),
+            subtitle: const Text('Toggle Dark Mode on or off'),
+            value: themeProvider.isDarkMode,
+            onChanged: (value) {
+              themeProvider.toggleTheme(value);
+            },
+          ),
+
           // Divider to separate original and new settings
           const Divider(),
           
@@ -250,4 +262,5 @@ class _SettingsPageState extends State<SettingsPage> {
       );
     }
   }
+
 }
