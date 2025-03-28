@@ -264,7 +264,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
                               // Fetch both transcripts
                               String localTranscript = widget.speechState.getRecordedText();
                               String awsTranscript = widget.speechState.getAwsRecordedText();
-                              bool awsAvailable = await preferences.setBool('awsAvailable', true);
+                              bool awsAvailable = await preferences.setBool('is_aws_available', true);
                               
                               // Get the user ID 
                               int userId = 0001;
