@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import './services/model_manager.dart';
-import 'package:yappy/main.dart';
+import './main.dart';
 import 'package:yappy/theme_provider.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -64,8 +64,8 @@ class _SettingsPageState extends State<SettingsPage> {
         children: <Widget>[
           // Original settings items
           ListTile(
-            leading: const Icon(Icons.account_circle),
-            title: const Text('Account'),
+            leading: const Icon(Icons.settings),
+            title: const Text('About Yappy'),
             onTap: () {
               showDialog(
                 context: context,
@@ -90,14 +90,14 @@ class _SettingsPageState extends State<SettingsPage> {
           ),
           ListTile(
             leading: const Icon(Icons.key),
-            title: const Text('API Keys'),
+            title: const Text('OpenAI API Key'),
             onTap: () {
               showDialog(
                 context: context,
                 builder: (BuildContext context) {
                   TextEditingController apiKeyController = TextEditingController();
                   return AlertDialog(
-                    title: const Text('Enter API Key'),
+                    title: const Text('Enter OpenAI API Key'),
                     content: TextField(
                       controller: apiKeyController,
                       decoration: const InputDecoration(hintText: "API Key"),
@@ -138,7 +138,7 @@ class _SettingsPageState extends State<SettingsPage> {
           // Divider to separate original and new settings
           const Divider(),
           
-          // New model management settings
+          // Model management settings
           const Padding(
             padding: EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: Text(

@@ -7,6 +7,7 @@ import 'package:record/record.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'main.dart';
 import 'services/openai_helper.dart';
 import 'services/database_helper.dart';
 import 'services/file_handler.dart';
@@ -263,6 +264,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
                               // Fetch both transcripts
                               String localTranscript = widget.speechState.getRecordedText();
                               String awsTranscript = widget.speechState.getAwsRecordedText();
+                              bool awsAvailable = await preferences.setBool('awsAvailable', true);
                               
                               // Get the user ID 
                               int userId = 0001;
@@ -278,6 +280,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
                                   return TranscriptDialog(
                                     localTranscript: localTranscript,
                                     awsTranscript: awsTranscript,
+                                    awsAvailable: awsAvailable,
                                     userId: userId,
                                     transcriptId: transcriptId,
                                     industry: widget.title,
@@ -306,7 +309,6 @@ class _IndustryMenuState extends State<IndustryMenu> {
                                         }
                                       }
                                       
-                                      // Place API hook here to parse aiResponse
                                       debugPrint(aiResponse);
                                     },
                                   );

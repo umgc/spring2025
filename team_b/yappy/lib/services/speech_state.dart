@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:record/record.dart';
 import 'package:sherpa_onnx/sherpa_onnx.dart' as sherpa_onnx;
+import '../main.dart';
 import 'utils.dart';
 import 'online_model.dart';
 import 'offline_model.dart';
@@ -15,7 +16,6 @@ import 'package:aws_common/aws_common.dart';
 import 'client.dart';
 import 'models.dart';
 import 'transcription.dart';
-import '../env.dart';
 
 Future<sherpa_onnx.OnlineRecognizer> createOnlineRecognizer() async {
   final type = 0;
@@ -304,19 +304,21 @@ class SpeechState extends ChangeNotifier {
         // In production, consider using more secure credential providers
         final credentialsProvider = StaticCredentialsProvider(
           AWSCredentials(
-            Env.awsAccessKey,  // Replace with your idkey
-            Env.awsSecretKey  // Replace with your secretkey
+            preferences.getString('aws_access_key')!,  // Replace with your idkey
+            preferences.getString('aws_secret_key')!   // Replace with your secretkey
           ),
         );
         
         // Create AWS Transcribe client
         awsClient = TranscribeStreamingClient(
-          region: Env.awsRegion,  // Replace with your AWS region
+          region: preferences.getString('aws_region')!,  // Replace with your AWS region
           credentialsProvider: credentialsProvider,
         );
         
+        await preferences.setBool('awsAvailable', true);
         debugPrint('🚣 AWS Transcribe client initialized');
       } catch (e) {
+        await preferences.setBool('awsAvailable', false);
         debugPrint('🚣 Error initializing AWS client: $e');
       }
     }
@@ -343,7 +345,7 @@ class SpeechState extends ChangeNotifier {
         partialResultsStability: PartialResultsStability.high,
       );
       
-      debugPrint('Starting AWS transcription with sample rate $sampleRate');
+      debugPrint('🚣 Starting AWS transcription with sample rate $sampleRate');
       
       // Start streaming
       final (response, sink, stream) = await awsClient!.startStreamTranscription(request);
@@ -370,16 +372,16 @@ class SpeechState extends ChangeNotifier {
           }
         },
         onError: (error) {
-          debugPrint('AWS Transcription Error: $error');
+          debugPrint('🚣 AWS Transcription Error: $error');
         },
         onDone: () {
-          debugPrint('AWS Transcription Stream Done');
+          debugPrint('🚣 AWS Transcription Stream Done');
         },
       );
       
-      debugPrint('AWS Transcription Started: ${response.sessionId}');
+      debugPrint('🚣 AWS Transcription Started: ${response.sessionId}');
     } catch (e) {
-      debugPrint('Error starting AWS transcription: $e');
+      debugPrint('🚣 Error starting AWS transcription: $e');
       isAwsTranscribing = false;
     }
   }
@@ -621,7 +623,7 @@ class SpeechState extends ChangeNotifier {
               try {
                 awsAudioStreamSink!.add(Uint8List.fromList(data));
               } catch (e) {
-                debugPrint('Error sending audio to AWS: $e');
+                debugPrint('🚣 Error sending audio to AWS: $e');
               }
             }
 
@@ -864,7 +866,7 @@ class SpeechState extends ChangeNotifier {
         // Then cancel the subscription
         await awsTranscriptSubscription?.cancel();
       } catch (e) {
-        debugPrint('Error stopping AWS transcription: $e');
+        debugPrint('🚣 Error stopping AWS transcription: $e');
       } finally {
         isAwsTranscribing = false;
         awsAudioStreamSink = null;

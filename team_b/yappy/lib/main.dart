@@ -1,9 +1,11 @@
+import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:yappy/home_page.dart';
-import 'package:yappy/services/database_helper.dart';
 import 'package:dart_openai/dart_openai.dart';
-import 'package:yappy/env.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import './home_page.dart';
+import './services/database_helper.dart';
+import './env.dart';
 import './toast_widget.dart';
 import 'package:provider/provider.dart';
 import 'theme_provider.dart';
@@ -22,22 +24,42 @@ void main() async {
 
   // Env file setup for local development
   String apiKey = Env.apiKey;
+  String awsAccessKey = Env.awsAccessKey;
+  String awsSecretKey = Env.awsSecretKey;
+  String awsRegion = Env.awsRegion;
   if (apiKey.isNotEmpty) {
     OpenAI.apiKey = apiKey;
     await preferences.setString('openai_api_key', apiKey);
+  }
+  if (awsRegion.isNotEmpty && awsAccessKey.isNotEmpty && awsSecretKey.isNotEmpty)
+  {
+    await preferences.setString('aws_access_key', awsAccessKey);
+    await preferences.setString('aws_secret_key', awsSecretKey);
+    await preferences.setString('aws_region', awsRegion);
+    await preferences.setBool('awsAvailable', true);
+  }
+  else
+  {
+    await preferences.setBool('awsAvailable', false);
+  }
+
+  if (Platform.isLinux || Platform.isWindows)
+  {
+    sqfliteFfiInit();   // Init ffi loader based on platform.
+    databaseFactory = databaseFactoryFfi;
   }
 
   await dbHelper.database;
 
   WidgetsBinding.instance.addPostFrameCallback((_) {
-    // Shows dialog requesting an OpenAI API key if not set
+    // Shows dialog requesting a API keys if not set
     if (apiKey.isEmpty) {
       showDialog(
         context: navigatorKey.currentContext!,
         builder: (BuildContext context) {
           return AlertDialog(
-            title: Text('OpenAI API Key Required'),
-            content: Text('Please add a valid OpenAI API key via the Settings menu.'),
+            title: Text('API Keys Required'),
+            content: Text('Please add valid API keys for OpenAI and AWS via the Settings menu.'),
             actions: <Widget>[
               TextButton(
                 child: Text('OK'),

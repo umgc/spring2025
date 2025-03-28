@@ -57,6 +57,7 @@ dependencies:
   uuid: ^4.5.1
   convert: ^3.1.2
   crypto: ^3.0.6
+  sqflite_common_ffi: ^2.3.5
 
 dev_dependencies:
   flutter_test:

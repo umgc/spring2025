@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 class TranscriptDialog extends StatefulWidget {
   final String localTranscript;
   final String awsTranscript;
+  final bool awsAvailable;
   final int userId;
   final int transcriptId;
   final String industry;
@@ -12,6 +13,7 @@ class TranscriptDialog extends StatefulWidget {
     super.key,
     required this.localTranscript,
     required this.awsTranscript,
+    required this.awsAvailable,
     required this.userId,
     required this.transcriptId,
     required this.industry,
@@ -32,6 +34,9 @@ class _TranscriptDialogState extends State<TranscriptDialog> {
     super.initState();
     _localController = TextEditingController(text: widget.localTranscript);
     _awsController = TextEditingController(text: widget.awsTranscript);
+    if (!widget.awsAvailable) {
+      _showAwsTranscript = false;
+    }
   }
 
   @override
@@ -48,13 +53,22 @@ class _TranscriptDialogState extends State<TranscriptDialog> {
         children: [
           Text('Edit Transcript'),
           Spacer(),
-          // Toggle switch
           ToggleButtons(
             isSelected: [!_showAwsTranscript, _showAwsTranscript],
             onPressed: (index) {
-              setState(() {
-                _showAwsTranscript = index == 1;
-              });
+              if (index == 0 || widget.awsAvailable) {
+                setState(() {
+                  _showAwsTranscript = index == 1;
+                });
+              } else if (index == 1 && !widget.awsAvailable) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('AWS transcription is not available'),
+                    duration: Duration(seconds: 2),
+                    behavior: SnackBarBehavior.fixed,
+                  ),
+                );
+              }
             },
             borderRadius: BorderRadius.circular(8),
             children: [
@@ -64,7 +78,14 @@ class _TranscriptDialogState extends State<TranscriptDialog> {
               ),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Text('AWS'),
+                child: Text(
+                  'AWS',
+                  style: TextStyle(
+                    color: widget.awsAvailable 
+                        ? null 
+                        : Theme.of(context).disabledColor,
+                  ),
+                ),
               ),
             ],
           ),
