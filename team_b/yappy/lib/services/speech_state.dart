@@ -361,13 +361,8 @@ class SpeechState extends ChangeNotifier {
         (transcriptText) {
           // This is now the full transcript text
           if (transcriptText.isNotEmpty) {
-            currentAwsTranscript += transcriptText;
-            
-            // Update in the conversation object if available
-            if (lastConversation != null) {
-              lastConversation!.awsTranscription += currentAwsTranscript;
-            }
-            
+            currentAwsTranscript = transcriptText;
+                        
             notifyListeners();
           }
         },

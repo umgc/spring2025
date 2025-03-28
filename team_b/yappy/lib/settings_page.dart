@@ -88,6 +88,18 @@ class _SettingsPageState extends State<SettingsPage> {
               );
             },
           ),
+
+          SwitchListTile(
+            title: const Text('Dark Mode'),
+            subtitle: const Text('Toggle Dark Mode on or off'),
+            value: themeProvider.isDarkMode,
+            onChanged: (value) {
+              themeProvider.toggleTheme(value);
+            },
+          ),
+
+          const Divider(),
+
           ListTile(
             leading: const Icon(Icons.key),
             title: const Text('OpenAI API Key'),
@@ -127,17 +139,6 @@ class _SettingsPageState extends State<SettingsPage> {
             },
           ),
           
-          SwitchListTile(
-            title: const Text('Dark Mode'),
-            subtitle: const Text('Toggle Dark Mode on or off'),
-            value: themeProvider.isDarkMode,
-            onChanged: (value) {
-              themeProvider.toggleTheme(value);
-            },
-          ),
-
-          const Divider(),
-
           ListTile(
             leading: const Icon(Icons.cloud),
             title: const Text('AWS Credentials'),
