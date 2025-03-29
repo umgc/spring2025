@@ -15,7 +15,9 @@ import 'package:memoryminder/src/camera_manager.dart';
 import 'package:memoryminder/src/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:memoryminder/features/caregiver_task_management/caregiver_task_screen.dart';
-
+import 'package:memoryminder/src/features/wearable-integration/fitbit_login.dart';
+import 'package:memoryminder/ui/stml_calendar_screen.dart';
+import 'package:memoryminder/ui/ReturnMeHome.dart';
 
 // Main HomeScreen widget which is a stateless widget.
 class STMLUserDashboardScreen extends StatefulWidget {
@@ -121,7 +123,7 @@ class _STMLUserDashboardScreenState extends State<STMLUserDashboardScreen> {
                         icon: Icon(Icons.home_filled,
                             size: iconSize, color: Colors.black54),
                         text: 'Take Me Home',
-                        screen: ProfileScreen(),
+                        screen: ReturnMeHomePage(),
                         keyName: "TakeMeHomeButtonKey",
                         backgroundColor:
                             const Color(0xFF000000).withOpacity(0.30)),
@@ -186,6 +188,15 @@ class _STMLUserDashboardScreenState extends State<STMLUserDashboardScreen> {
                         text: 'Caregiver Tasks',
                         screen: CaregiverTaskScreen(),
                         keyName: "CaregiverTaskButtonKey",
+                        backgroundColor:
+                            const Color(0xFFFFFFFF).withOpacity(0.30)),
+                    _buildElevatedButton(
+                        context: context,
+                        icon: Icon(Icons.task_alt,
+                            size: iconSize, color: Colors.black54),
+                        text: 'STML Calendar',
+                        screen: stmlCalendarScreen(),
+                        keyName: "stmlCalendarScreen",
                         backgroundColor:
                             const Color(0xFFFFFFFF).withOpacity(0.30)),
                   ],
