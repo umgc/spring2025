@@ -2,12 +2,11 @@ import 'dart:io';
 
 import 'package:memoryminder/src/address.dart';
 import 'package:memoryminder/src/features/common/model/media_type.dart';
+import 'package:memoryminder/src/features/common/repository/audio_repository.dart';
 import 'package:memoryminder/src/features/sensitive_information_detection/domain/audio.dart';
-import 'package:memoryminder/src/features/sensitive_information_detection/data/audio_repository.dart';
 import 'package:memoryminder/src/utils/constants.dart';
 import 'package:memoryminder/src/utils/directory_manager.dart';
 import 'package:memoryminder/src/utils/file_manager.dart';
-import 'package:memoryminder/src/utils/logger.dart';
 
 class AudioController {
   AudioController._();
@@ -68,7 +67,7 @@ class AudioController {
       );
       return createdAudio;
     } catch (e) {
-      appLogger.severe('Audio Controller -- Error adding audio: $e');
+      print('Audio Controller -- Error adding audio: $e');
       return null;
     }
   }
@@ -109,7 +108,7 @@ class AudioController {
       Audio createdAudio = await AudioRepository.instance.create(newAudio);
       return createdAudio;
     } catch (e) {
-      appLogger.severe('Audio Controller -- Error adding audio: $e');
+      print('Audio Controller -- Error adding audio: $e');
       return null;
     }
   }
@@ -143,7 +142,7 @@ class AudioController {
       await AudioRepository.instance.update(updatedAudio);
       return updatedAudio;
     } catch (e) {
-      appLogger.severe('Audio Controller -- Error updating audio: $e');
+      print('Audio Controller -- Error updating audio: $e');
       return null;
     }
   }
@@ -162,7 +161,7 @@ class AudioController {
       }
       return existingAudio;
     } catch (e) {
-      appLogger.severe('Audio Controller -- Error removing audio: $e');
+      print('Audio Controller -- Error removing audio: $e');
       return null;
     }
   }

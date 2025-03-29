@@ -32,9 +32,9 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (didAuthenticate) {
-        Navigator.pushReplacement(
+       Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => HomeScreen()),
+          MaterialPageRoute(builder: (context) => STMLUserDashboardScreen()),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -56,10 +56,10 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      await _auth.signInWithEmailAndPassword(
+  /*    await _auth.signInWithEmailAndPassword(
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
-      );
+      );*/
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => CaregiverDashboardScreen()),

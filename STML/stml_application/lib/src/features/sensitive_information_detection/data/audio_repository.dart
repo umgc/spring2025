@@ -1,12 +1,12 @@
 import 'dart:io';
+import 'package:memoryminder/src/features/common/database/app_database.dart';
+import 'package:memoryminder/src/features/common/model/media.dart';
+import 'package:memoryminder/src/features/common/service/s3_connection.dart';
 import 'package:memoryminder/src/features/sensitive_information_detection/domain/audio.dart';
 
-import 'package:memoryminder/src/database/app_database.dart';
-import 'package:memoryminder/src/database/model/media.dart';
 
 import 'package:memoryminder/src/utils/file_manager.dart';
 import 'package:memoryminder/src/utils/logger.dart';
-import 'package:memoryminder/src/s3_connection.dart';
 import 'package:sqflite/sqflite.dart';
 
 const String tableAudios = 'audios';

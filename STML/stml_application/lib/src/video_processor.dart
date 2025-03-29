@@ -8,14 +8,10 @@ import 'dart:core';
 import 'dart:io';
 
 import 'package:aws_rekognition_api/rekognition-2016-06-27.dart';
-import 'package:memoryminder/src/aws_video_response.dart';
-import 'package:memoryminder/src/data_service.dart';
-import 'package:memoryminder/src/s3_connection.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:memoryminder/src/features/common/service/s3_connection.dart';
 import 'package:memoryminder/src/utils/file_manager.dart';
 import 'package:memoryminder/src/utils/format_utils.dart';
-import 'package:memoryminder/src/utils/logger.dart';
-import 'package:collection/collection.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class VideoProcessor {
   //confidence setting for AWS Rekognition label detection service
@@ -79,7 +75,7 @@ class VideoProcessor {
     String secret = (dotenv.get('secretKey', fallback: "none"));
 
     if (region == "none" || access == "none" || secret == "none") {
-      appLogger.severe("AWS client access needs to be initialized");
+      print("AWS client access needs to be initialized");
       return;
     }
 
@@ -91,7 +87,7 @@ class VideoProcessor {
 
     //connect to Custom Label detection
     createProject();
-    appLogger.info("Rekognition is up...");
+    print("Rekognition is up...");
   }
 
   Future<void> automaticallySendToRekognition() async {
@@ -105,16 +101,14 @@ class VideoProcessor {
 
     GetLabelDetectionResponse labelResponses = await grabResults(jobId);
 
-    List<AWSVideoResponse> responses = await createResponseList(labelResponses);
 
-    await DataService.instance.addVideoResponses(responses);
     FormatUtils.logBigMessage("Rekognition results saved locally.");
     FormatUtils.logBigMessage(" Time elapsed ${getElapsedTimeInSeconds()}");
   }
 
   Future<StartLabelDetectionResponse> sendRequestToProcessVideo(
       String title) async {
-    appLogger.info("sending rekognition request for $title");
+    print("sending rekognition request for $title");
     //grab Video
     Video video = Video(
         s3Object: S3Object(bucket: dotenv.get('videoS3Bucket'), name: title));
@@ -127,32 +121,12 @@ class VideoProcessor {
     //set the jobId, but return the whole job.
     job.then((value) {
       jobId = value.jobId!;
-      appLogger.info("Job ID IS $jobId");
+      print("Job ID IS $jobId");
     });
     return job;
   }
 
-  List<AWSVideoResponse> createTestResponseList() {
-    return [
-      AWSVideoResponse.overloaded(
-          'Fish',
-          90.63278198242188,
-          53353,
-          ResponseBoundingBox(
-              left: 0.11934830248355865,
-              top: 0.7510809302330017,
-              width: 0.05737469345331192,
-              height: 0.055630747228860855),
-          "2023-10-27_12:19:21.819024.mp4",
-          "3501 University Boulevard East, Adelphi, Maryland, 20783, US",
-          "People, Person"),
-      // Add more test objects for other URLs as needed
-      /* AWS_VideoResponse('Water', 100, 52852, "fake file"),
-         AWS_VideoResponse('Aerial View', 96.13745880126953, 53353, "fake file"),
-         AWS_VideoResponse('Animal', 86.5937728881836, 53353, "fake file"),
-         AWS_VideoResponse('Coast', 99.99983215332031, 53353, "fake file"), */
-    ];
-  }
+
 
   String getParentStringRepresentation(List<Parent> parents) {
     if (parents.isEmpty) {
@@ -172,52 +146,7 @@ class VideoProcessor {
     return list1.any((element) => list2.contains(element));
   }
 
-  List<AWSVideoResponse> createResponseList(
-      GetLabelDetectionResponse response) {
-    FormatUtils.logBigMessage("CREATING RESPONSE LIST");
-    List<AWSVideoResponse> responseList = [];
 
-    Iterator<LabelDetection> iter = response.labels!.iterator;
-    appLogger.info("ABOUT TO START PARSING RESPONSES");
-    while (iter.moveNext()) {
-      for (Instance inst in iter.current.label!.instances!) {
-        String? name = iter.current.label!.name;
-
-        // If a name is excluded, go to next loop
-        if (excludedResponses.contains(name)) {
-          continue;
-        }
-
-        // Create a list from the parents (if there are any easily exclude them)
-        List<String> parents = getParentNames(iter.current.label!.parents ?? [])
-            .whereNotNull()
-            .toList();
-
-        // If a name was not excluded but it has excluded parents then go to next loop
-        if (stringListsHaveCommonElements(excludedResponses, parents)) {
-          continue;
-        }
-
-        AWSVideoResponse newResponse = AWSVideoResponse.overloaded(
-            iter.current.label!.name ?? "default value",
-            iter.current.label!.confidence ?? 80,
-            iter.current.timestamp ?? 0,
-            ResponseBoundingBox(
-                left: inst.boundingBox!.left ?? 0,
-                top: inst.boundingBox!.top ?? 0,
-                width: inst.boundingBox!.width ?? 0,
-                height: inst.boundingBox!.height ?? 0),
-            videoPath,
-            address,
-            getParentStringRepresentation(iter.current.label!.parents ?? []));
-        responseList.add(newResponse);
-      }
-    }
-
-    FormatUtils.logBigMessage("RESPONSE LIST WAS CREATED");
-
-    return responseList;
-  }
 
   //Rekognition jobs take a little while to process (sometimes 17s for a 60s clip)
   //this method checks for the most recent jobId, and when it completes, returns that the responses are ready to pull
@@ -238,7 +167,7 @@ class VideoProcessor {
       } else if (labelsResponse.jobStatus == VideoJobStatus.failed) {
         //stop looping, but log error message.
         inProgress = false;
-        appLogger.info(labelsResponse.statusMessage);
+        print(labelsResponse.statusMessage);
       }
     }
     FormatUtils.logBigMessage("POLLING WAS COMPLETED JOB ID $jobId");
@@ -264,12 +193,12 @@ class VideoProcessor {
     videoTitle = FileManager.mostRecentVideoName;
     videoPath = FileManager.mostRecentVideoPath;
 
-    appLogger.info("Video title to S3: $videoTitle");
-    appLogger.info("Video file path uploading to S3: $videoPath");
+    print("Video title to S3: $videoTitle");
+    print("Video file path uploading to S3: $videoPath");
 
-    String uploadedVideo = await s3.addVideoToS3(videoTitle, videoPath) ?? "";
+    //String uploadedVideo = await s3.addVideoToS3(videoTitle, videoPath);
 
-    await sendRequestToProcessVideo(uploadedVideo);
+    //await sendRequestToProcessVideo(uploadedVideo);
 
     FormatUtils.logBigMessage("VIDEO WAS UPLOADED");
   }
@@ -361,7 +290,7 @@ class VideoProcessor {
           value.projectVersionDescriptions!.iterator;
       while (iter.moveNext()) {
         if (iter.current.projectVersionArn!.contains(labelName)) {
-          appLogger.info(
+          print(
               "${iter.current.projectVersionArn} is ${iter.current.status}");
           return iter.current.status;
         }
@@ -392,7 +321,7 @@ class VideoProcessor {
                 .startProjectVersion(
                     minInferenceUnits: 1,
                     projectVersionArn: iter.current.projectVersionArn!);
-            appLogger.info(response.status);
+            print(response.status);
             //returns the modelArn of the projectVersion being started
             //still need to poll the that the model has started
             activeModels.add(labelName);
@@ -423,7 +352,7 @@ class VideoProcessor {
             StopProjectVersionResponse response = await service!
                 .stopProjectVersion(
                     projectVersionArn: iter.current.projectVersionArn!);
-            appLogger.info(response.status);
+            print(response.status);
             //returns the modelArn of the projectVersion being stopped
             //still need to poll the that the model has finished stopping
             return iter.current.projectVersionArn;

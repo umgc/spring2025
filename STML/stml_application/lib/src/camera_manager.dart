@@ -7,16 +7,16 @@ import 'dart:io';
 
 import 'package:camera/camera.dart';
 import 'package:memoryminder/src/data_service.dart';
-import 'package:memoryminder/src/database/model/video.dart';
+import 'package:memoryminder/src/features/common/model/video.dart';
 import 'package:memoryminder/src/utils/directory_manager.dart';
 import 'package:memoryminder/src/utils/file_manager.dart';
 import 'package:memoryminder/src/utils/format_utils.dart';
 import 'package:memoryminder/src/utils/logger.dart';
 import 'package:memoryminder/src/utils/permission_manager.dart';
-import 'package:memoryminder/src/video_processor.dart';
 import "package:flutter/material.dart";
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:memoryminder/src/video_processor.dart';
 
 /// Camera manager class to handle camera functionality.
 class CameraManager {

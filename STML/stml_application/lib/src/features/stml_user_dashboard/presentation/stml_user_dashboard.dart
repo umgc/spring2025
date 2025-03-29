@@ -1,20 +1,15 @@
 // ignore_for_file: avoid_print, prefer_const_constructors
 // Imported libraries and packages
 
+import 'package:memoryminder/src/features/account_creation_and_login/presentation/login_screen.dart';
 import 'package:memoryminder/src/features/caregiver-dashboard/presentation/app_bar.dart';
-import 'package:memoryminder/src/features/help/help_screen.dart';
-import 'package:memoryminder/ui/response_screen.dart';
+import 'package:memoryminder/src/features/help/presentation/help_screen.dart';
 import 'package:memoryminder/src/features/sensitive_information_detection/presentation/audio_screen.dart';
-import 'package:memoryminder/ui/gallery_screen.dart';
-import 'package:memoryminder/ui/profile_screen.dart';
-import 'package:memoryminder/ui/scam_detection_screen.dart';
-import 'package:memoryminder/ui/location_history_screen.dart';
-import 'package:geocoding/geocoding.dart';
-import 'package:geolocator/geolocator.dart';
+import 'package:memoryminder/src/features/gallery/presentation/gallery_screen.dart';
+import 'package:memoryminder/src/features/scam_detection/presentation/scam_detection_screen.dart';
 import 'package:memoryminder/src/camera_manager.dart';
 import 'package:memoryminder/src/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:memoryminder/features/caregiver_task_management/caregiver_task_screen.dart';
 
 
 // Main HomeScreen widget which is a stateless widget.
@@ -27,14 +22,10 @@ class _STMLUserDashboardScreenState extends State<STMLUserDashboardScreen> {
   bool hasBeenInitialized = false;
   double iconSize = 65;
 
-  // To keep track of the current location
-  LocationEntry? currentLocationEntry;
-
   @override
   void initState() {
     super.initState();
     _initializeCamera();
-    _listenToLocationChanges();
   }
 
   _initializeCamera() {
@@ -43,39 +34,6 @@ class _STMLUserDashboardScreenState extends State<STMLUserDashboardScreen> {
       cm.startAutoRecording();
       hasBeenInitialized = true;
     }
-  }
-
-  _listenToLocationChanges() {
-    final locationStream = Geolocator.getPositionStream();
-    locationStream.listen((Position position) async {
-      try {
-        List<Placemark> placemarks = await placemarkFromCoordinates(
-            position.latitude, position.longitude);
-        if (placemarks.isNotEmpty) {
-          final Placemark placemark = placemarks.first;
-          final address =
-              "${placemark.street}, ${placemark.locality}, ${placemark.administrativeArea}, ${placemark.postalCode}, ${placemark.isoCountryCode}";
-
-          if (currentLocationEntry == null ||
-              currentLocationEntry!.address != address) {
-            if (currentLocationEntry != null) {
-              if (currentLocationEntry!.endTime == null) {
-                currentLocationEntry!.endTime = DateTime.now();
-                await LocationDatabase.instance.update(currentLocationEntry!);
-              }
-            }
-
-            final newEntry =
-                LocationEntry(address: address, startTime: DateTime.now());
-            final id = await LocationDatabase.instance.create(newEntry);
-            newEntry.id = id;
-            currentLocationEntry = newEntry;
-          }
-        }
-      } catch (e) {
-        print(e);
-      }
-    });
   }
 
   @override
@@ -121,7 +79,7 @@ class _STMLUserDashboardScreenState extends State<STMLUserDashboardScreen> {
                         icon: Icon(Icons.home_filled,
                             size: iconSize, color: Colors.black54),
                         text: 'Take Me Home',
-                        screen: ProfileScreen(),
+                        screen: LoginScreen(),
                         keyName: "TakeMeHomeButtonKey",
                         backgroundColor:
                             const Color(0xFF000000).withOpacity(0.30)),
@@ -148,7 +106,7 @@ class _STMLUserDashboardScreenState extends State<STMLUserDashboardScreen> {
                         icon: Icon(Icons.search,
                             size: iconSize, color: Colors.black54),
                         text: 'My Tasks',
-                        screen: ResponseScreen(),
+                        screen: LoginScreen(),
                         keyName: "MyTasksButtonKey",
                         backgroundColor:
                             const Color(0xFFFFFFFF).withOpacity(0.30)),
@@ -177,15 +135,6 @@ class _STMLUserDashboardScreenState extends State<STMLUserDashboardScreen> {
                         text: 'My Health',
                         routeName: '/healthMetrics',
                         keyName: "healthMetrics",
-                        backgroundColor:
-                            const Color(0xFFFFFFFF).withOpacity(0.30)),
-                    _buildElevatedButton(
-                        context: context,
-                        icon: Icon(Icons.task_alt,
-                            size: iconSize, color: Colors.black54),
-                        text: 'Caregiver Tasks',
-                        screen: CaregiverTaskScreen(),
-                        keyName: "CaregiverTaskButtonKey",
                         backgroundColor:
                             const Color(0xFFFFFFFF).withOpacity(0.30)),
                   ],

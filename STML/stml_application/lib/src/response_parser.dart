@@ -6,7 +6,7 @@ import 'dart:core';
 import 'dart:io';
 
 import 'package:memoryminder/src/data_service.dart';
-import 'package:memoryminder/src/database/model/video_response.dart';
+import 'package:memoryminder/src/features/common/model/video_response.dart';
 import 'package:memoryminder/src/utils/directory_manager.dart';
 import 'package:memoryminder/src/utils/file_manager.dart';
 import 'package:memoryminder/src/utils/format_utils.dart';
@@ -25,31 +25,6 @@ class ResponseParser {
     return null;
   }
 
-  // Given a response, convert it into a significant object for local saving.
-  static Future<void> convertResponseToLocalSignificantObject(
-      VideoResponse response) async {
-    String sourceFilePath =
-        "${DirectoryManager.instance.videosDirectory.path}/${response.referenceVideoFilePath}";
-    File sourceFile = File(sourceFilePath);
-
-    if (await sourceFile.exists()) {
-      String fileName =
-          FileManager.getThumbnailFileName(sourceFilePath, response.timestamp);
-      String fullPath =
-          "${DirectoryManager.instance.videoStillsDirectory.path}/$fileName";
-      File destinationFile = File(fullPath);
-
-      DataService.instance.addSignificantObject(
-          timestamp: response.timestamp,
-          left: response.left,
-          top: response.top,
-          width: response.width,
-          height: response.height,
-          imageFile: destinationFile);
-    } else {
-      appLogger.severe("Source file does not exist: $sourceFilePath");
-    }
-  }
 
   // Given a search title, return the list of all responses that match that title (recent first
   // The filter interval allows for extra filtering (only show results greater than the interval)
