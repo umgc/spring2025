@@ -23,8 +23,8 @@ class _HomePageState extends State<HomePage> {
   
   
   Future<void> _checkFirstTimeUser() async {
-    final prefs = await SharedPreferences.getInstance();
-    final isFirstTime = prefs.getBool('isFirstTime') ?? true;
+    final preferences = await SharedPreferences.getInstance();
+    final isFirstTime = preferences.getBool('is_first_run') ?? true;
 
     if (isFirstTime && mounted) {
       final shouldShowDialog = await showDialog<bool>(
@@ -46,7 +46,6 @@ class _HomePageState extends State<HomePage> {
       );
 
       if (shouldShowDialog != null && shouldShowDialog) {
-        await prefs.setBool('isFirstTime', false);
         if (mounted) {
           Navigator.push(
             context,
@@ -54,6 +53,8 @@ class _HomePageState extends State<HomePage> {
           );
         }
       }
+
+      await preferences.setBool('is_first_run', false); 
     }
   }
 

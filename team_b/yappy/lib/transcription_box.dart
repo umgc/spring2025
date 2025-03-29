@@ -62,7 +62,7 @@ class TranscriptionBoxState extends State<TranscriptionBox> {
               maxLines: null,
               readOnly: true,
               decoration: InputDecoration(
-                hintText: "",
+                hintText: "Transcription will appear here...",
                 hintStyle: TextStyle(color:Colors.white),
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.all(10),

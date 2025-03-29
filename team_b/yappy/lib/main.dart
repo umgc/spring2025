@@ -27,52 +27,57 @@ void main() async {
   String awsAccessKey = Env.awsAccessKey;
   String awsSecretKey = Env.awsSecretKey;
   String awsRegion = Env.awsRegion;
-  if (apiKey.isNotEmpty) {
+
+  if (apiKey.isNotEmpty && preferences.getString('openai_api_key') == null) {
     OpenAI.apiKey = apiKey;
     await preferences.setString('openai_api_key', apiKey);
+  } else if (preferences.getString('openai_api_key') != null) {
+    OpenAI.apiKey = preferences.getString('openai_api_key')!;
   }
+
   if (awsRegion.isNotEmpty && awsAccessKey.isNotEmpty && awsSecretKey.isNotEmpty)
   {
     await preferences.setString('aws_access_key', awsAccessKey);
     await preferences.setString('aws_secret_key', awsSecretKey);
     await preferences.setString('aws_region', awsRegion);
-    await preferences.setBool('awsAvailable', true);
+    await preferences.setBool('is_aws_configured', true);
   }
   else
   {
-    await preferences.setBool('awsAvailable', false);
+    await preferences.setBool('is_aws_configured', false);
   }
 
-  if (Platform.isLinux || Platform.isWindows)
-  {
-    sqfliteFfiInit();   // Init ffi loader based on platform.
+  if (Platform.isLinux || Platform.isWindows) {
+    sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
   }
 
   await dbHelper.database;
 
-  WidgetsBinding.instance.addPostFrameCallback((_) {
-    // Shows dialog requesting a API keys if not set
-    if (apiKey.isEmpty) {
-      showDialog(
-        context: navigatorKey.currentContext!,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('API Keys Required'),
-            content: Text('Please add valid API keys for OpenAI and AWS via the Settings menu.'),
-            actions: <Widget>[
-              TextButton(
-                child: Text('OK'),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              ),
-            ],
-          );
-        },
-      );
-    }
-  });
+  if (preferences.getString('openai_api_key') == null || preferences.getBool('is_aws_configured') == null) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Only show this dialog on first run
+      if (apiKey.isEmpty) {
+        showDialog(
+          context: navigatorKey.currentContext!,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('API Keys Required'),
+              content: Text('Please add valid API keys for OpenAI and AWS via the Settings menu.'),
+              actions: <Widget>[
+                TextButton(
+                  child: Text('OK'),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
+            );
+          },
+        );
+      }
+    });
+  }
 
   // Run the app and initialize ThemeProvider
   runApp(

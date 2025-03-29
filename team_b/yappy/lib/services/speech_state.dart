@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
@@ -15,7 +16,6 @@ import 'speech_isolate.dart';
 import 'package:aws_common/aws_common.dart';
 import 'client.dart';
 import 'models.dart';
-import 'transcription.dart';
 
 Future<sherpa_onnx.OnlineRecognizer> createOnlineRecognizer() async {
   final type = 0;
@@ -315,10 +315,10 @@ class SpeechState extends ChangeNotifier {
           credentialsProvider: credentialsProvider,
         );
         
-        await preferences.setBool('awsAvailable', true);
+        await preferences.setBool('is_aws_available', true);
         debugPrint('🚣 AWS Transcribe client initialized');
       } catch (e) {
-        await preferences.setBool('awsAvailable', false);
+        await preferences.setBool('is_aws_available', false);
         debugPrint('🚣 Error initializing AWS client: $e');
       }
     }
@@ -338,11 +338,11 @@ class SpeechState extends ChangeNotifier {
       // Create request with proper parameters
       final request = StartStreamTranscriptionRequest(
         languageCode: LanguageCode.enUs,
-        mediaSampleRateHertz: sampleRate,  // Should be 16000
+        mediaSampleRateHertz: sampleRate,
         mediaEncoding: MediaEncoding.pcm,
         showSpeakerLabel: true,
-        enablePartialResultsStabilization: true,
-        partialResultsStability: PartialResultsStability.high,
+        // Disable partial results stabilization for better accuracy
+        enablePartialResultsStabilization: false,
       );
       
       debugPrint('🚣 Starting AWS transcription with sample rate $sampleRate');
@@ -351,18 +351,36 @@ class SpeechState extends ChangeNotifier {
       final (response, sink, stream) = await awsClient!.startStreamTranscription(request);
       awsAudioStreamSink = sink;
       
-      // Use the TranscriptEventStreamDecoder to handle events
-      final transcriptStream = stream.transform(
-        TranscriptEventStreamDecoder(CustomTranscriptionStrategy())
+      // Create a transformer that converts TranscriptEvent to String
+      final stringStream = stream.transform(
+        StreamTransformer<TranscriptEvent, String>.fromHandlers(
+          handleData: (event, sink) {
+            if (event.transcript != null) {
+              try {
+                final transcript = _processTranscriptEvent(event);
+                if (transcript.isNotEmpty) {
+                  sink.add(transcript);
+                }
+              } catch (e) {
+                debugPrint('🚣 Error processing transcript: $e');
+              }
+            }
+          },
+          handleError: (error, stackTrace, sink) {
+            debugPrint('🚣 AWS Transcription Stream Error: $error');
+            sink.addError(error, stackTrace);
+          },
+          handleDone: (sink) {
+            debugPrint('🚣 AWS Transcription Stream Done');
+            sink.close();
+          },
+        )
       );
       
-      // Listen to the decoded stream
-      awsTranscriptSubscription = transcriptStream.listen(
+      awsTranscriptSubscription = stringStream.listen(
         (transcriptText) {
-          // This is now the full transcript text
           if (transcriptText.isNotEmpty) {
             currentAwsTranscript = transcriptText;
-                        
             notifyListeners();
           }
         },
@@ -371,6 +389,8 @@ class SpeechState extends ChangeNotifier {
         },
         onDone: () {
           debugPrint('🚣 AWS Transcription Stream Done');
+          isAwsTranscribing = false;
+          notifyListeners();
         },
       );
       
@@ -379,6 +399,67 @@ class SpeechState extends ChangeNotifier {
       debugPrint('🚣 Error starting AWS transcription: $e');
       isAwsTranscribing = false;
     }
+  }
+
+  String? previousSpeaker;
+
+  // Helper method to process transcript events
+  String _processTranscriptEvent(TranscriptEvent event) {
+    if (event.transcript?.results == null || event.transcript!.results!.isEmpty) {
+      return currentAwsTranscript; // Return current to avoid clearing it
+    }
+    
+    final StringBuffer buffer = StringBuffer();
+    bool hasNewCompletedSegments = false;
+    
+    for (final result in event.transcript!.results!) {
+      // Only process complete (non-partial) segments
+      if (result.isPartial == false && 
+          result.alternatives != null && 
+          result.alternatives!.isNotEmpty) {
+        
+        hasNewCompletedSegments = true;
+        final alternative = result.alternatives!.first;
+        
+        // Get speaker information if available
+        String? speaker;
+        if (alternative.items != null && alternative.items!.isNotEmpty) {
+          for (final item in alternative.items!) {
+            if (item.speaker != null && item.speaker!.isNotEmpty) {
+              final speakerId = int.tryParse(item.speaker!) ?? 0;
+              speaker = "Speaker ${speakerId + 1}";
+              break;
+            }
+          }
+        } else if (result.channelId != null) {
+          speaker = "Channel ${result.channelId}";
+        }
+        
+        // Add transcript with speaker label
+        if (speaker != null && alternative.transcript != null) {
+          // Add an extra newline if the speaker changed
+          if (previousSpeaker != null && previousSpeaker != speaker) {
+            buffer.write('\n\n$speaker: ${alternative.transcript}');
+          } else {
+            buffer.write('\n$speaker: ${alternative.transcript}');
+          }
+          previousSpeaker = speaker;
+        } else if (alternative.transcript != null) {
+          buffer.write('\n${alternative.transcript}');
+        }
+      }
+    }
+    
+    // Only update the transcript if we have new completed segments
+    if (hasNewCompletedSegments) {
+      // If we already have content, append to it
+      if (currentAwsTranscript.isNotEmpty) {
+        return currentAwsTranscript + buffer.toString();
+      }
+      return buffer.toString().trim();
+    }
+    
+    return currentAwsTranscript;
   }
   
   // Helper method to update the displayed text
@@ -685,6 +766,7 @@ class SpeechState extends ChangeNotifier {
             debugPrint('🫳🎤 Audio stream done; ${recognizedSegments.length} segments with $currentSpeakerCount speakers');
             // Clear VAD buffer - flush any pending segments
             vad?.flush();
+            awsAudioStreamSink?.close();
           },
         );
       }
@@ -833,9 +915,6 @@ class SpeechState extends ChangeNotifier {
       recordState = RecordState.stop;
       notifyListeners();
 
-      // Stop AWS transcription properly
-      await stopAwsTranscription();
-
       // Process any remaining audio
       if (currentSegmentSamples.isNotEmpty) {
         debugPrint('Processing final segment $currentIndex');
@@ -868,6 +947,9 @@ class SpeechState extends ChangeNotifier {
       
       await audioRecorder.stop();
 
+      // Stop AWS transcription properly
+      await stopAwsTranscription();
+
       // Process final segments
       debugPrint('Processing final segments with offline recognizer');
       await processPendingSegments();
@@ -877,8 +959,7 @@ class SpeechState extends ChangeNotifier {
       lastConversation = await createConversation();
 
       currentSegmentSamples.clear();
-      // allAudioSamples.clear();
-      // Final update to display text
+
       _updateDisplayText();
       
       debugPrint('Recording stopped successfully');
@@ -915,64 +996,5 @@ class SpeechState extends ChangeNotifier {
     } else {
       return "No recording available.";
     }
-  }
-}
-
-// Custom transcription strategy that accumulates a complete transcript
-class CustomTranscriptionStrategy implements TranscriptionBuildingStrategy {
-  @override
-  String buildTranscription(Iterable<Result> results) {
-    final buffer = StringBuffer();
-    
-    // Group results by channel if channel ID is present
-    final resultsByChannel = <String?, List<Result>>{};
-    
-    for (final result in results) {
-      if (!result.isPartial!) {
-        final channelId = result.channelId ?? 'default';
-        if (!resultsByChannel.containsKey(channelId)) {
-          resultsByChannel[channelId] = [];
-        }
-        resultsByChannel[channelId]!.add(result);
-      }
-    }
-    
-    // Process each channel's results
-    resultsByChannel.forEach((channelId, channelResults) {
-      // Sort results by start time
-      channelResults.sort((a, b) => (a.startTime ?? 0).compareTo(b.startTime ?? 0));
-      
-      String? previousSpeaker;
-      
-      for (final result in channelResults) {
-        if (result.alternatives == null || result.alternatives!.isEmpty) continue;
-        
-        for (final alternative in result.alternatives!) {
-          // Check if we have speaker identification
-          String? currentSpeaker;
-          if (alternative.items != null && alternative.items!.isNotEmpty) {
-            currentSpeaker = alternative.items!.first.speaker;
-          }
-          
-          if (currentSpeaker != null) {
-            int speakerId = int.tryParse(currentSpeaker) ?? 0;
-            currentSpeaker = "Speaker ${speakerId + 1}";
-            
-            // Add extra newline if speaker changes
-            if (previousSpeaker != null && previousSpeaker != currentSpeaker) {
-              buffer.write('\n');
-            }
-            
-            buffer.write('\n$currentSpeaker: ${alternative.transcript}');
-            previousSpeaker = currentSpeaker;  // Update previous speaker
-          } else {
-            buffer.write('\n${alternative.transcript}');
-            previousSpeaker = null;  // Reset previous speaker for unmarked text
-          }
-        }
-      }
-    });
-    
-    return buffer.toString().trim();
   }
 }
