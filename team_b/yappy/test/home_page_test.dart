@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
 import 'package:yappy/home_page.dart';
+import 'package:yappy/theme_provider.dart';
 import 'package:yappy/tutorial_page.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
@@ -9,8 +11,13 @@ void main() {
   group('HomePage Tests', () {
     testWidgets('displays all buttons on the HomePage',
         (WidgetTester tester) async {
-      // Arrange
-      await tester.pumpWidget(MaterialApp(home: HomePage()));
+            // Build the widget with a ThemeProvider
+      await tester.pumpWidget(
+        ChangeNotifierProvider<ThemeProvider>(
+          create: (_) => ThemeProvider(),
+          child: MaterialApp(home: HomePage()),
+        ),
+      );
 
       // Assert
       expect(find.text('Restaurant'), findsOneWidget);
@@ -26,9 +33,15 @@ void main() {
         (WidgetTester tester) async {
       // Arrange
       SharedPreferences.setMockInitialValues({'isFirstTime': true});
-      await tester.pumpWidget(MaterialApp(home: HomePage()));
+      await tester.pumpWidget(
+        ChangeNotifierProvider<ThemeProvider>(
+          create: (_) => ThemeProvider(),
+          child: MaterialApp(home: HomePage()),
+        ),
+      );
 
       // Act
+      await tester.pump();
       await tester.tap(find.text('Yes'));
       await tester.pumpAndSettle();
 
@@ -41,7 +54,12 @@ void main() {
         (WidgetTester tester) async {
       // Arrange
       SharedPreferences.setMockInitialValues({'isFirstTime': false});
-      await tester.pumpWidget(MaterialApp(home: HomePage()));
+      await tester.pumpWidget(
+        ChangeNotifierProvider<ThemeProvider>(
+          create: (_) => ThemeProvider(),
+          child: MaterialApp(home: HomePage()),
+        ),
+      );
 
       // Assert
       expect(find.text('Welcome!'), findsNothing);

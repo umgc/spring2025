@@ -31,10 +31,10 @@ class _ScamDetectionScreenState extends State<ScamDetectionScreen> {
         _isScamDetected = result != 0;
       });
       // If a scam is detected, show an alert dialog
-      if (result != 0) {
+      if (result[_scamId] != 0) {
         _scamId = result.keys.first;
-        _notificationService.sendNotificationToFirestore(result[_scamId]!);
-        _showAlertDialog();
+        _notificationService.sendNotificationToFirestore(result[_scamId]!); // Send notification to care giver
+        _showAlertDialog(); // Show the alert dialog as pop up to the stml user
       }
     }
   }
