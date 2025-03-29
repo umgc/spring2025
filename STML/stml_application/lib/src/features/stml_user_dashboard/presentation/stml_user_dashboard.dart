@@ -17,6 +17,7 @@ import 'package:flutter/material.dart';
 import 'package:memoryminder/features/caregiver_task_management/caregiver_task_screen.dart';
 import 'package:memoryminder/src/features/wearable-integration/fitbit_login.dart';
 import 'package:memoryminder/ui/stml_calendar_screen.dart';
+import 'package:memoryminder/ui/ReturnMeHome.dart';
 
 // Main HomeScreen widget which is a stateless widget.
 class STMLUserDashboardScreen extends StatefulWidget {
@@ -122,7 +123,7 @@ class _STMLUserDashboardScreenState extends State<STMLUserDashboardScreen> {
                         icon: Icon(Icons.home_filled,
                             size: iconSize, color: Colors.black54),
                         text: 'Take Me Home',
-                        screen: ProfileScreen(),
+                        screen: ReturnMeHomePage(),
                         keyName: "TakeMeHomeButtonKey",
                         backgroundColor:
                             const Color(0xFF000000).withOpacity(0.30)),
