@@ -1,36 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
 import 'package:yappy/help.dart';
 import 'package:yappy/tutorial_page.dart';
+import 'package:yappy/theme_provider.dart';
 
 void main() {
   group('HelpApp Widget Tests', () {
     testWidgets('HelpApp renders HelpPage as the home screen',
         (WidgetTester tester) async {
-      await tester.pumpWidget(const HelpApp());
+      // Build the widget with a ThemeProvider
+      await tester.pumpWidget(
+        ChangeNotifierProvider<ThemeProvider>(
+          create: (_) => ThemeProvider(),
+          child: MaterialApp(home: HelpApp()),
+        ),
+      );
 
       expect(find.byType(HelpPage), findsOneWidget);
     });
   });
 
   group('HelpPage Widget Tests', () {
-    testWidgets('HelpPage has the correct background color',
-        (WidgetTester tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: HelpPage(),
-        ),
-      );
-
-      final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
-      expect(scaffold.backgroundColor, const Color.fromARGB(255, 0, 0, 0));
-    });
-
     testWidgets('HelpPage displays the "Lets Yap about Yappy" title',
         (WidgetTester tester) async {
+      // Build the widget with a ThemeProvider
       await tester.pumpWidget(
-        const MaterialApp(
-          home: HelpPage(),
+        ChangeNotifierProvider<ThemeProvider>(
+          create: (_) => ThemeProvider(),
+          child: MaterialApp(home: HelpPage()),
         ),
       );
 
@@ -39,9 +37,11 @@ void main() {
 
     testWidgets('HelpPage displays the welcome message',
         (WidgetTester tester) async {
+      // Build the widget with a ThemeProvider
       await tester.pumpWidget(
-        const MaterialApp(
-          home: HelpPage(),
+        ChangeNotifierProvider<ThemeProvider>(
+          create: (_) => ThemeProvider(),
+          child: MaterialApp(home: HelpPage()),
         ),
       );
 
@@ -56,9 +56,11 @@ void main() {
     testWidgets(
         'HelpPage displays "It\'s my first time" button and navigates to TutorialPage',
         (WidgetTester tester) async {
+      // Build the widget with a ThemeProvider
       await tester.pumpWidget(
-        const MaterialApp(
-          home: HelpPage(),
+        ChangeNotifierProvider<ThemeProvider>(
+          create: (_) => ThemeProvider(),
+          child: MaterialApp(home: HelpPage()),
         ),
       );
 
@@ -73,9 +75,11 @@ void main() {
     testWidgets(
         'HelpPage displays "Report a problem" button and shows alert dialog',
         (WidgetTester tester) async {
+      // Build the widget with a ThemeProvider
       await tester.pumpWidget(
-        const MaterialApp(
-          home: HelpPage(),
+        ChangeNotifierProvider<ThemeProvider>(
+          create: (_) => ThemeProvider(),
+          child: MaterialApp(home: HelpPage()),
         ),
       );
 
@@ -91,18 +95,25 @@ void main() {
     testWidgets(
         'HelpPage displays "Feedback for the Help Center" button and shows alert dialog',
         (WidgetTester tester) async {
+      // Build the widget with a ThemeProvider
       await tester.pumpWidget(
-        const MaterialApp(
-          home: HelpPage(),
+        ChangeNotifierProvider<ThemeProvider>(
+          create: (_) => ThemeProvider(),
+          child: MaterialApp(home: HelpPage()),
         ),
       );
 
-      expect(find.text('Feedback for the Help Center'), findsOneWidget);
+      final buttonFinder = find.text('Feedback for the Help Center');
 
-      await tester.tap(find.text('Feedback for the Help Center'));
+      await tester.ensureVisible(buttonFinder);
+      await tester.pumpAndSettle();
+
+      expect(buttonFinder, findsOneWidget);
+
+      await tester.tap(buttonFinder);
       await tester.pump();
 
-      expect(find.text('Feedback for the Help Center'), findsNWidgets(2));
+      expect(buttonFinder, findsNWidgets(2));
     });
   });
 }
