@@ -202,16 +202,27 @@ class _AudioScreenState extends State<AudioScreen> {
 
               for (var item in items) {
                 if (item['type'] == 'pronunciation') {
-                  if (item.containsKey('speaker_label')) {
-                    String speakerLabel =
-                        _getCustomSpeakerLabel(item['speaker_label']);
-                    if (currentSpeaker != speakerLabel) {
-                      fullTranscription += '\n$speakerLabel: ';
-                      currentSpeaker = speakerLabel;
+                  // Check if speaker label is available
+                  String? speakerLabel = item['speaker_label'];
+
+                  // Add speaker header if it changed
+                  if (speakerLabel != null) {
+                    String label = _getCustomSpeakerLabel(speakerLabel);
+                    if (currentSpeaker != label) {
+                      fullTranscription += '\n$label: ';
+                      currentSpeaker = label;
                     }
+                  } else if (currentSpeaker == null) {
+                    // Default to Speaker 1 if none provided
+                    currentSpeaker = 'Speaker 1';
+                    fullTranscription += '\n$currentSpeaker: ';
                   }
 
                   fullTranscription += item['alternatives'][0]['content'] + ' ';
+                } else if (item['type'] == 'punctuation') {
+                  fullTranscription = fullTranscription.trim() +
+                      item['alternatives'][0]['content'] +
+                      ' ';
                 }
               }
 
@@ -370,35 +381,32 @@ class _AudioScreenState extends State<AudioScreen> {
   }
 
   Future<void> sendFirebaseNotification(String title, String body) async {
-    FirebaseMessaging messaging = FirebaseMessaging.instance;
+    print("Sending notification to caregiver via Firebase Function...");
 
     try {
-      String? token = await messaging.getToken();
-
-      if (token == null) {
-        print("Firebase token is null. Cannot send notification.");
-        return;
-      }
+      final url = Uri.parse(
+        'https://us-central1-spring2025-81f5b.cloudfunctions.net/sendNotification',
+      );
 
       final response = await http.post(
-        Uri.parse("https://fcm.googleapis.com/fcm/send"),
+        url,
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'key=${dotenv.env['GOOGLE_CLOUD_API']}'
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: jsonEncode({
-          "to": token,
-          "notification": {"title": title, "body": body}
-        }),
+        body: {
+          'topic': 'Sensitive Information Detected', // or 'caregivers', etc.
+          'title': title,
+          'message': body,
+        },
       );
 
       if (response.statusCode == 200) {
-        print("Firebase Notification Sent!");
+        print("Notification sent successfully via function!");
       } else {
-        print("Failed to send notification: ${response.body}");
+        print("Failed to send notification. Response: ${response.body}");
       }
     } catch (e) {
-      print("Error sending Firebase notification: $e");
+      print("Error sending Firebase notification via function: $e");
     }
   }
 
