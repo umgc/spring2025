@@ -19,9 +19,7 @@ import 'package:memoryminder/src/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:memoryminder/features/caregiver_task_management/caregiver_task_screen.dart';
 import 'package:memoryminder/src/features/wearable-integration/fitbit_login.dart';
-import 'package:syncfusion_flutter_calendar/calendar.dart';
-
-import '../../../../ui/stml_calendar_screen.dart';
+import 'package:memoryminder/ui/stml_calendar_screen.dart';
 
 
 
