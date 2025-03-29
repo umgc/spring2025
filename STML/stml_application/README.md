@@ -1,23 +1,33 @@
-# stml_application
+## MemoryMinder - STML for Team C/D Spring 2025
+# MemoryMinder: Short-Term Memory Loss ​(STML) Application
 
-A new Flutter project.
+What is STML? 
+- The inability to recall information or events that recently occurred​
+
+Purpose of App​
+- To improve the quality of life for persons with STML. ​
+
+- Assist caregivers (non-medical or geriatric assistant professionals) such as relatives, friends, etc., with helping individuals with STML​
+
+Main users for the application:​
+- Caregiver ​
+- Care recipient ​
+
+NOTE: Current code base stems from Fall 23 – CogniOpen​
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+Refer to Team C/D documentation for further insight. All available documentation is located here:
+https://umgc-cappms.azurewebsites.net/previousprojects
 
-A few resources to get you started if this is your first Flutter project:
+Spring 2025 Team C - Minder
+Spring 2025 Team D - MemoryMinder
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-
--------------------------------------------
-Dementia Resources Feature Requirements
--------------------------------------------
+## To assist with running the app please do the following: 
+# -------------------------------------------
+# Dementia Resources Feature Requirements
+# -------------------------------------------
 Add the following to .env file:
 
 #!!!!!!!!!!!!!!!!!!!!
@@ -31,9 +41,9 @@ To get API key - https://developers.google.com/custom-search/v1/introduction#ide
 
 To set up search engine: https://programmablesearchengine.google.com/about/
 
-------------------------------------------------------
-Fitbit Integration - iOS App Only For Now (03/23/2025)
-------------------------------------------------------
+# ------------------------------------------------------
+# Fitbit Integration - iOS App Only For Now (03/23/2025)
+# ------------------------------------------------------
 1. Create a Fitbit Developer Account here: https://dev.fitbit.com/
 2. Sign in and Agree to the Developer Terms of Service
 3. Go to: https://dev.fitbit.com/apps and click "Register a new app"
@@ -63,3 +73,23 @@ FITBIT_CLIENT_SECRET=
 11. Click on the project Runner and select Runner under Targets, go to Info and scroll down to URL Types
 - Add this to URL Identifier: com.stml and this to URL Schemes: stmlapp
 12. Close the Xcode project and you should be all setup!
+
+
+# ------------------------------------------------------
+# RETURNMEHOME FUNCTIONALITY REQUIREMENTS 
+# ------------------------------------------------------
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+RETURNMEHOME FUNCTIONALITY REQUIREMENTS 
+Running the ReturnMeHome function requires the use of a proxy server to route API requests due to Cross Origin Resource Sharing headers
+
+If the user has node.js installed, they can run the following commands in the server directory from the CLI
+#!!!!!!!!!!!!!!!!!!!!
+npm init -y
+npm install express request cors
+#!!!!!!!!!!!!!!!!!!!!
+From there, ensure the server.js file contains the code that lives inside this repo
+
+From the terminal within the server directory use the following command to run the server:
+node server.js
+
+That server needs to be running to route requests properly to the google api endpoint
