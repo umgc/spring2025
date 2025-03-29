@@ -32,9 +32,9 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (didAuthenticate) {
-        Navigator.pushReplacement(
+       Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => HomeScreen()),
+          MaterialPageRoute(builder: (context) => STMLUserDashboardScreen()),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
