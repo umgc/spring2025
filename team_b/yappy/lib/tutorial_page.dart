@@ -52,12 +52,16 @@ class TutorialPage extends StatelessWidget {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: Column(children: [
-                    AudiowaveWidget(speechState: speechState),
-                    TranscriptionBox(
-                      controller: speechState.controller,
+                  child: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        AudiowaveWidget(speechState: speechState),
+                        TranscriptionBox(
+                          controller: speechState.controller,
+                        ),
+                      ],
                     ),
-                  ],)
+                  )
 
                 ),
               ),

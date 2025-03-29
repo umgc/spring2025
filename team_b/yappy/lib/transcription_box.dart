@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:yappy/theme_provider.dart';
 
 class TranscriptionBox extends StatefulWidget {
   final TextEditingController controller;
@@ -40,6 +42,7 @@ class TranscriptionBoxState extends State<TranscriptionBox> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
     double screenHeight = MediaQuery.of(context).size.height;
 
     return SizedBox(
@@ -47,7 +50,7 @@ class TranscriptionBoxState extends State<TranscriptionBox> {
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(8.0),
-          color: const Color.fromARGB(255, 67, 67, 67),
+          color: themeProvider.isDarkMode ? const Color.fromARGB(255, 67, 67, 67): Colors.green,
         ),
         child: Scrollbar(
           controller: _scrollController,
@@ -60,7 +63,7 @@ class TranscriptionBoxState extends State<TranscriptionBox> {
               readOnly: true,
               decoration: InputDecoration(
                 hintText: "Transcription will appear here...",
-                hintStyle: TextStyle(color: Colors.white),
+                hintStyle: TextStyle(color:Colors.white),
                 border: InputBorder.none,
                 contentPadding: EdgeInsets.all(10),
               ),

@@ -7,6 +7,7 @@ import 'package:record/record.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'main.dart';
 import 'services/openai_helper.dart';
 import 'services/database_helper.dart';
 import 'services/file_handler.dart';
@@ -14,6 +15,7 @@ import 'services/model_manager.dart';
 import 'services/speech_state.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:yappy/services/restaurant_api_module.dart';
+import 'transcript_dialog.dart';
 
 
 class IndustryMenu extends StatefulWidget {
@@ -195,6 +197,8 @@ class _IndustryMenuState extends State<IndustryMenu> {
     // Gets the width and height of the current screen
     double screenWidth = MediaQuery.of(context).size.width;
     double screenHeight = MediaQuery.of(context).size.height;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
@@ -203,12 +207,12 @@ class _IndustryMenuState extends State<IndustryMenu> {
       child: Column(
         children: [
           Center(
-              // Creates the text box above the icons
-              child: Container(
+            // Creates the text box above the icons
+            child: Container(
             width: screenWidth * .75,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
-              color: const Color.fromARGB(255, 67, 67, 67),
+              color: isDarkMode ? Color.fromARGB(255, 79, 79, 83): Colors.green,
             ),
             padding: EdgeInsets.all(12),
             child: Center(
@@ -232,7 +236,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
                     color: !modelsExist
                         ? Color.fromRGBO(128, 128, 128, 0.5)
                         : (widget.speechState.recordState == RecordState.stop
-                            ? Colors.grey
+                            ? isDarkMode ? Colors.grey : Colors.green
                             : Colors.red)),
                 padding: EdgeInsets.all(5),
                 child: Tooltip(
@@ -247,7 +251,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
                           ? Icons.mic
                           : Icons.stop,
                       color: !modelsExist
-                          ? Color.fromRGBO(255, 255, 255, 0.5)
+                          ? isDarkMode ? Colors.grey : Colors.green
                           : Colors.white,
                       size: screenHeight * .05,
                     ),
@@ -255,81 +259,58 @@ class _IndustryMenuState extends State<IndustryMenu> {
                         ? null
                         : () async {
                             await widget.speechState.toggleRecording();
-                            // When speechState.stop happens it needs to store the text in the database
-                            // The new text file needs to get the USERID, create a new Transcript ID,
-                            // The user will be asked to edit the text to ensure accuracy. After hitting save, the text will be saved to the database in the transcript table using the same transcript ID
-                            if (widget.speechState.recordState ==
-                                RecordState.stop) {
-                              // Fetch the recorded text
-                              String recordedText =
-                                  await widget.speechState.getRecordedText();
-
-                              // Get the user ID (assuming you have a method to get the current user ID)
+                            
+                            if (widget.speechState.recordState == RecordState.stop) {
+                              // Fetch both transcripts
+                              String localTranscript = widget.speechState.getRecordedText();
+                              String awsTranscript = widget.speechState.getAwsRecordedText();
+                              bool awsAvailable = await preferences.setBool('is_aws_available', true);
+                              
+                              // Get the user ID 
                               int userId = 0001;
-
+                              
                               // Create a new transcript ID
-                              int transcriptId =
-                                  DateTime.now().millisecondsSinceEpoch;
-
-                              // Show a dialog to edit the text
-                              TextEditingController controller =
-                                  TextEditingController(text: recordedText);
+                              int transcriptId = DateTime.now().millisecondsSinceEpoch;
+                              
+                              // Show the dialog with both transcripts
                               if (!context.mounted) return;
                               showDialog(
                                 context: context,
                                 builder: (BuildContext context) {
-                                  return AlertDialog(
-                                    title: Text('Edit Transcript'),
-                                    content: TextField(
-                                      controller: controller,
-                                      decoration: InputDecoration(
-                                          hintText: 'Edit the transcript text'),
-                                      maxLines: null,
-                                    ),
-                                    actions: [
-                                      TextButton(
-                                        onPressed: () async {
-                                          // Save the edited text to the database
-                                          await DatabaseHelper().saveTranscript(
-                                            userId: userId,
-                                            transcriptId: transcriptId,
-                                            text: controller.text,
-                                            industry: widget.title,
+                                  return TranscriptDialog(
+                                    localTranscript: localTranscript,
+                                    awsTranscript: awsTranscript,
+                                    awsAvailable: awsAvailable,
+                                    userId: userId,
+                                    transcriptId: transcriptId,
+                                    industry: widget.title,
+                                    onSave: (userId, transcriptId, text, industry) async {
+                                      // Save the selected transcript to the database
+                                      await DatabaseHelper().saveTranscript(
+                                        userId: userId,
+                                        transcriptId: transcriptId,
+                                        text: text,
+                                        industry: industry,
+                                      );
+                                      
+                                      // Kick off the AI summarization process
+                                      var openAIHelper = OpenAIHelper();
+                                      String aiResponse = '';
+                                      try {
+                                        aiResponse = await openAIHelper.summarizeTranscription(
+                                          userId, industry, transcriptId
+                                        );
+                                      } catch (e) {
+                                        // Lets the user know that transcription summarization failed
+                                        if (context.mounted) {
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(content: Text('Failed to summarize transcription: $e')),
                                           );
-                                          // Kick off the AI summarization process
-                                          var openAIHelper = OpenAIHelper();
-                                          String aiResponse = '';
-                                          try {
-                                            aiResponse = await openAIHelper
-                                                .summarizeTranscription(userId,
-                                                    widget.title, transcriptId);
-                                          } catch (e) {
-                                            // Lets the user know that transcription summarization failed (likely because of a lack of OpenAI API key)
-                                            if (context.mounted) {
-                                              ScaffoldMessenger.of(context)
-                                                  .showSnackBar(
-                                                SnackBar(
-                                                    content: Text(
-                                                        'Failed to summarize transcription: $e')),
-                                              );
-                                            }
-                                          }
-                                          // Place API hook here to parse aiResponse String and populate additional information based on industry:
-                                          debugPrint(
-                                              aiResponse); // not a necessary statement after implementation
-
-                                          if (!context.mounted) return;
-                                          Navigator.of(context).pop();
-                                        },
-                                        child: Text('Save'),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.of(context).pop();
-                                        },
-                                        child: Text('Cancel'),
-                                      ),
-                                    ],
+                                        }
+                                      }
+                                      
+                                      debugPrint(aiResponse);
+                                    },
                                   );
                                 },
                               );
@@ -343,7 +324,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
               // Creates a industry specific icon based on user input
               Container(
                 decoration:
-                    BoxDecoration(shape: BoxShape.circle, color: Colors.grey),
+                BoxDecoration(shape: BoxShape.circle, color: isDarkMode ? Colors.grey : Colors.green),
                 padding: EdgeInsets.all(5),
                 child: IconButton(
                   icon: Icon(
@@ -361,7 +342,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
               // Creates a transcript history button
               Container(
                 decoration:
-                    BoxDecoration(shape: BoxShape.circle, color: Colors.grey),
+                BoxDecoration(shape: BoxShape.circle, color: isDarkMode ? Colors.grey : Colors.green),
                 padding: EdgeInsets.all(5),
                 child: IconButton(
                   icon: Icon(
@@ -379,7 +360,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
 
               // Creates a chatbot button
               Container(
-                decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.grey),
+                decoration: BoxDecoration(shape: BoxShape.circle, color: isDarkMode ? Colors.grey : Colors.green),
                 padding: EdgeInsets.all(5),
                 child: IconButton(
                   icon: Icon(
@@ -483,7 +464,8 @@ class _IndustryMenuState extends State<IndustryMenu> {
   void _showTranscriptsBottomSheet(BuildContext context) async {
     // Fetch transcripts first
     List<Map<String, dynamic>> transcripts = await _fetchTranscripts();
-
+    if (!context.mounted) return;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     // Check if the context is still valid
     if (!context.mounted) return;
 
@@ -494,7 +476,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
           padding: EdgeInsets.all(16.0),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
-            color: const Color.fromARGB(255, 67, 67, 67),
+            color: isDarkMode ? const Color.fromARGB(255, 67, 67, 67) : Colors.green,
           ),
           child: Center(
             child: Column(
@@ -595,6 +577,8 @@ class _IndustryMenuState extends State<IndustryMenu> {
   void _showTranscriptsHistoryBottomSheet(BuildContext context) async {
     // Fetch transcripts first
     List<Map<String, dynamic>> transcripts = await _fetchTranscripts();
+    if (!context.mounted) return;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     // Check if the context is still valid
     if (!context.mounted) return;
@@ -606,7 +590,7 @@ class _IndustryMenuState extends State<IndustryMenu> {
           padding: EdgeInsets.all(16.0),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
-            color: const Color.fromARGB(255, 67, 67, 67),
+            color: isDarkMode ? const Color.fromARGB(255, 67, 67, 67) : Colors.green,
           ),
           child: Center(
             child: Column(

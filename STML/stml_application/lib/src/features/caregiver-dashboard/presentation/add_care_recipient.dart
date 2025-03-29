@@ -5,7 +5,6 @@ import 'package:memoryminder/src/features/caregiver-dashboard/model/emergency_co
 import 'package:memoryminder/src/features/caregiver-dashboard/presentation/app_bar.dart';
 import 'package:memoryminder/src/features/caregiver-dashboard/service/manage_care_recipient_service.dart';
 import 'package:memoryminder/src/utils/ui_utils.dart';
-import 'package:memoryminder/ui/dementia_resources.dart';
 
 class AddCareRecipientForm extends StatefulWidget {
   final Map<String, dynamic>? initialData;

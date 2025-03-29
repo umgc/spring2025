@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:fitbitter/fitbitter.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 const storage = FlutterSecureStorage();
 
@@ -10,12 +11,9 @@ class FitbitLoginPage extends StatelessWidget {
 
   Future<void> connectToFitbit(BuildContext context) async {
     try {
-      // Authenticate with Fitbit using PKCE flow
-      final fitbitAuth = FitbitConnector();
-
       FitbitCredentials? fitbitCredentials = await FitbitConnector.authorize(
-        clientID: '23Q4PQ',
-        clientSecret: 'ab22db61074912d2e4090298f88c8c82',
+        clientID: dotenv.env['FITBIT_CLIENT_ID']!,
+        clientSecret: dotenv.env['FITBIT_CLIENT_SECRET']!,
         redirectUri: 'stmlapp://aadil',
         callbackUrlScheme: 'stmlapp',
       );
@@ -31,13 +29,6 @@ class FitbitLoginPage extends StatelessWidget {
         await storage.write(key: 'fitbitUserId', value: fitbitCredentials.userID);
         print('Fitbit Authentication Successful! Token saved.');
 
-        // Pass `fitbitCredentials` when navigating to HealthDashboard
-        // Navigator.pushReplacement(
-        //   context,
-        //   MaterialPageRoute(
-        //     builder: (context) => HealthDashboard(fitbitCredentials: fitbitCredentials),
-        //   ),
-        // );
         // Navigate to the health metrics dashboard
         Navigator.pushReplacementNamed(context, '/healthMetrics');
       }
@@ -51,18 +42,20 @@ class FitbitLoginPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Color.fromARGB(255, 2, 63, 129),
+        elevation: 0.0,
+        centerTitle: true,
         title: const Text(
           "Connect to Fitbit",
+          textAlign: TextAlign.center,
           style: TextStyle(
-            color: Colors.black54,
-            fontWeight: FontWeight.bold,
-          ),
+          fontSize: 24.0,
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+          fontFamily: 'Montserrat')
         ),
-        centerTitle: true,
-        backgroundColor: Colors.white,
-        elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black54),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
             Navigator.pop(context);
           },

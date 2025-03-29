@@ -47,7 +47,7 @@ class UiUtils {
           if (index == 0) {
             // Navigate to Gallery screen
             Navigator.push(
-                context, MaterialPageRoute(builder: (context) => HomeScreen()));
+                context, MaterialPageRoute(builder: (context) => STMLUserDashboardScreen()));
           } else if (index == 1) {
             // Navigate to Search screen
             Navigator.push(
@@ -61,13 +61,15 @@ class UiUtils {
                 MaterialPageRoute(builder: (context) => const VideoScreen()),
               );
             }
-          } else if (index == 3) {
+          }
+
+          /* else if (index == 3) {
             // Navigate to Gallery screen
             Navigator.push(
                 context,
                 MaterialPageRoute(
                     builder: (context) => SignificantObjectScreen()));
-          }
+          } */
         });
   }
 }
