@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print, prefer_const_constructors
 // Imported libraries and packages
 
+import 'package:memoryminder/features/caregiver_task_management/caregiver_task_screen.dart';
 import 'package:memoryminder/src/features/caregiver-dashboard/presentation/add_care_recipient.dart';
 import 'package:memoryminder/src/features/caregiver-dashboard/presentation/app_bar.dart';
 import 'package:memoryminder/src/features/caregiver-dashboard/presentation/caregiver-dashboard.dart';
@@ -122,6 +123,22 @@ class CareRecipientProfileScreenState extends State<CareRecipientProfileScreen> 
                       screen: DementiaResourcesScreen(loc: careRecipientLocation),
                       keyName: "DementiaResourcesButtonKey",
                     ),
+                    _buildElevatedButton(
+                        context: context,
+                        icon: Icon(Icons.task_alt,
+                            size: iconSize, color: Color.fromARGB(255, 2, 63, 129)),
+                        text: 'Tasks',
+                        screen: CaregiverTaskScreen(),
+                        keyName: "CaregiverTaskButtonKey",
+                    ),
+                    _buildElevatedButton(
+                      context: context,
+                      icon: Icon(Icons.language_outlined,
+                          size: iconSize, color: Color.fromARGB(255, 2, 63, 129)),
+                      text: 'Language Preferences',
+                      keyName: "CaregiverTaskButtonKey",
+
+                    ),
                   ],
                 ),
               ),
@@ -133,6 +150,10 @@ class CareRecipientProfileScreenState extends State<CareRecipientProfileScreen> 
         bottomNavigationBar: UiUtils.createBottomNavigationBar(context));
   }
 
+  void _showLanguageDialog(BuildContext context) {
+
+}
+
   // Helper function to create each button for the GridView
   Widget _buildElevatedButton({
     required BuildContext context,
@@ -141,6 +162,7 @@ class CareRecipientProfileScreenState extends State<CareRecipientProfileScreen> 
     Widget? screen,
     String? routeName,
     required String keyName,
+    VoidCallback? functionName,
   }) {
     return ElevatedButton(
       key: Key(keyName),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:memoryminder/src/features/caregiver-dashboard/presentation/app_bar.dart';
 import 'package:syncfusion_flutter_calendar/calendar.dart';
 
 class stmlCalendarScreen extends StatelessWidget {
@@ -9,6 +10,11 @@ class stmlCalendarScreen extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Scaffold(
+        extendBody: true,
+        // Setting up the app bar at the top of the screen
+        appBar: const CustomAppBar(
+          title: 'Recipient Profile',
+        ),
         body: SfCalendar(
           view: CalendarView.month,
           allowedViews: <CalendarView>

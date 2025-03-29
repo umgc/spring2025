@@ -85,7 +85,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0XFF880E4F),
       extendBodyBehindAppBar: true,
       extendBody: true,
       appBar: AppBar(
@@ -97,12 +96,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
             const Text('Registration', style: TextStyle(color: Colors.black54)),
       ),
       body: Container(
-        decoration: const BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage("assets/images/background.jpg"),
-            fit: BoxFit.cover,
-          ),
-        ),
+
         child: Center(
           child: Padding(
             padding:
