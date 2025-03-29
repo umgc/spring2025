@@ -23,8 +23,8 @@ class _HomePageState extends State<HomePage> {
   
   
   Future<void> _checkFirstTimeUser() async {
-    final prefs = await SharedPreferences.getInstance();
-    final isFirstTime = prefs.getBool('isFirstTime') ?? true;
+    final preferences = await SharedPreferences.getInstance();
+    final isFirstTime = preferences.getBool('is_first_run') ?? true;
 
     if (isFirstTime && mounted) {
       final shouldShowDialog = await showDialog<bool>(
@@ -46,7 +46,6 @@ class _HomePageState extends State<HomePage> {
       );
 
       if (shouldShowDialog != null && shouldShowDialog) {
-        await prefs.setBool('isFirstTime', false);
         if (mounted) {
           Navigator.push(
             context,
@@ -54,6 +53,8 @@ class _HomePageState extends State<HomePage> {
           );
         }
       }
+
+      await preferences.setBool('is_first_run', false); 
     }
   }
 
@@ -90,21 +91,22 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 0, 0, 0),
       appBar: PreferredSize(
-        preferredSize: Size.fromHeight(140),
+        preferredSize: Size.fromHeight(MediaQuery.of(context).size.height * 0.2),
         child: ToolBar(showHamburger: false), // Using the ToolBar widget
       ),
-      body: Column(
-        children: [
-          _buildButton('Restaurant', context, RestaurantPage()),
-          _buildButton('Vehicle Maintenance', context, MechanicalAidPage()),
-          _buildButton('Medical Doctor', context, MedicalDoctorPage()),
-          _buildButton('Medical Patient', context, MedicalPatientPage()),
-          _buildButton('Help', context, HelpPage()),
-          _buildButton('Contact', context, ContactPage()),
-          _buildButton('Settings', context, SettingsPage()),
-        ],
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            _buildButton('Restaurant', context, RestaurantPage()),
+            _buildButton('Vehicle Maintenance', context, MechanicalAidPage()),
+            _buildButton('Medical Doctor', context, MedicalDoctorPage()),
+            _buildButton('Medical Patient', context, MedicalPatientPage()),
+            _buildButton('Help', context, HelpPage()),
+            _buildButton('Contact', context, ContactPage()),
+            _buildButton('Settings', context, SettingsPage()),
+          ],
+        ),
       ),
     );
   }
@@ -123,7 +125,6 @@ class _HomePageState extends State<HomePage> {
             );
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.grey[900],
             padding: const EdgeInsets.symmetric(vertical: 15),
           ),
           child: Text(

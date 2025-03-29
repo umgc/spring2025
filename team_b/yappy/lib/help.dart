@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:yappy/tool_bar.dart';
 import 'package:yappy/tutorial_page.dart';
-
+import 'package:yappy/theme_provider.dart';
+import 'package:provider/provider.dart';
 
 class HelpApp extends StatelessWidget {
   const HelpApp({super.key});
@@ -20,8 +21,9 @@ class HelpPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 0, 0, 0),
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(MediaQuery.of(context).size.height * 0.2), 
         child: ToolBar()
@@ -37,8 +39,9 @@ class HelpPage extends StatelessWidget {
                 child: Text(
                   'Lets Yap about Yappy',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: themeProvider.isDarkMode ? Colors.white: Colors.black,
                     fontSize: 24,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
@@ -52,8 +55,9 @@ class HelpPage extends StatelessWidget {
                     Text(
                       'Welcome to Yappy! If this is your first time and need help with using Yappy, please select the button below.',
                       style: TextStyle(
-                        color: const Color.fromRGBO(255, 255, 255, 1),
-                        fontSize: 12,
+                        color: themeProvider.isDarkMode ? Colors.white: Colors.black,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                     SizedBox(height: 20),
@@ -72,8 +76,9 @@ class HelpPage extends StatelessWidget {
                       'Reporting a Problem with Yappy\n'
                       'If something is not working on Yappy, please follow the instructions below to let us know.\n\n',
                       style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
+                        color: themeProvider.isDarkMode ? Colors.white: Colors.black,
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                     SizedBox(height: 5),
@@ -103,8 +108,9 @@ class HelpPage extends StatelessWidget {
                     Text(
                       '\n\nFeedback from the people who use Yappy has helped us redesign our products, improve our policies and fix technical problems. We really appreciate you taking the time to share your thoughts and suggestions with us.\n',
                       style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
+                        color: themeProvider.isDarkMode ? Colors.white: Colors.black,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                     SizedBox(height: 5),

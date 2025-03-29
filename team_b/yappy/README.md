@@ -10,13 +10,13 @@ yappy! is an application that allows you to store transcripts of recorded audio 
 * Vehicle and part identification (mechanic)
 * Visit summarization and question/answer extraction (medical)
 * Interactive dashboard with role-based access
-* Data export capabilities
+* Transcript document import and export capabilities
 * Order history review and customer preference tracking
 
 ## Getting Started with yappy!
-Refer to the Programmer's Guide for additional detailed instructions on the structure of the codebase.
-Refer to the Deployment and Operations Guide for environment setup and running yappy!
-Refer to the User Guide for information about how users interact with yappy!
+* Refer to the Programmer's Guide for additional detailed instructions on the structure of the codebase.
+* Refer to the Deployment and Operations Guide for environment setup and running yappy!
+* Refer to the User Guide for information about how users interact with yappy!
 
 ### Project File Structure Overview
 * This project subfolder shall contain the standard Flutter project structure, initially generated using the `flutter new` command. 

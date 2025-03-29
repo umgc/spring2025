@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:yappy/tool_bar.dart';
+import 'package:yappy/theme_provider.dart';
 
 //**************************************************************** */
 //**************************************************************** */
@@ -10,6 +12,7 @@ import 'package:yappy/tool_bar.dart';
 //**************************************************************** */
 //**************************************************************** */
 //**************************************************************** */
+
 class ContactApp extends StatelessWidget {
   const ContactApp({super.key});
 
@@ -25,13 +28,14 @@ class ContactPage extends StatelessWidget {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController messageController = TextEditingController();
-//Creates a page for the Contact Us page
-//The page will contain a form for the user to input their name, email, and message
+
   ContactPage({super.key});
+
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 0, 0, 0),
       appBar: PreferredSize(
         preferredSize: Size.fromHeight(140),
         child: ToolBar(),
@@ -47,52 +51,65 @@ class ContactPage extends StatelessWidget {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: themeProvider.isDarkMode ? Colors.white : Colors.black,
               ),
             ),
+            SizedBox(height: 16),
             TextField(
               controller: nameController,
               decoration: InputDecoration(
                 labelText: 'Name',
-                labelStyle: TextStyle(color: Colors.white),
+                labelStyle: TextStyle(
+                  color: themeProvider.isDarkMode ? Colors.white : Colors.black,
+                ),
                 enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white),
+                  borderSide: BorderSide(
+                    color: themeProvider.isDarkMode ? Colors.white : Colors.black,
+                  ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(color: Colors.blue),
                 ),
               ),
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(color: themeProvider.isDarkMode ? Colors.white : Colors.black),
             ),
             SizedBox(height: 16),
             TextField(
               controller: emailController,
               decoration: InputDecoration(
                 labelText: 'Email',
-                labelStyle: TextStyle(color: Colors.white),
+                labelStyle: TextStyle(
+                  color: themeProvider.isDarkMode ? Colors.white : Colors.black,
+                ),
                 enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white),
+                  borderSide: BorderSide(
+                    color: themeProvider.isDarkMode ? Colors.white : Colors.black,
+                  ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(color: Colors.blue),
                 ),
               ),
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(color: themeProvider.isDarkMode ? Colors.white : Colors.black),
             ),
             SizedBox(height: 16),
             TextField(
               controller: messageController,
               decoration: InputDecoration(
                 labelText: 'Message',
-                labelStyle: TextStyle(color: Colors.white),
+                labelStyle: TextStyle(
+                  color: themeProvider.isDarkMode ? Colors.white : Colors.black,
+                ),
                 enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: Colors.white),
+                  borderSide: BorderSide(
+                    color: themeProvider.isDarkMode ? Colors.white : Colors.black,
+                  ),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderSide: BorderSide(color: Colors.blue),
                 ),
               ),
-              style: TextStyle(color: Colors.white),
+              style: TextStyle(color: themeProvider.isDarkMode ? Colors.white : Colors.black),
               maxLines: 5,
             ),
             SizedBox(height: 20),

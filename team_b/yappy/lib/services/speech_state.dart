@@ -1,16 +1,21 @@
 import 'dart:async';
+import 'dart:collection';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:record/record.dart';
 import 'package:sherpa_onnx/sherpa_onnx.dart' as sherpa_onnx;
+import '../main.dart';
 import 'utils.dart';
 import 'online_model.dart';
 import 'offline_model.dart';
 import 'speaker_model.dart';
 import 'vad_model.dart';
 import 'speech_isolate.dart';
+import 'package:aws_common/aws_common.dart';
+import 'client.dart';
+import 'models.dart';
 
 Future<sherpa_onnx.OnlineRecognizer> createOnlineRecognizer() async {
   final type = 0;
@@ -75,16 +80,19 @@ Future<sherpa_onnx.VoiceActivityDetector> createVoiceActivityDetector() async {
 class Conversation {
   final List<RecognizedSegment> segments;
   final String audioFilePath;
+  String awsTranscription = '';
 
   Conversation({
     required this.segments,
     required this.audioFilePath,
+    this.awsTranscription = '',
   });
   
-  // Convert to JSON for persistence
+  // Update JSON methods
   Map<String, dynamic> toJson() => {
     'segments': segments.map((s) => s.toJson()).toList(),
     'audioFilePath': audioFilePath,
+    'awsTranscription': awsTranscription,
   };
   
   factory Conversation.fromJson(Map<String, dynamic> json) => Conversation(
@@ -92,9 +100,9 @@ class Conversation {
         .map((s) => RecognizedSegment.fromJson(s))
         .toList(),
     audioFilePath: json['audioFilePath'],
+    awsTranscription: json['awsTranscription'] ?? '',
   );
   
-  // Generate a transcript from the conversation
   String getTranscript({bool includeSpeakerTags = true}) {
     final buffer = StringBuffer();
     RecognizedSegment? lastSegment;
@@ -103,16 +111,13 @@ class Conversation {
       if (segment.text.isEmpty) continue;
       
       if (buffer.isNotEmpty) {
-        // Add a newline if the speaker changes or if this is a new thought
-        if (lastSegment == null || 
-            lastSegment.speakerId != segment.speakerId) {
+        if (lastSegment == null || lastSegment.speakerId != segment.speakerId) {
           buffer.write('\n\n');
         } else {
           buffer.write('\n');
         }
       }
       
-      // Add speaker tag if requested and available
       if (includeSpeakerTags && segment.speakerId != null) {
         buffer.write('${segment.speakerId}: ');
       }
@@ -122,6 +127,10 @@ class Conversation {
     }
     
     return buffer.toString();
+  }
+  
+  String getAwsTranscript() {
+    return awsTranscription;
   }
 }
 
@@ -181,6 +190,13 @@ class AudioSegment {
 }
 
 class SpeechState extends ChangeNotifier {
+  TranscribeStreamingClient? awsClient;
+  StreamSink<Uint8List>? awsAudioStreamSink;
+  StreamSubscription<String>? awsTranscriptSubscription;
+  String currentAwsTranscript = '';
+  bool isAwsTranscribing = false;
+  StringBuffer awsTranscriptBuffer = StringBuffer();
+
   final TextEditingController controller = TextEditingController();
   final AudioRecorder audioRecorder = AudioRecorder();
 
@@ -280,6 +296,172 @@ class SpeechState extends ChangeNotifier {
     }
   }
 
+  // Initialize AWS credentials and client
+  Future<void> initializeAwsClient() async {
+    if (awsClient == null) {
+      try {
+        // Use StaticCredentialsProvider for simplicity
+        // In production, consider using more secure credential providers
+        final credentialsProvider = StaticCredentialsProvider(
+          AWSCredentials(
+            preferences.getString('aws_access_key')!,  // Replace with your idkey
+            preferences.getString('aws_secret_key')!   // Replace with your secretkey
+          ),
+        );
+        
+        // Create AWS Transcribe client
+        awsClient = TranscribeStreamingClient(
+          region: preferences.getString('aws_region')!,  // Replace with your AWS region
+          credentialsProvider: credentialsProvider,
+        );
+        
+        await preferences.setBool('is_aws_available', true);
+        debugPrint('🚣 AWS Transcribe client initialized');
+      } catch (e) {
+        await preferences.setBool('is_aws_available', false);
+        debugPrint('🚣 Error initializing AWS client: $e');
+      }
+    }
+  }
+  
+  // Start AWS transcription
+  Future<void> startAwsTranscription() async {
+    if (awsClient == null) {
+      await initializeAwsClient();
+    }
+    
+    try {
+      isAwsTranscribing = true;
+      currentAwsTranscript = '';
+      awsTranscriptBuffer.clear();
+      
+      // Create request with proper parameters
+      final request = StartStreamTranscriptionRequest(
+        languageCode: LanguageCode.enUs,
+        mediaSampleRateHertz: sampleRate,
+        mediaEncoding: MediaEncoding.pcm,
+        showSpeakerLabel: true,
+        // Disable partial results stabilization for better accuracy
+        enablePartialResultsStabilization: false,
+      );
+      
+      debugPrint('🚣 Starting AWS transcription with sample rate $sampleRate');
+      
+      // Start streaming
+      final (response, sink, stream) = await awsClient!.startStreamTranscription(request);
+      awsAudioStreamSink = sink;
+      
+      // Create a transformer that converts TranscriptEvent to String
+      final stringStream = stream.transform(
+        StreamTransformer<TranscriptEvent, String>.fromHandlers(
+          handleData: (event, sink) {
+            if (event.transcript != null) {
+              try {
+                final transcript = _processTranscriptEvent(event);
+                if (transcript.isNotEmpty) {
+                  sink.add(transcript);
+                }
+              } catch (e) {
+                debugPrint('🚣 Error processing transcript: $e');
+              }
+            }
+          },
+          handleError: (error, stackTrace, sink) {
+            debugPrint('🚣 AWS Transcription Stream Error: $error');
+            sink.addError(error, stackTrace);
+          },
+          handleDone: (sink) {
+            debugPrint('🚣 AWS Transcription Stream Done');
+            sink.close();
+          },
+        )
+      );
+      
+      awsTranscriptSubscription = stringStream.listen(
+        (transcriptText) {
+          if (transcriptText.isNotEmpty) {
+            currentAwsTranscript = transcriptText;
+            notifyListeners();
+          }
+        },
+        onError: (error) {
+          debugPrint('🚣 AWS Transcription Error: $error');
+        },
+        onDone: () {
+          debugPrint('🚣 AWS Transcription Stream Done');
+          isAwsTranscribing = false;
+          notifyListeners();
+        },
+      );
+      
+      debugPrint('🚣 AWS Transcription Started: ${response.sessionId}');
+    } catch (e) {
+      debugPrint('🚣 Error starting AWS transcription: $e');
+      isAwsTranscribing = false;
+    }
+  }
+
+  String? previousSpeaker;
+
+  // Helper method to process transcript events
+  String _processTranscriptEvent(TranscriptEvent event) {
+    if (event.transcript?.results == null || event.transcript!.results!.isEmpty) {
+      return currentAwsTranscript; // Return current to avoid clearing it
+    }
+    
+    final StringBuffer buffer = StringBuffer();
+    bool hasNewCompletedSegments = false;
+    
+    for (final result in event.transcript!.results!) {
+      // Only process complete (non-partial) segments
+      if (result.isPartial == false && 
+          result.alternatives != null && 
+          result.alternatives!.isNotEmpty) {
+        
+        hasNewCompletedSegments = true;
+        final alternative = result.alternatives!.first;
+        
+        // Get speaker information if available
+        String? speaker;
+        if (alternative.items != null && alternative.items!.isNotEmpty) {
+          for (final item in alternative.items!) {
+            if (item.speaker != null && item.speaker!.isNotEmpty) {
+              final speakerId = int.tryParse(item.speaker!) ?? 0;
+              speaker = "Speaker ${speakerId + 1}";
+              break;
+            }
+          }
+        } else if (result.channelId != null) {
+          speaker = "Channel ${result.channelId}";
+        }
+        
+        // Add transcript with speaker label
+        if (speaker != null && alternative.transcript != null) {
+          // Add an extra newline if the speaker changed
+          if (previousSpeaker != null && previousSpeaker != speaker) {
+            buffer.write('\n\n$speaker: ${alternative.transcript}');
+          } else {
+            buffer.write('\n$speaker: ${alternative.transcript}');
+          }
+          previousSpeaker = speaker;
+        } else if (alternative.transcript != null) {
+          buffer.write('\n${alternative.transcript}');
+        }
+      }
+    }
+    
+    // Only update the transcript if we have new completed segments
+    if (hasNewCompletedSegments) {
+      // If we already have content, append to it
+      if (currentAwsTranscript.isNotEmpty) {
+        return currentAwsTranscript + buffer.toString();
+      }
+      return buffer.toString().trim();
+    }
+    
+    return currentAwsTranscript;
+  }
+  
   // Helper method to update the displayed text
   void _updateDisplayText() {
     final buffer = StringBuffer();
@@ -350,39 +532,39 @@ class SpeechState extends ChangeNotifier {
   }
 
   // Replace the processSegmentOffline method with this version
-Future<void> processSegmentOffline(AudioSegment segment) async {
-  debugPrint('Processing segment ${segment.index} offline (${segment.samples.length} samples)');
-  
-  if (segment.samples.isEmpty) {
-    debugPrint('Empty samples for segment ${segment.index}, skipping');
-    return;
-  }
-
-  try {
-    if (speechIsolate == null) {
-      debugPrint('Speech isolate not initialized, failing silently');
+  Future<void> processSegmentOffline(AudioSegment segment) async {
+    debugPrint('Processing segment ${segment.index} offline (${segment.samples.length} samples)');
+    
+    if (segment.samples.isEmpty) {
+      debugPrint('Empty samples for segment ${segment.index}, skipping');
       return;
     }
-    
-    // Debug current speaker count
-    debugPrint('Sending segment with current speaker count: $currentSpeakerCount');
-    
-    // Use the isolate to process this segment
-    await speechIsolate!.processSegment(ProcessSegmentMessage(
-      samples: segment.samples,
-      sampleRate: sampleRate,
-      segmentIndex: segment.index,
-      recognizerConfigs: {
-        'currentSpeakerCount': currentSpeakerCount,
-      },
-    ));
-    
-    // Processing will continue asynchronously, and results will be handled by the listener
-    
-  } catch (e) {
-    debugPrint('Error processing segment ${segment.index} offline: $e');
+
+    try {
+      if (speechIsolate == null) {
+        debugPrint('Speech isolate not initialized, failing silently');
+        return;
+      }
+      
+      // Debug current speaker count
+      debugPrint('Sending segment with current speaker count: $currentSpeakerCount');
+      
+      // Use the isolate to process this segment
+      await speechIsolate!.processSegment(ProcessSegmentMessage(
+        samples: segment.samples,
+        sampleRate: sampleRate,
+        segmentIndex: segment.index,
+        recognizerConfigs: {
+          'currentSpeakerCount': currentSpeakerCount,
+        },
+      ));
+      
+      // Processing will continue asynchronously, and results will be handled by the listener
+      
+    } catch (e) {
+      debugPrint('Error processing segment ${segment.index} offline: $e');
+    }
   }
-}
 
   Future<void> processPendingSegments() async {
     if (pendingSegments.isEmpty || isProcessingOffline) {
@@ -442,6 +624,9 @@ Future<void> processSegmentOffline(AudioSegment segment) async {
         recognizedSegments.clear();
         recordingFilePath = await _createRecordingFilePath();
 
+        // Start AWS transcription in parallel
+        await startAwsTranscription();
+
         const config = RecordConfig(
           encoder: AudioEncoder.pcm16bits,
           sampleRate: 16000,
@@ -464,6 +649,15 @@ Future<void> processSegmentOffline(AudioSegment segment) async {
 
         recordStream.listen(
           (data) {
+            // Send to AWS
+            if (isAwsTranscribing && awsAudioStreamSink != null) {
+              try {
+                awsAudioStreamSink!.add(Uint8List.fromList(data));
+              } catch (e) {
+                debugPrint('🚣 Error sending audio to AWS: $e');
+              }
+            }
+
             final samplesFloat32 = convertBytesToFloat32(Uint8List.fromList(data));
             
             // Always add to complete recording and update timestamp
@@ -572,6 +766,7 @@ Future<void> processSegmentOffline(AudioSegment segment) async {
             debugPrint('🫳🎤 Audio stream done; ${recognizedSegments.length} segments with $currentSpeakerCount speakers');
             // Clear VAD buffer - flush any pending segments
             vad?.flush();
+            awsAudioStreamSink?.close();
           },
         );
       }
@@ -686,7 +881,30 @@ Future<void> processSegmentOffline(AudioSegment segment) async {
     return Conversation(
       segments: List.from(recognizedSegments), // Make a copy
       audioFilePath: recordingFilePath ?? '',
+      awsTranscription: currentAwsTranscript,
     );
+  }
+
+  // Properly stop AWS transcription
+  Future<void> stopAwsTranscription() async {
+    if (isAwsTranscribing) {
+      try {
+        // Close the audio sink to indicate end of stream
+        await awsAudioStreamSink?.close();
+        
+        // Give AWS a moment to process final audio
+        await Future.delayed(const Duration(milliseconds: 500));
+        
+        // Then cancel the subscription
+        await awsTranscriptSubscription?.cancel();
+      } catch (e) {
+        debugPrint('🚣 Error stopping AWS transcription: $e');
+      } finally {
+        isAwsTranscribing = false;
+        awsAudioStreamSink = null;
+        awsTranscriptSubscription = null;
+      }
+    }
   }
 
   Future<void> stopRecording() async {
@@ -729,6 +947,9 @@ Future<void> processSegmentOffline(AudioSegment segment) async {
       
       await audioRecorder.stop();
 
+      // Stop AWS transcription properly
+      await stopAwsTranscription();
+
       // Process final segments
       debugPrint('Processing final segments with offline recognizer');
       await processPendingSegments();
@@ -738,8 +959,7 @@ Future<void> processSegmentOffline(AudioSegment segment) async {
       lastConversation = await createConversation();
 
       currentSegmentSamples.clear();
-      // allAudioSamples.clear();
-      // Final update to display text
+
       _updateDisplayText();
       
       debugPrint('Recording stopped successfully');
@@ -759,6 +979,15 @@ Future<void> processSegmentOffline(AudioSegment segment) async {
     vad?.free();
     speechIsolate?.dispose();
     super.dispose();
+  }
+
+  // Add method to get AWS transcription
+  String getAwsRecordedText() {
+    if (lastConversation != null) {
+      return lastConversation!.getAwsTranscript();
+    } else {
+      return "No AWS transcription available.";
+    }
   }
 
   getRecordedText() {
