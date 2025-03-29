@@ -1,7 +1,6 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:memoryminder/ui/profile_screen.dart';
+import 'package:memoryminder/src/features/account_creation_and_login/presentation/login_screen.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? title;
@@ -64,32 +63,21 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         ],
       ),
 
-// Widgets on the right side of the AppBar
+      // Widgets on the right side of the AppBar
       actions: [
-// First page icon to navigate back
         IconButton(
           icon: const Icon(
-            Icons.settings,
+            Icons.logout,
             color: Colors.white70,
           ),
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => ProfileScreen()),
+              MaterialPageRoute(builder: (context) => LoginScreen()),
             );
           },
         ),
 
-// First page icon to navigate back
-        /* IconButton(
-          icon: const Icon(
-            Icons.first_page,
-            color: Colors.black87,
-          ),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),*/
       ],
     );
   }
@@ -105,6 +93,4 @@ String _currentDate() {
   return formatter.format(now);
 }
 
-// This centers the title
 
-///////////////////////////
