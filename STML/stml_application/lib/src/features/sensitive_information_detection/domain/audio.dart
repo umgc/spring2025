@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:memoryminder/src/database/model/media.dart';
-import 'package:memoryminder/src/database/model/media_type.dart';
+import 'package:memoryminder/src/features/common/model/media.dart';
+import 'package:memoryminder/src/features/common/model/media_type.dart';
 import 'package:memoryminder/src/features/sensitive_information_detection/data/audio_repository.dart';
 import 'package:memoryminder/src/utils/directory_manager.dart';
 import 'package:memoryminder/src/utils/file_manager.dart';

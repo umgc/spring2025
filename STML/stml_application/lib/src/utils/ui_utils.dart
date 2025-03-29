@@ -1,9 +1,10 @@
-import 'package:memoryminder/src/database/model/media_type.dart';
+import 'package:flutter/rendering.dart';
+import 'package:memoryminder/src/features/common/model/media_type.dart';
+import 'package:memoryminder/src/features/common/presentation/profile_screen.dart';
+import 'package:memoryminder/src/features/gallery/presentation/gallery_screen.dart';
 import 'package:memoryminder/src/utils/permission_manager.dart';
-import 'package:memoryminder/ui/assistant_screen.dart';
 import 'package:memoryminder/src/features/stml_user_dashboard/presentation/stml_user_dashboard.dart';
-import 'package:memoryminder/ui/significant_objects_screen.dart';
-import 'package:memoryminder/ui/video_screen.dart';
+import 'package:memoryminder/src/video_screen.dart';
 import 'package:flutter/material.dart';
 
 class UiUtils {
@@ -30,7 +31,7 @@ class UiUtils {
             label: 'Home',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.handshake_outlined),
+            icon: Icon(Icons.image),
             label: 'Virtual Assistant',
           ),
           BottomNavigationBarItem(
@@ -53,7 +54,7 @@ class UiUtils {
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => const AssistantScreen()));
+                    builder: (context) => GalleryScreen()));
           } else if (index == 2) {
             if (PermissionManager.attemptToShowVideoScreen(context)) {
               Navigator.push(
@@ -66,7 +67,7 @@ class UiUtils {
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => SignificantObjectScreen()));
+                    builder: (context) => ProfileScreen()));
           }
         });
   }

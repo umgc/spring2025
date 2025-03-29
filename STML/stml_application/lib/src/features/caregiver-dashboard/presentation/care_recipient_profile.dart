@@ -1,11 +1,12 @@
 // ignore_for_file: avoid_print, prefer_const_constructors
 // Imported libraries and packages
 
+import 'package:memoryminder/src/features/account_creation_and_login/presentation/login_screen.dart';
 import 'package:memoryminder/src/features/caregiver-dashboard/presentation/add_care_recipient.dart';
 import 'package:memoryminder/src/features/caregiver-dashboard/presentation/app_bar.dart';
 import 'package:memoryminder/src/features/caregiver-dashboard/presentation/caregiver-dashboard.dart';
+import 'package:memoryminder/src/features/caregiver_task_management/presentation/caregiver_task_screen.dart';
 import 'package:memoryminder/src/features/dementia-resources/presentation/dementia_resources.dart';
-import 'package:memoryminder/ui/response_screen.dart';
 import 'package:memoryminder/src/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
 
@@ -95,7 +96,7 @@ class CareRecipientProfileScreenState extends State<CareRecipientProfileScreen> 
                       icon: Icon(Icons.task,
                           size: iconSize, color: Color.fromARGB(255, 2, 63, 129)),
                       text: 'Tasks',
-                      screen: CaregiverDashboardScreen(),
+                      screen: CaregiverTaskScreen(),
                       keyName: "TaskButtonKey",
                     ),
                     _buildElevatedButton(
@@ -103,7 +104,7 @@ class CareRecipientProfileScreenState extends State<CareRecipientProfileScreen> 
                       icon: Icon(Icons.maps_home_work,
                           size: iconSize, color: Color.fromARGB(255, 2, 63, 129)),
                       text: 'Location',
-                      screen: ResponseScreen(),
+                      screen: LoginScreen(),
                       keyName: "LocationButtonKey",
                     ),
                     _buildElevatedButton(
@@ -122,6 +123,15 @@ class CareRecipientProfileScreenState extends State<CareRecipientProfileScreen> 
                       screen: DementiaResourcesScreen(loc: careRecipientLocation),
                       keyName: "DementiaResourcesButtonKey",
                     ),
+                    _buildElevatedButton(
+                      context: context,
+                      icon: Icon(Icons.language,
+                          size: iconSize, color: Color.fromARGB(255, 2, 63, 129)),
+                      text: 'Language Preferences',
+                      screen: LoginScreen(),
+                      keyName: "LanguagePreferencesButtonKey",
+                    ),
+
                   ],
                 ),
               ),

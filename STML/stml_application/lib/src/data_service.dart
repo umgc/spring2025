@@ -1,23 +1,18 @@
 import 'dart:io';
 
-import 'package:memoryminder/src/aws_video_response.dart';
+import 'package:memoryminder/src/features/common/controller/photo_controller.dart';
+import 'package:memoryminder/src/features/common/controller/video_controller.dart';
+import 'package:memoryminder/src/features/common/model/media.dart';
+import 'package:memoryminder/src/features/common/model/photo.dart';
+import 'package:memoryminder/src/features/common/model/video.dart';
+import 'package:memoryminder/src/features/common/model/video_response.dart';
+import 'package:memoryminder/src/features/common/repository/photo_repository.dart';
+import 'package:memoryminder/src/features/common/repository/video_repository.dart';
+import 'package:memoryminder/src/features/common/repository/video_response_repository.dart';
 import 'package:memoryminder/src/features/sensitive_information_detection/application/audio_controller.dart';
-import 'package:memoryminder/src/database/controller/photo_controller.dart';
-import 'package:memoryminder/src/database/controller/significant_object_controller.dart';
-import 'package:memoryminder/src/database/controller/video_controller.dart';
-import 'package:memoryminder/src/database/controller/video_response_controller.dart';
 import 'package:memoryminder/src/features/sensitive_information_detection/domain/audio.dart';
-import 'package:memoryminder/src/database/model/media.dart';
-import 'package:memoryminder/src/database/model/photo.dart';
-import 'package:memoryminder/src/database/model/significant_object.dart';
-import 'package:memoryminder/src/database/model/video.dart';
 import 'package:memoryminder/src/utils/format_utils.dart';
-import 'package:memoryminder/src/database/model/video_response.dart';
 import 'package:memoryminder/src/features/sensitive_information_detection/data/audio_repository.dart';
-import 'package:memoryminder/src/database/repository/photo_repository.dart';
-import 'package:memoryminder/src/database/repository/significant_object_repository.dart';
-import 'package:memoryminder/src/database/repository/video_repository.dart';
-import 'package:memoryminder/src/database/repository/video_response_repository.dart';
 import 'package:memoryminder/src/utils/logger.dart';
 
 class DataService {
@@ -28,7 +23,6 @@ class DataService {
 
   late List<Media> mediaList = [];
   late List<VideoResponse> responseList = [];
-  late List<SignificantObject> significantObjectList = [];
   bool hasBeenInitialized = false;
 
   Future<void> initializeData() async {
@@ -36,6 +30,7 @@ class DataService {
   }
 
   // Used to show local database and objects
+// Used to show local database and objects
   Future<void> loadMedia() async {
     final audios = await AudioRepository.instance.readAll();
     final photos = await PhotoRepository.instance.readAll();
@@ -80,16 +75,7 @@ class DataService {
         FormatUtils.logBigMessage("VIDEO RESPONSES END");
       }
 
-      significantObjectList =
-          await SignificantObjectRepository.instance.readAll();
 
-      if (significantObjectList.isNotEmpty) {
-        FormatUtils.logBigMessage("SIGNIFICANT OBJECT START");
-        for (var object in significantObjectList) {
-          print("Object # ${object.toJson()}");
-        }
-        FormatUtils.logBigMessage("SIGNIFICANT OBJECT END");
-      }
 
       FormatUtils.logBigMessage("LOCAL DATABASE OBJECTS END");
       hasBeenInitialized = true;
@@ -122,45 +108,7 @@ class DataService {
   // |---------------------- VIDEO RESPONSE OPERATIONS ------------------------|
   // |-------------------------------------------------------------------------|
 
-  Future<void> addVideoResponses(List<AWSVideoResponse> rekogResponses) async {
-    try {
-      for (AWSVideoResponse rekResponse in rekogResponses) {
-        final response = await VideoResponseController.addVideoResponse(
-          title: rekResponse.name,
-          referenceVideoFilePath: rekResponse.referenceVideoFilePath,
-          confidence: rekResponse.confidence,
-          left: rekResponse.boundingBox.left,
-          top: rekResponse.boundingBox.top,
-          width: rekResponse.boundingBox.width,
-          height: rekResponse.boundingBox.height,
-          timestamp: rekResponse.timestamp,
-          address: rekResponse.address,
-          parents: rekResponse.parents,
-        );
-        if (response != null) {}
-      }
 
-      await refreshResponses();
-
-      //return response;
-    } catch (e) {
-      appLogger.severe('Data Service -- Error removing video response');
-      //return null;
-    }
-  }
-
-  Future<VideoResponse?> removeVideoResponse(int id) async {
-    try {
-      final audio = await VideoResponseController.removeVideoResponse(id);
-      if (audio != null) {
-        await refreshResponses();
-      }
-      return audio;
-    } catch (e) {
-      appLogger.severe('Data Service -- Error removing video response', e);
-      return null;
-    }
-  }
 
   // |-------------------------------------------------------------------------|
   // |--------------------------- AUDIO OPERATIONS ----------------------------|
@@ -449,84 +397,9 @@ class DataService {
     }
   }
 
-  // |-------------------------------------------------------------------------|
-  // |-------------------- SIGNIFICANT OBJECT OPERATIONS ----------------------|
-  // |-------------------------------------------------------------------------|
 
-  Future<SignificantObject?> addSignificantObject({
-    String? objectLabel,
-    String? customLabel,
-    required int timestamp,
-    required double left,
-    required double top,
-    required double width,
-    required double height,
-    required File imageFile,
-  }) async {
-    try {
-      final significantObject =
-          await SignificantObjectController.addSignificantObject(
-        objectLabel: objectLabel,
-        customLabel: customLabel,
-        timestamp: timestamp,
-        left: left,
-        top: top,
-        width: width,
-        height: height,
-        imageFile: imageFile,
-      );
 
-      if (significantObject != null) {
-        await refreshMedia();
-      }
 
-      return significantObject;
-    } catch (e) {
-      appLogger.severe('Data Service -- Error adding significant object: $e');
-      return null;
-    }
-  }
-
-  Future<SignificantObject?> updateSignificantObjectLabels({
-    required int id,
-    String? objectLabel,
-    String? customLabel,
-  }) async {
-    try {
-      final significantObject =
-          await SignificantObjectController.updateSignificantObjectLabels(
-        id: id,
-        objectLabel: objectLabel,
-        customLabel: customLabel,
-      );
-
-      if (significantObject != null) {
-        await refreshMedia();
-      }
-
-      return significantObject;
-    } catch (e) {
-      appLogger.severe(
-          'Data Service -- Error updating significant object labels: $e');
-      return null;
-    }
-  }
-
-  Future<SignificantObject?> removeSignificantObject(int id) async {
-    try {
-      final significantObject =
-          await SignificantObjectController.removeSignificantObject(id);
-
-      if (significantObject != null) {
-        await refreshMedia();
-      }
-
-      return significantObject;
-    } catch (e) {
-      appLogger.severe('Data Service -- Error removing significant object: $e');
-      return null;
-    }
-  }
 
   // |-------------------------------------------------------------------------|
   // |--------------------------- OTHER OPERATIONS ----------------------------|

@@ -2,11 +2,10 @@
 // Importing required packages and screens.
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:memoryminder/src/data_service.dart';
+import 'package:memoryminder/src/features/common/service/s3_connection.dart';
 import 'package:memoryminder/src/features/sensitive_information_detection/domain/audio.dart';
-import 'package:memoryminder/src/s3_connection.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
-import 'package:memoryminder/src/typingIndicator.dart';
 import 'package:memoryminder/src/utils/ui_utils.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_sound/flutter_sound.dart';
@@ -709,7 +708,7 @@ class _AudioScreenState extends State<AudioScreen> {
                                       )
                                     ],
                                   ),
-                                  if (_isTranscribing) TypingIndicator(),
+
                                   Padding(
                                     padding: const EdgeInsets.all(15.0),
                                     child: Text(
