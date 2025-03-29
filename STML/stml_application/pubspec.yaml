@@ -42,7 +42,7 @@ dependencies:
     timeago: ^3.5.0
     path_provider: ^2.1.1
     video_thumbnail: ^0.5.3
-    flutter_dotenv: ^5.1.0
+    flutter_dotenv: ^5.2.1
     aws_rekognition_api: ^2.0.0
     aws_s3_api: ^2.0.0
     camera: ^0.11.1
@@ -66,9 +66,13 @@ dependencies:
     cloud_firestore: ^5.6.5
     flutter_local_notifications: ^18.0.1
     fitbitter: ^2.0.4
-    flutter_secure_storage: ^8.0.0
+    flutter_secure_storage: 8.1.0
     http: ^0.13.6
     fl_chart: ^0.64.0
+    cloud_functions: ^5.3.4
+    maps_launcher: ^3.0.0+1
+    intl: ^0.19.0
+    firebase_analytics: ^11.4.4
 
 dev_dependencies:
   flutter_test:

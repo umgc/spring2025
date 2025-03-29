@@ -11,6 +11,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   flutter_tts
   geolocator_windows
   local_auth_windows
+  maps_launcher
   permission_handler_windows
   url_launcher_windows
 )

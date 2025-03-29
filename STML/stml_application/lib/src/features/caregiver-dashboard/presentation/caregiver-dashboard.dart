@@ -10,7 +10,6 @@ import 'package:memoryminder/src/features/caregiver-dashboard/presentation/care_
 import 'package:memoryminder/src/features/caregiver-dashboard/service/manage_care_recipient_service.dart';
 import 'package:memoryminder/src/features/caregiver-dashboard/service/notification_service.dart';
 import 'package:memoryminder/src/features/caregiver-dashboard/service/notification_stream_service.dart';
-import 'package:memoryminder/ui/profile_screen.dart';
 import 'package:memoryminder/src/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -35,12 +34,11 @@ class _CaregiverDashboardScreen extends State<CaregiverDashboardScreen> {
   }
 
   Future<void> _callEmergencyNumber() async {
-    const phoneNumber =
-        'tel:911'; // Remplacez par le numéro d'urgence approprié
-    if (await canLaunch(phoneNumber)) {
-      await launch(phoneNumber);
+    final Uri phoneUri = Uri.parse('tel:911');
+    if (await canLaunchUrl(phoneUri)) {
+      await launchUrl(phoneUri);
     } else {
-      throw 'Could not launch $phoneNumber';
+      throw 'Could not launch $phoneUri';
     }
   }
 
