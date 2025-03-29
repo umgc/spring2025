@@ -150,7 +150,7 @@ class _STMLUserDashboardScreenState extends State<STMLUserDashboardScreen> {
                         icon: Icon(Icons.search,
                             size: iconSize, color: Colors.black54),
                         text: 'My Tasks',
-                        screen: ResponseScreen(),
+                        screen: stmlCalendarScreen(),
                         keyName: "MyTasksButtonKey",
                         backgroundColor:
                             const Color(0xFFFFFFFF).withOpacity(0.30)),
@@ -181,24 +181,7 @@ class _STMLUserDashboardScreenState extends State<STMLUserDashboardScreen> {
                         keyName: "healthMetrics",
                         backgroundColor:
                             const Color(0xFFFFFFFF).withOpacity(0.30)),
-                    _buildElevatedButton(
-                        context: context,
-                        icon: Icon(Icons.task_alt,
-                            size: iconSize, color: Colors.black54),
-                        text: 'Caregiver Tasks',
-                        screen: CaregiverTaskScreen(),
-                        keyName: "CaregiverTaskButtonKey",
-                        backgroundColor:
-                            const Color(0xFFFFFFFF).withOpacity(0.30)),
-                    _buildElevatedButton(
-                        context: context,
-                        icon: Icon(Icons.task_alt,
-                            size: iconSize, color: Colors.black54),
-                        text: 'STML Calendar',
-                        screen: stmlCalendarScreen(),
-                        keyName: "stmlCalendarScreen",
-                        backgroundColor:
-                            const Color(0xFFFFFFFF).withOpacity(0.30)),
+
                   ],
                 ),
               ),
