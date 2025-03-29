@@ -1,14 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
 import 'package:yappy/contact_page.dart';
 import 'package:yappy/tool_bar.dart';
+import 'package:yappy/theme_provider.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+  
   testWidgets('ContactPage should have a ToolBar and HamburgerDrawer',
       (WidgetTester tester) async {
-    // Build the widget
-    await tester.pumpWidget(MaterialApp(home: ContactPage()));
+    // Build the widget with a ThemeProvider
+    await tester.pumpWidget(
+      ChangeNotifierProvider<ThemeProvider>(
+        create: (_) => ThemeProvider(),
+        child: MaterialApp(home: ContactPage()),
+      ),
+    );
 
     // Verify that ToolBar is in place
     expect(find.byType(ToolBar), findsOneWidget,
@@ -30,7 +38,13 @@ void main() {
 
   testWidgets('Tapping the menu button should open the drawer',
       (WidgetTester tester) async {
-    await tester.pumpWidget(MaterialApp(home: ContactPage()));
+    // Build the widget with a ThemeProvider
+    await tester.pumpWidget(
+      ChangeNotifierProvider<ThemeProvider>(
+        create: (_) => ThemeProvider(),
+        child: MaterialApp(home: ContactPage()),
+      ),
+    );
 
     // Drawer should not be visible initially
     expect(find.byType(Drawer), findsNothing);
