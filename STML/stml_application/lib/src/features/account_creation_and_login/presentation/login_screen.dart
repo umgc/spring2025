@@ -6,6 +6,7 @@ Author: Eyerusalme (Jerry)
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:memoryminder/src/features/account_creation_and_login/presentation/eula_screen.dart';
 import 'package:memoryminder/src/features/caregiver-dashboard/presentation/caregiver-dashboard.dart';
 import 'package:memoryminder/src/utils/permission_manager.dart';
 import 'registration_screen.dart';
@@ -34,7 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (didAuthenticate) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => HomeScreen()),
+          MaterialPageRoute(builder: (context) => STMLUserDashboardScreen()),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -176,7 +177,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => RegistrationScreen()),
+                              builder: (context) => EulaScreen()),
                         );
                       },
                       child: Row(
