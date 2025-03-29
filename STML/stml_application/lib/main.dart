@@ -46,13 +46,13 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       initialRoute:
-          '/welcomeScreen', // The initial screen when the application starts
+          '/loginScreen', // The initial screen when the application starts
       routes: {
         '/welcomeScreen': (context) => WelcomeScreem(),
         '/loginScreen': (context) => LoginScreen(),
         '/registrationScreen': (context) => RegistrationScreen(),
         '/eulaScreen': (context) => EulaScreen(),
-        '/homeScreen': (context) => HomeScreen(),
+        '/homeScreen': (context) => STMLUserDashboardScreen(),
         '/caregiverTaskScreen': (context) =>
             CaregiverTaskScreen(), // Added route
         '/healthMetrics': (context) => FutureBuilder<FitbitCredentials?>(

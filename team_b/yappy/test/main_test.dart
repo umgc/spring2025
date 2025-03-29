@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:yappy/main.dart';
 import 'package:yappy/home_page.dart';
+import 'package:yappy/theme_provider.dart';
 
 void main() {
   group('Main Tests', () {
@@ -10,7 +12,12 @@ void main() {
         (WidgetTester tester) async {
       // Arrange
       SharedPreferences.setMockInitialValues({}); // Mock shared preferences
-      await tester.pumpWidget(const MyApp());
+      await tester.pumpWidget(
+        ChangeNotifierProvider<ThemeProvider>(
+          create: (_) => ThemeProvider(),
+          child: MaterialApp(home: MyApp()),
+        ),
+      );
 
       // Assert
       expect(find.byType(MyApp), findsOneWidget);

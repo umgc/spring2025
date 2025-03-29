@@ -4,6 +4,7 @@ import 'package:fitbitter/fitbitter.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:memoryminder/src/features/caregiver-dashboard/presentation/app_bar.dart';
 
 class HealthDashboard extends StatefulWidget {
   final FitbitCredentials fitbitCredentials;
@@ -52,6 +53,24 @@ class _HealthDashboardState extends State<HealthDashboard> {
       final heartRateData = jsonDecode(heartRateResponse.body);
       print('Heart Rate Data: $heartRateData');
 
+      // Check for expired token based on the response content
+      if (heartRateData is Map &&
+          heartRateData.containsKey('success') &&
+          heartRateData['success'] == false &&
+          heartRateData['errors'] != null &&
+          heartRateData['errors'][0]['errorType'] == 'expired_token') {
+        if (context.mounted) {
+          // Clear stored credentials
+          await storage.delete(key: 'fitbitAccessToken');
+          await storage.delete(key: 'fitbitRefreshToken');
+          await storage.delete(key: 'fitbitUserId');
+
+          // Navigate back to Fitbit login
+          Navigator.pushReplacementNamed(context, '/fitbitLogin');
+        }
+        return;
+      }
+
       // Extract Resting Heart Rate
       var restingHeartRate = heartRateData['activities-heart'][0]['value']['restingHeartRate'] ?? 0;
 
@@ -69,7 +88,7 @@ class _HealthDashboardState extends State<HealthDashboard> {
           setState(() {
             heartRateGraphData = graphData; // Now the graph gets updated properly!
         });
-  }
+      }
       } else {
         print("No intraday heart rate data found.");
         if (mounted) {
@@ -176,10 +195,19 @@ class _HealthDashboardState extends State<HealthDashboard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Health Metrics"),
+      appBar: AppBar(title: Text("Health Metrics",
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                  fontSize: 24.0,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                  fontFamily: 'Montserrat')),
+      backgroundColor: Color.fromARGB(255, 2, 63, 129),
+      elevation: 0.0,
+      centerTitle: true,
       actions: [
         IconButton(
-          icon: Icon(Icons.logout, color: Colors.red),
+          icon: Icon(Icons.logout, color: Colors.deepOrange),
           onPressed: () => logOut(context),
         ),
       ],),
@@ -189,7 +217,6 @@ class _HealthDashboardState extends State<HealthDashboard> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              // Text("Health Metrics", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
@@ -209,7 +236,10 @@ class _HealthDashboardState extends State<HealthDashboard> {
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: fetchFitbitData,
-                child: Text("🔄 Refresh Data"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.lightBlue,
+                ),
+                child: Text("🔄 Refresh Data", style: TextStyle(color: Colors.white)),
               ),
               SizedBox(height: 30),
                 // Text("Heart Rate Over 24 Hours", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
@@ -235,14 +265,14 @@ class _HealthDashboardState extends State<HealthDashboard> {
         margin: EdgeInsets.all(8),
         padding: EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: Colors.blue[200],
+          color: Colors.blue,
           borderRadius: BorderRadius.circular(10),
         ),
         child: Column(
           children: [
-            Text(title, style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+            Text(title, style: TextStyle(fontSize: 14, color: Colors.white, fontWeight: FontWeight.bold)),
             SizedBox(height: 5),
-            Text(value, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            Text(value, style: TextStyle(fontSize: 24, color: Colors.white, fontWeight: FontWeight.bold)),
           ],
         ),
       ),
