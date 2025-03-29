@@ -166,7 +166,7 @@ class _OnboardingUIState extends State<OnboardingUI> {
                         Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => HomeScreen()));
+                                builder: (context) => STMLUserDashboardScreen()));
                       } else {
                         widget.functionality.nextPage(context);
                         setState(() {});
@@ -191,7 +191,7 @@ class _OnboardingUIState extends State<OnboardingUI> {
                             Navigator.pushReplacement(
                                 context,
                                 MaterialPageRoute(
-                                    builder: (context) => HomeScreen()));
+                                    builder: (context) => STMLUserDashboardScreen()));
                           } else {
                             widget.functionality.handleUserInput(context);
                             widget.functionality.nextPage(context);
