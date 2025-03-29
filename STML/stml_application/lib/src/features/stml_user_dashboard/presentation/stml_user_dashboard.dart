@@ -18,6 +18,7 @@ import 'package:memoryminder/features/caregiver_task_management/caregiver_task_s
 import 'package:memoryminder/ui/safe_zone_settings_screen.dart';
 import 'package:memoryminder/src/safe_zone_manager.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:memoryminder/ui/ReturnMeHome.dart';
 
 // Main HomeScreen widget which is a stateless widget.
 class STMLUserDashboardScreen extends StatefulWidget {
@@ -221,26 +222,96 @@ class _STMLUserDashboardScreenState extends State<STMLUserDashboardScreen> {
                 ),
                 textAlign: TextAlign.center,
               ),
-            ),
-            Expanded(
-              child: GridView.count(
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 2,
-                crossAxisSpacing: 12.0,
-                mainAxisSpacing: 12.0,
-                childAspectRatio: 1.30,
-                padding: const EdgeInsets.all(26.0),
-                children: [
-                  _buildElevatedButton(
-                    context: context,
-                    icon: Icon(Icons.home_filled,
+              
+              // Grid view to display multiple options/buttons
+
+              Expanded(
+                child: GridView.count(
+                  physics: const NeverScrollableScrollPhysics(),
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 12.0,
+                  mainAxisSpacing: 12.0,
+                  childAspectRatio: 1.30,
+                  padding: const EdgeInsets.all(26.0),
+                  children: [
+                    // adding return me home button 
+                    _buildElevatedButton(
+                        context: context,
+                        icon: Icon(Icons.home_filled,
                         size: iconSize, color: Colors.black54),
-                    text: 'Take Me Home',
-                    screen: ProfileScreen(),
-                    keyName: "TakeMeHomeButtonKey",
-                    backgroundColor: const Color(0xFF000000).withOpacity(0.30),
-                    onPressedOverride: () {
-                      showModalBottomSheet(
+                        text: 'Take Me Home',
+                        screen: ProfileScreen(),
+                        keyName: "TakeMeHomeButtonKey",
+                        backgroundColor: 
+                            const Color(0xFF000000).withOpacity(0.30),
+                      // below may cause conflicts - commented out for now
+                        //onPressedOverride: () {
+                        //showModalBottomSheet(
+                    // Using the helper function to build each button in the grid
+                    _buildElevatedButton(
+                        context: context,
+                        icon: Icon(Icons.home_filled,
+                            size: iconSize, color: Colors.black54),
+                        text: 'Take Me Home',
+                        screen: ReturnMeHomePage(),
+                        keyName: "TakeMeHomeButtonKey",
+                        backgroundColor:
+                            const Color(0xFF000000).withOpacity(0.30)),
+                    _buildElevatedButton(
+                        context: context,
+                        icon: Icon(Icons.sos_sharp,
+                            size: iconSize, color: Colors.black54),
+                        text: 'HELP',
+                        screen: HelpScreen(),
+                        keyName: "HelpButtonKey",
+                        backgroundColor: const Color(0xFFFFFFFF).withOpacity(0.30),
+                    ),
+                    _buildElevatedButton(
+                        context: context,
+                        icon: Icon(Icons.photo,
+                            size: iconSize, color: Colors.black54),
+                        text: 'Gallery',
+                        screen: GalleryScreen(),
+                        keyName: "GalleryButtonKey",
+                        backgroundColor:
+                            const Color(0xFFFFFFFF).withOpacity(0.30)),
+                    _buildElevatedButton(
+                        context: context,
+                        icon: Icon(Icons.search,
+                            size: iconSize, color: Colors.black54),
+                        text: 'My Tasks',
+                        screen: ResponseScreen(),
+                        keyName: "MyTasksButtonKey",
+                        backgroundColor:
+                            const Color(0xFFFFFFFF).withOpacity(0.30)),
+                    _buildElevatedButton(
+                        context: context,
+                        icon: Icon(Icons.mic_rounded,
+                            size: iconSize, color: Colors.black54),
+                        text: 'Record Notes / Audio',
+                        screen: AudioScreen(),
+                        keyName: "AudioRecordingButtonKey",
+                        backgroundColor:
+                            const Color(0xFFFFFFFF).withOpacity(0.30)),
+                    _buildElevatedButton(
+                        context: context,
+                        icon: Icon(Icons.warning_amber_rounded,
+                            size: iconSize, color: Colors.black54),
+                        text: 'Scam Detection',
+                        screen: ScamDetectionScreen(),
+                        keyName: "potentialScamScanner",
+                        backgroundColor:
+                            const Color(0xFFFFFFFF).withOpacity(0.30)),
+                    _buildElevatedButton(
+                        context: context,
+                        icon: Icon(Icons.health_and_safety_outlined,
+                            size: iconSize, color: Colors.black54),
+                        text: 'My Health',
+                        routeName: '/healthMetrics',
+                        keyName: "healthMetrics",
+                        backgroundColor:
+                            const Color(0xFFFFFFFF).withOpacity(0.30)),
+                    _buildElevatedButton(
                         context: context,
                         shape: const RoundedRectangleBorder(
                           borderRadius:
