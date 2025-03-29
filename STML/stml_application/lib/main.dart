@@ -2,11 +2,11 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:fitbitter/fitbitter.dart';
 import 'package:flutter/material.dart';
 import 'package:memoryminder/src/features/account_creation_and_login/presentation/eula_screen.dart';
+import 'package:memoryminder/src/features/account_creation_and_login/presentation/login_screen.dart';
 import 'package:memoryminder/src/features/account_creation_and_login/presentation/welcome_screen.dart';
 import 'package:memoryminder/src/features/caregiver-dashboard/service/notification_service.dart';
 import 'package:memoryminder/src/utils/logger.dart';
 import 'package:memoryminder/src/features/stml_user_dashboard/presentation/stml_user_dashboard.dart';
-import 'package:memoryminder/src/features/account_creation_and_login/presentation/login_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:memoryminder/src/camera_manager.dart';
 import 'package:memoryminder/src/data_service.dart';
@@ -19,20 +19,35 @@ import 'package:memoryminder/features/caregiver_task_management/caregiver_task_s
 import 'package:memoryminder/src/features/wearable-integration/health_dashboard.dart';
 import 'package:memoryminder/src/features/wearable-integration/fitbit_login.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:memoryminder/firebase_options.dart';
+import 'package:memoryminder/ui/Return_Me_Home_Temp.dart';
+import 'package:memoryminder/ui/safe_zone_settings_screen.dart';
+import 'package:geolocator/geolocator.dart';
+
+
 
 final storage = FlutterSecureStorage();
 
 void main() async {
-  initializeLogging();
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  await dotenv.load(fileName: ".env");
-  await DirectoryManager.instance.initializeDirectories();
-  await DataService.instance.initializeData();
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-  initializeData();
+  try {
+    initializeLogging();
+    WidgetsFlutterBinding.ensureInitialized();
+    print("Starting Firebase initialization");
+    await Firebase.initializeApp();
+    print("Firebase initialized successfully");
+    await Geolocator.requestPermission();
+    await dotenv.load(fileName: ".env");
+    await DirectoryManager.instance.initializeDirectories();
+    await DataService.instance.initializeData();
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+    initializeData();
+  } catch (e, stackTrace) {
+    print("Initialization error: $e");
+    print("Stack trace: $stackTrace");
+  }
   runApp(const MyApp());
 }
+
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -48,13 +63,15 @@ class MyApp extends StatelessWidget {
       initialRoute:
           '/loginScreen', // The initial screen when the application starts
       routes: {
-        '/welcomeScreen': (context) => WelcomeScreem(),
+        '/welcomeScreen': (context) => WelcomeScreen(),
         '/loginScreen': (context) => LoginScreen(),
         '/registrationScreen': (context) => RegistrationScreen(),
         '/eulaScreen': (context) => EulaScreen(),
         '/homeScreen': (context) => STMLUserDashboardScreen(),
         '/caregiverTaskScreen': (context) =>
             CaregiverTaskScreen(), // Added route
+        '/returnMeHome': (context) => ReturnMeHomePage(),
+        '/safeZoneSettings': (context) => SafeZoneSettingsScreen(), 
         '/healthMetrics': (context) => FutureBuilder<FitbitCredentials?>(
           future: _loadFitbitCredentials(),
           builder: (context, snapshot) {
