@@ -1,4 +1,0 @@
-enum LmsType {
-  MOODLE,
-  GOOGLE,
-}

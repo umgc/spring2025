@@ -1,6 +1,0 @@
-//Enum for SubmissionModificationMode
-enum SubmissionModificationMode {
-  SUBMISSION_MODIFICATION_MODE_UNSPECIFIED,
-  MODIFIABLE_UNTIL_TURNED_IN,
-  MODIFIABLE_AFTER_TURNED_IN
-}
