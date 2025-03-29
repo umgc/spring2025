@@ -68,6 +68,7 @@ class _SafeZoneSettingsScreenState extends State<SafeZoneSettingsScreen> {
         'longitude': lng,
         'radius_meters': 200,
         'timestamp': FieldValue.serverTimestamp(),
+        'careRecipientId': userId,
       });
 
       final prefs = await SharedPreferences.getInstance();

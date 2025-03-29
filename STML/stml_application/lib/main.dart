@@ -2,11 +2,11 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:fitbitter/fitbitter.dart';
 import 'package:flutter/material.dart';
 import 'package:memoryminder/src/features/account_creation_and_login/presentation/eula_screen.dart';
+import 'package:memoryminder/src/features/account_creation_and_login/presentation/login_screen.dart';
 import 'package:memoryminder/src/features/account_creation_and_login/presentation/welcome_screen.dart';
 import 'package:memoryminder/src/features/caregiver-dashboard/service/notification_service.dart';
 import 'package:memoryminder/src/utils/logger.dart';
 import 'package:memoryminder/src/features/stml_user_dashboard/presentation/stml_user_dashboard.dart';
-import 'package:memoryminder/src/features/account_creation_and_login/presentation/login_screen.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:memoryminder/src/camera_manager.dart';
 import 'package:memoryminder/src/data_service.dart';
@@ -20,8 +20,10 @@ import 'package:memoryminder/src/features/wearable-integration/health_dashboard.
 import 'package:memoryminder/src/features/wearable-integration/fitbit_login.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:memoryminder/firebase_options.dart';
-import 'package:memoryminder/ui/ReturnMeHome.dart';
+import 'package:memoryminder/ui/Return_Me_Home_Temp.dart';
 import 'package:memoryminder/ui/safe_zone_settings_screen.dart';
+import 'package:geolocator/geolocator.dart';
+
 
 
 final storage = FlutterSecureStorage();
@@ -33,6 +35,7 @@ void main() async {
     print("Starting Firebase initialization");
     await Firebase.initializeApp();
     print("Firebase initialized successfully");
+    await Geolocator.requestPermission();
     await dotenv.load(fileName: ".env");
     await DirectoryManager.instance.initializeDirectories();
     await DataService.instance.initializeData();
