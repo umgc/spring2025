@@ -19,8 +19,13 @@ import 'package:memoryminder/features/caregiver_task_management/caregiver_task_s
 import 'package:memoryminder/src/features/wearable-integration/health_dashboard.dart';
 import 'package:memoryminder/src/features/wearable-integration/fitbit_login.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_localization/flutter_localization.dart';
+import 'package:memoryminder/localization/locales.dart';
+
+
 
 final storage = FlutterSecureStorage();
+final FlutterLocalization localization = FlutterLocalization.instance;
 
 void main() async {
   initializeLogging();
@@ -40,6 +45,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      // Localization for multi language support
+      supportedLocales: [
+        Locale('en', ''), // English
+        Locale('es', '') // Spanish
+      ],
+      localizationsDelegates: localization.localizationsDelegates,
       debugShowCheckedModeBanner: false,
       title: 'MemoryMinder',
       theme: ThemeData(
@@ -81,12 +92,22 @@ void initializeData() async {
   await PermissionManager.requestInitialPermissions();
   await cm.initializeCamera();
   NotificationService().initialize();
+  configureLocalization();
 }
 
 // Handle notifications when the app is in the background
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print("⚠️ Background message: ${message.notification?.title}");
 }
+
+void configureLocalization() {
+    localization.init(mapLocales: LOCALES, initLanguageCode: "en");
+    // localization.onTranslatedLanguage = onTranslatedLanguage;
+  }
+
+  // void onTranslatedLanguage(Locale? locale) {
+  //   setState(() {});
+  // }
 
 Future<FitbitCredentials?> _loadFitbitCredentials() async {
   String? storedAccessToken = await storage.read(key: 'fitbitAccessToken');

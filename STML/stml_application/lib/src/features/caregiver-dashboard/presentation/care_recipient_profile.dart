@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print, prefer_const_constructors
 // Imported libraries and packages
 
+import 'package:memoryminder/pages/home_pages.dart';
 import 'package:memoryminder/src/features/caregiver-dashboard/presentation/add_care_recipient.dart';
 import 'package:memoryminder/src/features/caregiver-dashboard/presentation/app_bar.dart';
 import 'package:memoryminder/src/features/caregiver-dashboard/presentation/caregiver-dashboard.dart';
@@ -120,6 +121,14 @@ class CareRecipientProfileScreenState extends State<CareRecipientProfileScreen> 
                           size: iconSize, color: Color.fromARGB(255, 2, 63, 129)),
                       text: 'Dementia Resources',
                       screen: DementiaResourcesScreen(loc: careRecipientLocation),
+                      keyName: "DementiaResourcesButtonKey",
+                    ),
+                    _buildElevatedButton(
+                      context: context,
+                      icon: Icon(Icons.language,
+                          size: iconSize, color: Color.fromARGB(255, 2, 63, 129)),
+                      text: 'Set Language Preferences',
+                      screen: HomePage(),
                       keyName: "DementiaResourcesButtonKey",
                     ),
                   ],
