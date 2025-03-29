@@ -18,6 +18,8 @@ import 'package:memoryminder/features/caregiver_task_management/caregiver_task_s
 import 'package:memoryminder/ui/safe_zone_settings_screen.dart';
 import 'package:memoryminder/src/safe_zone_manager.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:memoryminder/src/features/wearable-integration/fitbit_login.dart';
+import 'package:memoryminder/ui/stml_calendar_screen.dart';
 import 'package:memoryminder/ui/ReturnMeHome.dart';
 
 // Main HomeScreen widget which is a stateless widget.
@@ -347,61 +349,24 @@ class _STMLUserDashboardScreenState extends State<STMLUserDashboardScreen> {
                       );
                     },
                   ),
-                  _buildElevatedButton(
-                    context: context,
-                    icon: Icon(Icons.sos_sharp,
-                        size: iconSize, color: Colors.black54),
-                    text: 'HELP',
-                    screen: HelpScreen(),
-                    keyName: "HelpButtonKey",
-                    backgroundColor: const Color(0xFFFFFFFF).withOpacity(0.30),
-                  ),
-                  _buildElevatedButton(
-                    context: context,
-                    icon: Icon(Icons.photo,
-                        size: iconSize, color: Colors.black54),
-                    text: 'Gallery',
-                    screen: GalleryScreen(),
-                    keyName: "GalleryButtonKey",
-                    backgroundColor: const Color(0xFFFFFFFF).withOpacity(0.30),
-                  ),
-                  _buildElevatedButton(
-                    context: context,
-                    icon: Icon(Icons.search,
-                        size: iconSize, color: Colors.black54),
-                    text: 'My Tasks',
-                    screen: ResponseScreen(),
-                    keyName: "MyTasksButtonKey",
-                    backgroundColor: const Color(0xFFFFFFFF).withOpacity(0.30),
-                  ),
-                  _buildElevatedButton(
-                    context: context,
-                    icon: Icon(Icons.mic_rounded,
-                        size: iconSize, color: Colors.black54),
-                    text: 'Record Notes / Audio',
-                    screen: AudioScreen(),
-                    keyName: "AudioRecordingButtonKey",
-                    backgroundColor: const Color(0xFFFFFFFF).withOpacity(0.30),
-                  ),
-                  _buildElevatedButton(
-                    context: context,
-                    icon: Icon(Icons.warning_amber_rounded,
-                        size: iconSize, color: Colors.black54),
-                    text: 'Scam Detection',
-                    screen: ScamDetectionScreen(),
-                    keyName: "potentialScamScanner",
-                    backgroundColor: const Color(0xFFFFFFFF).withOpacity(0.30),
-                  ),
-                  _buildElevatedButton(
-                    context: context,
-                    icon: Icon(Icons.health_and_safety_outlined,
-                        size: iconSize, color: Colors.black54),
-                    text: 'My Health',
-                    routeName: '/healthMetrics',
-                    keyName: "healthMetrics",
-                    backgroundColor: const Color(0xFFFFFFFF).withOpacity(0.30),
-                  ),
-                ],
+                        icon: Icon(Icons.task_alt,
+                            size: iconSize, color: Colors.black54),
+                        text: 'Caregiver Tasks',
+                        screen: CaregiverTaskScreen(),
+                        keyName: "CaregiverTaskButtonKey",
+                        backgroundColor:
+                            const Color(0xFFFFFFFF).withOpacity(0.30)),
+                    _buildElevatedButton(
+                        context: context,
+                        icon: Icon(Icons.task_alt,
+                            size: iconSize, color: Colors.black54),
+                        text: 'STML Calendar',
+                        screen: stmlCalendarScreen(),
+                        keyName: "stmlCalendarScreen",
+                        backgroundColor:
+                            const Color(0xFFFFFFFF).withOpacity(0.30)),
+                  ],
+                ),
               ),
             ),
           ],
