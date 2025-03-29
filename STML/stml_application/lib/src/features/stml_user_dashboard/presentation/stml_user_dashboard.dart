@@ -20,7 +20,7 @@ import 'package:memoryminder/src/safe_zone_manager.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:memoryminder/src/features/wearable-integration/fitbit_login.dart';
 import 'package:memoryminder/ui/stml_calendar_screen.dart';
-import 'package:memoryminder/ui/ReturnMeHome.dart';
+import 'package:memoryminder/ui/return_me_home.dart';
 
 // Main HomeScreen widget which is a stateless widget.
 class STMLUserDashboardScreen extends StatefulWidget {
