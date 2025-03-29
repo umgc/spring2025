@@ -136,3 +136,12 @@ That server needs to be running to route requests properly to the google api end
 # ------------------------------------------------------
 # Known Issues 
 # ------------------------------------------------------
+The Safety Zone of the Return Me Home feature only works on iOS as of 03/29/25 at 10:15 AM EST
+https://github.com/umgc/spring2025/pull/286
+
+The Language Localization feature was actively worked on but unable to be featured within the last presented demo for the Spring 2025 STML teams 
+https://github.com/umgc/spring2025/pull/284
+
+Due to time and resources this requirement was omitted 
+Req 34 (Nice to Have)​ - NOT IN CURRENT APP
+The application shall have the ability to connect to any existing camera devices and be able to send camera data to caregiver; privacy settings ​
