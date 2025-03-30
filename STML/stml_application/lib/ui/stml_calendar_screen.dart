@@ -13,7 +13,7 @@ class stmlCalendarScreen extends StatelessWidget {
         extendBody: true,
         // Setting up the app bar at the top of the screen
         appBar: const CustomAppBar(
-          title: 'Recipient Profile',
+          title: 'My Tasks',
         ),
         body: SfCalendar(
           view: CalendarView.month,
