@@ -47,7 +47,9 @@ class UiUtils {
           if (index == 0) {
             // Navigate to Gallery screen
             Navigator.push(
-                context, MaterialPageRoute(builder: (context) => STMLUserDashboardScreen()));
+                context,
+                MaterialPageRoute(
+                    builder: (context) => STMLUserDashboardScreen()));
           } else if (index == 1) {
             // Navigate to Search screen
             Navigator.push(

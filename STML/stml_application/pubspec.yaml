@@ -69,6 +69,8 @@ dependencies:
     flutter_secure_storage: ^8.0.0
     http: ^0.13.6
     fl_chart: ^0.64.0
+    cloud_functions: ^5.3.4
+    firebase_analytics: ^11.4.4
 
 dev_dependencies:
   flutter_test:

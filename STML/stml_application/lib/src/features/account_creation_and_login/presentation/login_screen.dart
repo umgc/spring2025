@@ -34,7 +34,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (didAuthenticate) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => HomeScreen()),
+          MaterialPageRoute(builder: (context) => STMLUserDashboardScreen()),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -50,7 +50,6 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _loginWithEmail() async {
-
     setState(() {
       _isAuthenticating = true;
     });
@@ -80,7 +79,6 @@ class _LoginScreenState extends State<LoginScreen> {
     PermissionManager.checkIfLocationServiceIsActive(context);
     return Scaffold(
       body: Container(
-
         child: Center(
           child: Padding(
             padding:
@@ -111,15 +109,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     Image.asset('assets/welcome_image.png',
                         height: 300), // Add a nice image
                     TextFormField(
-                      controller: _emailController,
-                      decoration: InputDecoration(labelText: 'Email'),
-                      keyboardType: TextInputType.emailAddress,
-                      validator: (value) {
-                        if(value ==null || value.isEmpty) {
-                          return 'Please enter email';
-                        }
-                      }
-                    ),
+                        controller: _emailController,
+                        decoration: InputDecoration(labelText: 'Email'),
+                        keyboardType: TextInputType.emailAddress,
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter email';
+                          }
+                        }),
                     SizedBox(height: 10),
                     TextFormField(
                       controller: _passwordController,
@@ -145,10 +142,16 @@ class _LoginScreenState extends State<LoginScreen> {
                         ? CircularProgressIndicator()
                         : ElevatedButton(
                             onPressed: _loginWithEmail,
-                            child: Text("Login", style: TextStyle(fontSize: 18, color: Colors.white),),
+                            child: Text(
+                              "Login",
+                              style:
+                                  TextStyle(fontSize: 18, color: Colors.white),
+                            ),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color.fromARGB(255, 2, 63, 129),
-                              padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                              backgroundColor:
+                                  const Color.fromARGB(255, 2, 63, 129),
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 50, vertical: 15),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(40),
                               ),
@@ -160,11 +163,18 @@ class _LoginScreenState extends State<LoginScreen> {
 
                     ElevatedButton.icon(
                       onPressed: _authenticateWithBiometrics,
-                      icon: Icon(Icons.fingerprint, color: Colors.white,),
-                      label: Text("Login with Biometrics", style: TextStyle(fontSize: 18, color: Colors.white), ),
+                      icon: Icon(
+                        Icons.fingerprint,
+                        color: Colors.white,
+                      ),
+                      label: Text(
+                        "Login with Biometrics",
+                        style: TextStyle(fontSize: 18, color: Colors.white),
+                      ),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color.fromARGB(255, 2, 63, 129),
-                        padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(40),
                         ),

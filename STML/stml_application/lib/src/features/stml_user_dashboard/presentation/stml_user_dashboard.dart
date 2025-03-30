@@ -1,13 +1,18 @@
+//lib/src/features/stml_user_dashboard/presentation/stml_user_dashboard.dart
 // ignore_for_file: avoid_print, prefer_const_constructors
-// Imported libraries and packages
 
+import 'package:memoryminder/services/notification_service.dart';
 import 'package:memoryminder/src/features/caregiver-dashboard/presentation/app_bar.dart';
-import 'package:memoryminder/src/features/help/help_screen.dart';
+import 'package:memoryminder/src/features/caregiver-dashboard/presentation/caregiver-dashboard.dart';
+import 'package:memoryminder/src/features/dementia-resources/dementia_resources.dart';
+import 'package:memoryminder/ui/help_screen.dart';
 import 'package:memoryminder/ui/response_screen.dart';
+import 'package:memoryminder/ui/assistant_screen.dart';
 import 'package:memoryminder/src/features/sensitive_information_detection/presentation/audio_screen.dart';
 import 'package:memoryminder/ui/gallery_screen.dart';
 import 'package:memoryminder/ui/profile_screen.dart';
 import 'package:memoryminder/ui/scam_detection_screen.dart';
+import 'package:memoryminder/ui/tour_screen.dart';
 import 'package:memoryminder/ui/location_history_screen.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
@@ -15,20 +20,19 @@ import 'package:memoryminder/src/camera_manager.dart';
 import 'package:memoryminder/src/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:memoryminder/features/caregiver_task_management/caregiver_task_screen.dart';
-import 'package:memoryminder/ui/ReturnMeHome.dart';
+import 'package:memoryminder/src/features/wearable-integration/fitbit_login.dart';
 
-
-// Main HomeScreen widget which is a stateless widget.
 class STMLUserDashboardScreen extends StatefulWidget {
+  const STMLUserDashboardScreen({super.key});
+
   @override
-  _STMLUserDashboardScreenState createState() => _STMLUserDashboardScreenState();
+  _STMLUserDashboardScreenState createState() =>
+      _STMLUserDashboardScreenState();
 }
 
 class _STMLUserDashboardScreenState extends State<STMLUserDashboardScreen> {
   bool hasBeenInitialized = false;
   double iconSize = 65;
-
-  // To keep track of the current location
   LocationEntry? currentLocationEntry;
 
   @override
@@ -38,7 +42,7 @@ class _STMLUserDashboardScreenState extends State<STMLUserDashboardScreen> {
     _listenToLocationChanges();
   }
 
-  _initializeCamera() {
+  void _initializeCamera() {
     if (!hasBeenInitialized) {
       CameraManager cm = CameraManager();
       cm.startAutoRecording();
@@ -46,7 +50,7 @@ class _STMLUserDashboardScreenState extends State<STMLUserDashboardScreen> {
     }
   }
 
-  _listenToLocationChanges() {
+  void _listenToLocationChanges() {
     final locationStream = Geolocator.getPositionStream();
     locationStream.listen((Position position) async {
       try {
@@ -82,22 +86,18 @@ class _STMLUserDashboardScreenState extends State<STMLUserDashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        // Set the background color for the entire screen
         extendBodyBehindAppBar: true,
         extendBody: true,
-        // Setting up the app bar at the top of the screen
         appBar: const CustomAppBar(
-          title: 'My Dashboard',
+          title: 'STML User Dashboard',
         ),
-        // Main content of the screen
         body: Container(
-
           child: Column(
             children: [
               const Padding(
                 padding: EdgeInsets.fromLTRB(16.0, 140, 16.0, 25),
                 child: Text(
-                  'Helping you remember the important things.\n Choose a feature to get started!',
+                  'Helping you remember the important things.\nChoose a feature to get started!',
                   style: TextStyle(
                     fontSize: 16.0,
                     color: Colors.black54,
@@ -105,8 +105,6 @@ class _STMLUserDashboardScreenState extends State<STMLUserDashboardScreen> {
                   textAlign: TextAlign.center,
                 ),
               ),
-              // Grid view to display multiple options/buttons
-
               Expanded(
                 child: GridView.count(
                   physics: const NeverScrollableScrollPhysics(),
@@ -116,25 +114,23 @@ class _STMLUserDashboardScreenState extends State<STMLUserDashboardScreen> {
                   childAspectRatio: 1.30,
                   padding: const EdgeInsets.all(26.0),
                   children: [
-                    // Using the helper function to build each button in the grid
                     _buildElevatedButton(
                         context: context,
                         icon: Icon(Icons.home_filled,
                             size: iconSize, color: Colors.black54),
                         text: 'Take Me Home',
-                        screen: ReturnMeHomePage(),
+                        screen: ProfileScreen(),
                         keyName: "TakeMeHomeButtonKey",
                         backgroundColor:
                             const Color(0xFF000000).withOpacity(0.30)),
                     _buildElevatedButton(
                         context: context,
-                        icon: Icon(Icons.sos_sharp,
-                            size: iconSize, color: Colors.black54),
+                        icon: Icon(Icons.help_outline,
+                            size: iconSize, color: Colors.white),
                         text: 'HELP',
                         screen: HelpScreen(),
                         keyName: "HelpButtonKey",
-                        backgroundColor: const Color(0xFFFFFFFF).withOpacity(0.30),
-                    ),
+                        backgroundColor: Colors.red.withOpacity(0.80)),
                     _buildElevatedButton(
                         context: context,
                         icon: Icon(Icons.photo,
@@ -195,13 +191,9 @@ class _STMLUserDashboardScreenState extends State<STMLUserDashboardScreen> {
             ],
           ),
         ),
-
-        // Bottom navigation bar with multiple options for quick navigation
         bottomNavigationBar: UiUtils.createBottomNavigationBar(context));
   }
 
-
-  // Helper function to create each button for the GridView
   Widget _buildElevatedButton({
     required BuildContext context,
     required Icon icon,
@@ -224,13 +216,11 @@ class _STMLUserDashboardScreenState extends State<STMLUserDashboardScreen> {
       ),
       onPressed: () {
         if (routeName != null) {
-          Navigator.pushNamed(context, routeName); // Use named route if provided
-        }
-        else if (screen != null)
-        {
+          Navigator.pushNamed(context, routeName);
+        } else if (screen != null) {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => screen), // Default behavior
+            MaterialPageRoute(builder: (context) => screen),
           );
         }
       },
