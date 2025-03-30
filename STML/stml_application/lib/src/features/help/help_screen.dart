@@ -49,7 +49,7 @@ class _HelpScreenState extends State<HelpScreen> {
     // Replace with your country's emergency number, e.g., "112" or "911"
     final status = await Permission.phone.request();
     print(status);
-    final Uri launchUri = Uri(scheme: 'tel', path: '2023861943');
+    final Uri launchUri = Uri(scheme: 'tel', path: '411');
     if (await canLaunchUrl(launchUri)) {
       await launchUrl(launchUri);
     } else {
