@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:memoryminder/src/features/account_creation_and_login/presentation/login_screen.dart';
 import 'package:memoryminder/ui/profile_screen.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -67,29 +68,20 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 // Widgets on the right side of the AppBar
       actions: [
 // First page icon to navigate back
-        IconButton(
+
+
+// First page icon to navigate back
+         IconButton(
           icon: const Icon(
-            Icons.settings,
-            color: Colors.white70,
+            Icons.logout,
+            color: Colors.white,
           ),
           onPressed: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => ProfileScreen()),
-            );
-          },
+              MaterialPageRoute(builder: (context) => LoginScreen()),
+            );          },
         ),
-
-// First page icon to navigate back
-        /* IconButton(
-          icon: const Icon(
-            Icons.first_page,
-            color: Colors.black87,
-          ),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),*/
       ],
     );
   }
