@@ -7,6 +7,7 @@
 
 import 'dart:io';
 import 'package:memoryminder/src/data_service.dart';
+import 'package:memoryminder/src/features/caregiver-dashboard/presentation/app_bar.dart';
 import 'package:memoryminder/src/features/sensitive_information_detection/domain/audio.dart';
 import 'package:memoryminder/src/database/model/media.dart';
 import 'package:memoryminder/src/database/model/media_type.dart';
@@ -249,17 +250,12 @@ class _GalleryScreenState extends State<GalleryScreen> {
     refresh();
 
     return Scaffold(
-        backgroundColor: Color(int.parse("0xFFC1DFDD")),
         extendBodyBehindAppBar: false,
         extendBody: true,
-        appBar: _buildAppBar(),
+        appBar: const CustomAppBar(
+          title: 'Gallery',
+        ),
         body: Container(
-          decoration: const BoxDecoration(
-            image: DecorationImage(
-              image: AssetImage("assets/images/background.jpg"),
-              fit: BoxFit.cover,
-            ),
-          ),
           child: Column(
             children: [
               if (_searchBarVisible) _buildSearchBar(),
@@ -269,7 +265,9 @@ class _GalleryScreenState extends State<GalleryScreen> {
               _buildSliderBar(),
             ],
           ),
-        ));
+        ),
+        bottomNavigationBar: UiUtils.createBottomNavigationBar(context));
+
   }
 
   AppBar _buildAppBar() {

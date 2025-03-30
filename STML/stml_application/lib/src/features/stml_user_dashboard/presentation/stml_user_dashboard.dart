@@ -124,7 +124,7 @@ class _STMLUserDashboardScreenState extends State<STMLUserDashboardScreen> {
                     _buildElevatedButton(
                         context: context,
                         icon: Icon(Icons.home_filled,
-                            size: iconSize, color: Colors.black54),
+                            size: iconSize, color: Colors.black),
                         text: 'Take Me Home',
                         screen: ReturnMeHomePage(),
                         keyName: "TakeMeHomeButtonKey",
@@ -133,7 +133,7 @@ class _STMLUserDashboardScreenState extends State<STMLUserDashboardScreen> {
                     _buildElevatedButton(
                         context: context,
                         icon: Icon(Icons.sos_sharp,
-                            size: iconSize, color: Colors.black54),
+                            size: iconSize, color: Colors.black),
                         text: 'HELP',
                         screen: HelpScreen(),
                         keyName: "HelpButtonKey",
@@ -142,7 +142,7 @@ class _STMLUserDashboardScreenState extends State<STMLUserDashboardScreen> {
                     _buildElevatedButton(
                         context: context,
                         icon: Icon(Icons.photo,
-                            size: iconSize, color: Colors.black54),
+                            size: iconSize, color: Colors.black),
                         text: 'Gallery',
                         screen: GalleryScreen(),
                         keyName: "GalleryButtonKey",
@@ -151,7 +151,7 @@ class _STMLUserDashboardScreenState extends State<STMLUserDashboardScreen> {
                     _buildElevatedButton(
                         context: context,
                         icon: Icon(Icons.search,
-                            size: iconSize, color: Colors.black54),
+                            size: iconSize, color: Colors.black),
                         text: 'My Tasks',
                         screen: stmlCalendarScreen(),
                         keyName: "MyTasksButtonKey",
@@ -160,7 +160,7 @@ class _STMLUserDashboardScreenState extends State<STMLUserDashboardScreen> {
                     _buildElevatedButton(
                         context: context,
                         icon: Icon(Icons.mic_rounded,
-                            size: iconSize, color: Colors.black54),
+                            size: iconSize, color: Colors.black),
                         text: 'Record Notes / Audio',
                         screen: AudioScreen(),
                         keyName: "AudioRecordingButtonKey",
@@ -169,7 +169,7 @@ class _STMLUserDashboardScreenState extends State<STMLUserDashboardScreen> {
                     _buildElevatedButton(
                         context: context,
                         icon: Icon(Icons.warning_amber_rounded,
-                            size: iconSize, color: Colors.black54),
+                            size: iconSize, color: Colors.black),
                         text: 'Scam Detection',
                         screen: ScamDetectionScreen(),
                         keyName: "potentialScamScanner",
@@ -178,7 +178,7 @@ class _STMLUserDashboardScreenState extends State<STMLUserDashboardScreen> {
                     _buildElevatedButton(
                         context: context,
                         icon: Icon(Icons.health_and_safety_outlined,
-                            size: iconSize, color: Colors.black54),
+                            size: iconSize, color: Colors.black),
                         text: 'My Health',
                         routeName: '/healthMetrics',
                         keyName: "healthMetrics",

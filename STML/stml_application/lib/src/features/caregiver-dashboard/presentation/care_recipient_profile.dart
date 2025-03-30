@@ -62,7 +62,7 @@ class CareRecipientProfileScreenState extends State<CareRecipientProfileScreen> 
           child: Column(
             children: [
               Padding(
-                padding: EdgeInsets.fromLTRB(16.0, 140, 16.0, 25),
+                padding: EdgeInsets.fromLTRB(16.0, 80, 16.0, 25),
                 child: Text(
                   careRecipientName,
                   style: TextStyle(
