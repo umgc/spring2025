@@ -5,6 +5,9 @@ import 'package:memoryminder/src/utils/ui_utils.dart';
 import 'package:memoryminder/src/features/caregiver-dashboard/presentation/app_bar.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
+import 'package:permission_handler/permission_handler.dart';
 
 class HelpScreen extends StatefulWidget {
   @override
@@ -20,24 +23,51 @@ class _HelpScreenState extends State<HelpScreen> {
     sendNotificationToCaregiver();
   }
 
+  Future<String> get _localPath async {
+    final directory = await getApplicationDocumentsDirectory();
+    return directory.path;
+  }
+
+  Future<File> get _localFile async {
+    final path = await _localPath;
+    return File('$path/user_data.txt');
+  }
+
+  Future<String> readUserData() async {
+    try {
+      final file = await _localFile;
+      String contents = await file.readAsString();
+      return contents;
+    } catch (e) {
+      return '';
+    }
+  }
+
+
   // Function to call emergency services
   Future<void> callEmergencyServices() async {
     // Replace with your country's emergency number, e.g., "112" or "911"
-    const emergencyNumber = 'tel:2023861943'; // Example emergency number
-
-    // Check if the URL can be launched (i.e., the phone dialer is available)
-    if (await canLaunch(emergencyNumber)) {
-      await launch(emergencyNumber);
+    final status = await Permission.phone.request();
+    print(status);
+    final Uri launchUri = Uri(scheme: 'tel', path: '411');
+    if (await canLaunchUrl(launchUri)) {
+      await launchUrl(launchUri);
     } else {
-      // Show an error message if the dialer cannot be launched
-      print("Cannot place a call.");
+      print('Could not launch $launchUri'); // This is where your log likely comes from
     }
   }
   Future<void> sendNotificationToCaregiver() async {
     print("------------Sending notification");
+    String title = '';
+    String data = await readUserData();
+    List<String> details = data.split(', ');
+    if (details.length >= 3) {
+      title = '${details[0]} called for HELP!';
+    }
+
     // The URL for the Firebase Function
     var url = Uri.parse(
-        'https://us-central1-spring2025-81f5b.cloudfunctions.net/sendNotification');
+         'https://us-central1-spring2025-81f5b.cloudfunctions.net/sendNotification');
 
     // Send the notification request to Firebase Function
     var response = await http.post(
@@ -46,7 +76,7 @@ class _HelpScreenState extends State<HelpScreen> {
         'topic': 'STML_USER_PRESSED_HELP',
         // The topic you want to send the notification to
         'message': 'USER called for HELP!',
-        'title': 'USER called for HELP!',
+        'title': title,
         // The message you want to send
       },
     );
@@ -62,6 +92,7 @@ class _HelpScreenState extends State<HelpScreen> {
 
   @override
   Widget build(BuildContext context) {
+
     return Scaffold(
       // Set the background color for the entire screen
         extendBodyBehindAppBar: true,

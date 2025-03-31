@@ -2,9 +2,12 @@ import 'package:memoryminder/src/database/model/media_type.dart';
 import 'package:memoryminder/src/utils/permission_manager.dart';
 import 'package:memoryminder/ui/assistant_screen.dart';
 import 'package:memoryminder/src/features/stml_user_dashboard/presentation/stml_user_dashboard.dart';
+import 'package:memoryminder/ui/profile_screen.dart';
 import 'package:memoryminder/ui/significant_objects_screen.dart';
 import 'package:memoryminder/ui/video_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
 
 class UiUtils {
   static IconData getMediaIconData(MediaType mediaType) {
@@ -17,6 +20,26 @@ class UiUtils {
         return Icons.video_camera_back;
       default:
         throw Exception('Unsupported media type: $mediaType');
+    }
+  }
+
+  Future<String> get _localPath async {
+    final directory = await getApplicationDocumentsDirectory();
+    return directory.path;
+  }
+
+  Future<File> get _localFile async {
+    final path = await _localPath;
+    return File('$path/user_data.txt');
+  }
+
+  Future<String> readUserData() async {
+    try {
+      final file = await _localFile;
+      String contents = await file.readAsString();
+      return contents;
+    } catch (e) {
+      return '';
     }
   }
 
@@ -63,13 +86,16 @@ class UiUtils {
             }
           }
 
-          /* else if (index == 3) {
+           else if (index == 3) {
             // Navigate to Gallery screen
             Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => SignificantObjectScreen()));
-          } */
+                    builder: (context) => ProfileScreen()));
+          }
         });
+
+
+
   }
 }

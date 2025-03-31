@@ -9,6 +9,8 @@ import 'package:memoryminder/src/features/dementia-resources/dementia_resources.
 import 'package:memoryminder/ui/response_screen.dart';
 import 'package:memoryminder/src/utils/ui_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
+
 
 
 // Main HomeScreen widget which is a stateless widget.
@@ -60,7 +62,7 @@ class CareRecipientProfileScreenState extends State<CareRecipientProfileScreen> 
           child: Column(
             children: [
               Padding(
-                padding: EdgeInsets.fromLTRB(16.0, 140, 16.0, 25),
+                padding: EdgeInsets.fromLTRB(16.0, 80, 16.0, 25),
                 child: Text(
                   careRecipientName,
                   style: TextStyle(
@@ -137,7 +139,7 @@ class CareRecipientProfileScreenState extends State<CareRecipientProfileScreen> 
                           size: iconSize, color: Color.fromARGB(255, 2, 63, 129)),
                       text: 'Language Preferences',
                       keyName: "CaregiverTaskButtonKey",
-
+                      functionName: () {_showLanguageDialog(context);},
                     ),
                   ],
                 ),
@@ -151,8 +153,35 @@ class CareRecipientProfileScreenState extends State<CareRecipientProfileScreen> 
   }
 
   void _showLanguageDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('change_language'.tr()),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              ListTile(
+                title: Text('english'.tr()),
+                onTap: () {
+                  context.setLocale(const Locale('en', 'US'));
+                  Navigator.of(context).pop();
+                },
+              ),
+              ListTile(
+                title: Text('spanish'.tr()),
+                onTap: () {
+                  context.setLocale(const Locale('es', 'ES'));
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
-}
 
   // Helper function to create each button for the GridView
   Widget _buildElevatedButton({

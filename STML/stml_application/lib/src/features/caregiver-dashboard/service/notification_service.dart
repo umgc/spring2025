@@ -96,6 +96,7 @@ class NotificationService {
 
   Future<void> getRecentNotifications() async {
     try {
+      NotificationStreamService().dispose();
       QuerySnapshot snapshot = await _firestore.collection('notifications')
           .orderBy('createdDate', descending: true)
           .limit(10)

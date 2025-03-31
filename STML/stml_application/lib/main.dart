@@ -19,6 +19,7 @@ import 'package:memoryminder/features/caregiver_task_management/caregiver_task_s
 import 'package:memoryminder/src/features/wearable-integration/health_dashboard.dart';
 import 'package:memoryminder/src/features/wearable-integration/fitbit_login.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 final storage = FlutterSecureStorage();
 
@@ -40,6 +41,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+
       debugShowCheckedModeBanner: false,
       title: 'MemoryMinder',
       theme: ThemeData(
@@ -81,6 +83,8 @@ void initializeData() async {
   await PermissionManager.requestInitialPermissions();
   await cm.initializeCamera();
   NotificationService().initialize();
+  await EasyLocalization.ensureInitialized();
+
 }
 
 // Handle notifications when the app is in the background
