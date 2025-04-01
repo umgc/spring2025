@@ -237,4 +237,19 @@ class LocalStorageService {
     
     return false;
   }
+
+  static bool canUserAccessApp() {
+    bool isLoggedIntoGoogleClassroom = LocalStorageService.isLoggedIntoGoogle() && LocalStorageService.hasLLMKey();
+    bool isLoggedIntoMoodle = LocalStorageService.isLoggedIntoMoodle() && LocalStorageService.hasLLMKey();
+    return isMoodle() ? isLoggedIntoMoodle : isLoggedIntoGoogleClassroom;
+  }
+
+  static String getClassroom() {
+    return LocalStorageService.getSelectedClassroom() == LmsType.MOODLE ? 'Moodle' : 'Google';
+  }
+
+  static bool isMoodle() {
+    print(LocalStorageService.getSelectedClassroom());
+    return LocalStorageService.getSelectedClassroom() == LmsType.MOODLE;
+  }
 }

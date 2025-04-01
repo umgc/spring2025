@@ -260,7 +260,7 @@ class _QuizQuestionPageState extends State<QuizQuestionPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
-        title: 'Quiz Questions Here ....',
+        title: 'Quiz Questions',
         userprofileurl: LmsFactory.getLmsService().profileImage ?? '',
       ),
       body: FutureBuilder<FormData>(
